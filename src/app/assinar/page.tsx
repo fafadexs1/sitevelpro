@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useForm, FormProvider } from "react-hook-form";
+import { useForm, FormProvider, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { motion, AnimatePresence } from "framer-motion";
@@ -10,6 +10,7 @@ import { User, Mail, Phone, MapPin, Building, Hash, Home, Check, ArrowRight, Loa
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Checkbox } from "@/components/ui/checkbox";
 import Link from "next/link";
 import { Wifi } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -27,15 +28,19 @@ const stepSchemas = [
   }),
   // Etapa 2: Endereço
   z.object({
-    cep: z.string().min(8, "CEP inválido"),
+    dontKnowCep: z.boolean().optional(),
+    cep: z.string(),
     street: z.string().min(3, "Rua é obrigatória"),
     number: z.string().min(1, "Número é obrigatório"),
     complement: z.string().optional(),
-    neighborhood: z.string().min(3, "Bairro é obrigatório"),
+    neighborhood: z-string().min(3, "Bairro é obrigatório"),
     city: z.string().min(3, "Cidade é obrigatória"),
     state: z.string().min(2, "Estado é obrigatório"),
     latitude: z.number().optional(),
     longitude: z.number().optional(),
+  }).refine(data => data.dontKnowCep || (data.cep && data.cep.length >= 8), {
+      message: "CEP inválido",
+      path: ["cep"],
   }),
   // Etapa 3: Confirmação (sem validação, apenas exibição)
   z.object({}),
@@ -138,6 +143,7 @@ const Step2 = ({ form }: { form: any }) => {
     const [loadingCep, setLoadingCep] = useState(false);
     const [loadingLocation, setLoadingLocation] = useState(false);
     const { toast } = useToast();
+    const dontKnowCep = useWatch({ control: form.control, name: "dontKnowCep" });
 
     const handleCepLookup = async () => {
         const cep = form.getValues("cep").replace(/\D/g, "");
@@ -184,32 +190,49 @@ const Step2 = ({ form }: { form: any }) => {
 
     return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <FormField name="cep" render={({ field }) => (
-            <FormItem className="md:col-span-1">
-            <FormLabel>CEP</FormLabel>
-            <FormControl>
-                <div className="relative">
-                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/60" />
-                <Input placeholder="00000-000" {...field} className="pl-9 pr-24" />
-                 <Button type="button" onClick={handleCepLookup} disabled={loadingCep} className="absolute right-1 top-1/2 -translate-y-1/2 h-8 px-2 text-xs">
-                    {loadingCep ? <Loader2 className="h-3 w-3 animate-spin"/> : "Buscar"}
-                 </Button>
-                </div>
-            </FormControl>
-            <FormMessage />
-            </FormItem>
-        )} />
-        <FormField name="street" render={({ field }) => (
-            <FormItem className="md:col-span-2">
-            <FormLabel>Rua</FormLabel>
-            <FormControl>
-                <Input placeholder="Sua rua" {...field} />
-            </FormControl>
-            <FormMessage />
-            </FormItem>
-        )} />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <FormField name="cep" render={({ field }) => (
+                <FormItem className="md:col-span-1">
+                <FormLabel>CEP</FormLabel>
+                <FormControl>
+                    <div className="relative">
+                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/60" />
+                    <Input placeholder="00000-000" {...field} disabled={dontKnowCep} className="pl-9 pr-24" />
+                    <Button type="button" onClick={handleCepLookup} disabled={loadingCep || dontKnowCep} className="absolute right-1 top-1/2 -translate-y-1/2 h-8 px-2 text-xs">
+                        {loadingCep ? <Loader2 className="h-3 w-3 animate-spin"/> : "Buscar"}
+                    </Button>
+                    </div>
+                </FormControl>
+                <FormMessage />
+                </FormItem>
+            )} />
+             <FormField name="street" render={({ field }) => (
+                <FormItem className="md:col-span-2">
+                <FormLabel>Rua</FormLabel>
+                <FormControl>
+                    <Input placeholder="Sua rua" {...field} />
+                </FormControl>
+                <FormMessage />
+                </FormItem>
+            )} />
         </div>
+        <FormField
+            control={form.control}
+            name="dontKnowCep"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-start gap-x-2 space-y-0 -mt-2">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+                <div className="space-y-1 leading-none">
+                  <FormLabel className="cursor-pointer">Não sei meu CEP</FormLabel>
+                </div>
+              </FormItem>
+            )}
+        />
         <div className="grid md:grid-cols-3 gap-4">
             <FormField name="number" render={({ field }) => (
                 <FormItem>
@@ -286,7 +309,7 @@ const Step3 = ({ data }: { data: FormData }) => (
                 <div className="p-4 rounded-xl bg-white/5 border border-white/10 mt-2 space-y-2">
                     <p>{data.street}, {data.number} {data.complement && `- ${data.complement}`}</p>
                     <p>{data.neighborhood}, {data.city} - {data.state}</p>
-                    <p><strong>CEP:</strong> {data.cep}</p>
+                    {!data.dontKnowCep && <p><strong>CEP:</strong> {data.cep}</p>}
                     {data.latitude && data.longitude && (
                         <p><strong>Localização:</strong> Lat: {data.latitude.toFixed(5)}, Lon: {data.longitude.toFixed(5)}</p>
                     )}
@@ -333,6 +356,7 @@ export default function SignupPage() {
     neighborhood: '',
     city: '',
     state: '',
+    dontKnowCep: false,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
