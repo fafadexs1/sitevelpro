@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useMemo, useState } from "react";
@@ -11,7 +12,6 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { Card, CardContent } from "@/components/ui/card";
 
 export function Plans() {
   const [planType, setPlanType] = useState<"residencial" | "empresarial">("residencial");
@@ -115,8 +115,8 @@ export function Plans() {
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious />
-            <CarouselNext />
+            <CarouselPrevious className="left-2 bg-neutral-900/50 border-white/10 hover:bg-neutral-900"/>
+            <CarouselNext className="right-2 bg-neutral-900/50 border-white/10 hover:bg-neutral-900" />
           </Carousel>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">

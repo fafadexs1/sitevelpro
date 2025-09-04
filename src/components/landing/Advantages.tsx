@@ -1,3 +1,4 @@
+
 "use client"
 import { ShieldCheck, Gauge, Zap, Rocket, Wifi } from "lucide-react";
 import {
@@ -47,8 +48,8 @@ export function Advantages() {
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious />
-            <CarouselNext />
+            <CarouselPrevious className="left-2 bg-neutral-900/50 border-white/10 hover:bg-neutral-900" />
+            <CarouselNext className="right-2 bg-neutral-900/50 border-white/10 hover:bg-neutral-900" />
           </Carousel>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
