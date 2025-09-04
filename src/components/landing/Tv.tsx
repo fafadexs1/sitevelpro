@@ -33,8 +33,8 @@ export function TvSection() {
         const x = e.clientX - left - width / 2;
         const y = e.clientY - top - height / 2;
 
-        setRotateY(x / width * 20);
-        setRotateX(-y / height * 20);
+        setRotateY(x / width * 15);
+        setRotateX(-y / height * 15);
     };
 
     const handleMouseLeave = () => {
@@ -61,7 +61,7 @@ export function TvSection() {
                       </a>
                 </div>
 
-                <motion.div
+                <div
                     ref={containerRef}
                     onMouseMove={handleMouseMove}
                     onMouseLeave={handleMouseLeave}
@@ -83,10 +83,9 @@ export function TvSection() {
                             return (
                                 <motion.div
                                     key={i}
-                                    className="absolute top-1/2 left-1/2 flex flex-col items-center justify-center w-32 h-32 p-4 rounded-2xl bg-neutral-900/60 border border-white/10 shadow-xl"
+                                    className="absolute top-1/2 left-1/2 -mt-16 -ml-16 flex flex-col items-center justify-center w-32 h-32 p-4 rounded-2xl bg-neutral-900/60 border border-white/10 shadow-xl"
                                     style={{
                                         transform: `rotateY(${angle}rad) translateZ(${radius}px)`,
-                                        transformStyle: "preserve-3d",
                                     }}
                                     initial={{ opacity: 0, scale: 0.5 }}
                                     whileInView={{ opacity: 1, scale: 1 }}
@@ -98,21 +97,13 @@ export function TvSection() {
                                         damping: 20
                                     }}
                                 >
-                                  <motion.div
-                                    style={{
-                                      transform: `rotateY(${-angle}rad) rotateX(${-rotateX}deg) rotateY(${-rotateY}deg)`,
-                                      transition: 'transform 0.2s ease-out'
-                                    }}
-                                    className="flex flex-col items-center justify-center"
-                                  >
                                     <div className="text-emerald-400">{channel.icon}</div>
                                     <p className="mt-2 text-sm text-center text-white/80">{channel.name}</p>
-                                  </motion.div>
                                 </motion.div>
                             );
                         })}
                     </motion.div>
-                </motion.div>
+                </div>
             </div>
         </div>
     </section>
