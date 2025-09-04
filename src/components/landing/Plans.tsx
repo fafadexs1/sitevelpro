@@ -12,6 +12,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import { Card, CardContent } from "@/components/ui/card";
 
 export function Plans() {
   const [planType, setPlanType] = useState<"residencial" | "empresarial">("residencial");
@@ -105,7 +106,7 @@ export function Plans() {
           </div>
         </div>
         {isMobile ? (
-          <Carousel opts={{ loop: true }} className="w-full">
+          <Carousel opts={{ loop: true }} className="relative w-full">
             <CarouselContent>
               {plans.map((p, i) => (
                 <CarouselItem key={`${planType}-carousel-${i}`} className="basis-4/5">
@@ -115,8 +116,8 @@ export function Plans() {
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious className="left-2 bg-neutral-900/50 border-white/10 hover:bg-neutral-900"/>
-            <CarouselNext className="right-2 bg-neutral-900/50 border-white/10 hover:bg-neutral-900" />
+            <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-neutral-900/50 border-white/10 hover:bg-neutral-900"/>
+            <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-neutral-900/50 border-white/10 hover:bg-neutral-900" />
           </Carousel>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">

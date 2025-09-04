@@ -11,7 +11,7 @@ export function Contact() {
     {
       icon: <MessageCircle className="h-5 w-5 text-primary" />,
       title: "WhatsApp",
-      desc: "Fale com um especialista agora",
+      desc: "Assine ou tire dúvidas pelo WhatsApp",
       href: "https://wa.me/5500000000000",
     },
     {
