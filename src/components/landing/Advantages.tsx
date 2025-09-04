@@ -1,0 +1,34 @@
+import { ShieldCheck, Gauge, Zap, Rocket, Wifi } from "lucide-react";
+
+export function Advantages() {
+  const advantages = [
+    { icon: <ShieldCheck className="h-5 w-5 text-emerald-300" />, title: "Estabilidade", desc: "Rede de fibra com backbone redundante e QoS." },
+    { icon: <Gauge className="h-5 w-5 text-emerald-300" />, title: "Baixa latência", desc: "Jogos e chamadas sem travar, com pings baixíssimos." },
+    { icon: <Zap className="h-5 w-5 text-emerald-300" />, title: "Wi‑Fi 6", desc: "Mais alcance, mais dispositivos e menos interferência." },
+    { icon: <Rocket className="h-5 w-5 text-emerald-300" />, title: "Instalação express", desc: "Agendamento rápido e instalação sem complicação." },
+    { icon: <Wifi className="h-5 w-5 text-emerald-300" />, title: "Cobertura inteligente", desc: "Mesh opcional para casas e empresas maiores." },
+    { icon: <ShieldCheck className="h-5 w-5 text-emerald-300" />, title: "Suporte 24/7", desc: "Gente de verdade atendendo quando você precisa." },
+  ];
+
+  return (
+    <section id="vantagens" className="border-t border-white/5 bg-neutral-950/40 py-16 sm:py-24">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mb-10 max-w-2xl lg:mb-12">
+          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Por que Velpro?</h2>
+          <p className="mt-2 text-white/70">Tecnologia de ponta, atendimento humano e performance real no seu dia a dia.</p>
+        </div>
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {advantages.map((item) => (
+            <div key={item.title} className="rounded-2xl border border-white/10 bg-neutral-900/60 p-6">
+              <div className="mb-3 grid h-10 w-10 place-items-center rounded-lg bg-emerald-500/15">
+                {item.icon}
+              </div>
+              <h3 className="text-lg font-semibold">{item.title}</h3>
+              <p className="mt-1 text-white/70">{item.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
