@@ -79,15 +79,13 @@ export function TvSection() {
                     >
                         {channels.map((channel, i) => {
                             const angle = (i / channels.length) * 2 * Math.PI;
-                            const x = Math.cos(angle) * radius;
-                            const z = Math.sin(angle) * radius;
 
                             return (
                                 <motion.div
                                     key={i}
                                     className="absolute top-1/2 left-1/2 flex flex-col items-center justify-center w-32 h-32 p-4 rounded-2xl bg-neutral-900/60 border border-white/10 shadow-xl"
                                     style={{
-                                        transform: `translate(-50%, -50%) rotateY(${angle}rad) translateZ(${radius}px)`,
+                                        transform: `rotateY(${angle}rad) translateZ(${radius}px)`,
                                         transformStyle: "preserve-3d",
                                     }}
                                     initial={{ opacity: 0, scale: 0.5 }}
@@ -100,8 +98,16 @@ export function TvSection() {
                                         damping: 20
                                     }}
                                 >
+                                  <motion.div
+                                    style={{
+                                      transform: `rotateY(${-angle}rad) rotateX(${-rotateX}deg) rotateY(${-rotateY}deg)`,
+                                      transition: 'transform 0.2s ease-out'
+                                    }}
+                                    className="flex flex-col items-center justify-center"
+                                  >
                                     <div className="text-emerald-400">{channel.icon}</div>
                                     <p className="mt-2 text-sm text-center text-white/80">{channel.name}</p>
+                                  </motion.div>
                                 </motion.div>
                             );
                         })}
