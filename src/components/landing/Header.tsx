@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Wifi, ChevronRight, Menu } from "lucide-react";
+import { Wifi, ChevronRight, Menu, User } from "lucide-react";
+import Link from "next/link";
 
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -38,7 +39,13 @@ export function Header() {
           ))}
         </nav>
 
-        <div className="hidden md:block">
+        <div className="hidden items-center gap-2 md:flex">
+          <Link
+            href="/cliente"
+            className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2 font-medium text-white transition-colors hover:bg-white/5"
+          >
+            <User className="h-4 w-4" /> Área do Cliente
+          </Link>
           <a
             href="#planos"
             className="inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-4 py-2 font-medium text-neutral-950 shadow-lg shadow-emerald-400/20 transition-colors hover:bg-emerald-400"
@@ -70,10 +77,17 @@ export function Header() {
                 {item.label}
               </a>
             ))}
+             <Link
+              href="/cliente"
+              onClick={() => setMobileOpen(false)}
+              className="mt-1 inline-flex items-center justify-center gap-2 rounded-lg border border-white/10 px-3 py-2"
+            >
+              <User className="h-4 w-4" /> Área do Cliente
+            </Link>
             <a
               href="#planos"
               onClick={() => setMobileOpen(false)}
-              className="mt-1 inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-500 px-3 py-2 font-medium text-neutral-950"
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-500 px-3 py-2 font-medium text-neutral-950"
             >
               Assine já <ChevronRight className="h-4 w-4" />
             </a>
