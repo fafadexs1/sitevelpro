@@ -1,3 +1,4 @@
+
 "use client";
 
 import { motion } from "framer-motion";
@@ -41,6 +42,16 @@ export function TvSection() {
         setRotateX(0);
         setRotateY(0);
     };
+    
+    // Calculate positions once and memoize
+    const channelPositions = React.useMemo(() => {
+        return channels.map((_, i) => {
+            const angle = (i / channels.length) * 2 * Math.PI;
+            const x = radius * Math.sin(angle);
+            const z = radius * Math.cos(angle);
+            return { x, z, angle };
+        });
+    }, []);
 
   return (
     <section id="tv" className="border-t border-white/5 py-16 sm:py-24">
@@ -77,17 +88,15 @@ export function TvSection() {
                             transition: 'transform 0.2s ease-out'
                         }}
                     >
-                        {channels.map((channel, i) => {
-                            const angle = (i / channels.length) * 2 * Math.PI;
-                            const x = radius * Math.sin(angle);
-                            const z = radius * Math.cos(angle);
-
+                        {channelPositions.map(({ x, z, angle }, i) => {
+                             const zIndex = Math.round(z + radius);
                             return (
                                 <motion.div
                                     key={i}
                                     className="absolute top-1/2 left-1/2 flex flex-col items-center justify-center w-32 h-32 p-4 rounded-2xl bg-neutral-900/60 border border-white/10 shadow-xl"
                                     style={{
                                         transform: `translate3d(${x-64}px, -64px, ${z}px) rotateY(${angle}rad)`,
+                                        zIndex: zIndex,
                                     }}
                                     initial={{ opacity: 0, scale: 0.5 }}
                                     whileInView={{ opacity: 1, scale: 1 }}
@@ -99,8 +108,8 @@ export function TvSection() {
                                         damping: 20
                                     }}
                                 >
-                                    <div className="text-emerald-400">{channel.icon}</div>
-                                    <p className="mt-2 text-sm text-center text-white/80">{channel.name}</p>
+                                    <div className="text-emerald-400">{channels[i].icon}</div>
+                                    <p className="mt-2 text-sm text-center text-white/80">{channels[i].name}</p>
                                 </motion.div>
                             );
                         })}
