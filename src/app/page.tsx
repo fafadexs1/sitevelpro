@@ -3,6 +3,7 @@ import { Hero } from "@/components/landing/Hero";
 import { Plans } from "@/components/landing/Plans";
 import { Coverage } from "@/components/landing/Coverage";
 import { Advantages } from "@/components/landing/Advantages";
+import { Mesh } from "@/components/landing/Mesh";
 import { Ceo } from "@/components/landing/Ceo";
 import { Testimonials } from "@/components/landing/Testimonials";
 import { Faq } from "@/components/landing/Faq";
@@ -26,6 +27,7 @@ export default function Home() {
         <Plans />
         <Coverage />
         <Advantages />
+        <Mesh />
         <Ceo />
         <Testimonials />
         <Faq />
