@@ -79,13 +79,15 @@ export function TvSection() {
                     >
                         {channels.map((channel, i) => {
                             const angle = (i / channels.length) * 2 * Math.PI;
+                            const x = radius * Math.sin(angle);
+                            const z = radius * Math.cos(angle);
 
                             return (
                                 <motion.div
                                     key={i}
-                                    className="absolute top-1/2 left-1/2 -mt-16 -ml-16 flex flex-col items-center justify-center w-32 h-32 p-4 rounded-2xl bg-neutral-900/60 border border-white/10 shadow-xl"
+                                    className="absolute top-1/2 left-1/2 flex flex-col items-center justify-center w-32 h-32 p-4 rounded-2xl bg-neutral-900/60 border border-white/10 shadow-xl"
                                     style={{
-                                        transform: `rotateY(${angle}rad) translateZ(${radius}px)`,
+                                        transform: `translate3d(${x-64}px, -64px, ${z}px) rotateY(${angle}rad)`,
                                     }}
                                     initial={{ opacity: 0, scale: 0.5 }}
                                     whileInView={{ opacity: 1, scale: 1 }}
