@@ -256,15 +256,15 @@ function Dashboard({onLogout}: {onLogout: () => void}) {
         {/* Global unpaid alert per contract */}
         {unpaid && (
           <div className="mb-6 rounded-2xl border border-emerald-400/50 bg-emerald-400/10 p-4 text-emerald-100">
-            <div className="flex items-center justify-between gap-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <Wallet className="h-5 w-5" />
+                <Wallet className="h-5 w-5 flex-shrink-0" />
                 <div>
                   <p className="font-semibold">Fatura em aberto ({unpaid.id}) — {contract.alias}</p>
                   <p className="text-sm opacity-80">Vencimento em {new Date(unpaid.due).toLocaleDateString("pt-BR")}. Valor R$ {unpaid.amount.toFixed(2)}</p>
                 </div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 self-end sm:self-center">
                 {unpaid.pix && (
                   <button onClick={() => setPixModal({ open: true, code: unpaid.pix! })} className="inline-flex items-center gap-2 rounded-lg border border-emerald-400/40 bg-emerald-400/10 px-3 py-1.5 text-sm">
                     <QrCode className="h-4 w-4" /> Copiar PIX
@@ -290,7 +290,7 @@ function Dashboard({onLogout}: {onLogout: () => void}) {
             {activeTab === "overview" && (
               <div className="grid gap-6 lg:grid-cols-3">
                 {/* Quick stats */}
-                <div className="lg:col-span-3 grid gap-4 md:grid-cols-4">
+                <div className="lg:col-span-3 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                   <div className="rounded-2xl border border-white/10 bg-neutral-900/60 p-4">
                     <div className="mb-2 flex items-center gap-2 text-sm text-white/70"><Gauge className="h-4 w-4 text-emerald-300"/> Tráfego do mês</div>
                     <div className="text-2xl font-bold">{contract.usage.downloaded + contract.usage.uploaded} GB</div>
@@ -335,12 +335,12 @@ function Dashboard({onLogout}: {onLogout: () => void}) {
                   </div>
                   <div className="space-y-3">
                     {contract.invoices.slice(0,3).map((f) => (
-                      <div key={f.id} className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-3 py-2">
+                      <div key={f.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-xl border border-white/10 bg-white/5 px-3 py-2 gap-2">
                         <div>
                           <div className="text-sm font-medium">{f.id}</div>
                           <div className="text-xs text-white/60">Venc. {new Date(f.due).toLocaleDateString("pt-BR")} • R$ {f.amount.toFixed(2)}</div>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 self-end sm:self-center">
                           {f.status === "paid" ? (
                             <span className="inline-flex items-center gap-1 rounded-md bg-emerald-500/15 px-2 py-1 text-xs text-emerald-200"><CheckCircle2 className="h-3.5 w-3.5" /> Paga</span>
                           ) : (
@@ -365,8 +365,8 @@ function Dashboard({onLogout}: {onLogout: () => void}) {
                   <div className="space-y-3">
                     {contract.openTickets.map((t) => (
                       <div key={t.id} className="rounded-xl border border-white/10 bg-white/5 p-3">
-                        <div className="flex items-center justify-between text-sm">
-                          <div className="flex items-center gap-2"><Ticket className="h-4 w-4 text-emerald-300" /> <b>{t.id}</b> — {t.subject}</div>
+                        <div className="flex items-start justify-between text-sm gap-2">
+                          <div className="flex items-center gap-2"><Ticket className="h-4 w-4 text-emerald-300 flex-shrink-0" /> <span><b>{t.id}</b> — {t.subject}</span></div>
                           <Pill>{t.status}</Pill>
                         </div>
                         <div className="mt-1 text-xs text-white/60">Aberto em {t.createdAt}</div>
@@ -419,12 +419,12 @@ function Dashboard({onLogout}: {onLogout: () => void}) {
                   ) : (
                     <div className="space-y-3">
                       {contract.invoices.filter(f=>f.status==='unpaid').map(f => (
-                        <div key={f.id} className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-3 py-2">
+                        <div key={f.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-xl border border-white/10 bg-white/5 px-3 py-2 gap-2">
                           <div>
                             <div className="text-sm font-medium">{f.id}</div>
                             <div className="text-xs text-white/60">Venc. {new Date(f.due).toLocaleDateString("pt-BR")} • R$ {f.amount.toFixed(2)}</div>
                           </div>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 self-end sm:self-center">
                             <a href="#" className="inline-flex items-center gap-1 rounded-md border border-white/10 px-2 py-1 text-xs hover:bg-white/5"><Receipt className="h-3.5 w-3.5" /> 2ª via</a>
                             {f.pix && (<button onClick={() => setPixModal({ open: true, code: f.pix! })} className="inline-flex items-center gap-1 rounded-md border border-white/10 px-2 py-1 text-xs hover:bg-white/5"><QrCode className="h-3.5 w-3.5" /> PIX</button>)}
                           </div>
@@ -454,12 +454,12 @@ function Dashboard({onLogout}: {onLogout: () => void}) {
                   <div className="mb-3 text-lg font-semibold">Histórico de faturas</div>
                   <div className="space-y-3">
                     {contract.invoices.map((f) => (
-                      <div key={f.id} className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-3 py-2">
+                      <div key={f.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-xl border border-white/10 bg-white/5 px-3 py-2 gap-2">
                         <div>
                           <div className="text-sm font-medium">{f.id}</div>
                           <div className="text-xs text-white/60">Venc. {new Date(f.due).toLocaleDateString("pt-BR")} • R$ {f.amount.toFixed(2)}</div>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 self-end sm:self-center">
                           {f.status === "paid" ? (
                             <span className="inline-flex items-center gap-1 rounded-md bg-emerald-500/15 px-2 py-1 text-xs text-emerald-200"><CheckCircle2 className="h-3.5 w-3.5" /> Paga</span>
                           ) : (
@@ -467,7 +467,7 @@ function Dashboard({onLogout}: {onLogout: () => void}) {
                           )}
                           <a href="#" className="inline-flex items-center gap-1 rounded-md border border-white/10 px-2 py-1 text-xs hover:bg-white/5"><Receipt className="h-3.5 w-3.5" /> 2ª via</a>
                           {f.status !== "paid" && f.pix && (
-                            <button onClick={() => setPixModal({ open: true, code: f.pix })} className="inline-flex items-center gap-1 rounded-md border border-white/10 px-2 py-1 text-xs hover:bg-white/5"><QrCode className="h-3.5 w-3.5" /> PIX</button>
+                            <button onClick={() => setPixModal({ open: true, code: f.pix! })} className="inline-flex items-center gap-1 rounded-md border border-white/10 px-2 py-1 text-xs hover:bg-white/5"><QrCode className="h-3.5 w-3.5" /> PIX</button>
                           )}
                         </div>
                       </div>
@@ -503,7 +503,7 @@ function Dashboard({onLogout}: {onLogout: () => void}) {
                 <div className="text-white/70">{contract.currentPlan.name} — R$ {contract.currentPlan.price.toFixed(2)}/mês</div>
                 <div className="mt-2 flex items-center gap-2 text-sm text-white/70"><Tv className="h-4 w-4 text-emerald-300"/> {contract.currentPlan.tvPack.name} • {contract.currentPlan.tvPack.channels}+ canais</div>
                 <div className="mt-3 flex flex-wrap gap-2 text-xs">{contract.currentPlan.benefits.map(b=> <Pill key={b}>{b}</Pill>)}</div>
-                <div className="mt-6 grid gap-4 md:grid-cols-3">
+                <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                   {[{ name: "100 Mega + TV Start", price: 79.9, tag: "Econômico" }, { name: "500 Mega + TV Max", price: 129.9, tag: "Performance" }, { name: "1 Giga + TV Ultra", price: 199.9, tag: "Premium" }].map((p) => (
                     <div key={p.name} className="rounded-xl border border-white/10 bg-white/5 p-4">
                       <div className="mb-1 text-xs text-white/60">{p.tag}</div>
@@ -522,7 +522,7 @@ function Dashboard({onLogout}: {onLogout: () => void}) {
               <div className="rounded-2xl border border-white/10 bg-neutral-900/60 p-6">
                 <div className="text-lg font-semibold">Indique e ganhe</div>
                 <p className="mt-1 text-white/70">Convide seus amigos e ganhe desconto na fatura. Compartilhe o link abaixo:</p>
-                <div className="mt-3 rounded-xl border border-white/10 bg-white/5 p-3 text-sm">https://velpro.com.br/indicar?cid={contract.id}</div>
+                <div className="mt-3 rounded-xl border border-white/10 bg-white/5 p-3 text-sm break-all">https://velpro.com.br/indicar?cid={contract.id}</div>
                 <button className="mt-3 inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-1.5 text-sm hover:bg-white/5">
                   <Share2 className="h-4 w-4" /> Copiar link
                 </button>

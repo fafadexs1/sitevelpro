@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster"
 export const metadata: Metadata = {
   title: 'Velpro Telecom',
   description: 'Internet ultrarrápida para tudo que importa.',
+  viewport: 'width=device-width, initial-scale=1',
 };
 
 export default function RootLayout({
