@@ -14,13 +14,8 @@ import { ChatWidget } from "@/components/landing/ChatWidget";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-neutral-950 text-white">
-      {/* Top Glow Background */}
-      <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute -top-24 left-1/2 h-[40rem] w-[40rem] -translate-x-1/2 rounded-full bg-primary/20 blur-3xl" />
-        <div className="absolute bottom-0 right-0 h-72 w-72 translate-x-1/3 translate-y-1/3 rounded-full bg-primary/10 blur-2xl" />
-        <div className="absolute -left-10 top-1/3 h-40 w-40 -rotate-12 rounded-full bg-primary/10 blur-xl" />
-      </div>
+    <div className="min-h-screen bg-transparent text-white">
+      {/* Removemos os glows fixos pois o canvas cuidará do fundo */}
 
       <Header />
       <main>
