@@ -6,12 +6,14 @@ import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { motion, AnimatePresence } from "framer-motion";
-import { User, Mail, Phone, MapPin, Building, Hash, Home, Check, ArrowRight, Loader2, ArrowLeft } from "lucide-react";
+import { User, Mail, Phone, MapPin, Building, Hash, Home, Check, ArrowRight, Loader2, ArrowLeft, LocateFixed } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import Link from "next/link";
 import { Wifi } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+
 
 // =====================================================
 // Schemas de Validação por Etapa
@@ -32,6 +34,8 @@ const stepSchemas = [
     neighborhood: z.string().min(3, "Bairro é obrigatório"),
     city: z.string().min(3, "Cidade é obrigatória"),
     state: z.string().min(2, "Estado é obrigatório"),
+    latitude: z.number().optional(),
+    longitude: z.number().optional(),
   }),
   // Etapa 3: Confirmação (sem validação, apenas exibição)
   z.object({}),
@@ -132,6 +136,8 @@ const Step1 = () => (
 
 const Step2 = ({ form }: { form: any }) => {
     const [loadingCep, setLoadingCep] = useState(false);
+    const [loadingLocation, setLoadingLocation] = useState(false);
+    const { toast } = useToast();
 
     const handleCepLookup = async () => {
         const cep = form.getValues("cep").replace(/\D/g, "");
@@ -152,6 +158,28 @@ const Step2 = ({ form }: { form: any }) => {
         } finally {
             setLoadingCep(false);
         }
+    };
+    
+    const handleGeolocation = () => {
+        if (!navigator.geolocation) {
+            toast({ variant: "destructive", title: "Erro", description: "Geolocalização não é suportada por este navegador."});
+            return;
+        }
+        setLoadingLocation(true);
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const { latitude, longitude } = position.coords;
+                form.setValue("latitude", latitude, { shouldValidate: true });
+                form.setValue("longitude", longitude, { shouldValidate: true });
+                toast({ title: "Sucesso!", description: `Localização obtida: Lat ${latitude.toFixed(4)}, Lon ${longitude.toFixed(4)}` });
+                setLoadingLocation(false);
+            },
+            (error) => {
+                toast({ variant: "destructive", title: "Erro de Localização", description: error.message });
+                setLoadingLocation(false);
+            },
+            { enableHighAccuracy: true }
+        );
     };
 
     return (
@@ -221,6 +249,22 @@ const Step2 = ({ form }: { form: any }) => {
                 </FormItem>
             )} />
         </div>
+        <div className="mt-4 pt-4 border-t border-white/10">
+            <FormLabel>Localização Precisa (Opcional)</FormLabel>
+            <div className="flex items-center gap-4 mt-2">
+                <Button type="button" variant="outline" onClick={handleGeolocation} disabled={loadingLocation}>
+                    {loadingLocation ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <LocateFixed className="h-4 w-4 mr-2" />}
+                    Usar minha localização
+                </Button>
+                <div className="text-xs text-white/60">
+                    <p>Latitude: {form.getValues("latitude")?.toFixed(5) || "--"}</p>
+                    <p>Longitude: {form.getValues("longitude")?.toFixed(5) || "--"}</p>
+                </div>
+            </div>
+            <FormField name="latitude" render={({ field }) => (<FormItem><FormControl><Input type="hidden" {...field} /></FormControl></FormItem>)} />
+            <FormField name="longitude" render={({ field }) => (<FormItem><FormControl><Input type="hidden" {...field} /></FormControl></FormItem>)} />
+            <p className="text-xs text-white/50 mt-2">Ajuda a agilizar a verificação de viabilidade técnica.</p>
+        </div>
     </>
     );
 };
@@ -243,6 +287,9 @@ const Step3 = ({ data }: { data: FormData }) => (
                     <p>{data.street}, {data.number} {data.complement && `- ${data.complement}`}</p>
                     <p>{data.neighborhood}, {data.city} - {data.state}</p>
                     <p><strong>CEP:</strong> {data.cep}</p>
+                    {data.latitude && data.longitude && (
+                        <p><strong>Localização:</strong> Lat: {data.latitude.toFixed(5)}, Lon: {data.longitude.toFixed(5)}</p>
+                    )}
                 </div>
             </div>
         </div>
@@ -370,4 +417,3 @@ export default function SignupPage() {
     </div>
   );
 }
-
