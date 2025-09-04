@@ -2,12 +2,12 @@ import { ShieldCheck, Gauge, Zap, Rocket, Wifi } from "lucide-react";
 
 export function Advantages() {
   const advantages = [
-    { icon: <ShieldCheck className="h-5 w-5 text-emerald-300" />, title: "Estabilidade", desc: "Rede de fibra com backbone redundante e QoS." },
-    { icon: <Gauge className="h-5 w-5 text-emerald-300" />, title: "Baixa latência", desc: "Jogos e chamadas sem travar, com pings baixíssimos." },
-    { icon: <Zap className="h-5 w-5 text-emerald-300" />, title: "Wi‑Fi 6", desc: "Mais alcance, mais dispositivos e menos interferência." },
-    { icon: <Rocket className="h-5 w-5 text-emerald-300" />, title: "Instalação express", desc: "Agendamento rápido e instalação sem complicação." },
-    { icon: <Wifi className="h-5 w-5 text-emerald-300" />, title: "Cobertura inteligente", desc: "Mesh opcional para casas e empresas maiores." },
-    { icon: <ShieldCheck className="h-5 w-5 text-emerald-300" />, title: "Suporte 24/7", desc: "Gente de verdade atendendo quando você precisa." },
+    { icon: <ShieldCheck className="h-5 w-5 text-primary" />, title: "Estabilidade", desc: "Rede de fibra com backbone redundante e QoS." },
+    { icon: <Gauge className="h-5 w-5 text-primary" />, title: "Baixa latência", desc: "Jogos e chamadas sem travar, com pings baixíssimos." },
+    { icon: <Zap className="h-5 w-5 text-primary" />, title: "Wi‑Fi 6", desc: "Mais alcance, mais dispositivos e menos interferência." },
+    { icon: <Rocket className="h-5 w-5 text-primary" />, title: "Instalação express", desc: "Agendamento rápido e instalação sem complicação." },
+    { icon: <Wifi className="h-5 w-5 text-primary" />, title: "Cobertura inteligente", desc: "Mesh opcional para casas e empresas maiores." },
+    { icon: <ShieldCheck className="h-5 w-5 text-primary" />, title: "Suporte 24/7", desc: "Gente de verdade atendendo quando você precisa." },
   ];
 
   return (
@@ -20,7 +20,7 @@ export function Advantages() {
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {advantages.map((item) => (
             <div key={item.title} className="rounded-2xl border border-white/10 bg-neutral-900/60 p-6">
-              <div className="mb-3 grid h-10 w-10 place-items-center rounded-lg bg-emerald-500/15">
+              <div className="mb-3 grid h-10 w-10 place-items-center rounded-lg bg-primary/15">
                 {item.icon}
               </div>
               <h3 className="text-lg font-semibold">{item.title}</h3>

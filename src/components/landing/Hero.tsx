@@ -13,12 +13,12 @@ export function Hero() {
           transition={{ duration: 0.6 }}
           className="space-y-6"
         >
-          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-xs text-emerald-300">
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs text-primary">
             <Zap className="h-3.5 w-3.5" /> Nova geração: Wi‑Fi 6 + Fibra 100%
           </div>
           <h1 className="text-4xl font-black tracking-tight sm:text-5xl lg:text-6xl">
             Internet{" "}
-            <span className="bg-gradient-to-r from-emerald-300 to-emerald-500 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-green-300 to-primary bg-clip-text text-transparent">
               ultrarrápida
             </span>{" "}
             para tudo que importa
@@ -43,11 +43,11 @@ export function Hero() {
           </div>
           <div className="flex items-center gap-6 pt-4 text-sm text-white/70">
             <div className="flex items-center gap-2">
-              <ShieldCheck className="h-4 w-4 text-emerald-300" /> Garantia de
+              <ShieldCheck className="h-4 w-4 text-primary" /> Garantia de
               satisfação
             </div>
             <div className="flex items-center gap-2">
-              <Gauge className="h-4 w-4 text-emerald-300" /> Latência
+              <Gauge className="h-4 w-4 text-primary" /> Latência
               baixíssima
             </div>
           </div>
@@ -60,12 +60,12 @@ export function Hero() {
           className="relative"
         >
           <div className="relative mx-auto aspect-[4/3] w-full max-w-xl rounded-3xl border border-white/10 bg-gradient-to-br from-neutral-900 to-neutral-800 p-4 shadow-2xl">
-            <div className="h-full w-full rounded-2xl bg-[radial-gradient(ellipse_at_top_left,rgba(16,185,129,0.2),transparent_50%),radial-gradient(ellipse_at_bottom_right,rgba(52,211,153,0.2),transparent_50%)] p-6">
+            <div className="h-full w-full rounded-2xl bg-[radial-gradient(ellipse_at_top_left,rgba(4,189,3,0.2),transparent_50%),radial-gradient(ellipse_at_bottom_right,rgba(4,189,3,0.2),transparent_50%)] p-6">
               <div className="grid h-full grid-rows-3 gap-4">
                 <div className="flex items-center justify-between rounded-xl border border-white/10 bg-neutral-900/60 p-4">
                   <div className="flex items-center gap-3">
-                    <div className="grid h-10 w-10 place-items-center rounded-lg bg-emerald-500/20">
-                      <Rocket className="h-5 w-5 text-emerald-300" />
+                    <div className="grid h-10 w-10 place-items-center rounded-lg bg-primary/20">
+                      <Rocket className="h-5 w-5 text-primary" />
                     </div>
                     <div>
                       <p className="text-sm text-white/70">Velocidade média</p>
@@ -83,7 +83,7 @@ export function Hero() {
                     <span>2.3 TB</span>
                   </div>
                   <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
-                    <div className="h-full w-3/4 animate-pulse rounded-full bg-gradient-to-r from-emerald-400 to-emerald-500" />
+                    <div className="h-full w-3/4 animate-pulse rounded-full bg-gradient-to-r from-green-400 to-primary" />
                   </div>
                 </div>
                 <div className="grid grid-cols-3 gap-4">
@@ -92,8 +92,8 @@ export function Hero() {
                       key={tag}
                       className="grid place-items-center rounded-xl border border-white/10 bg-neutral-900/60 p-4 text-center text-sm"
                     >
-                      <div className="mb-2 grid h-8 w-8 place-items-center rounded-md bg-emerald-500/15">
-                        <Zap className="h-4 w-4 text-emerald-300" />
+                      <div className="mb-2 grid h-8 w-8 place-items-center rounded-md bg-primary/15">
+                        <Zap className="h-4 w-4 text-primary" />
                       </div>
                       {tag}
                     </div>

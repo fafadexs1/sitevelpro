@@ -3,19 +3,19 @@ import { Phone, MessageCircle, MapPin } from "lucide-react";
 export function Contact() {
   const contactOptions = [
     {
-      icon: <Phone className="h-5 w-5 text-emerald-300" />,
+      icon: <Phone className="h-5 w-5 text-primary" />,
       title: "Telefone",
       desc: "0800 000 000",
       href: "tel:+5508000000000",
     },
     {
-      icon: <MessageCircle className="h-5 w-5 text-emerald-300" />,
+      icon: <MessageCircle className="h-5 w-5 text-primary" />,
       title: "WhatsApp",
       desc: "Fale com um especialista agora",
       href: "https://wa.me/5500000000000",
     },
     {
-      icon: <MapPin className="h-5 w-5 text-emerald-300" />,
+      icon: <MapPin className="h-5 w-5 text-primary" />,
       title: "Endereço",
       desc: "Av. da Fibra, 1000 — Centro • Sua Cidade",
       href: "#",
@@ -38,7 +38,7 @@ export function Contact() {
               rel={item.href.startsWith('http') ? 'noreferrer' : undefined}
               className="block rounded-2xl border border-white/10 bg-neutral-900/60 p-6 transition-colors hover:border-white/20"
             >
-              <div className="mb-3 grid h-10 w-10 place-items-center rounded-lg bg-emerald-500/15">{item.icon}</div>
+              <div className="mb-3 grid h-10 w-10 place-items-center rounded-lg bg-primary/15">{item.icon}</div>
               <h3 className="text-lg font-semibold">{item.title}</h3>
               <p className="mt-1 text-white/70">{item.desc}</p>
             </a>

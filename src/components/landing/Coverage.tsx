@@ -39,7 +39,7 @@ export function Coverage() {
             value={cep}
             onChange={(e) => setCep(e.target.value)}
             placeholder="Digite seu CEP"
-            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 outline-none placeholder:text-white/40 transition-colors focus:ring-2 focus:ring-emerald-400 sm:max-w-xs"
+            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 outline-none placeholder:text-white/40 transition-colors focus:ring-2 focus:ring-primary sm:max-w-xs"
           />
           <button
             type="submit"
@@ -52,7 +52,7 @@ export function Coverage() {
           <div
             className={`mt-4 max-w-xl rounded-xl border px-4 py-3 ${
               coverage.ok
-                ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-200"
+                ? "border-primary/40 bg-primary/10 text-primary"
                 : "border-yellow-400/40 bg-yellow-400/10 text-yellow-200"
             }`}
           >

@@ -24,9 +24,9 @@ export function Mesh() {
   };
 
   const benefits = [
-    { icon: <Home className="h-5 w-5 text-emerald-300"/>, title: "Cobertura Total", desc: "Sinal forte e estável em todos os cômodos, sem pontos cegos." },
-    { icon: <Share2 className="h-5 w-5 text-emerald-300"/>, title: "Roaming Inteligente", desc: "Seu dispositivo conecta-se ao melhor sinal automaticamente, sem interrupções." },
-    { icon: <Smartphone className="h-5 w-5 text-emerald-300"/>, title: "Fácil de Gerenciar", desc: "Controle toda a sua rede de forma simples através de um aplicativo." },
+    { icon: <Home className="h-5 w-5 text-primary"/>, title: "Cobertura Total", desc: "Sinal forte e estável em todos os cômodos, sem pontos cegos." },
+    { icon: <Share2 className="h-5 w-5 text-primary"/>, title: "Roaming Inteligente", desc: "Seu dispositivo conecta-se ao melhor sinal automaticamente, sem interrupções." },
+    { icon: <Smartphone className="h-5 w-5 text-primary"/>, title: "Fácil de Gerenciar", desc: "Controle toda a sua rede de forma simples através de um aplicativo." },
   ]
 
   return (
@@ -48,7 +48,7 @@ export function Mesh() {
             <div className="mt-8 space-y-6">
               {benefits.map(benefit => (
                 <motion.div key={benefit.title} variants={itemVariants} className="flex gap-4 items-start">
-                  <div className="flex-shrink-0 grid h-10 w-10 place-items-center rounded-lg bg-emerald-500/15">
+                  <div className="flex-shrink-0 grid h-10 w-10 place-items-center rounded-lg bg-primary/15">
                     {benefit.icon}
                   </div>
                   <div>
@@ -61,7 +61,7 @@ export function Mesh() {
              <motion.a 
                 href="#planos"
                 variants={itemVariants}
-                className="mt-8 inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-5 py-3 font-medium text-neutral-950 shadow-lg shadow-emerald-400/20 transition-colors hover:bg-emerald-400"
+                className="mt-8 inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 font-medium text-primary-foreground shadow-lg shadow-primary/20 transition-colors hover:bg-primary/90"
               >
                 Ver planos com Mesh <ChevronRight className="h-4 w-4" />
               </motion.a>
@@ -81,8 +81,8 @@ export function Mesh() {
                 whileHover={{ scale: 1.1, rotate: 5 }}
                 transition={{ type: "spring", stiffness: 300 }}
               >
-                <div className="grid place-items-center w-24 h-24 rounded-full bg-emerald-500/20 border border-emerald-400/50 shadow-lg shadow-emerald-500/20">
-                  <Router className="w-10 h-10 text-emerald-300"/>
+                <div className="grid place-items-center w-24 h-24 rounded-full bg-primary/20 border border-primary/50 shadow-lg shadow-primary/20">
+                  <Router className="w-10 h-10 text-primary"/>
                 </div>
               </motion.div>
               

@@ -105,7 +105,7 @@ function DesktopView() {
                             viewport={{ once: true }}
                             transition={{ delay: i * 0.05, type: "spring", stiffness: 100, damping: 20 }}
                         >
-                            <div className="text-emerald-400">{channel.icon}</div>
+                            <div className="text-primary">{channel.icon}</div>
                             <p className="mt-2 text-sm text-center text-white/80">{channel.name}</p>
                         </motion.div>
                     );
@@ -127,7 +127,7 @@ function MobileView() {
                     viewport={{ once: true, amount: 0.5 }}
                     transition={{ delay: i * 0.05 }}
                 >
-                    <div className="text-emerald-400">{React.cloneElement(channel.icon, { className: "w-7 h-7" })}</div>
+                    <div className="text-primary">{React.cloneElement(channel.icon, { className: "w-7 h-7" })}</div>
                     <p className="mt-2 text-sm text-center text-white/80">{channel.name}</p>
                 </motion.div>
             ))}
@@ -152,7 +152,7 @@ export function TvSection() {
                         </p>
                         <a 
                             href="#planos"
-                            className="mt-8 inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-5 py-3 font-medium text-neutral-950 shadow-lg shadow-emerald-400/20 transition-colors hover:bg-emerald-400"
+                            className="mt-8 inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 font-medium text-primary-foreground shadow-lg shadow-primary/20 transition-colors hover:bg-primary/90"
                         >
                             Conhecer pacotes de TV <ChevronRight className="h-4 w-4" />
                         </a>

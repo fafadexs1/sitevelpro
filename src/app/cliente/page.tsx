@@ -80,7 +80,7 @@ function Pill({ children }: { children: React.ReactNode }) {
 function ProgressBar({ value }: { value: number }) {
   return (
     <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
-      <div className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-emerald-500" style={{ width: `${Math.min(100, Math.max(0, value))}%` }} />
+      <div className="h-full rounded-full bg-gradient-to-r from-green-400 to-primary" style={{ width: `${Math.min(100, Math.max(0, value))}%` }} />
     </div>
   );
 }
@@ -88,12 +88,12 @@ function ProgressBar({ value }: { value: number }) {
 function LightningBG() {
   return (
     <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-      <div className="absolute -top-24 left-1/2 h-[38rem] w-[38rem] -translate-x-1/2 rounded-full bg-emerald-500/20 blur-3xl" />
-      <div className="absolute bottom-0 right-0 h-72 w-72 translate-x-1/3 translate-y-1/3 rounded-full bg-emerald-400/10 blur-2xl" />
+      <div className="absolute -top-24 left-1/2 h-[38rem] w-[38rem] -translate-x-1/2 rounded-full bg-primary/20 blur-3xl" />
+      <div className="absolute bottom-0 right-0 h-72 w-72 translate-x-1/3 translate-y-1/3 rounded-full bg-primary/10 blur-2xl" />
       {[...Array(6)].map((_, i) => (
         <motion.div
           key={i}
-          className="absolute h-0.5 w-40 origin-left bg-emerald-400/70"
+          className="absolute h-0.5 w-40 origin-left bg-primary/70"
           initial={{ opacity: 0, rotate: -10, x: -50, y: 40 * i }}
           animate={{ opacity: [0, 1, 0], x: [0, 20, 100] }}
           transition={{ duration: 1.6, repeat: Infinity, repeatDelay: 1 + i * 0.2, ease: "easeOut" }}
@@ -122,7 +122,7 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
       <LightningBG />
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-8 px-6 py-10">
         <Link href="/" className="flex items-center gap-3">
-          <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-400 text-neutral-950 shadow-lg shadow-emerald-400/20">
+          <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-primary to-green-400 text-neutral-950 shadow-lg shadow-primary/20">
             <Wifi className="h-5 w-5" />
           </div>
           <div>
@@ -134,19 +134,19 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
 
       <div className="mx-auto grid max-w-6xl items-center gap-12 px-6 pb-20 md:grid-cols-2">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-xs text-emerald-300">
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs text-primary">
             <Zap className="h-3.5 w-3.5" /> Internet + TV com suporte 24/7
           </div>
           <h1 className="mt-4 text-4xl font-black tracking-tight md:text-5xl">
-            Bem-vindo à sua <span className="bg-gradient-to-r from-emerald-300 to-emerald-500 bg-clip-text text-transparent">central</span>
+            Bem-vindo à sua <span className="bg-gradient-to-r from-green-300 to-primary bg-clip-text text-transparent">central</span>
           </h1>
           <p className="mt-3 max-w-xl text-white/70">Emita 2ª via, copie PIX, acompanhe faturas e suporte em tempo real. Tudo em um lugar só.</p>
         </motion.div>
 
         <motion.form onSubmit={handleSubmit} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.1 }} className="relative rounded-3xl border border-white/10 bg-neutral-900/60 p-6 shadow-2xl">
           <div className="mb-6 text-center">
-            <div className="mx-auto mb-3 grid h-14 w-14 place-items-center rounded-2xl bg-emerald-500/20">
-              <LogIn className="h-6 w-6 text-emerald-300" />
+            <div className="mx-auto mb-3 grid h-14 w-14 place-items-center rounded-2xl bg-primary/20">
+              <LogIn className="h-6 w-6 text-primary" />
             </div>
             <h2 className="text-xl font-semibold">Entrar</h2>
             <p className="text-sm text-white/60">Acesse com seu CPF/CNPJ e senha</p>
@@ -171,7 +171,7 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
             <a className="hover:text-white" href="#">Esqueci a senha</a>
           </div>
 
-          <button disabled={loading} className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 py-2 font-medium text-neutral-950 hover:bg-emerald-400">
+          <button disabled={loading} className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2 font-medium text-primary-foreground hover:bg-primary/90">
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />} Acessar minha conta
           </button>
 
@@ -212,7 +212,7 @@ function Dashboard({onLogout}: {onLogout: () => void}) {
       <div className="sticky top-0 z-40 border-b border-white/5 bg-neutral-950/70 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3">
           <Link href="/" className="flex items-center gap-3">
-            <div className="grid h-9 w-9 flex-shrink-0 place-items-center rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-400 text-neutral-950 shadow-lg shadow-emerald-400/20">
+            <div className="grid h-9 w-9 flex-shrink-0 place-items-center rounded-xl bg-gradient-to-br from-primary to-green-400 text-primary-foreground shadow-lg shadow-primary/20">
               <Wifi className="h-5 w-5" />
             </div>
             <div className="hidden sm:block">
@@ -231,7 +231,7 @@ function Dashboard({onLogout}: {onLogout: () => void}) {
               <button><Bell className="h-4 w-4 text-white/70" /></button>
               <button><Settings className="h-4 w-4 text-white/70" /></button>
               <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-2 py-1">
-                <div className="grid h-6 w-6 place-items-center rounded-lg bg-emerald-500/20 text-[11px] font-bold">VO</div>
+                <div className="grid h-6 w-6 place-items-center rounded-lg bg-primary/20 text-[11px] font-bold">VO</div>
                 <span className="text-white/80">Olá, Você</span>
               </div>
             </div>
@@ -245,7 +245,7 @@ function Dashboard({onLogout}: {onLogout: () => void}) {
               <button
                 key={t.key}
                 onClick={() => setActiveTab(t.key)}
-                className={`flex-shrink-0 whitespace-nowrap rounded-lg px-3 py-1.5 text-sm transition-colors ${activeTab === t.key ? "bg-emerald-500 text-neutral-950" : "text-white/80 hover:bg-white/5"}`}
+                className={`flex-shrink-0 whitespace-nowrap rounded-lg px-3 py-1.5 text-sm transition-colors ${activeTab === t.key ? "bg-primary text-primary-foreground" : "text-white/80 hover:bg-white/5"}`}
               >
                 {t.label}
               </button>
@@ -257,7 +257,7 @@ function Dashboard({onLogout}: {onLogout: () => void}) {
       <div className="mx-auto max-w-7xl px-4 py-8">
         {/* Global unpaid alert per contract */}
         {unpaid && (
-          <div className="mb-6 rounded-2xl border border-emerald-400/50 bg-emerald-400/10 p-4 text-emerald-100">
+          <div className="mb-6 rounded-2xl border border-primary/50 bg-primary/10 p-4 text-primary">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 <Wallet className="h-5 w-5 flex-shrink-0" />
@@ -268,7 +268,7 @@ function Dashboard({onLogout}: {onLogout: () => void}) {
               </div>
               <div className="flex flex-wrap items-center justify-start gap-2 sm:justify-end">
                 {unpaid.pix && (
-                  <button onClick={() => setPixModal({ open: true, code: unpaid.pix! })} className="inline-flex items-center gap-2 rounded-lg border border-emerald-400/40 bg-emerald-400/10 px-3 py-1.5 text-sm">
+                  <button onClick={() => setPixModal({ open: true, code: unpaid.pix! })} className="inline-flex items-center gap-2 rounded-lg border border-primary/40 bg-primary/10 px-3 py-1.5 text-sm">
                     <QrCode className="h-4 w-4" /> Copiar PIX
                   </button>
                 )}
@@ -294,7 +294,7 @@ function Dashboard({onLogout}: {onLogout: () => void}) {
                 {/* Quick stats */}
                 <div className="lg:col-span-3 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                   <div className="rounded-2xl border border-white/10 bg-neutral-900/60 p-4">
-                    <div className="mb-2 flex items-center gap-2 text-sm text-white/70"><Gauge className="h-4 w-4 text-emerald-300"/> Tráfego do mês</div>
+                    <div className="mb-2 flex items-center gap-2 text-sm text-white/70"><Gauge className="h-4 w-4 text-primary"/> Tráfego do mês</div>
                     <div className="text-2xl font-bold">{contract.usage.downloaded + contract.usage.uploaded} GB</div>
                     <div className="mt-2"><ProgressBar value={usagePct} /></div>
                     <div className="mt-1 text-xs text-white/60">{usagePct}% de {contract.usage.cap} GB</div>
@@ -303,7 +303,7 @@ function Dashboard({onLogout}: {onLogout: () => void}) {
                     <div className="mb-1 text-sm text-white/70">Plano atual</div>
                     <div className="text-lg font-semibold">{contract.currentPlan.name}</div>
                     <div className="text-white/70">R$ {contract.currentPlan.price.toFixed(2)} / mês</div>
-                    <div className="mt-2 flex items-center gap-2 text-sm text-white/70"><Tv className="h-4 w-4 text-emerald-300"/> {contract.currentPlan.tvPack.name} • {contract.currentPlan.tvPack.channels}+ canais</div>
+                    <div className="mt-2 flex items-center gap-2 text-sm text-white/70"><Tv className="h-4 w-4 text-primary"/> {contract.currentPlan.tvPack.name} • {contract.currentPlan.tvPack.channels}+ canais</div>
                   </div>
                   <div className="rounded-2xl border border-white/10 bg-neutral-900/60 p-4">
                     <div className="mb-1 text-sm text-white/70">Faturas pagas (3 últimos meses)</div>
@@ -321,7 +321,7 @@ function Dashboard({onLogout}: {onLogout: () => void}) {
                   <div className="text-xl font-bold">{contract.currentPlan.name}</div>
                   <div className="text-white/70">R$ {contract.currentPlan.price.toFixed(2)} / mês</div>
                   <div className="mt-3 flex flex-wrap gap-2 text-xs">{contract.currentPlan.benefits.map(b=> <Pill key={b}>{b}</Pill>)}</div>
-                  <div className="mt-3 flex items-center gap-2 text-sm text-white/70"><Tv className="h-4 w-4 text-emerald-300"/> {contract.currentPlan.tvPack.name} • {contract.currentPlan.tvPack.channels}+ canais</div>
+                  <div className="mt-3 flex items-center gap-2 text-sm text-white/70"><Tv className="h-4 w-4 text-primary"/> {contract.currentPlan.tvPack.name} • {contract.currentPlan.tvPack.channels}+ canais</div>
                   <div className="mt-4 flex flex-wrap gap-2">
                     <button onClick={() => setActiveTab('contract')} className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-1.5 text-sm hover:bg-white/5"><FileText className="h-4 w-4"/> Ver contrato</button>
                     <button onClick={() => setActiveTab('friends')} className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-1.5 text-sm hover:bg-white/5"><Share2 className="h-4 w-4"/> Indicar amigo</button>
@@ -344,7 +344,7 @@ function Dashboard({onLogout}: {onLogout: () => void}) {
                         </div>
                         <div className="flex items-center gap-2">
                           {f.status === "paid" ? (
-                            <span className="inline-flex items-center gap-1 rounded-md bg-emerald-500/15 px-2 py-1 text-xs text-emerald-200"><CheckCircle2 className="h-3.5 w-3.5" /> Paga</span>
+                            <span className="inline-flex items-center gap-1 rounded-md bg-green-500/15 px-2 py-1 text-xs text-green-200"><CheckCircle2 className="h-3.5 w-3.5" /> Paga</span>
                           ) : (
                             <span className="inline-flex items-center gap-1 rounded-md bg-red-500/15 px-2 py-1 text-xs text-red-200"><XCircle className="h-3.5 w-3.5" /> Em aberto</span>
                           )}
@@ -368,7 +368,7 @@ function Dashboard({onLogout}: {onLogout: () => void}) {
                     {contract.openTickets.map((t) => (
                       <div key={t.id} className="rounded-xl border border-white/10 bg-white/5 p-3">
                         <div className="flex items-start justify-between text-sm gap-2">
-                          <div className="flex items-center gap-2"><Ticket className="h-4 w-4 text-emerald-300 flex-shrink-0" /> <span><b>{t.id}</b> — {t.subject}</span></div>
+                          <div className="flex items-center gap-2"><Ticket className="h-4 w-4 text-primary flex-shrink-0" /> <span><b>{t.id}</b> — {t.subject}</span></div>
                           <Pill>{t.status}</Pill>
                         </div>
                         <div className="mt-1 text-xs text-white/60">Aberto em {t.createdAt}</div>
@@ -391,7 +391,7 @@ function Dashboard({onLogout}: {onLogout: () => void}) {
                     {contract.openTickets.map((t) => (
                       <div key={t.id} className="rounded-xl border border-white/10 bg-white/5 p-3">
                         <div className="flex items-center justify-between text-sm">
-                          <div className="flex items-center gap-2"><Ticket className="h-4 w-4 text-emerald-300" /> <b>{t.id}</b> — {t.subject}</div>
+                          <div className="flex items-center gap-2"><Ticket className="h-4 w-4 text-primary" /> <b>{t.id}</b> — {t.subject}</div>
                           <Pill>{t.status}</Pill>
                         </div>
                         <div className="mt-1 text-xs text-white/60">Aberto em {t.createdAt}</div>
@@ -463,7 +463,7 @@ function Dashboard({onLogout}: {onLogout: () => void}) {
                         </div>
                         <div className="flex items-center gap-2">
                           {f.status === "paid" ? (
-                            <span className="inline-flex items-center gap-1 rounded-md bg-emerald-500/15 px-2 py-1 text-xs text-emerald-200"><CheckCircle2 className="h-3.5 w-3.5" /> Paga</span>
+                            <span className="inline-flex items-center gap-1 rounded-md bg-green-500/15 px-2 py-1 text-xs text-green-200"><CheckCircle2 className="h-3.5 w-3.5" /> Paga</span>
                           ) : (
                             <span className="inline-flex items-center gap-1 rounded-md bg-red-500/15 px-2 py-1 text-xs text-red-200"><XCircle className="h-3.5 w-3.5" /> Em aberto</span>
                           )}
@@ -503,7 +503,7 @@ function Dashboard({onLogout}: {onLogout: () => void}) {
                 <div className="mb-1 text-sm text-white/60">{contract.alias}</div>
                 <div className="text-lg font-semibold">Plano atual</div>
                 <div className="text-white/70">{contract.currentPlan.name} — R$ {contract.currentPlan.price.toFixed(2)}/mês</div>
-                <div className="mt-2 flex items-center gap-2 text-sm text-white/70"><Tv className="h-4 w-4 text-emerald-300"/> {contract.currentPlan.tvPack.name} • {contract.currentPlan.tvPack.channels}+ canais</div>
+                <div className="mt-2 flex items-center gap-2 text-sm text-white/70"><Tv className="h-4 w-4 text-primary"/> {contract.currentPlan.tvPack.name} • {contract.currentPlan.tvPack.channels}+ canais</div>
                 <div className="mt-3 flex flex-wrap gap-2 text-xs">{contract.currentPlan.benefits.map(b=> <Pill key={b}>{b}</Pill>)}</div>
                 <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                   {[{ name: "100 Mega + TV Start", price: 79.9, tag: "Econômico" }, { name: "500 Mega + TV Max", price: 129.9, tag: "Performance" }, { name: "1 Giga + TV Ultra", price: 199.9, tag: "Premium" }].map((p) => (
@@ -511,7 +511,7 @@ function Dashboard({onLogout}: {onLogout: () => void}) {
                       <div className="mb-1 text-xs text-white/60">{p.tag}</div>
                       <div className="text-lg font-semibold">{p.name}</div>
                       <div className="text-white/70">R$ {p.price.toFixed(2)} / mês</div>
-                      <button className="mt-3 inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-3 py-1.5 text-sm text-neutral-950 hover:bg-emerald-400">
+                      <button className="mt-3 inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-1.5 text-sm text-primary-foreground hover:bg-primary/90">
                         Solicitar upgrade <ChevronRight className="h-4 w-4" />
                       </button>
                     </div>
@@ -557,7 +557,7 @@ function Dashboard({onLogout}: {onLogout: () => void}) {
           <motion.div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 20, opacity: 0 }} className="w-full max-w-lg rounded-2xl border border-white/10 bg-neutral-900 p-6">
               <div className="mb-4 flex items-center justify-between">
-                <div className="flex items-center gap-2 text-lg font-semibold"><QrCode className="h-5 w-5 text-emerald-300" /> Código PIX</div>
+                <div className="flex items-center gap-2 text-lg font-semibold"><QrCode className="h-5 w-5 text-primary" /> Código PIX</div>
                 <button onClick={() => setPixModal({ open: false, code: null })} className="rounded-lg border border-white/10 p-1 text-white/70 hover:bg-white/5"><XCircle className="h-4 w-4" /></button>
               </div>
               <div className="rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white/80 select-all break-all">
@@ -585,7 +585,7 @@ function Dashboard({onLogout}: {onLogout: () => void}) {
 export default function ClientAreaApp() {
   const [logged, setLogged] = useState(false);
   return (
-    <div className="min-h-screen bg-neutral-950 text-white selection:bg-emerald-400/30 selection:text-emerald-100">
+    <div className="min-h-screen bg-neutral-950 text-white selection:bg-primary/30 selection:text-green-100">
       {logged ? <Dashboard onLogout={() => setLogged(false)} /> : <LoginScreen onLogin={() => setLogged(true)} />}
     </div>
   );

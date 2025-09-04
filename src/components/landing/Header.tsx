@@ -20,7 +20,7 @@ export function Header() {
     <header className="sticky top-0 z-40 border-b border-white/5 bg-neutral-950/60 backdrop-blur supports-[backdrop-filter]:bg-neutral-950/60">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
         <a href="#home" className="group flex items-center gap-3">
-          <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-400 text-neutral-950 shadow-lg shadow-emerald-400/20">
+          <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-primary to-green-400 text-neutral-950 shadow-lg shadow-primary/20">
             <Wifi className="h-5 w-5" />
           </div>
           <div>
@@ -48,7 +48,7 @@ export function Header() {
           </Link>
           <a
             href="#planos"
-            className="inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-4 py-2 font-medium text-neutral-950 shadow-lg shadow-emerald-400/20 transition-colors hover:bg-emerald-400"
+            className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 font-medium text-primary-foreground shadow-lg shadow-primary/20 transition-colors hover:bg-primary/90"
           >
             Assine já <ChevronRight className="h-4 w-4" />
           </a>
@@ -87,7 +87,7 @@ export function Header() {
             <a
               href="#planos"
               onClick={() => setMobileOpen(false)}
-              className="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-500 px-3 py-2 font-medium text-neutral-950"
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-3 py-2 font-medium text-primary-foreground"
             >
               Assine já <ChevronRight className="h-4 w-4" />
             </a>

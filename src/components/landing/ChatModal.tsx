@@ -83,7 +83,7 @@ export function ChatModal({
       <DialogContent className="bg-neutral-950 border-white/10 text-white max-w-md p-0">
         <DialogHeader className="p-6 pb-2">
           <DialogTitle className="flex items-center gap-2 text-white">
-            <Wifi className="text-emerald-400" />
+            <Wifi className="text-primary" />
             Suporte Velpro
           </DialogTitle>
           <DialogDescription className="text-white/60">
@@ -103,7 +103,7 @@ export function ChatModal({
                 >
                   {message.role === "bot" && (
                     <Avatar className="h-8 w-8">
-                      <AvatarFallback className="bg-emerald-500/20 text-emerald-300">
+                      <AvatarFallback className="bg-primary/20 text-primary">
                         <Wifi className="h-4 w-4" />
                       </AvatarFallback>
                     </Avatar>
@@ -112,7 +112,7 @@ export function ChatModal({
                     className={cn(
                       "p-3 rounded-lg max-w-[80%] text-sm",
                       message.role === "user"
-                        ? "bg-emerald-500 text-neutral-950"
+                        ? "bg-primary text-primary-foreground"
                         : "bg-neutral-800 text-white/90"
                     )}
                   >
@@ -130,7 +130,7 @@ export function ChatModal({
               {isLoading && (
                  <div className="flex items-start gap-3 justify-start">
                     <Avatar className="h-8 w-8">
-                      <AvatarFallback className="bg-emerald-500/20 text-emerald-300">
+                      <AvatarFallback className="bg-primary/20 text-primary">
                         <Wifi className="h-4 w-4" />
                       </AvatarFallback>
                     </Avatar>
@@ -148,10 +148,10 @@ export function ChatModal({
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Digite sua pergunta..."
-              className="flex-grow rounded-lg border-white/10 bg-neutral-900 focus:ring-emerald-500"
+              className="flex-grow rounded-lg border-white/10 bg-neutral-900 focus:ring-primary"
               disabled={isLoading}
             />
-            <Button type="submit" size="icon" className="bg-emerald-500 hover:bg-emerald-400 text-neutral-950" disabled={isLoading}>
+            <Button type="submit" size="icon" className="bg-primary hover:bg-primary/90 text-primary-foreground" disabled={isLoading}>
               <Send className="h-4 w-4" />
               <span className="sr-only">Enviar</span>
             </Button>

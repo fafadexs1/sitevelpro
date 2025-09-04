@@ -42,7 +42,7 @@ export function Plans() {
                 key={opt.k}
                 onClick={() => setPlanType(opt.k)}
                 className={`rounded-lg px-3 py-2 transition-colors ${
-                  planType === opt.k ? "bg-emerald-500 text-neutral-950" : "text-white/80 hover:bg-white/5"
+                  planType === opt.k ? "bg-primary text-primary-foreground" : "text-white/80 hover:bg-white/5"
                 }`}
               >
                 {opt.label}
@@ -59,19 +59,19 @@ export function Plans() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: i * 0.05 }}
               className={`relative flex flex-col rounded-2xl border ${
-                p.highlight ? "border-emerald-400/60" : "border-white/10"
+                p.highlight ? "border-primary/60" : "border-white/10"
               } bg-neutral-900/60 p-6 shadow-xl`}
             >
               {p.highlight && (
-                <div className="absolute -top-3 left-6 rounded-full border border-emerald-400/50 bg-emerald-400/10 px-2 py-0.5 text-xs text-emerald-300">
+                <div className="absolute -top-3 left-6 rounded-full border border-primary/50 bg-primary/10 px-2 py-0.5 text-xs text-primary">
                   Mais popular
                 </div>
               )}
               <div className="flex-grow">
                 <div className="mb-4 flex items-center justify-between">
                   <h3 className="text-xl font-semibold">{p.speed}</h3>
-                  <div className="grid h-9 w-9 place-items-center rounded-lg bg-emerald-500/15">
-                    <Gauge className="h-5 w-5 text-emerald-300" />
+                  <div className="grid h-9 w-9 place-items-center rounded-lg bg-primary/15">
+                    <Gauge className="h-5 w-5 text-primary" />
                   </div>
                 </div>
                 <div className="mb-4 flex items-end gap-1">
@@ -81,7 +81,7 @@ export function Plans() {
                 <ul className="mb-6 space-y-2 text-sm">
                   {p.features.map((f) => (
                     <li key={f} className="flex items-start gap-2">
-                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" />
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                       <span className="text-white/80">{f}</span>
                     </li>
                   ))}
@@ -89,7 +89,7 @@ export function Plans() {
               </div>
               <a
                 href="#contato"
-                className="mt-auto inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 py-2 font-medium text-neutral-950 transition-colors hover:bg-emerald-400"
+                className="mt-auto inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
               >
                 Assinar <ChevronRight className="h-4 w-4" />
               </a>
