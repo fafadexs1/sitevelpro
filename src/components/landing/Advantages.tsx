@@ -1,6 +1,17 @@
+"use client"
 import { ShieldCheck, Gauge, Zap, Rocket, Wifi } from "lucide-react";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Card, CardContent } from "@/components/ui/card";
 
 export function Advantages() {
+  const isMobile = useIsMobile();
   const advantages = [
     { icon: <ShieldCheck className="h-5 w-5 text-primary" />, title: "Estabilidade", desc: "Rede de fibra com backbone redundante e QoS." },
     { icon: <Gauge className="h-5 w-5 text-primary" />, title: "Baixa latência", desc: "Jogos e chamadas sem travar, com pings baixíssimos." },
@@ -17,17 +28,41 @@ export function Advantages() {
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Por que Velpro?</h2>
           <p className="mt-2 text-white/70">Tecnologia de ponta, atendimento humano e performance real no seu dia a dia.</p>
         </div>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {advantages.map((item) => (
-            <div key={item.title} className="rounded-2xl border border-white/10 bg-neutral-900/60 p-6">
-              <div className="mb-3 grid h-10 w-10 place-items-center rounded-lg bg-primary/15">
-                {item.icon}
+        {isMobile ? (
+          <Carousel opts={{ loop: true }} className="w-full">
+            <CarouselContent>
+              {advantages.map((item) => (
+                <CarouselItem key={item.title}>
+                  <div className="p-1">
+                    <Card className="rounded-2xl border-white/10 bg-neutral-900/60 p-6 h-full">
+                      <CardContent className="flex flex-col items-start p-0 gap-3 justify-center">
+                        <div className="grid h-10 w-10 place-items-center rounded-lg bg-primary/15">
+                          {item.icon}
+                        </div>
+                        <h3 className="text-lg font-semibold">{item.title}</h3>
+                        <p className="mt-1 text-white/70">{item.desc}</p>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious className="hidden sm:flex" />
+            <CarouselNext className="hidden sm:flex" />
+          </Carousel>
+        ) : (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {advantages.map((item) => (
+              <div key={item.title} className="rounded-2xl border border-white/10 bg-neutral-900/60 p-6">
+                <div className="mb-3 grid h-10 w-10 place-items-center rounded-lg bg-primary/15">
+                  {item.icon}
+                </div>
+                <h3 className="text-lg font-semibold">{item.title}</h3>
+                <p className="mt-1 text-white/70">{item.desc}</p>
               </div>
-              <h3 className="text-lg font-semibold">{item.title}</h3>
-              <p className="mt-1 text-white/70">{item.desc}</p>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
