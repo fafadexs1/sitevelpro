@@ -47,8 +47,8 @@ export function Advantages() {
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious className="hidden sm:flex" />
-            <CarouselNext className="hidden sm:flex" />
+            <CarouselPrevious />
+            <CarouselNext />
           </Carousel>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

@@ -47,8 +47,8 @@ export function Testimonials() {
                 </CarouselItem>
               ))}
             </CarouselContent>
-             <CarouselPrevious className="hidden sm:flex" />
-            <CarouselNext className="hidden sm:flex" />
+            <CarouselPrevious />
+            <CarouselNext />
           </Carousel>
         ) : (
           <div className="grid gap-6 md:grid-cols-3">
