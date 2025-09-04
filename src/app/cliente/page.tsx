@@ -256,7 +256,7 @@ function Dashboard({onLogout}: {onLogout: () => void}) {
         {/* Global unpaid alert per contract */}
         {unpaid && (
           <div className="mb-6 rounded-2xl border border-emerald-400/50 bg-emerald-400/10 p-4 text-emerald-100">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 <Wallet className="h-5 w-5 flex-shrink-0" />
                 <div>
@@ -264,7 +264,7 @@ function Dashboard({onLogout}: {onLogout: () => void}) {
                   <p className="text-sm opacity-80">Vencimento em {new Date(unpaid.due).toLocaleDateString("pt-BR")}. Valor R$ {unpaid.amount.toFixed(2)}</p>
                 </div>
               </div>
-              <div className="flex gap-2 self-end sm:self-center">
+              <div className="flex flex-wrap gap-2">
                 {unpaid.pix && (
                   <button onClick={() => setPixModal({ open: true, code: unpaid.pix! })} className="inline-flex items-center gap-2 rounded-lg border border-emerald-400/40 bg-emerald-400/10 px-3 py-1.5 text-sm">
                     <QrCode className="h-4 w-4" /> Copiar PIX
@@ -335,12 +335,12 @@ function Dashboard({onLogout}: {onLogout: () => void}) {
                   </div>
                   <div className="space-y-3">
                     {contract.invoices.slice(0,3).map((f) => (
-                      <div key={f.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-xl border border-white/10 bg-white/5 px-3 py-2 gap-2">
+                      <div key={f.id} className="flex flex-wrap items-center justify-between rounded-xl border border-white/10 bg-white/5 px-3 py-2 gap-2">
                         <div>
                           <div className="text-sm font-medium">{f.id}</div>
                           <div className="text-xs text-white/60">Venc. {new Date(f.due).toLocaleDateString("pt-BR")} • R$ {f.amount.toFixed(2)}</div>
                         </div>
-                        <div className="flex items-center gap-2 self-end sm:self-center">
+                        <div className="flex items-center gap-2">
                           {f.status === "paid" ? (
                             <span className="inline-flex items-center gap-1 rounded-md bg-emerald-500/15 px-2 py-1 text-xs text-emerald-200"><CheckCircle2 className="h-3.5 w-3.5" /> Paga</span>
                           ) : (
@@ -419,12 +419,12 @@ function Dashboard({onLogout}: {onLogout: () => void}) {
                   ) : (
                     <div className="space-y-3">
                       {contract.invoices.filter(f=>f.status==='unpaid').map(f => (
-                        <div key={f.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-xl border border-white/10 bg-white/5 px-3 py-2 gap-2">
+                        <div key={f.id} className="flex flex-wrap items-center justify-between rounded-xl border border-white/10 bg-white/5 px-3 py-2 gap-2">
                           <div>
                             <div className="text-sm font-medium">{f.id}</div>
                             <div className="text-xs text-white/60">Venc. {new Date(f.due).toLocaleDateString("pt-BR")} • R$ {f.amount.toFixed(2)}</div>
                           </div>
-                          <div className="flex items-center gap-2 self-end sm:self-center">
+                          <div className="flex items-center gap-2">
                             <a href="#" className="inline-flex items-center gap-1 rounded-md border border-white/10 px-2 py-1 text-xs hover:bg-white/5"><Receipt className="h-3.5 w-3.5" /> 2ª via</a>
                             {f.pix && (<button onClick={() => setPixModal({ open: true, code: f.pix! })} className="inline-flex items-center gap-1 rounded-md border border-white/10 px-2 py-1 text-xs hover:bg-white/5"><QrCode className="h-3.5 w-3.5" /> PIX</button>)}
                           </div>
@@ -454,12 +454,12 @@ function Dashboard({onLogout}: {onLogout: () => void}) {
                   <div className="mb-3 text-lg font-semibold">Histórico de faturas</div>
                   <div className="space-y-3">
                     {contract.invoices.map((f) => (
-                      <div key={f.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-xl border border-white/10 bg-white/5 px-3 py-2 gap-2">
+                      <div key={f.id} className="flex flex-wrap items-center justify-between rounded-xl border border-white/10 bg-white/5 px-3 py-2 gap-2">
                         <div>
                           <div className="text-sm font-medium">{f.id}</div>
                           <div className="text-xs text-white/60">Venc. {new Date(f.due).toLocaleDateString("pt-BR")} • R$ {f.amount.toFixed(2)}</div>
                         </div>
-                        <div className="flex items-center gap-2 self-end sm:self-center">
+                        <div className="flex items-center gap-2">
                           {f.status === "paid" ? (
                             <span className="inline-flex items-center gap-1 rounded-md bg-emerald-500/15 px-2 py-1 text-xs text-emerald-200"><CheckCircle2 className="h-3.5 w-3.5" /> Paga</span>
                           ) : (
