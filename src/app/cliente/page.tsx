@@ -210,40 +210,42 @@ function Dashboard({onLogout}: {onLogout: () => void}) {
     <div className="min-h-screen bg-neutral-950 text-white">
       {/* Top bar */}
       <div className="sticky top-0 z-40 border-b border-white/5 bg-neutral-950/70 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3">
           <Link href="/" className="flex items-center gap-3">
-            <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-400 text-neutral-950 shadow-lg shadow-emerald-400/20">
+            <div className="grid h-9 w-9 flex-shrink-0 place-items-center rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-400 text-neutral-950 shadow-lg shadow-emerald-400/20">
               <Wifi className="h-5 w-5" />
             </div>
-            <div>
+            <div className="hidden sm:block">
               <p className="text-sm font-semibold leading-none">Velpro • Área do Cliente</p>
               <p className="text-[11px] text-white/60">Internet + TV</p>
             </div>
           </Link>
-          <div className="flex items-center gap-3 text-sm">
+          <div className="flex flex-1 items-center justify-end gap-3 text-sm">
             {/* Contract selector */}
-            <select value={selectedContractId} onChange={(e) => setSelectedContractId(e.target.value)} className="rounded-lg border border-white/10 bg-white/5 px-2 py-1 outline-none">
+            <select value={selectedContractId} onChange={(e) => setSelectedContractId(e.target.value)} className="max-w-[150px] truncate rounded-lg border border-white/10 bg-white/5 px-2 py-1.5 outline-none sm:max-w-xs">
               {contracts.map(c => (
                 <option key={c.id} value={c.id}>{c.alias}</option>
               ))}
             </select>
-            <button><Bell className="h-4 w-4 text-white/70" /></button>
-            <button><Settings className="h-4 w-4 text-white/70" /></button>
-            <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-2 py-1">
-              <div className="grid h-6 w-6 place-items-center rounded-lg bg-emerald-500/20 text-[11px] font-bold">VO</div>
-              <span className="text-white/80">Olá, Você</span>
+            <div className="hidden items-center gap-2 sm:flex">
+              <button><Bell className="h-4 w-4 text-white/70" /></button>
+              <button><Settings className="h-4 w-4 text-white/70" /></button>
+              <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-2 py-1">
+                <div className="grid h-6 w-6 place-items-center rounded-lg bg-emerald-500/20 text-[11px] font-bold">VO</div>
+                <span className="text-white/80">Olá, Você</span>
+              </div>
             </div>
              <button onClick={onLogout} className="text-white/70 hover:text-white">Sair</button>
           </div>
         </div>
         {/* Top horizontal menu */}
-        <div className="mx-auto max-w-7xl overflow-x-auto px-2">
+        <div className="mx-auto max-w-7xl overflow-x-auto px-4">
           <nav className="flex gap-2 border-t border-white/5 py-2">
             {TABS.map(t => (
               <button
                 key={t.key}
                 onClick={() => setActiveTab(t.key)}
-                className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-sm ${activeTab === t.key ? "bg-emerald-500 text-neutral-950" : "text-white/80 hover:bg-white/5"}`}
+                className={`flex-shrink-0 whitespace-nowrap rounded-lg px-3 py-1.5 text-sm transition-colors ${activeTab === t.key ? "bg-emerald-500 text-neutral-950" : "text-white/80 hover:bg-white/5"}`}
               >
                 {t.label}
               </button>
@@ -264,7 +266,7 @@ function Dashboard({onLogout}: {onLogout: () => void}) {
                   <p className="text-sm opacity-80">Vencimento em {new Date(unpaid.due).toLocaleDateString("pt-BR")}. Valor R$ {unpaid.amount.toFixed(2)}</p>
                 </div>
               </div>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap items-center justify-start gap-2 sm:justify-end">
                 {unpaid.pix && (
                   <button onClick={() => setPixModal({ open: true, code: unpaid.pix! })} className="inline-flex items-center gap-2 rounded-lg border border-emerald-400/40 bg-emerald-400/10 px-3 py-1.5 text-sm">
                     <QrCode className="h-4 w-4" /> Copiar PIX
