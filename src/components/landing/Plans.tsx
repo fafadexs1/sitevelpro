@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Gauge, Check, ChevronRight, MessageCircle, Globe } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import Link from 'next/link';
 import {
   Carousel,
   CarouselContent,
@@ -136,29 +137,30 @@ export function Plans() {
         )}
       </div>
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="bg-neutral-950 border-white/10 text-white max-w-md">
+        <DialogContent className="bg-neutral-950 border-white/10 text-white max-w-md sm:max-w-sm">
           <DialogHeader>
             <DialogTitle>Como você prefere assinar?</DialogTitle>
             <DialogDescription>
               Escolha a opção mais conveniente para você. Nossa equipe está pronta para te atender.
             </DialogDescription>
           </DialogHeader>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <a href="https://wa.me/5500000000000" target="_blank" rel="noreferrer" className="w-full">
-                <Button variant="outline" className="w-full border-primary/40 bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary">
+          <div className="flex flex-col gap-3">
+            <Button asChild variant="outline" className="border-primary/40 bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary">
+                <a href="https://wa.me/5500000000000" target="_blank" rel="noreferrer">
                     <MessageCircle className="h-4 w-4 mr-2" />
                     Conversar no WhatsApp
-                </Button>
-            </a>
-            <a href="#contato" onClick={() => setIsModalOpen(false)}>
-                <Button className="w-full">
+                </a>
+            </Button>
+            <Button asChild>
+                <Link href="/assinar" onClick={() => setIsModalOpen(false)}>
                     <Globe className="h-4 w-4 mr-2" />
                     Continuar pelo Site
-                </Button>
-            </a>
+                </Link>
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
     </section>
   );
 }
+
