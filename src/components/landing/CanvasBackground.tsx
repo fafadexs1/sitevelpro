@@ -1,11 +1,15 @@
 "use client";
 
 import React, { useEffect, useRef } from 'react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export function CanvasBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
+    if (isMobile) return;
+
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -133,7 +137,13 @@ export function CanvasBackground() {
       window.removeEventListener("resize", resize);
       cancelAnimationFrame(animationFrameId);
     }
-  }, []);
+  }, [isMobile]);
+
+  if (isMobile) {
+    return (
+        <div className="canvas-background-wrapper" style={{ backgroundColor: 'black' }} />
+    )
+  }
 
   return (
     <>
@@ -146,7 +156,6 @@ export function CanvasBackground() {
           height: 100vh;
           z-index: -20;
           pointer-events: none;
-          background-color: black;
         }
         canvas#canvasBg {
           width: 100%;

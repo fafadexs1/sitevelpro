@@ -15,8 +15,6 @@ import { ChatWidget } from "@/components/landing/ChatWidget";
 export default function Home() {
   return (
     <div className="min-h-screen bg-transparent text-white">
-      {/* Removemos os glows fixos pois o canvas cuidará do fundo */}
-
       <Header />
       <main>
         <Hero />
