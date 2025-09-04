@@ -322,7 +322,18 @@ const SuccessScreen = () => (
 
 export default function SignupPage() {
   const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState<Partial<FormData>>({});
+  const [formData, setFormData] = useState<Partial<FormData>>({
+    fullName: '',
+    email: '',
+    phone: '',
+    cep: '',
+    street: '',
+    number: '',
+    complement: '',
+    neighborhood: '',
+    city: '',
+    state: '',
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
