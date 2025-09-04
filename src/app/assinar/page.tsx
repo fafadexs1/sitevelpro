@@ -33,7 +33,7 @@ const stepSchemas = [
     street: z.string().min(3, "Rua é obrigatória"),
     number: z.string().min(1, "Número é obrigatório"),
     complement: z.string().optional(),
-    neighborhood: z-string().min(3, "Bairro é obrigatório"),
+    neighborhood: z.string().min(3, "Bairro é obrigatório"),
     city: z.string().min(3, "Cidade é obrigatória"),
     state: z.string().min(2, "Estado é obrigatório"),
     latitude: z.number().optional(),
@@ -452,3 +452,5 @@ export default function SignupPage() {
     </div>
   );
 }
+
+    
