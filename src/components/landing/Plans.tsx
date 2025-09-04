@@ -3,7 +3,7 @@
 
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Gauge, Check, ChevronRight } from "lucide-react";
+import { Gauge, Check, ChevronRight, MessageCircle, Globe } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
   Carousel,
@@ -12,10 +12,18 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { Card, CardContent } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 export function Plans() {
   const [planType, setPlanType] = useState<"residencial" | "empresarial">("residencial");
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const isMobile = useIsMobile();
 
   const plans = useMemo(() => {
@@ -69,12 +77,12 @@ export function Plans() {
           ))}
         </ul>
       </div>
-      <a
-        href="#contato"
+      <Button
+        onClick={() => setIsModalOpen(true)}
         className="mt-auto inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
       >
         Assinar <ChevronRight className="h-4 w-4" />
-      </a>
+      </Button>
     </motion.div>
   )
 
@@ -127,6 +135,30 @@ export function Plans() {
           </div>
         )}
       </div>
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="bg-neutral-950 border-white/10 text-white max-w-md">
+          <DialogHeader>
+            <DialogTitle>Como você prefere assinar?</DialogTitle>
+            <DialogDescription>
+              Escolha a opção mais conveniente para você. Nossa equipe está pronta para te atender.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <a href="https://wa.me/5500000000000" target="_blank" rel="noreferrer" className="w-full">
+                <Button variant="outline" className="w-full border-primary/40 bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary">
+                    <MessageCircle className="h-4 w-4 mr-2" />
+                    Conversar no WhatsApp
+                </Button>
+            </a>
+            <a href="#contato" onClick={() => setIsModalOpen(false)}>
+                <Button className="w-full">
+                    <Globe className="h-4 w-4 mr-2" />
+                    Continuar pelo Site
+                </Button>
+            </a>
+          </div>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }
