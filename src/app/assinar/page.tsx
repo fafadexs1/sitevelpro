@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm, FormProvider, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Link from "next/link";
 import { Wifi } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -34,7 +35,7 @@ const stepSchemas = [
     number: z.string().min(1, "Número é obrigatório"),
     complement: z.string().optional(),
     neighborhood: z.string().min(3, "Bairro é obrigatório"),
-    city: z.string().min(3, "Cidade é obrigatória"),
+    city: z.string().min(1, "Cidade é obrigatória"),
     state: z.string().min(2, "Estado é obrigatório"),
     latitude: z.number().optional(),
     longitude: z.number().optional(),
@@ -47,6 +48,11 @@ const stepSchemas = [
 ];
 
 type FormData = z.infer<typeof stepSchemas[0]> & z.infer<typeof stepSchemas[1]>;
+
+// Tipos para API do IBGE
+interface UF { id: number; sigla: string; nome: string; }
+interface City { id: number; nome: string; }
+
 
 // =====================================================
 // Componentes da UI do Formulário
@@ -145,6 +151,34 @@ const Step2 = ({ form }: { form: any }) => {
     const { toast } = useToast();
     const dontKnowCep = useWatch({ control: form.control, name: "dontKnowCep" });
 
+    const [ufs, setUfs] = useState<UF[]>([]);
+    const [cities, setCities] = useState<City[]>([]);
+    const [loadingUfs, setLoadingUfs] = useState(false);
+    const [loadingCities, setLoadingCities] = useState(false);
+
+    const selectedUf = useWatch({ control: form.control, name: 'state' });
+
+    useEffect(() => {
+        setLoadingUfs(true);
+        fetch('https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome')
+          .then(res => res.json())
+          .then(data => { setUfs(data); })
+          .catch(() => toast({ variant: "destructive", title: "Erro", description: "Não foi possível carregar os estados."}))
+          .finally(() => setLoadingUfs(false));
+    }, [toast]);
+    
+    useEffect(() => {
+        if (!selectedUf) return;
+        setLoadingCities(true);
+        form.setValue('city', '');
+        fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${selectedUf}/municipios`)
+          .then(res => res.json())
+          .then(data => { setCities(data); })
+          .catch(() => toast({ variant: "destructive", title: "Erro", description: "Não foi possível carregar as cidades."}))
+          .finally(() => setLoadingCities(false));
+    }, [selectedUf, form, toast]);
+
+
     const handleCepLookup = async () => {
         const cep = form.getValues("cep").replace(/\D/g, "");
         if (cep.length !== 8) {
@@ -153,12 +187,15 @@ const Step2 = ({ form }: { form: any }) => {
         }
         setLoadingCep(true);
         try {
-            // Mock da API de CEP
-            await new Promise(resolve => setTimeout(resolve, 500));
-            form.setValue("street", "Avenida da Fibra", { shouldValidate: true });
-            form.setValue("neighborhood", "Centro Digital", { shouldValidate: true });
-            form.setValue("city", "Internet City", { shouldValidate: true });
-            form.setValue("state", "SP", { shouldValidate: true });
+            const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+            if(!response.ok) throw new Error();
+            const data = await response.json();
+            if(data.erro) throw new Error("CEP não encontrado.");
+
+            form.setValue("street", data.logradouro, { shouldValidate: true });
+            form.setValue("neighborhood", data.bairro, { shouldValidate: true });
+            form.setValue("city", data.localidade, { shouldValidate: true });
+            form.setValue("state", data.uf, { shouldValidate: true });
         } catch (error) {
             form.setError("cep", { message: "CEP não encontrado." });
         } finally {
@@ -257,17 +294,35 @@ const Step2 = ({ form }: { form: any }) => {
                 <FormMessage />
                 </FormItem>
             )} />
-            <FormField name="city" render={({ field }) => (
-                <FormItem>
-                <FormLabel>Cidade</FormLabel>
-                <FormControl><Input placeholder="Sua cidade" {...field} /></FormControl>
-                <FormMessage />
-                </FormItem>
-            )} />
             <FormField name="state" render={({ field }) => (
                 <FormItem>
                 <FormLabel>Estado</FormLabel>
-                <FormControl><Input placeholder="UF" {...field} /></FormControl>
+                <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger disabled={loadingUfs}>
+                      <SelectValue placeholder={loadingUfs ? "Carregando..." : "Selecione o estado"}/>
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {ufs.map(uf => <SelectItem key={uf.id} value={uf.sigla}>{uf.nome}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+                </FormItem>
+            )} />
+            <FormField name="city" render={({ field }) => (
+                <FormItem>
+                <FormLabel>Cidade</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} disabled={!selectedUf || loadingCities}>
+                    <FormControl>
+                        <SelectTrigger>
+                            <SelectValue placeholder={!selectedUf ? "Selecione um estado" : loadingCities ? "Carregando..." : "Selecione a cidade"} />
+                        </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                        {cities.map(city => <SelectItem key={city.id} value={city.nome}>{city.nome}</SelectItem>)}
+                    </SelectContent>
+                </Select>
                 <FormMessage />
                 </FormItem>
             )} />
@@ -452,5 +507,3 @@ export default function SignupPage() {
     </div>
   );
 }
-
-    
