@@ -188,7 +188,7 @@ function AdminLogin({ onLogin }: { onLogin: (user: SupabaseUser) => void }) {
 }
 
 // ==================================
-// Componente de Adicionar Plano (RECONSTRUÍDO)
+// Componente de Adicionar Plano (RECONSTRUÍDO E SIMPLIFICADO)
 // ==================================
 function AddPlanForm({ onPlanAdded, onOpenChange, iconList }: { onPlanAdded: () => void, onOpenChange: (open: boolean) => void, iconList: string[] }) {
     const { toast } = useToast();
@@ -207,7 +207,7 @@ function AddPlanForm({ onPlanAdded, onOpenChange, iconList }: { onPlanAdded: () 
         mode: 'onChange',
     });
 
-    const { control, formState: { errors } } = form;
+    const { control, handleSubmit, formState: { errors } } = form;
 
     const { fields, append, remove } = useFieldArray({
         control,
@@ -232,7 +232,7 @@ function AddPlanForm({ onPlanAdded, onOpenChange, iconList }: { onPlanAdded: () 
   
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <DialogHeader>
                     <DialogTitle>Adicionar Novo Plano</DialogTitle>
                     <DialogDescription>
@@ -627,6 +627,7 @@ export default function AdminPage() {
     const [loading, setLoading] = useState(true);
     const supabase = createClient();
     
+    // Lista de ícones segura (evita undefined e exports não-ícone)
     const iconList = useMemo(() => {
       const mod = (icons ?? {}) as Record<string, unknown>;
       return Object.keys(mod)

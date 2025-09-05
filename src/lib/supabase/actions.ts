@@ -6,18 +6,21 @@ import { createAdminClient } from './admin';
 export async function setupDatabase() {
   const supabase = createAdminClient();
 
+  // A função RPC agora deve existir com SECURITY DEFINER no seu banco de dados.
+  // Isso permite que ela crie a tabela com as permissões corretas.
   const { error } = await supabase.rpc('setup_plans_table');
 
   if (error) {
     console.error('Supabase setup error:', error);
     throw new Error(
-      `Falha ao executar a configuração da tabela: ${error.message}. Verifique os logs do servidor para mais detalhes.`
+      `Falha ao executar a configuração da tabela: ${error.message}. Verifique os logs do servidor para mais detalhes e se a função RPC foi criada corretamente.`
     );
   }
 
   /*
-    -- Execute este comando no seu Editor SQL do Supabase para criar/atualizar a função.
-    -- Isso garante que a função tenha as permissões corretas para criar tabelas.
+    -- Execute este comando no seu Editor SQL do Supabase uma única vez.
+    -- Isso cria a função que a aplicação chama para configurar a tabela.
+    -- A opção 'SECURITY DEFINER' é crucial para dar à função as permissões necessárias.
 
     create or replace function setup_plans_table()
     returns void as $$
@@ -27,7 +30,7 @@ export async function setupDatabase() {
         type text not null,
         speed text not null,
         price real not null,
-        features_with_icons jsonb, -- Armazena um array de objetos: [{icon: "Check", text: "..."}]
+        features_with_icons jsonb,
         highlight boolean default false not null,
         has_tv boolean default false not null,
         created_at timestamp with time zone default timezone('utc'::text, now()) not null
