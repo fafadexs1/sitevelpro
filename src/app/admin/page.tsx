@@ -85,7 +85,7 @@ type Plan = {
 type TvPackage = {
     id: string;
     name: string;
-    channels: { id: string; name: string; image_url: string }[];
+    // channels will be added later
     created_at: string;
 };
 
@@ -529,7 +529,7 @@ const TvPackagesContent = () => {
     const getPackages = async () => {
         setLoading(true);
         const supabase = createClient();
-        const { data, error } = await supabase.rpc('get_tv_packages_with_channels');
+        const { data, error } = await supabase.from('tv_packages').select('*');
         if (error) {
             toast({ variant: 'destructive', title: 'Erro ao buscar pacotes', description: error.message });
         } else {
@@ -573,14 +573,8 @@ const TvPackagesContent = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="mb-2 text-sm text-white/70">{pkg.channels.length} canais</p>
-                <div className="flex flex-wrap gap-2">
-                    {pkg.channels.map(channel => (
-                        <div key={channel.id} className="h-10 w-10 rounded-md border-2 border-neutral-700 overflow-hidden" title={channel.name}>
-                            <Image src={channel.image_url} alt={channel.name} width={40} height={40} className="object-cover" />
-                        </div>
-                    ))}
-                </div>
+                <p className="mb-2 text-sm text-white/70">X canais</p>
+                {/* Channel logos will be added later */}
               </CardContent>
             </Card>
           ))}
