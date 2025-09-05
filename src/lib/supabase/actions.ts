@@ -23,6 +23,9 @@ export async function setupDatabase() {
     create or replace function setup_plans_table()
     returns void as $$
     begin
+      grant usage on schema public to postgres;
+      grant all on all tables in schema public to postgres;
+      
       create table if not exists public.plans (
         id uuid default gen_random_uuid() primary key,
         type text not null,
