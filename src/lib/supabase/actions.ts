@@ -33,7 +33,6 @@ export async function setupDatabase() {
         speed text not null,
         price real not null,
         features_with_icons jsonb,
-        features text[],
         highlight boolean default false not null,
         has_tv boolean default false not null,
         created_at timestamp with time zone default timezone('utc'::text, now()) not null
@@ -42,3 +41,5 @@ export async function setupDatabase() {
     $$ language plpgsql security definer;
   */
 }
+
+    

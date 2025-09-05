@@ -217,10 +217,15 @@ function AddPlanForm({ onPlanAdded, onOpenChange }: { onPlanAdded: () => void, o
   const onSubmit = async (data: PlanFormData) => {
     setIsSubmitting(true);
     const supabase = createClient();
+    
     // A API do Supabase espera snake_case, mas nosso form usa camelCase.
     // O ideal seria um transformador, mas para simplicidade, faremos a conversão aqui.
     const payload = {
-      ...data,
+      type: data.type,
+      speed: data.speed,
+      price: data.price,
+      features_with_icons: data.features_with_icons,
+      highlight: data.highlight,
       has_tv: data.has_tv, 
     };
 
@@ -647,3 +652,5 @@ export default function AdminPage() {
   
     return <AdminDashboard user={user} onLogout={() => setUser(null)} />;
 }
+
+    
