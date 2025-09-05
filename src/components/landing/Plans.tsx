@@ -21,6 +21,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { ChannelLogos } from "./ChannelLogos";
 
 export function Plans() {
   const [planType, setPlanType] = useState<"residencial" | "empresarial">("residencial");
@@ -30,16 +31,16 @@ export function Plans() {
   const plans = useMemo(() => {
     return planType === "residencial"
       ? [
-          { speed: "100 Mega", price: 79.9, features: ["Wi‑Fi 6 incluso", "Instalação rápida", "Suporte 24/7"], highlight: false },
-          { speed: "300 Mega", price: 99.9, features: ["Roteador Wi‑Fi 6", "Streaming 4K", "Teletrabalho estável"], highlight: true },
-          { speed: "500 Mega", price: 129.9, features: ["Latência ultrabaixa", "Jogos online", "Backup em nuvem"], highlight: false },
-          { speed: "1 Giga", price: 199.9, features: ["Link premium", "IP público opcional", "Suporte VIP"], highlight: false },
+          { speed: "100 Mega", price: 79.9, features: ["Wi‑Fi 6 incluso", "Instalação rápida", "Suporte 24/7"], highlight: false, hasTv: false },
+          { speed: "300 Mega", price: 99.9, features: ["Roteador Wi‑Fi 6", "Streaming 4K", "Teletrabalho estável"], highlight: true, hasTv: true },
+          { speed: "500 Mega", price: 129.9, features: ["Latência ultrabaixa", "Jogos online", "Backup em nuvem"], highlight: false, hasTv: true },
+          { speed: "1 Giga", price: 199.9, features: ["Link premium", "IP público opcional", "Suporte VIP"], highlight: false, hasTv: true },
         ]
       : [
-          { speed: "300 Mega", price: 149.9, features: ["SLA comercial", "Ativação express", "Gateway Wi‑Fi 6 Pro"], highlight: false },
-          { speed: "500 Mega", price: 219.9, features: ["Prioridade de atendimento", "IP Fixo opcional", "Wi‑Fi Mesh"], highlight: true },
-          { speed: "1 Giga", price: 359.9, features: ["SLA 99,9%", "Suporte dedicado", "QoS avançada"], highlight: false },
-          { speed: "2 Giga", price: 699.9, features: ["Backbone redundante", "Roteamento BGP", "Atendimento 24/7 NOC"], highlight: false },
+          { speed: "300 Mega", price: 149.9, features: ["SLA comercial", "Ativação express", "Gateway Wi‑Fi 6 Pro"], highlight: false, hasTv: false },
+          { speed: "500 Mega", price: 219.9, features: ["Prioridade de atendimento", "IP Fixo opcional", "Wi‑Fi Mesh"], highlight: true, hasTv: true },
+          { speed: "1 Giga", price: 359.9, features: ["SLA 99,9%", "Suporte dedicado", "QoS avançada"], highlight: false, hasTv: true },
+          { speed: "2 Giga", price: 699.9, features: ["Backbone redundante", "Roteamento BGP", "Atendimento 24/7 NOC"], highlight: false, hasTv: true },
         ];
   }, [planType]);
 
@@ -69,6 +70,9 @@ export function Plans() {
           <span className="text-4xl font-black">{plan.price.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
           <span className="pb-2 text-white/70">/mês</span>
         </div>
+        
+        {plan.hasTv && <ChannelLogos />}
+
         <ul className="mb-6 space-y-2 text-sm">
           {plan.features.map((f) => (
             <li key={f} className="flex items-start gap-2">
@@ -163,4 +167,3 @@ export function Plans() {
     </section>
   );
 }
-
