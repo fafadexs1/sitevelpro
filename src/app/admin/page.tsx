@@ -8,7 +8,7 @@ import * as z from "zod";
 import { useForm, FormProvider } from "react-hook-form";
 import {
   LogIn, User, Lock, Eye, EyeOff, ArrowRight, Loader2, Wifi,
-  LayoutDashboard, FileText, BarChart, Settings, LogOut, ChevronDown, Package, Building
+  LayoutDashboard, FileText, BarChart, Settings, LogOut, ChevronDown, Package, Building, Database
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -245,116 +245,168 @@ function AddPlanForm({ onPlanAdded, onOpenChange }: { onPlanAdded: () => void, o
 // Componentes do Dashboard
 // ==================================
 
-function AdminDashboard({ onLogout }: { onLogout: () => void }) {
-  const [activeTab, setActiveTab] = useState<'residencial' | 'empresarial'>('residencial');
-  const [plans, setPlans] = useState<Plan[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+const PlansContent = () => {
+    const [activeTab, setActiveTab] = useState<'residencial' | 'empresarial'>('residencial');
+    const [plans, setPlans] = useState<Plan[]>([]);
+    const [loading, setLoading] = useState(true);
 
-  async function getPlans() {
-    const supabase = createClient();
-    setLoading(true);
-    const { data, error } = await supabase.from('plans').select('*').order('price', { ascending: true });
-    if (error) {
-      console.error("Erro ao buscar planos:", error);
-    } else {
-      setPlans(data as Plan[]);
+    async function getPlans() {
+        const supabase = createClient();
+        setLoading(true);
+        const { data, error } = await supabase.from('plans').select('*').order('price', { ascending: true });
+        if (error) {
+            console.error("Erro ao buscar planos:", error);
+        } else {
+            setPlans(data as Plan[]);
+        }
+        setLoading(false);
     }
-    setLoading(false);
-  }
 
-  useEffect(() => {
-    getPlans();
-  }, []);
+    useEffect(() => {
+        getPlans();
+    }, []);
 
-  const filteredPlans = plans.filter(p => p.type === activeTab);
+    const filteredPlans = plans.filter(p => p.type === activeTab);
 
-  return (
-    <div className="flex min-h-screen bg-neutral-900">
-      {/* Sidebar */}
-      <aside className="w-64 flex-col border-r border-white/10 bg-neutral-950 p-4 hidden md:flex">
-        <div className="flex items-center gap-3 w-fit mb-8">
-            <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-primary to-green-400 text-neutral-950 shadow-lg shadow-primary/20">
-                <Wifi className="h-5 w-5" />
-            </div>
-            <div>
-                <p className="text-lg font-semibold leading-none">Velpro</p>
-                <p className="text-xs text-white/60">Admin</p>
-            </div>
-        </div>
-
-        <nav className="flex flex-col gap-2 flex-grow">
-            <Button variant="ghost" className="justify-start gap-2 bg-primary/10 text-primary">
-                <LayoutDashboard className="h-4 w-4" /> Painel
-            </Button>
-            <Button variant="ghost" className="justify-start gap-2 text-white/70 hover:text-white hover:bg-white/5">
-                <FileText className="h-4 w-4" /> Páginas
-            </Button>
-            <Button variant="ghost" className="justify-start gap-2 text-white/70 hover:text-white hover:bg-white/5">
-                <BarChart className="h-4 w-4" /> Analytics
-            </Button>
-             <Button variant="ghost" className="justify-start gap-2 text-white/70 hover:text-white hover:bg-white/5">
-                <Settings className="h-4 w-4" /> Configurações
-            </Button>
-        </nav>
-         <div className="border-t border-white/10 pt-4">
-             <Button variant="ghost" onClick={onLogout} className="w-full justify-start gap-2 text-white/70 hover:text-white hover:bg-white/5">
-                <LogOut className="h-4 w-4" /> Sair
-            </Button>
-         </div>
-      </aside>
-
-      {/* Main Content */}
-      <main className="flex-1 p-6 md:p-8">
-        <header className="flex items-center justify-between mb-8">
-            <div>
-                <h1 className="text-3xl font-bold">Gerenciar Planos</h1>
-                <p className="text-white/60">Adicione, edite ou remova os planos exibidos no site.</p>
-            </div>
-             <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-              <DialogTrigger asChild>
-                <Button>Adicionar Plano</Button>
-              </DialogTrigger>
-              <DialogContent className="bg-neutral-950 border-white/10 text-white max-w-md">
-                <AddPlanForm onPlanAdded={getPlans} onOpenChange={setIsAddModalOpen} />
-              </DialogContent>
-            </Dialog>
-        </header>
-
-        <Card className="border-white/10 bg-neutral-950">
-            <CardHeader>
-                <div className="flex items-center border-b border-white/10">
-                    <button onClick={() => setActiveTab('residencial')} className={`flex items-center gap-2 px-4 py-2 text-sm transition-colors ${activeTab === 'residencial' ? 'border-b-2 border-primary text-primary' : 'text-white/60 hover:text-white'}`}>
-                        <Package className="h-4 w-4"/> Planos Residenciais
-                    </button>
-                    <button onClick={() => setActiveTab('empresarial')} className={`flex items-center gap-2 px-4 py-2 text-sm transition-colors ${activeTab === 'empresarial' ? 'border-b-2 border-primary text-primary' : 'text-white/60 hover:text-white'}`}>
-                        <Building className="h-4 w-4"/> Planos Empresariais
-                    </button>
+    return (
+        <>
+            <header className="flex items-center justify-between mb-8">
+                <div>
+                    <h1 className="text-3xl font-bold">Gerenciar Planos</h1>
+                    <p className="text-white/60">Visualize os planos existentes no site.</p>
                 </div>
-            </CardHeader>
-            <CardContent>
-              <AnimatePresence mode="wait">
-                  <motion.div
-                    key={activeTab}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    {loading ? (
-                        <div className="flex justify-center items-center p-8">
-                          <Loader2 className="h-6 w-6 animate-spin text-primary"/>
-                        </div>
-                    ) : (
-                      <PlansTable plans={filteredPlans} />
-                    )}
-                  </motion.div>
-              </AnimatePresence>
-            </CardContent>
-        </Card>
-      </main>
-    </div>
-  );
+            </header>
+            <Card className="border-white/10 bg-neutral-950">
+                <CardHeader>
+                    <div className="flex items-center border-b border-white/10">
+                        <button onClick={() => setActiveTab('residencial')} className={`flex items-center gap-2 px-4 py-2 text-sm transition-colors ${activeTab === 'residencial' ? 'border-b-2 border-primary text-primary' : 'text-white/60 hover:text-white'}`}>
+                            <Package className="h-4 w-4" /> Planos Residenciais
+                        </button>
+                        <button onClick={() => setActiveTab('empresarial')} className={`flex items-center gap-2 px-4 py-2 text-sm transition-colors ${activeTab === 'empresarial' ? 'border-b-2 border-primary text-primary' : 'text-white/60 hover:text-white'}`}>
+                            <Building className="h-4 w-4" /> Planos Empresariais
+                        </button>
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={activeTab}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            transition={{ duration: 0.2 }}
+                        >
+                            {loading ? (
+                                <div className="flex justify-center items-center p-8">
+                                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                                </div>
+                            ) : (
+                                <PlansTable plans={filteredPlans} />
+                            )}
+                        </motion.div>
+                    </AnimatePresence>
+                </CardContent>
+            </Card>
+        </>
+    );
+};
+
+const DatabaseContent = ({ onPlanAdded }: { onPlanAdded: () => void }) => {
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+
+    return (
+        <>
+            <header className="flex items-center justify-between mb-8">
+                <div>
+                    <h1 className="text-3xl font-bold">Banco de Dados</h1>
+                    <p className="text-white/60">Gerencie os dados da sua aplicação.</p>
+                </div>
+            </header>
+            <Card className="border-white/10 bg-neutral-950">
+                <CardHeader>
+                    <CardTitle>Ações</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
+                        <DialogTrigger asChild>
+                            <Button>Adicionar Novo Plano</Button>
+                        </DialogTrigger>
+                        <DialogContent className="bg-neutral-950 border-white/10 text-white max-w-md">
+                            <AddPlanForm onPlanAdded={onPlanAdded} onOpenChange={setIsAddModalOpen} />
+                        </DialogContent>
+                    </Dialog>
+                </CardContent>
+            </Card>
+        </>
+    );
+};
+
+
+function AdminDashboard({ onLogout }: { onLogout: () => void }) {
+    const [activeView, setActiveView] = useState<'plans' | 'database'>('plans');
+
+    const refreshPlans = () => {
+        // This is a dummy function to be passed down, 
+        // as the PlansContent component fetches its own data on mount.
+        // A more robust solution might involve a shared state management (like Context or Zustand).
+        console.log("Plan added, view might need refresh");
+    };
+
+    return (
+        <div className="flex min-h-screen bg-neutral-900">
+            {/* Sidebar */}
+            <aside className="w-64 flex-col border-r border-white/10 bg-neutral-950 p-4 hidden md:flex">
+                <div className="flex items-center gap-3 w-fit mb-8">
+                    <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-primary to-green-400 text-neutral-950 shadow-lg shadow-primary/20">
+                        <Wifi className="h-5 w-5" />
+                    </div>
+                    <div>
+                        <p className="text-lg font-semibold leading-none">Velpro</p>
+                        <p className="text-xs text-white/60">Admin</p>
+                    </div>
+                </div>
+
+                <nav className="flex flex-col gap-2 flex-grow">
+                    <Button variant="ghost" onClick={() => setActiveView('plans')} className={`justify-start gap-2 ${activeView === 'plans' ? 'bg-primary/10 text-primary' : 'text-white/70 hover:text-white hover:bg-white/5'}`}>
+                        <LayoutDashboard className="h-4 w-4" /> Planos
+                    </Button>
+                     <Button variant="ghost" onClick={() => setActiveView('database')} className={`justify-start gap-2 ${activeView === 'database' ? 'bg-primary/10 text-primary' : 'text-white/70 hover:text-white hover:bg-white/5'}`}>
+                        <Database className="h-4 w-4" /> Banco de Dados
+                    </Button>
+                    <Button variant="ghost" className="justify-start gap-2 text-white/70 hover:text-white hover:bg-white/5">
+                        <FileText className="h-4 w-4" /> Páginas
+                    </Button>
+                    <Button variant="ghost" className="justify-start gap-2 text-white/70 hover:text-white hover:bg-white/5">
+                        <BarChart className="h-4 w-4" /> Analytics
+                    </Button>
+                    <Button variant="ghost" className="justify-start gap-2 text-white/70 hover:text-white hover:bg-white/5">
+                        <Settings className="h-4 w-4" /> Configurações
+                    </Button>
+                </nav>
+                <div className="border-t border-white/10 pt-4">
+                    <Button variant="ghost" onClick={onLogout} className="w-full justify-start gap-2 text-white/70 hover:text-white hover:bg-white/5">
+                        <LogOut className="h-4 w-4" /> Sair
+                    </Button>
+                </div>
+            </aside>
+
+            {/* Main Content */}
+            <main className="flex-1 p-6 md:p-8">
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={activeView}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.2 }}
+                    >
+                        {activeView === 'plans' && <PlansContent />}
+                        {activeView === 'database' && <DatabaseContent onPlanAdded={refreshPlans} />}
+                    </motion.div>
+                </AnimatePresence>
+            </main>
+        </div>
+    );
 }
 
 function PlansTable({ plans }: { plans: Plan[] }) {
@@ -397,6 +449,9 @@ function PlansTable({ plans }: { plans: Plan[] }) {
 // ==================================
 export default function AdminPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  // In a real app, you'd use a more robust auth check, maybe with useEffect and a token.
+  // For this demo, we use a simple state.
 
   if (!isLoggedIn) {
     return <AdminLogin onLogin={() => setIsLoggedIn(true)} />;
