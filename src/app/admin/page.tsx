@@ -203,7 +203,7 @@ function AddPlanForm({ onPlanAdded, onOpenChange }: { onPlanAdded: () => void, o
       type: "residencial",
       speed: "",
       price: 0,
-      features_with_icons: [],
+      features_with_icons: [{ icon: "Wifi", text: "Wi-Fi 6 de alta performance" }],
       highlight: false,
       has_tv: false,
     }
@@ -218,18 +218,7 @@ function AddPlanForm({ onPlanAdded, onOpenChange }: { onPlanAdded: () => void, o
     setIsSubmitting(true);
     const supabase = createClient();
     
-    // A API do Supabase espera snake_case, mas nosso form usa camelCase.
-    // O ideal seria um transformador, mas para simplicidade, faremos a conversão aqui.
-    const payload = {
-      type: data.type,
-      speed: data.speed,
-      price: data.price,
-      features_with_icons: data.features_with_icons,
-      highlight: data.highlight,
-      has_tv: data.has_tv, 
-    };
-
-    const { error } = await supabase.from('plans').insert([payload]);
+    const { error } = await supabase.from('plans').insert([data]);
 
     if (error) {
       toast({ variant: "destructive", title: "Erro", description: `Não foi possível adicionar o plano: ${error.message}` });
@@ -390,12 +379,7 @@ const PlansContent = () => {
     }, []);
 
     const filteredPlans = plans.filter(p => p.type === activeTab);
-    const Icon = ({ name }: { name: string }) => {
-        const LucideIcon = icons[name as keyof typeof icons] as React.ElementType;
-        return LucideIcon ? <LucideIcon className="h-4 w-4 mr-2 text-primary" /> : <Smile className="h-4 w-4 mr-2 text-primary" />;
-    };
-
-
+    
     return (
         <>
             <header className="flex items-center justify-between mb-8">
@@ -589,8 +573,8 @@ function PlansTable({ plans }: { plans: Plan[] }) {
                         <TableCell>R$ {plan.price.toFixed(2)}</TableCell>
                         <TableCell className="text-white/80">
                             <ul className="space-y-1">
-                            {(plan.features_with_icons || []).map(f => (
-                                <li key={f.text} className="flex items-center">
+                            {(plan.features_with_icons || []).map((f, idx) => (
+                                <li key={`${plan.id}-feature-${idx}`} className="flex items-center gap-2">
                                     <Icon name={f.icon} />
                                     <span>{f.text}</span>
                                 </li>
