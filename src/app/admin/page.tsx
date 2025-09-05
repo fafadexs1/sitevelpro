@@ -38,6 +38,7 @@ import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { setupDatabase } from '@/lib/supabase/actions';
 
 // ==================================
 // Tipagem dos Planos
@@ -311,30 +312,50 @@ const PlansContent = () => {
     );
 };
 
-const DatabaseContent = ({ onPlanAdded }: { onPlanAdded: () => void }) => {
-    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+const DatabaseContent = () => {
+    const { toast } = useToast();
+    const [isLoading, setIsLoading] = useState(false);
+
+    const handleSetupDatabase = async () => {
+        setIsLoading(true);
+        try {
+            await setupDatabase();
+            toast({
+                title: "Sucesso!",
+                description: "O banco de dados foi configurado. A tabela 'plans' está pronta.",
+            });
+        } catch (error: any) {
+            toast({
+                variant: "destructive",
+                title: "Erro ao configurar o banco de dados",
+                description: error.message,
+            });
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     return (
         <>
             <header className="flex items-center justify-between mb-8">
                 <div>
                     <h1 className="text-3xl font-bold">Banco de Dados</h1>
-                    <p className="text-white/60">Gerencie os dados da sua aplicação.</p>
+                    <p className="text-white/60">Gerencie a estrutura do seu banco de dados.</p>
                 </div>
             </header>
             <Card className="border-white/10 bg-neutral-950">
                 <CardHeader>
-                    <CardTitle>Ações</CardTitle>
+                    <CardTitle>Ações de Schema</CardTitle>
                 </CardHeader>
-                <CardContent>
-                    <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-                        <DialogTrigger asChild>
-                            <Button>Adicionar Novo Plano</Button>
-                        </DialogTrigger>
-                        <DialogContent className="bg-neutral-950 border-white/10 text-white max-w-md">
-                            <AddPlanForm onPlanAdded={onPlanAdded} onOpenChange={setIsAddModalOpen} />
-                        </DialogContent>
-                    </Dialog>
+                <CardContent className="space-y-4">
+                    <p className="text-sm text-white/70">
+                        Esta ação irá criar a tabela `plans` em seu banco de dados Supabase se ela não existir.
+                        É seguro executar esta ação múltiplas vezes.
+                    </p>
+                    <Button onClick={handleSetupDatabase} disabled={isLoading}>
+                        {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Database className="h-4 w-4 mr-2" />}
+                        Configurar/Atualizar Banco de Dados
+                    </Button>
                 </CardContent>
             </Card>
         </>
@@ -344,13 +365,6 @@ const DatabaseContent = ({ onPlanAdded }: { onPlanAdded: () => void }) => {
 
 function AdminDashboard({ onLogout }: { onLogout: () => void }) {
     const [activeView, setActiveView] = useState<'plans' | 'database'>('plans');
-
-    const refreshPlans = () => {
-        // This is a dummy function to be passed down, 
-        // as the PlansContent component fetches its own data on mount.
-        // A more robust solution might involve a shared state management (like Context or Zustand).
-        console.log("Plan added, view might need refresh");
-    };
 
     return (
         <div className="flex min-h-screen bg-neutral-900">
@@ -401,7 +415,7 @@ function AdminDashboard({ onLogout }: { onLogout: () => void }) {
                         transition={{ duration: 0.2 }}
                     >
                         {activeView === 'plans' && <PlansContent />}
-                        {activeView === 'database' && <DatabaseContent onPlanAdded={refreshPlans} />}
+                        {activeView === 'database' && <DatabaseContent />}
                     </motion.div>
                 </AnimatePresence>
             </main>
