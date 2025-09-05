@@ -39,6 +39,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { setupDatabase } from '@/lib/supabase/actions';
+import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 // ==================================
 // Tipagem dos Planos
@@ -54,8 +55,14 @@ type Plan = {
 };
 
 // ==================================
-// Schema de Validação
+// Schemas de Validação
 // ==================================
+const loginSchema = z.object({
+  email: z.string().email("E-mail inválido."),
+  password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres."),
+});
+type LoginFormData = z.infer<typeof loginSchema>;
+
 const planSchema = z.object({
   type: z.enum(['residencial', 'empresarial'], { required_error: "Tipo é obrigatório" }),
   speed: z.string().min(3, "Velocidade é obrigatória"),
@@ -71,17 +78,31 @@ type PlanFormData = z.infer<typeof planSchema>;
 // ==================================
 // Componente de Login
 // ==================================
-function AdminLogin({ onLogin }: { onLogin: () => void }) {
+function AdminLogin({ onLogin }: { onLogin: (user: SupabaseUser) => void }) {
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+  const supabase = createClient();
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  const form = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: "", password: "" },
+  });
+
+  async function handleSubmit(data: LoginFormData) {
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      onLogin();
-    }, 900);
+    const { data: { user }, error } = await supabase.auth.signInWithPassword({
+      email: data.email,
+      password: data.password,
+    });
+    
+    setLoading(false);
+    if (error) {
+      toast({ variant: "destructive", title: "Erro de Login", description: error.message });
+    } else if (user) {
+      toast({ title: "Sucesso!", description: "Login realizado com sucesso." });
+      onLogin(user);
+    }
   }
 
   return (
@@ -95,8 +116,7 @@ function AdminLogin({ onLogin }: { onLogin: () => void }) {
             <p className="text-xs text-white/60">Painel Administrativo</p>
           </div>
         </Link>
-      <motion.form
-        onSubmit={handleSubmit}
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-sm rounded-2xl border border-white/10 bg-neutral-900/60 p-6 shadow-2xl"
@@ -108,27 +128,50 @@ function AdminLogin({ onLogin }: { onLogin: () => void }) {
           <h2 className="text-xl font-semibold">Acesso Restrito</h2>
           <p className="text-sm text-white/60">Entre com suas credenciais</p>
         </div>
-
-        <label className="mb-2 block text-sm text-white/70">Usuário</label>
-        <div className="relative mb-4">
-           <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/60" />
-          <Input required placeholder="admin" className="pl-9" />
-        </div>
-
-        <label className="mb-2 block text-sm text-white/70">Senha</label>
-        <div className="relative mb-4">
-          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/60" />
-          <Input required type={show ? "text" : "password"} placeholder="••••••••" className="pl-9 pr-10" />
-          <button type="button" aria-label="toggle" onClick={() => setShow((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/60 hover:text-white">
-            {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-          </button>
-        </div>
-
-        <Button disabled={loading} type="submit" className="w-full mt-4">
-          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Entrar"}
-          <ArrowRight className="h-4 w-4 ml-2" />
-        </Button>
-      </motion.form>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>E-mail</FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/60" />
+                      <Input placeholder="admin@velpro.com" {...field} className="pl-9" />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Senha</FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/60" />
+                      <Input type={show ? "text" : "password"} placeholder="••••••••" {...field} className="pl-9 pr-10" />
+                      <button type="button" aria-label="toggle" onClick={() => setShow((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/60 hover:text-white">
+                        {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button disabled={loading} type="submit" className="w-full mt-4">
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Entrar"}
+              <ArrowRight className="h-4 w-4 ml-2" />
+            </Button>
+          </form>
+        </Form>
+      </motion.div>
     </div>
   );
 }
@@ -250,6 +293,7 @@ const PlansContent = () => {
     const [activeTab, setActiveTab] = useState<'residencial' | 'empresarial'>('residencial');
     const [plans, setPlans] = useState<Plan[]>([]);
     const [loading, setLoading] = useState(true);
+    const [isAddPlanOpen, setIsAddPlanOpen] = useState(false);
 
     async function getPlans() {
         const supabase = createClient();
@@ -274,8 +318,16 @@ const PlansContent = () => {
             <header className="flex items-center justify-between mb-8">
                 <div>
                     <h1 className="text-3xl font-bold">Gerenciar Planos</h1>
-                    <p className="text-white/60">Visualize os planos existentes no site.</p>
+                    <p className="text-white/60">Adicione, edite ou remova os planos exibidos no site.</p>
                 </div>
+                <Dialog open={isAddPlanOpen} onOpenChange={setIsAddPlanOpen}>
+                    <DialogTrigger asChild>
+                        <Button>Adicionar Plano</Button>
+                    </DialogTrigger>
+                    <DialogContent className="bg-neutral-950 border-white/10 text-white">
+                       <AddPlanForm onPlanAdded={getPlans} onOpenChange={setIsAddPlanOpen}/>
+                    </DialogContent>
+                </Dialog>
             </header>
             <Card className="border-white/10 bg-neutral-950">
                 <CardHeader>
@@ -363,8 +415,14 @@ const DatabaseContent = () => {
 };
 
 
-function AdminDashboard({ onLogout }: { onLogout: () => void }) {
+function AdminDashboard({ user, onLogout }: { user: SupabaseUser, onLogout: () => void }) {
     const [activeView, setActiveView] = useState<'plans' | 'database'>('plans');
+    const supabase = createClient();
+    
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
+        onLogout();
+    };
 
     return (
         <div className="flex min-h-screen bg-neutral-900">
@@ -387,18 +445,14 @@ function AdminDashboard({ onLogout }: { onLogout: () => void }) {
                      <Button variant="ghost" onClick={() => setActiveView('database')} className={`justify-start gap-2 ${activeView === 'database' ? 'bg-primary/10 text-primary' : 'text-white/70 hover:text-white hover:bg-white/5'}`}>
                         <Database className="h-4 w-4" /> Banco de Dados
                     </Button>
-                    <Button variant="ghost" className="justify-start gap-2 text-white/70 hover:text-white hover:bg-white/5">
-                        <FileText className="h-4 w-4" /> Páginas
-                    </Button>
-                    <Button variant="ghost" className="justify-start gap-2 text-white/70 hover:text-white hover:bg-white/5">
-                        <BarChart className="h-4 w-4" /> Analytics
-                    </Button>
-                    <Button variant="ghost" className="justify-start gap-2 text-white/70 hover:text-white hover:bg-white/5">
-                        <Settings className="h-4 w-4" /> Configurações
-                    </Button>
                 </nav>
+
                 <div className="border-t border-white/10 pt-4">
-                    <Button variant="ghost" onClick={onLogout} className="w-full justify-start gap-2 text-white/70 hover:text-white hover:bg-white/5">
+                    <div className="text-xs text-white/60 mb-2 px-3">
+                        <p>Logado como:</p>
+                        <p className="font-medium text-white truncate">{user.email}</p>
+                    </div>
+                    <Button variant="ghost" onClick={handleLogout} className="w-full justify-start gap-2 text-white/70 hover:text-white hover:bg-white/5">
                         <LogOut className="h-4 w-4" /> Sair
                     </Button>
                 </div>
@@ -462,14 +516,41 @@ function PlansTable({ plans }: { plans: Plan[] }) {
 // Componente principal da página
 // ==================================
 export default function AdminPage() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [user, setUser] = useState<SupabaseUser | null>(null);
+    const [loading, setLoading] = useState(true);
+    const supabase = createClient();
 
-  // In a real app, you'd use a more robust auth check, maybe with useEffect and a token.
-  // For this demo, we use a simple state.
+    useEffect(() => {
+        const getSession = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            setUser(session?.user ?? null);
+            setLoading(false);
+        };
 
-  if (!isLoggedIn) {
-    return <AdminLogin onLogin={() => setIsLoggedIn(true)} />;
-  }
+        getSession();
 
-  return <AdminDashboard onLogout={() => setIsLoggedIn(false)} />;
+        const { data: authListener } = supabase.auth.onAuthStateChange(
+            (_event, session) => {
+                setUser(session?.user ?? null);
+            }
+        );
+
+        return () => {
+            authListener.subscription.unsubscribe();
+        };
+    }, [supabase.auth]);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-neutral-950">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+        );
+    }
+  
+    if (!user) {
+        return <AdminLogin onLogin={(loggedInUser) => setUser(loggedInUser)} />;
+    }
+  
+    return <AdminDashboard user={user} onLogout={() => setUser(null)} />;
 }
