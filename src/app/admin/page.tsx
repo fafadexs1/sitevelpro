@@ -187,183 +187,190 @@ function AdminLogin({ onLogin }: { onLogin: (user: SupabaseUser) => void }) {
   );
 }
 
-
 // ==================================
-// Componente de Adicionar Plano
+// Componente de Adicionar Plano (Refatorado)
 // ==================================
 function AddPlanForm({ onPlanAdded, onOpenChange, iconList }: { onPlanAdded: () => void, onOpenChange: (open: boolean) => void, iconList: string[] }) {
-  const { toast } = useToast();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  const methods = useForm<PlanFormData>({
-    resolver: zodResolver(planSchema),
-    defaultValues: {
-      type: "residencial",
-      speed: "",
-      price: 0,
-      features_with_icons: [{ icon: "Wifi", text: "Wi-Fi 6 de alta performance" }],
-      highlight: false,
-      has_tv: false,
-    }
-  });
-
-  const { fields, append, remove } = useFieldArray({
-    control: methods.control,
-    name: "features_with_icons",
-  });
-
-  const onSubmit = async (data: PlanFormData) => {
-    setIsSubmitting(true);
-    const supabase = createClient();
+    const { toast } = useToast();
+    const [isSubmitting, setIsSubmitting] = useState(false);
     
-    const { error } = await supabase.from('plans').insert([data]);
+    const methods = useForm<PlanFormData>({
+        resolver: zodResolver(planSchema),
+        defaultValues: {
+            type: "residencial",
+            speed: "",
+            price: 0,
+            features_with_icons: [{ icon: "Wifi", text: "Wi-Fi 6 de alta performance" }],
+            highlight: false,
+            has_tv: false,
+        }
+    });
 
-    if (error) {
-      toast({ variant: "destructive", title: "Erro", description: `Não foi possível adicionar o plano: ${error.message}` });
-    } else {
-      toast({ title: "Sucesso!", description: "Plano adicionado com sucesso." });
-      onPlanAdded();
-      onOpenChange(false);
-      methods.reset();
-    }
-    setIsSubmitting(false);
-  };
+    const onSubmit = async (data: PlanFormData) => {
+        setIsSubmitting(true);
+        const supabase = createClient();
+        const { error } = await supabase.from('plans').insert([data]);
+
+        if (error) {
+            toast({ variant: "destructive", title: "Erro", description: `Não foi possível adicionar o plano: ${error.message}` });
+        } else {
+            toast({ title: "Sucesso!", description: "Plano adicionado com sucesso." });
+            onPlanAdded();
+            onOpenChange(false);
+            methods.reset();
+        }
+        setIsSubmitting(false);
+    };
   
-  return (
-    <FormProvider {...methods}>
-      <Form {...methods}>
-        <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-4">
-          <DialogHeader>
-            <DialogTitle>Adicionar Novo Plano</DialogTitle>
-            <DialogDescription>
-              Preencha os detalhes do novo plano que será exibido no site.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="grid gap-4 py-4 max-h-[60vh] overflow-y-auto pr-2">
+    return (
+        <FormProvider {...methods}>
+            <Form {...methods}>
+                <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-4">
+                    <DialogHeader>
+                        <DialogTitle>Adicionar Novo Plano</DialogTitle>
+                        <DialogDescription>
+                            Preencha os detalhes do novo plano que será exibido no site.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="grid gap-4 py-4 max-h-[60vh] overflow-y-auto pr-2">
+                        <PlanFormFields iconList={iconList} />
+                    </div>
+                    
+                    <DialogFooter>
+                        <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>Cancelar</Button>
+                        <Button type="submit" disabled={isSubmitting}>
+                            {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin"/> : "Adicionar Plano"}
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </Form>
+        </FormProvider>
+    );
+}
+
+function PlanFormFields({ iconList }: { iconList: string[] }) {
+    const { control, formState: { errors } } = useFormContext<PlanFormData>();
+
+    const { fields, append, remove } = useFieldArray({
+        control,
+        name: "features_with_icons",
+    });
+
+    return (
+        <>
             <FormField
-              control={methods.control}
-              name="type"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Tipo de Plano</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger><SelectValue placeholder="Selecione o tipo" /></SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="residencial">Residencial</SelectItem>
-                      <SelectItem value="empresarial">Empresarial</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
+                control={control}
+                name="type"
+                render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Tipo de Plano</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                                <SelectTrigger><SelectValue placeholder="Selecione o tipo" /></SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                <SelectItem value="residencial">Residencial</SelectItem>
+                                <SelectItem value="empresarial">Empresarial</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <FormMessage />
+                    </FormItem>
+                )}
             />
             <FormField name="speed" render={({ field }) => (
-              <FormItem><FormLabel>Velocidade</FormLabel><FormControl><Input placeholder="Ex: 500 Mega" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Velocidade</FormLabel><FormControl><Input placeholder="Ex: 500 Mega" {...field} /></FormControl><FormMessage /></FormItem>
             )} />
-             <FormField name="price" render={({ field }) => (
-              <FormItem>
-                <FormLabel>Preço (R$)</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    placeholder="Ex: 99.90"
-                    {...field}
-                    value={field.value ?? 0}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+            <FormField name="price" render={({ field }) => (
+                <FormItem>
+                    <FormLabel>Preço (R$)</FormLabel>
+                    <FormControl>
+                        <Input
+                            type="number"
+                            step="0.01"
+                            placeholder="Ex: 99.90"
+                            {...field}
+                            value={field.value ?? 0}
+                        />
+                    </FormControl>
+                    <FormMessage />
+                </FormItem>
             )} />
             
             <div>
-              <FormLabel>Recursos</FormLabel>
-              <div className="space-y-2 mt-2">
-                {(Array.isArray(fields) ? fields : []).map((field, index) => (
-                  <div key={field.id} className="flex items-center gap-2 p-2 rounded-lg border border-white/10">
-                    <FormField
-                      control={methods.control}
-                      name={`features_with_icons.${index}.icon`}
-                      render={({ field }) => (
-                        <FormItem className="w-1/3">
-                           <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                              <SelectTrigger><SelectValue placeholder="Ícone" /></SelectTrigger>
-                            </FormControl>
-                            <SelectContent className="max-h-[260px]">
-                              {(Array.isArray(iconList) ? iconList : []).map((iconName) => {
-                                const IconComponent = icons[iconName as keyof typeof icons] as React.ElementType | undefined;
-                                return (
-                                  <SelectItem key={iconName} value={iconName}>
-                                    <div className="flex items-center gap-2">
-                                      {IconComponent ? <IconComponent className="h-4 w-4" /> : <Smile className="h-4 w-4" />}
-                                      {iconName}
-                                    </div>
-                                  </SelectItem>
-                                );
-                              })}
-                              {(!iconList || iconList.length === 0) && (
-                                <div className="px-3 py-2 text-xs text-white/60">Nenhum ícone disponível</div>
-                              )}
-                            </SelectContent>
-                          </Select>
-                        </FormItem>
-                      )}
-                    />
-                     <FormField
-                      control={methods.control}
-                      name={`features_with_icons.${index}.text`}
-                      render={({ field }) => (
-                        <FormItem className="flex-grow">
-                          <FormControl>
-                            <Input placeholder="Descrição do recurso" {...field} />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                    <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
-                      <Trash2 className="h-4 w-4 text-red-400" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-               <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => append({ icon: "Check", text: "" })}>
-                 <PlusCircle className="h-4 w-4 mr-2"/> Adicionar Recurso
-               </Button>
-               <FormMessage>{methods.formState.errors.features_with_icons?.message}</FormMessage>
+                <FormLabel>Recursos</FormLabel>
+                <div className="space-y-2 mt-2">
+                    {(Array.isArray(fields) ? fields : []).map((field, index) => (
+                        <div key={field.id} className="flex items-center gap-2 p-2 rounded-lg border border-white/10">
+                            <FormField
+                                control={control}
+                                name={`features_with_icons.${index}.icon`}
+                                render={({ field }) => (
+                                    <FormItem className="w-1/3">
+                                        <Select onValueChange={field.onChange} value={field.value}>
+                                            <FormControl>
+                                                <SelectTrigger><SelectValue placeholder="Ícone" /></SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent className="max-h-[260px]">
+                                                {(Array.isArray(iconList) ? iconList : []).map((iconName) => {
+                                                    const IconComponent = icons[iconName as keyof typeof icons] as React.ElementType | undefined;
+                                                    return (
+                                                        <SelectItem key={iconName} value={iconName}>
+                                                            <div className="flex items-center gap-2">
+                                                                {IconComponent ? <IconComponent className="h-4 w-4" /> : <Smile className="h-4 w-4" />}
+                                                                {iconName}
+                                                            </div>
+                                                        </SelectItem>
+                                                    );
+                                                })}
+                                                {(!iconList || iconList.length === 0) && (
+                                                    <div className="px-3 py-2 text-xs text-white/60">Nenhum ícone disponível</div>
+                                                )}
+                                            </SelectContent>
+                                        </Select>
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={control}
+                                name={`features_with_icons.${index}.text`}
+                                render={({ field }) => (
+                                    <FormItem className="flex-grow">
+                                        <FormControl>
+                                            <Input placeholder="Descrição do recurso" {...field} />
+                                        </FormControl>
+                                    </FormItem>
+                                )}
+                            />
+                            <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
+                                <Trash2 className="h-4 w-4 text-red-400" />
+                            </Button>
+                        </div>
+                    ))}
+                </div>
+                <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => append({ icon: "Check", text: "" })}>
+                    <PlusCircle className="h-4 w-4 mr-2"/> Adicionar Recurso
+                </Button>
+                <FormMessage>{errors.features_with_icons?.message}</FormMessage>
             </div>
             
             <div className="flex items-center justify-between pt-4 border-t border-white/10">
-                <FormField control={methods.control} name="highlight" render={({ field }) => (
-                  <FormItem className="flex flex-row items-center gap-2 space-y-0">
-                    <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-                    <FormLabel>Destacar plano?</FormLabel>
-                  </FormItem>
+                <FormField control={control} name="highlight" render={({ field }) => (
+                    <FormItem className="flex flex-row items-center gap-2 space-y-0">
+                        <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                        <FormLabel>Destacar plano?</FormLabel>
+                    </FormItem>
                 )} />
-                <FormField control={methods.control} name="has_tv" render={({ field }) => (
-                  <FormItem className="flex flex-row items-center gap-2 space-y-0">
-                    <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-                    <FormLabel>Inclui TV?</FormLabel>
-                  </FormItem>
+                <FormField control={control} name="has_tv" render={({ field }) => (
+                    <FormItem className="flex flex-row items-center gap-2 space-y-0">
+                        <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                        <FormLabel>Inclui TV?</FormLabel>
+                    </FormItem>
                 )} />
             </div>
-          </div>
-          
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>Cancelar</Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin"/> : "Adicionar Plano"}
-            </Button>
-          </DialogFooter>
-        </form>
-      </Form>
-    </FormProvider>
-  );
+        </>
+    );
 }
-
 
 // ==================================
 // Componentes do Dashboard
@@ -657,5 +664,3 @@ export default function AdminPage() {
   
     return <AdminDashboard user={user} onLogout={() => setUser(null)} iconList={iconList} />;
 }
-
-    
