@@ -1,9 +1,8 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Gauge, Check, ChevronRight, MessageCircle, Globe, Loader2, Smile } from "lucide-react";
+import { Gauge, Check, ChevronRight, MessageCircle, Globe, Loader2 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import Link from 'next/link';
 import {
@@ -96,7 +95,7 @@ export function Plans() {
             </div>
           </div>
           <div className="mb-4 flex items-end gap-1">
-            <span className="text-4xl font-black">{plan.price.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
+            <span className="text-4xl font-black">{(plan.price || 0).toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
             <span className="pb-2 text-white/70">/mês</span>
           </div>
           
@@ -111,12 +110,16 @@ export function Plans() {
             ))}
           </ul>
         </div>
-        <Button
-          onClick={() => setIsModalOpen(true)}
-          className="mt-auto inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-        >
-          Assinar <ChevronRight className="h-4 w-4" />
-        </Button>
+        <Link href="/assinar">
+          <Button
+            asChild
+            className="mt-auto w-full"
+          >
+            <span className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2 font-medium text-primary-foreground transition-colors hover:bg-primary/90">
+              Assinar <ChevronRight className="h-4 w-4" />
+            </span>
+          </Button>
+        </Link>
       </motion.div>
     )
   };
@@ -175,30 +178,6 @@ export function Plans() {
           </div>
         )}
       </div>
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="bg-neutral-950 border-white/10 text-white max-w-md sm:max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Como você prefere assinar?</DialogTitle>
-            <DialogDescription>
-              Escolha a opção mais conveniente para você. Nossa equipe está pronta para te atender.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex flex-col gap-3">
-            <Button asChild variant="outline" className="border-primary/40 bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary">
-                <a href="https://wa.me/5500000000000" target="_blank" rel="noreferrer">
-                    <MessageCircle className="h-4 w-4 mr-2" />
-                    Conversar no WhatsApp
-                </a>
-            </Button>
-            <Button asChild>
-                <Link href="/assinar" onClick={() => setIsModalOpen(false)}>
-                    <Globe className="h-4 w-4 mr-2" />
-                    Continuar pelo Site
-                </Link>
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </section>
   );
 }

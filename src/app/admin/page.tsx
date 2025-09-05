@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray, FormProvider } from "react-hook-form";
 import {
   LogIn,
   User,
@@ -25,7 +25,6 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -71,14 +70,19 @@ import * as icons from "lucide-react";
 // ==================================
 // Tipagem dos Planos
 // ==================================
+type FeatureWithIcon = {
+  icon: string;
+  text: string;
+};
+
 type Plan = {
   id: string;
   type: "residencial" | "empresarial";
   speed: string;
   price: number;
+  features_with_icons: FeatureWithIcon[];
   highlight: boolean;
   has_tv: boolean;
-  features: string[];
 };
 
 // ==================================
@@ -90,24 +94,29 @@ const loginSchema = z.object({
 });
 type LoginFormData = z.infer<typeof loginSchema>;
 
+const featureSchema = z.object({
+  icon: z.string().min(1, "Ícone é obrigatório"),
+  text: z.string().min(3, "Descrição do recurso é obrigatória"),
+});
+
 const planSchema = z.object({
   type: z.enum(["residencial", "empresarial"], {
     required_error: "Tipo é obrigatório",
   }),
   speed: z.string().min(3, "Velocidade é obrigatória"),
   price: z.coerce.number().min(0, "Preço deve ser positivo"),
-  features: z.string().optional(),
+  features_with_icons: z.array(featureSchema).min(1, "Adicione pelo menos um recurso"),
   highlight: z.boolean().default(false),
   has_tv: z.boolean().default(false),
 });
 
 type PlanFormData = z.infer<typeof planSchema>;
 
-const defaultPlanValues: Omit<PlanFormData, 'features'> & { features?: string } = {
+const defaultPlanValues: PlanFormData = {
   type: "residencial",
   speed: "",
   price: 0,
-  features: "",
+  features_with_icons: [{ icon: "Wifi", text: "Wi-Fi 6 de alta performance" }],
   highlight: false,
   has_tv: false,
 };
@@ -245,9 +254,11 @@ function AdminLogin({ onLogin }: { onLogin: (user: SupabaseUser) => void }) {
 function AddPlanForm({
   onPlanAdded,
   onOpenChange,
+  iconList,
 }: {
   onPlanAdded: () => void;
   onOpenChange: (open: boolean) => void;
+  iconList: string[];
 }) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -257,20 +268,16 @@ function AddPlanForm({
     defaultValues: defaultPlanValues,
     mode: "onChange",
   });
+  
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "features_with_icons",
+  });
 
   const onSubmit = async (data: PlanFormData) => {
     setIsSubmitting(true);
     const supabase = createClient();
-    
-    // Transformar o campo de texto de features em um array de strings
-    const featuresArray = data.features ? data.features.split('\n').map(s => s.trim()).filter(Boolean) : [];
-    
-    const submissionData = {
-      ...data,
-      features: featuresArray,
-    };
-
-    const { error } = await supabase.from("plans").insert([submissionData]);
+    const { error } = await supabase.from("plans").insert([data]);
 
     if (error) {
       toast({
@@ -286,146 +293,203 @@ function AddPlanForm({
     }
     setIsSubmitting(false);
   };
+  
+  const safeIconList = Array.isArray(iconList) ? iconList : [];
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <DialogHeader>
-          <DialogTitle>Adicionar Novo Plano</DialogTitle>
-          <DialogDescription>
-            Preencha os detalhes do novo plano que será exibido no site.
-          </DialogDescription>
-        </DialogHeader>
+    <FormProvider {...form}>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <DialogHeader>
+            <DialogTitle>Adicionar Novo Plano</DialogTitle>
+            <DialogDescription>
+              Preencha os detalhes do novo plano que será exibido no site.
+            </DialogDescription>
+          </DialogHeader>
 
-        <div className="max-h-[60vh] space-y-4 overflow-y-auto p-1">
-          <FormField
-            control={form.control}
-            name="type"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Tipo de Plano</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o tipo" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="residencial">Residencial</SelectItem>
-                    <SelectItem value="empresarial">Empresarial</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="speed"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Velocidade</FormLabel>
-                <FormControl>
-                  <Input placeholder="Ex: 500 Mega" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="price"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Preço (R$)</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    placeholder="Ex: 99.90"
-                    {...field}
-                    onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="features"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Vantagens</FormLabel>
-                <FormControl>
-                  <Textarea
-                    placeholder="Wi-Fi 6 incluso&#10;Suporte 24/7&#10;Fibra 100%"
-                    className="h-24"
-                    {...field}
-                  />
-                </FormControl>
-                 <p className="text-xs text-white/50">Liste cada vantagem em uma nova linha.</p>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <div className="flex items-center justify-between !mt-6 border-t border-white/10 pt-4">
+          <div className="max-h-[60vh] space-y-4 overflow-y-auto p-1 pr-4">
             <FormField
               control={form.control}
-              name="highlight"
+              name="type"
               render={({ field }) => (
-                <FormItem className="flex items-center gap-x-2 space-y-0">
-                  <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                  <FormLabel className="cursor-pointer">
-                    Destacar plano?
-                  </FormLabel>
+                <FormItem>
+                  <FormLabel>Tipo de Plano</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione o tipo" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="residencial">Residencial</SelectItem>
+                      <SelectItem value="empresarial">Empresarial</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
-              name="has_tv"
+              name="speed"
               render={({ field }) => (
-                <FormItem className="flex items-center gap-x-2 space-y-0">
+                <FormItem>
+                  <FormLabel>Velocidade</FormLabel>
                   <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
+                    <Input placeholder="Ex: 500 Mega" {...field} />
                   </FormControl>
-                  <FormLabel className="cursor-pointer">
-                    Inclui TV?
-                  </FormLabel>
+                  <FormMessage />
                 </FormItem>
               )}
             />
+
+            <FormField
+              control={form.control}
+              name="price"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Preço (R$)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="Ex: 99.90"
+                      {...field}
+                      onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <div>
+              <FormLabel>Vantagens com Ícone</FormLabel>
+              <div className="mt-2 space-y-2">
+                {(Array.isArray(fields) ? fields : []).map((item, index) => (
+                  <div key={item.id} className="flex items-start gap-2 rounded-lg border border-white/10 p-2">
+                    <FormField
+                      control={form.control}
+                      name={`features_with_icons.${index}.icon`}
+                      render={({ field }) => (
+                        <FormItem className="w-1/3">
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger><SelectValue placeholder="Ícone" /></SelectTrigger>
+                            </FormControl>
+                            <SelectContent className="max-h-[260px]">
+                              {safeIconList.map((iconName) => {
+                                const IconComponent = icons[iconName as keyof typeof icons] as React.ElementType | undefined;
+                                return (
+                                  <SelectItem key={iconName} value={iconName}>
+                                    <div className="flex items-center gap-2">
+                                      {IconComponent ? <IconComponent className="h-4 w-4" /> : <Smile className="h-4 w-4" />}
+                                      {iconName}
+                                    </div>
+                                  </SelectItem>
+                                );
+                              })}
+                            </SelectContent>
+                          </Select>
+                           <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <div className="flex-grow space-y-2">
+                       <FormField
+                        control={form.control}
+                        name={`features_with_icons.${index}.text`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input placeholder="Descrição da vantagem" {...field} />
+                            </FormControl>
+                             <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => remove(index)}
+                      className="shrink-0 mt-2"
+                    >
+                      <Trash2 className="h-4 w-4 text-red-400" />
+                    </Button>
+                  </div>
+                ))}
+                <FormMessage>{form.formState.errors.features_with_icons?.message}</FormMessage>
+              </div>
+
+               <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="mt-2"
+                onClick={() => append({ icon: "Check", text: "" })}
+              >
+                <PlusCircle className="mr-2 h-4 w-4" /> Adicionar Vantagem
+              </Button>
+            </div>
+
+
+            <div className="!mt-6 flex items-center justify-between border-t border-white/10 pt-4">
+              <FormField
+                control={form.control}
+                name="highlight"
+                render={({ field }) => (
+                  <FormItem className="flex items-center gap-x-2 space-y-0">
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <FormLabel className="cursor-pointer">
+                      Destacar plano?
+                    </FormLabel>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="has_tv"
+                render={({ field }) => (
+                  <FormItem className="flex items-center gap-x-2 space-y-0">
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <FormLabel className="cursor-pointer">
+                      Inclui TV?
+                    </FormLabel>
+                  </FormItem>
+                )}
+              />
+            </div>
           </div>
-        </div>
 
-        <DialogFooter>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-          >
-            Cancelar
-          </Button>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-            Salvar Plano
-          </Button>
-        </DialogFooter>
-      </form>
-    </Form>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
+              Cancelar
+            </Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              Salvar Plano
+            </Button>
+          </DialogFooter>
+        </form>
+      </Form>
+    </FormProvider>
   );
 }
 
@@ -433,7 +497,7 @@ function AddPlanForm({
 // ==================================
 // Componentes do Dashboard
 // ==================================
-const PlansContent = () => {
+const PlansContent = ({ iconList }: { iconList: string[] }) => {
   const [activeTab, setActiveTab] = useState<"residencial" | "empresarial">("residencial");
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
@@ -479,6 +543,7 @@ const PlansContent = () => {
             <AddPlanForm
               onPlanAdded={getPlans}
               onOpenChange={setIsModalOpen}
+              iconList={iconList}
             />
           </DialogContent>
         </Dialog>
@@ -587,9 +652,11 @@ const DatabaseContent = () => {
 function AdminDashboard({
   user,
   onLogout,
+  iconList,
 }: {
   user: SupabaseUser;
   onLogout: () => void;
+  iconList: string[];
 }) {
   const [activeView, setActiveView] = useState<"plans" | "database">("plans");
   const supabase = createClient();
@@ -663,7 +730,7 @@ function AdminDashboard({
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
           >
-            {activeView === "plans" && <PlansContent />}
+            {activeView === "plans" && <PlansContent iconList={iconList} />}
             {activeView === "database" && <DatabaseContent />}
           </motion.div>
         </AnimatePresence>
@@ -676,6 +743,13 @@ function PlansTable({ plans }: { plans: Plan[] }) {
   if (!plans || plans.length === 0) {
     return <div className="p-8 text-center text-white/60">Nenhum plano deste tipo encontrado.</div>;
   }
+  
+  const Icon = ({ name }: { name: string }) => {
+    const LucideIcon = icons[name as keyof typeof icons] as React.ElementType | undefined;
+    if (!LucideIcon) return <Smile className="mt-0.5 h-4 w-4 shrink-0 text-primary" />;
+    return <LucideIcon className="mt-0.5 h-4 w-4 shrink-0 text-primary" />;
+  };
+
 
   return (
     <Table>
@@ -694,9 +768,12 @@ function PlansTable({ plans }: { plans: Plan[] }) {
             <TableCell className="font-medium">{plan.speed}</TableCell>
             <TableCell>R$ {Number(plan.price || 0).toFixed(2)}</TableCell>
             <TableCell>
-              <ul className="list-disc list-inside text-white/80 space-y-1">
-                {(plan.features || []).map((feature, index) => (
-                  <li key={index}>{feature}</li>
+              <ul className="space-y-1 text-white/80">
+                {(plan.features_with_icons || []).map((feature, index) => (
+                  <li key={index} className="flex items-center gap-2">
+                    <Icon name={feature.icon} />
+                    <span>{feature.text}</span>
+                  </li>
                 ))}
               </ul>
             </TableCell>
@@ -724,6 +801,14 @@ export default function AdminPage() {
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [loading, setLoading] = useState(true);
   const supabase = createClient();
+
+  // Lista de ícones segura (evita undefined e exports não-ícone)
+  const iconList = useMemo(() => {
+    const mod = (icons ?? {}) as Record<string, unknown>;
+    return Object.keys(mod)
+      .filter((k) => /^[A-Z]/.test(k)) // geralmente ícones começam com maiúscula
+      .filter((k) => !["createLucideIcon", "LucideIcon"].includes(k));
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -762,5 +847,5 @@ export default function AdminPage() {
     return <AdminLogin onLogin={(loggedInUser) => setUser(loggedInUser)} />;
   }
 
-  return <AdminDashboard user={user} onLogout={() => setUser(null)} />;
+  return <AdminDashboard user={user} onLogout={() => setUser(null)} iconList={iconList} />;
 }

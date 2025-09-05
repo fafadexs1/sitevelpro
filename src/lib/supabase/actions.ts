@@ -1,4 +1,3 @@
-
 'use server';
 
 import { createAdminClient } from './admin';
@@ -32,7 +31,7 @@ export async function setupDatabase() {
       highlight boolean default false not null,
       has_tv boolean default false not null,
       created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-      features text[] null
+      features_with_icons jsonb null
     );
   end;
   $$ language plpgsql security definer;
