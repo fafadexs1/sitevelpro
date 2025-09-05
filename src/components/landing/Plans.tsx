@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Gauge, Check, ChevronRight, MessageCircle, Globe, Loader2 } from "lucide-react";
+import { Gauge, Check, ChevronRight, MessageCircle, Globe, Loader2, Smile } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import Link from 'next/link';
 import {
@@ -23,15 +23,22 @@ import {
 import { Button } from "@/components/ui/button";
 import { ChannelLogos } from "./ChannelLogos";
 import { createClient } from "@/lib/supabase/client";
+import * as icons from "lucide-react";
+
+
+type FeatureWithIcon = {
+  icon: string;
+  text: string;
+};
 
 type Plan = {
   id: string;
   type: 'residencial' | 'empresarial';
   speed: string;
   price: number;
-  features: string[];
+  features_with_icons: FeatureWithIcon[];
   highlight: boolean;
-  hasTv: boolean;
+  has_tv: boolean;
 };
 
 export function Plans() {
@@ -58,52 +65,61 @@ export function Plans() {
 
   const currentPlans = allPlans.filter(p => p.type === planType);
 
-  const PlanCard = ({ plan, index }: { plan: Plan, index: number }) => (
-    <motion.div
-      key={`${planType}-${index}`}
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay: index * 0.05 }}
-      className={`relative flex h-full flex-col rounded-2xl border ${
-        plan.highlight ? "border-primary/60" : "border-white/10"
-      } bg-neutral-900/60 p-6 shadow-xl`}
-    >
-      {plan.highlight && (
-        <div className="absolute -top-3 left-6 rounded-full border border-primary/50 bg-primary/10 px-2 py-0.5 text-xs text-primary">
-          Mais popular
-        </div>
-      )}
-      <div className="flex-grow">
-        <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-xl font-semibold">{plan.speed}</h3>
-          <div className="grid h-9 w-9 place-items-center rounded-lg bg-primary/15">
-            <Gauge className="h-5 w-5 text-primary" />
-          </div>
-        </div>
-        <div className="mb-4 flex items-end gap-1">
-          <span className="text-4xl font-black">{plan.price.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
-          <span className="pb-2 text-white/70">/mês</span>
-        </div>
-        
-        {plan.hasTv && <ChannelLogos />}
+  const PlanCard = ({ plan, index }: { plan: Plan, index: number }) => {
+    
+    const Icon = ({ name }: { name: string }) => {
+      const LucideIcon = icons[name as keyof typeof icons] as React.ElementType;
+      if (!LucideIcon) return <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />;
+      return <LucideIcon className="mt-0.5 h-4 w-4 shrink-0 text-primary" />;
+    };
 
-        <ul className="mb-6 space-y-2 text-sm">
-          {plan.features.map((f) => (
-            <li key={f} className="flex items-start gap-2">
-              <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-              <span className="text-white/80">{f}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-      <Button
-        onClick={() => setIsModalOpen(true)}
-        className="mt-auto inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+    return (
+      <motion.div
+        key={`${planType}-${index}`}
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: index * 0.05 }}
+        className={`relative flex h-full flex-col rounded-2xl border ${
+          plan.highlight ? "border-primary/60" : "border-white/10"
+        } bg-neutral-900/60 p-6 shadow-xl`}
       >
-        Assinar <ChevronRight className="h-4 w-4" />
-      </Button>
-    </motion.div>
-  )
+        {plan.highlight && (
+          <div className="absolute -top-3 left-6 rounded-full border border-primary/50 bg-primary/10 px-2 py-0.5 text-xs text-primary">
+            Mais popular
+          </div>
+        )}
+        <div className="flex-grow">
+          <div className="mb-4 flex items-center justify-between">
+            <h3 className="text-xl font-semibold">{plan.speed}</h3>
+            <div className="grid h-9 w-9 place-items-center rounded-lg bg-primary/15">
+              <Gauge className="h-5 w-5 text-primary" />
+            </div>
+          </div>
+          <div className="mb-4 flex items-end gap-1">
+            <span className="text-4xl font-black">{plan.price.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
+            <span className="pb-2 text-white/70">/mês</span>
+          </div>
+          
+          {plan.has_tv && <ChannelLogos />}
+
+          <ul className="mb-6 space-y-2 text-sm">
+            {plan.features_with_icons?.map((f) => (
+              <li key={f.text} className="flex items-start gap-2">
+                <Icon name={f.icon} />
+                <span className="text-white/80">{f.text}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <Button
+          onClick={() => setIsModalOpen(true)}
+          className="mt-auto inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+        >
+          Assinar <ChevronRight className="h-4 w-4" />
+        </Button>
+      </motion.div>
+    )
+  };
 
   return (
     <section id="planos" className="border-t border-white/5 bg-neutral-950/40 py-16 sm:py-24">

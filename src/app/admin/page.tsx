@@ -5,10 +5,10 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useForm, FormProvider } from "react-hook-form";
+import { useForm, FormProvider, useFieldArray } from "react-hook-form";
 import {
   LogIn, User, Lock, Eye, EyeOff, ArrowRight, Loader2, Wifi,
-  LayoutDashboard, FileText, BarChart, Settings, LogOut, ChevronDown, Package, Building, Database
+  LayoutDashboard, FileText, BarChart, Settings, LogOut, ChevronDown, Package, Building, Database, PlusCircle, Trash2, Smile
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -40,18 +40,24 @@ import { createClient } from '@/lib/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { setupDatabase } from '@/lib/supabase/actions';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
+import * as icons from 'lucide-react';
 
 // ==================================
 // Tipagem dos Planos
 // ==================================
+type FeatureWithIcon = {
+  icon: string;
+  text: string;
+};
+
 type Plan = {
   id: string;
   type: 'residencial' | 'empresarial';
   speed: string;
   price: number;
-  features: string[];
+  features_with_icons: FeatureWithIcon[];
   highlight: boolean;
-  hasTv: boolean;
+  has_tv: boolean;
 };
 
 // ==================================
@@ -63,13 +69,18 @@ const loginSchema = z.object({
 });
 type LoginFormData = z.infer<typeof loginSchema>;
 
+const featureSchema = z.object({
+  icon: z.string().min(1, "Ícone é obrigatório"),
+  text: z.string().min(3, "Descrição do recurso é obrigatória"),
+});
+
 const planSchema = z.object({
   type: z.enum(['residencial', 'empresarial'], { required_error: "Tipo é obrigatório" }),
   speed: z.string().min(3, "Velocidade é obrigatória"),
   price: z.coerce.number().min(0, "Preço deve ser positivo"),
-  features: z.string().min(1, "Adicione pelo menos um recurso").transform(val => val.split(',').map(s => s.trim())),
+  features_with_icons: z.array(featureSchema).min(1, "Adicione pelo menos um recurso"),
   highlight: z.boolean().default(false),
-  hasTv: z.boolean().default(false),
+  has_tv: z.boolean().default(false),
 });
 
 type PlanFormData = z.infer<typeof planSchema>;
@@ -180,26 +191,40 @@ function AdminLogin({ onLogin }: { onLogin: (user: SupabaseUser) => void }) {
 // ==================================
 // Componente de Adicionar Plano
 // ==================================
+const iconList = Object.keys(icons).filter(key => key !== 'createLucideIcon' && key !== 'LucideIcon');
 
 function AddPlanForm({ onPlanAdded, onOpenChange }: { onPlanAdded: () => void, onOpenChange: (open: boolean) => void }) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
   const methods = useForm<PlanFormData>({
     resolver: zodResolver(planSchema),
     defaultValues: {
       type: "residencial",
       speed: "",
       price: 0,
-      features: [],
+      features_with_icons: [],
       highlight: false,
-      hasTv: false,
+      has_tv: false,
     }
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control: methods.control,
+    name: "features_with_icons",
   });
 
   const onSubmit = async (data: PlanFormData) => {
     setIsSubmitting(true);
     const supabase = createClient();
-    const { error } = await supabase.from('plans').insert([data]);
+    // A API do Supabase espera snake_case, mas nosso form usa camelCase.
+    // O ideal seria um transformador, mas para simplicidade, faremos a conversão aqui.
+    const payload = {
+      ...data,
+      has_tv: data.has_tv, 
+    };
+
+    const { error } = await supabase.from('plans').insert([payload]);
 
     if (error) {
       toast({ variant: "destructive", title: "Erro", description: `Não foi possível adicionar o plano: ${error.message}` });
@@ -223,7 +248,7 @@ function AddPlanForm({ onPlanAdded, onOpenChange }: { onPlanAdded: () => void, o
             </DialogDescription>
           </DialogHeader>
           
-          <div className="grid gap-4 py-4">
+          <div className="grid gap-4 py-4 max-h-[60vh] overflow-y-auto pr-2">
             <FormField
               control={methods.control}
               name="type"
@@ -249,21 +274,69 @@ function AddPlanForm({ onPlanAdded, onOpenChange }: { onPlanAdded: () => void, o
              <FormField name="price" render={({ field }) => (
               <FormItem><FormLabel>Preço (R$)</FormLabel><FormControl><Input type="number" step="0.01" placeholder="Ex: 99.90" {...field} /></FormControl><FormMessage /></FormItem>
             )} />
-             <FormField name="features" render={({ field }) => (
-              <FormItem>
-                <FormLabel>Recursos</FormLabel>
-                <FormControl><Textarea placeholder="Separe os recursos por vírgula. Ex: Wi-Fi 6, Suporte 24/7" {...field} value={Array.isArray(field.value) ? field.value.join(', ') : field.value} /></FormControl>
-                <FormMessage />
-              </FormItem>
-            )} />
-            <div className="flex items-center justify-between">
+            
+            <div>
+              <FormLabel>Recursos</FormLabel>
+              <div className="space-y-2 mt-2">
+                {fields.map((field, index) => (
+                  <div key={field.id} className="flex items-center gap-2 p-2 rounded-lg border border-white/10">
+                    <FormField
+                      control={methods.control}
+                      name={`features_with_icons.${index}.icon`}
+                      render={({ field }) => (
+                        <FormItem className="w-1/3">
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger><SelectValue placeholder="Ícone" /></SelectTrigger>
+                            </FormControl>
+                            <SelectContent className="max-h-[200px]">
+                              {iconList.map(iconName => {
+                                const IconComponent = icons[iconName as keyof typeof icons] as React.ElementType;
+                                return (
+                                  <SelectItem key={iconName} value={iconName}>
+                                    <div className="flex items-center gap-2">
+                                      <IconComponent className="h-4 w-4" />
+                                      {iconName}
+                                    </div>
+                                  </SelectItem>
+                                );
+                              })}
+                            </SelectContent>
+                          </Select>
+                        </FormItem>
+                      )}
+                    />
+                     <FormField
+                      control={methods.control}
+                      name={`features_with_icons.${index}.text`}
+                      render={({ field }) => (
+                        <FormItem className="flex-grow">
+                          <FormControl>
+                            <Input placeholder="Descrição do recurso" {...field} />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
+                      <Trash2 className="h-4 w-4 text-red-400" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+               <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => append({ icon: "Check", text: "" })}>
+                 <PlusCircle className="h-4 w-4 mr-2"/> Adicionar Recurso
+               </Button>
+               <FormMessage>{methods.formState.errors.features_with_icons?.message}</FormMessage>
+            </div>
+            
+            <div className="flex items-center justify-between pt-4 border-t border-white/10">
                 <FormField control={methods.control} name="highlight" render={({ field }) => (
                   <FormItem className="flex flex-row items-center gap-2 space-y-0">
                     <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
                     <FormLabel>Destacar plano?</FormLabel>
                   </FormItem>
                 )} />
-                <FormField control={methods.control} name="hasTv" render={({ field }) => (
+                <FormField control={methods.control} name="has_tv" render={({ field }) => (
                   <FormItem className="flex flex-row items-center gap-2 space-y-0">
                     <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
                     <FormLabel>Inclui TV?</FormLabel>
@@ -312,6 +385,11 @@ const PlansContent = () => {
     }, []);
 
     const filteredPlans = plans.filter(p => p.type === activeTab);
+    const Icon = ({ name }: { name: string }) => {
+        const LucideIcon = icons[name as keyof typeof icons] as React.ElementType;
+        return LucideIcon ? <LucideIcon className="h-4 w-4 mr-2 text-primary" /> : <Smile className="h-4 w-4 mr-2 text-primary" />;
+    };
+
 
     return (
         <>
@@ -324,7 +402,7 @@ const PlansContent = () => {
                     <DialogTrigger asChild>
                         <Button>Adicionar Plano</Button>
                     </DialogTrigger>
-                    <DialogContent className="bg-neutral-950 border-white/10 text-white">
+                    <DialogContent className="bg-neutral-950 border-white/10 text-white sm:max-w-[600px]">
                        <AddPlanForm onPlanAdded={getPlans} onOpenChange={setIsAddPlanOpen}/>
                     </DialogContent>
                 </Dialog>
@@ -482,6 +560,12 @@ function PlansTable({ plans }: { plans: Plan[] }) {
         return <div className="text-center text-white/60 p-8">Nenhum plano deste tipo encontrado.</div>
     }
 
+    const Icon = ({ name }: { name: string }) => {
+        const LucideIcon = icons[name as keyof typeof icons] as React.ElementType;
+        if (!LucideIcon) return <Smile className="h-4 w-4 shrink-0 text-primary" />;
+        return <LucideIcon className="h-4 w-4 shrink-0 text-primary" />;
+    };
+
     return (
         <Table>
             <TableHeader>
@@ -498,7 +582,16 @@ function PlansTable({ plans }: { plans: Plan[] }) {
                     <TableRow key={plan.id} className="border-white/10">
                         <TableCell className="font-medium">{plan.speed}</TableCell>
                         <TableCell>R$ {plan.price.toFixed(2)}</TableCell>
-                        <TableCell className="text-white/80">{plan.features.join(', ')}</TableCell>
+                        <TableCell className="text-white/80">
+                            <ul className="space-y-1">
+                            {plan.features_with_icons?.map(f => (
+                                <li key={f.text} className="flex items-center">
+                                    <Icon name={f.icon} />
+                                    <span>{f.text}</span>
+                                </li>
+                            ))}
+                            </ul>
+                        </TableCell>
                         <TableCell className="text-center">
                             {plan.highlight && <Badge className="bg-primary/20 text-primary border-primary/30">Sim</Badge>}
                         </TableCell>
