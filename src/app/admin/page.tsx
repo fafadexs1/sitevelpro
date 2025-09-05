@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
@@ -294,8 +293,6 @@ function AddPlanForm({
     setIsSubmitting(false);
   };
 
-  const safeIconList = Array.isArray(iconList) ? iconList : [];
-
   return (
     <Form {...form}>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -350,7 +347,7 @@ function AddPlanForm({
               <FormItem>
                 <FormLabel>Preço (R$)</FormLabel>
                 <FormControl>
-                   <Input
+                  <Input
                     type="number"
                     placeholder="Ex: 99.90"
                     {...field}
@@ -383,7 +380,7 @@ function AddPlanForm({
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent className="max-h-[260px]">
-                            {safeIconList.map((iconName) => {
+                            {iconList.map((iconName) => {
                                 const IconComponent = icons[iconName as keyof typeof icons] as React.ElementType | undefined;
                                 return (
                                   <SelectItem key={iconName} value={iconName}>
@@ -398,7 +395,7 @@ function AddPlanForm({
                                   </SelectItem>
                                 );
                               })}
-                            {safeIconList.length === 0 && (
+                            {iconList.length === 0 && (
                               <SelectItem value="no-icons" disabled>
                                 Nenhum ícone
                               </SelectItem>
