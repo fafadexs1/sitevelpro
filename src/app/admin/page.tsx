@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LogIn, User, Lock, Eye, EyeOff, ArrowRight, Loader2, Wifi,
@@ -20,23 +20,19 @@ import {
 } from "@/components/ui/table";
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
+import { createClient } from '@/lib/supabase/client';
 
 // ==================================
-// Mock Data (temporário)
+// Tipagem dos Planos
 // ==================================
-const plansData = {
-  residencial: [
-    { id: "R1", speed: "100 Mega", price: 79.9, features: ["Wi‑Fi 6 incluso", "Instalação rápida"], highlight: false },
-    { id: "R2", speed: "300 Mega", price: 99.9, features: ["Roteador Wi‑Fi 6", "Streaming 4K"], highlight: true },
-    { id: "R3", speed: "500 Mega", price: 129.9, features: ["Latência ultrabaixa", "Jogos online"], highlight: false },
-    { id: "R4", speed: "1 Giga", price: 199.9, features: ["Link premium", "Suporte VIP"], highlight: false },
-  ],
-  empresarial: [
-    { id: "E1", speed: "300 Mega", price: 149.9, features: ["SLA comercial", "Ativação express"], highlight: false },
-    { id: "E2", speed: "500 Mega", price: 219.9, features: ["IP Fixo opcional", "Wi‑Fi Mesh"], highlight: true },
-    { id: "E3", speed: "1 Giga", price: 359.9, features: ["SLA 99,9%", "Suporte dedicado"], highlight: false },
-    { id: "E4", speed: "2 Giga", price: 699.9, features: ["Backbone redundante", "Roteamento BGP"], highlight: false },
-  ]
+type Plan = {
+  id: string;
+  type: 'residencial' | 'empresarial';
+  speed: string;
+  price: number;
+  features: string[];
+  highlight: boolean;
+  hasTv: boolean;
 };
 
 // ==================================
@@ -111,6 +107,25 @@ function AdminLogin({ onLogin }: { onLogin: () => void }) {
 
 function AdminDashboard({ onLogout }: { onLogout: () => void }) {
   const [activeTab, setActiveTab] = useState<'residencial' | 'empresarial'>('residencial');
+  const [plans, setPlans] = useState<Plan[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function getPlans() {
+      const supabase = createClient();
+      setLoading(true);
+      const { data, error } = await supabase.from('plans').select('*').order('price', { ascending: true });
+      if (error) {
+        console.error("Erro ao buscar planos:", error);
+      } else {
+        setPlans(data as Plan[]);
+      }
+      setLoading(false);
+    }
+    getPlans();
+  }, []);
+
+  const filteredPlans = plans.filter(p => p.type === activeTab);
 
   return (
     <div className="flex min-h-screen bg-neutral-900">
@@ -177,7 +192,13 @@ function AdminDashboard({ onLogout }: { onLogout: () => void }) {
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <PlansTable plans={plansData[activeTab]} />
+                    {loading ? (
+                        <div className="flex justify-center items-center p-8">
+                          <Loader2 className="h-6 w-6 animate-spin text-primary"/>
+                        </div>
+                    ) : (
+                      <PlansTable plans={filteredPlans} />
+                    )}
                   </motion.div>
               </AnimatePresence>
             </CardContent>
@@ -187,7 +208,7 @@ function AdminDashboard({ onLogout }: { onLogout: () => void }) {
   );
 }
 
-function PlansTable({ plans }: { plans: typeof plansData.residencial }) {
+function PlansTable({ plans }: { plans: Plan[] }) {
     return (
         <Table>
             <TableHeader>

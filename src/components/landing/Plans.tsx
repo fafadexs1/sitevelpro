@@ -1,9 +1,9 @@
 
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Gauge, Check, ChevronRight, MessageCircle, Globe } from "lucide-react";
+import { Gauge, Check, ChevronRight, MessageCircle, Globe, Loader2 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import Link from 'next/link';
 import {
@@ -22,29 +22,43 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ChannelLogos } from "./ChannelLogos";
+import { createClient } from "@/lib/supabase/client";
+
+type Plan = {
+  id: string;
+  type: 'residencial' | 'empresarial';
+  speed: string;
+  price: number;
+  features: string[];
+  highlight: boolean;
+  hasTv: boolean;
+};
 
 export function Plans() {
   const [planType, setPlanType] = useState<"residencial" | "empresarial">("residencial");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const isMobile = useIsMobile();
+  const [allPlans, setAllPlans] = useState<Plan[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const plans = useMemo(() => {
-    return planType === "residencial"
-      ? [
-          { speed: "100 Mega", price: 79.9, features: ["Wi‑Fi 6 incluso", "Instalação rápida", "Suporte 24/7"], highlight: false, hasTv: false },
-          { speed: "300 Mega", price: 99.9, features: ["Roteador Wi‑Fi 6", "Streaming 4K", "Teletrabalho estável"], highlight: true, hasTv: true },
-          { speed: "500 Mega", price: 129.9, features: ["Latência ultrabaixa", "Jogos online", "Backup em nuvem"], highlight: false, hasTv: true },
-          { speed: "1 Giga", price: 199.9, features: ["Link premium", "IP público opcional", "Suporte VIP"], highlight: false, hasTv: true },
-        ]
-      : [
-          { speed: "300 Mega", price: 149.9, features: ["SLA comercial", "Ativação express", "Gateway Wi‑Fi 6 Pro"], highlight: false, hasTv: false },
-          { speed: "500 Mega", price: 219.9, features: ["Prioridade de atendimento", "IP Fixo opcional", "Wi‑Fi Mesh"], highlight: true, hasTv: true },
-          { speed: "1 Giga", price: 359.9, features: ["SLA 99,9%", "Suporte dedicado", "QoS avançada"], highlight: false, hasTv: true },
-          { speed: "2 Giga", price: 699.9, features: ["Backbone redundante", "Roteamento BGP", "Atendimento 24/7 NOC"], highlight: false, hasTv: true },
-        ];
-  }, [planType]);
+  useEffect(() => {
+    async function getPlans() {
+      const supabase = createClient();
+      setLoading(true);
+      const { data, error } = await supabase.from('plans').select('*').order('price', { ascending: true });
+      if (error) {
+        console.error("Erro ao buscar planos:", error);
+      } else {
+        setAllPlans(data as Plan[]);
+      }
+      setLoading(false);
+    }
+    getPlans();
+  }, []);
 
-  const PlanCard = ({ plan, index }: { plan: (typeof plans)[0], index: number }) => (
+  const currentPlans = allPlans.filter(p => p.type === planType);
+
+  const PlanCard = ({ plan, index }: { plan: Plan, index: number }) => (
     <motion.div
       key={`${planType}-${index}`}
       initial={{ opacity: 0, y: 16 }}
@@ -118,10 +132,15 @@ export function Plans() {
             ))}
           </div>
         </div>
-        {isMobile ? (
+        
+        {loading ? (
+            <div className="flex justify-center items-center min-h-[300px]">
+                <Loader2 className="h-8 w-8 animate-spin text-primary"/>
+            </div>
+        ) : isMobile ? (
           <Carousel opts={{ loop: true }} className="relative w-full">
             <CarouselContent>
-              {plans.map((p, i) => (
+              {currentPlans.map((p, i) => (
                 <CarouselItem key={`${planType}-carousel-${i}`} className="basis-4/5">
                     <div className="p-1 h-full">
                       <PlanCard plan={p} index={i}/>
@@ -134,7 +153,7 @@ export function Plans() {
           </Carousel>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {plans.map((p, i) => (
+            {currentPlans.map((p, i) => (
               <PlanCard plan={p} index={i} key={`${planType}-grid-${i}`} />
             ))}
           </div>
