@@ -81,6 +81,7 @@ import { useToast } from "@/hooks/use-toast";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import Image from "next/image";
 import { ChannelPackageForm } from "@/components/admin/ChannelPackageForm";
+import { Textarea } from "@/components/ui/textarea";
 
 // ==================================
 // Tipagem
@@ -97,6 +98,7 @@ type Plan = {
 type TvChannel = {
   id: string;
   name: string;
+  description: string | null;
   logo_url: string;
   created_at: string;
 }
@@ -142,6 +144,7 @@ const defaultPlanValues: PlanFormData = {
 
 const channelSchema = z.object({
     name: z.string().min(1, "Nome do canal é obrigatório."),
+    description: z.string().optional(),
     logo_file: z.any()
         .refine((file) => file instanceof File, "Logo é obrigatório.")
         .refine((file) => file.size <= MAX_FILE_SIZE, `Tamanho máximo de 5MB.`)
@@ -477,7 +480,7 @@ function AddChannelForm({
 
   const form = useForm<ChannelFormData>({
     resolver: zodResolver(channelSchema),
-    defaultValues: { name: "", logo_file: null },
+    defaultValues: { name: "", description: "", logo_file: null },
   });
 
   const onSubmit = async (data: ChannelFormData) => {
@@ -513,6 +516,7 @@ function AddChannelForm({
     // 3. Inserir os dados na tabela 'tv_channels'
     const { error: insertError } = await supabase.from("tv_channels").insert([{ 
         name: data.name,
+        description: data.description,
         logo_url: publicUrlData.publicUrl 
     }]);
 
@@ -538,7 +542,7 @@ function AddChannelForm({
           <DialogHeader>
             <DialogTitle>Adicionar Novo Canal</DialogTitle>
             <DialogDescription>
-              Insira o nome do canal e faça o upload do logo.
+              Insira os detalhes do canal e faça o upload do logo.
             </DialogDescription>
           </DialogHeader>
 
@@ -555,6 +559,21 @@ function AddChannelForm({
               </FormItem>
             )}
           />
+
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Descrição (Opcional)</FormLabel>
+                <FormControl>
+                  <Textarea placeholder="Descreva brevemente o canal..." {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
           <FormField
             control={form.control}
             name="logo_file"
@@ -800,6 +819,7 @@ const TvChannelsContent = () => {
                             <TableRow className="border-white/10 hover:bg-transparent">
                                 <TableHead className="w-20">Logo</TableHead>
                                 <TableHead>Nome</TableHead>
+                                <TableHead>Descrição</TableHead>
                                 <TableHead className="text-right">Ações</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -816,6 +836,7 @@ const TvChannelsContent = () => {
                                         )}
                                     </TableCell>
                                     <TableCell className="font-medium">{channel.name}</TableCell>
+                                    <TableCell className="text-white/70 text-xs max-w-sm truncate">{channel.description || 'N/A'}</TableCell>
                                     <TableCell className="text-right">
                                         <Button variant="ghost" size="sm" className="mr-2">Editar</Button>
                                         <AlertDialog>
@@ -842,7 +863,7 @@ const TvChannelsContent = () => {
                             ))}
                              {channels.length === 0 && (
                                 <TableRow>
-                                    <TableCell colSpan={3} className="text-center text-white/60 py-8">Nenhum canal encontrado.</TableCell>
+                                    <TableCell colSpan={4} className="text-center text-white/60 py-8">Nenhum canal encontrado.</TableCell>
                                 </TableRow>
                             )}
                         </TableBody>
@@ -1173,3 +1194,5 @@ export default function AdminPage() {
 
   return <AdminDashboard user={user} onLogout={() => setUser(null)} />;
 }
+
+    
