@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
@@ -22,6 +23,7 @@ import {
   LogOut,
   Package,
   Building,
+  Tv,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -66,9 +68,10 @@ import { useToast } from "@/hooks/use-toast";
 import { setupDatabase } from "@/lib/supabase/actions";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import * as icons from "lucide-react";
+import Image from "next/image";
 
 // ==================================
-// Tipagem dos Planos
+// Tipagem
 // ==================================
 type Plan = {
   id: string;
@@ -78,6 +81,14 @@ type Plan = {
   highlight: boolean;
   has_tv: boolean;
 };
+
+type TvPackage = {
+    id: string;
+    name: string;
+    channels: { id: string; name: string; image_url: string }[];
+    created_at: string;
+};
+
 
 // ==================================
 // Schemas de Validação
@@ -424,10 +435,19 @@ const PlansContent = () => {
   }
 
   useEffect(() => {
-    getPlans();
+    let isMounted = true;
+    if (isMounted) {
+      getPlans();
+    }
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  const filteredPlans = plans.filter((p) => p.type === activeTab);
+  const filteredPlans = useMemo(
+    () => plans.filter((p) => p.type === activeTab),
+    [plans, activeTab]
+  );
 
   return (
     <>
@@ -501,6 +521,76 @@ const PlansContent = () => {
   );
 };
 
+const TvPackagesContent = () => {
+    const [packages, setPackages] = useState<TvPackage[]>([]);
+    const [loading, setLoading] = useState(true);
+    const { toast } = useToast();
+  
+    const getPackages = async () => {
+        setLoading(true);
+        const supabase = createClient();
+        const { data, error } = await supabase.rpc('get_tv_packages_with_channels');
+        if (error) {
+            toast({ variant: 'destructive', title: 'Erro ao buscar pacotes', description: error.message });
+        } else {
+            setPackages(data as TvPackage[] ?? []);
+        }
+        setLoading(false);
+    };
+
+    useEffect(() => {
+        getPackages();
+    }, []);
+  
+    if (loading) {
+      return (
+        <div className="flex items-center justify-center p-8">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      );
+    }
+  
+    return (
+      <>
+        <header className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">Pacotes de TV</h1>
+            <p className="text-white/60">Crie e gerencie os pacotes de canais.</p>
+          </div>
+          <Button>
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Novo Pacote
+          </Button>
+        </header>
+  
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {packages.map((pkg) => (
+            <Card key={pkg.id} className="border-white/10 bg-neutral-900/60">
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  {pkg.name}
+                  <Button variant="ghost" size="sm">Editar</Button>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="mb-2 text-sm text-white/70">{pkg.channels.length} canais</p>
+                <div className="flex flex-wrap gap-2">
+                    {pkg.channels.map(channel => (
+                        <div key={channel.id} className="h-10 w-10 rounded-md border-2 border-neutral-700 overflow-hidden" title={channel.name}>
+                            <Image src={channel.image_url} alt={channel.name} width={40} height={40} className="object-cover" />
+                        </div>
+                    ))}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+           {packages.length === 0 && <p className="text-white/60 col-span-full">Nenhum pacote de TV encontrado.</p>}
+        </div>
+      </>
+    );
+};
+  
+
 const DatabaseContent = () => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
@@ -511,7 +601,7 @@ const DatabaseContent = () => {
       await setupDatabase();
       toast({
         title: "Sucesso!",
-        description: "O banco de dados foi configurado. A tabela 'plans' está pronta.",
+        description: "O banco de dados foi configurado com as tabelas necessárias.",
       });
     } catch (error: any) {
       toast({
@@ -539,8 +629,8 @@ const DatabaseContent = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-white/70">
-            Esta ação irá criar a tabela <code>plans</code> em seu banco de dados Supabase se ela
-            não existir. É seguro executar esta ação múltiplas vezes.
+            Esta ação irá criar as tabelas <code>plans</code>, <code>tv_packages</code> e <code>tv_channels</code> em seu banco de dados Supabase se elas
+            não existirem. É seguro executar esta ação múltiplas vezes.
           </p>
           <Button onClick={handleSetupDatabase} disabled={isLoading}>
             {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Database className="mr-2 h-4 w-4" />}
@@ -559,13 +649,19 @@ function AdminDashboard({
   user: SupabaseUser;
   onLogout: () => void;
 }) {
-  const [activeView, setActiveView] = useState<"plans" | "database">("plans");
+  const [activeView, setActiveView] = useState<"plans" | "tv_packages" | "database">("plans");
   const supabase = createClient();
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
     onLogout();
   };
+
+  const navItems = [
+    { key: "plans", label: "Planos", icon: LayoutDashboard },
+    { key: "tv_packages", label: "Pacotes de TV", icon: Tv },
+    { key: "database", label: "Banco de Dados", icon: Database },
+  ];
 
   return (
     <div className="flex min-h-screen bg-neutral-900">
@@ -582,28 +678,20 @@ function AdminDashboard({
         </div>
 
         <nav className="flex flex-grow flex-col gap-2">
-          <Button
-            variant="ghost"
-            onClick={() => setActiveView("plans")}
-            className={`justify-start gap-2 ${
-              activeView === "plans"
-                ? "bg-primary/10 text-primary"
-                : "text-white/70 hover:bg-white/5 hover:text-white"
-            }`}
-          >
-            <LayoutDashboard className="h-4 w-4" /> Planos
-          </Button>
-          <Button
-            variant="ghost"
-            onClick={() => setActiveView("database")}
-            className={`justify-start gap-2 ${
-              activeView === "database"
-                ? "bg-primary/10 text-primary"
-                : "text-white/70 hover:bg-white/5 hover:text-white"
-            }`}
-          >
-            <Database className="h-4 w-4" /> Banco de Dados
-          </Button>
+          {navItems.map((item) => (
+            <Button
+              key={item.key}
+              variant="ghost"
+              onClick={() => setActiveView(item.key as any)}
+              className={`justify-start gap-2 ${
+                activeView === item.key
+                  ? "bg-primary/10 text-primary"
+                  : "text-white/70 hover:bg-white/5 hover:text-white"
+              }`}
+            >
+              <item.icon className="h-4 w-4" /> {item.label}
+            </Button>
+          ))}
         </nav>
 
         <div className="border-t border-white/10 pt-4">
@@ -632,6 +720,7 @@ function AdminDashboard({
             transition={{ duration: 0.2 }}
           >
             {activeView === "plans" && <PlansContent />}
+            {activeView === "tv_packages" && <TvPackagesContent />}
             {activeView === "database" && <DatabaseContent />}
           </motion.div>
         </AnimatePresence>

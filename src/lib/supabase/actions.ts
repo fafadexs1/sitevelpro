@@ -1,3 +1,4 @@
+
 'use server';
 
 import { createAdminClient } from './admin';
@@ -5,34 +6,104 @@ import { createAdminClient } from './admin';
 export async function setupDatabase() {
   const supabase = createAdminClient();
 
-  const { error } = await supabase.rpc('setup_plans_table');
+  const { error } = await supabase.rpc('setup_initial_schema_and_data');
 
   if (error) {
     console.error('Supabase setup error:', error);
     throw new Error(
-      `Falha ao executar a configuração da tabela: ${error.message}. Verifique os logs do servidor para mais detalhes e se a função RPC foi criada corretamente.`
+      `Falha ao executar a configuração do schema: ${error.message}. Verifique os logs do servidor para mais detalhes e se a função RPC foi criada corretamente.`
     );
   }
 }
 
 /*
   -- Execute este comando no seu Editor SQL do Supabase uma única vez.
-  -- Isso cria a função que a aplicação chama para configurar a tabela.
+  -- Isso cria a função que a aplicação chama para configurar as tabelas e dados iniciais.
   -- A opção 'SECURITY DEFINER' é crucial para dar à função as permissões necessárias.
 
-  create or replace function setup_plans_table()
-  returns void as $$
-  begin
-    create table if not exists public.plans (
-      id uuid default gen_random_uuid() primary key,
-      type text not null,
-      speed text not null,
-      price real not null,
-      highlight boolean default false not null,
-      has_tv boolean default false not null,
-      created_at timestamp with time zone default timezone('utc'::text, now()) not null
+  CREATE OR REPLACE FUNCTION setup_initial_schema_and_data()
+  RETURNS void AS $$
+  BEGIN
+    -- Tabela de Planos
+    CREATE TABLE IF NOT EXISTS public.plans (
+      id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+      type TEXT NOT NULL,
+      speed TEXT NOT NULL,
+      price REAL NOT NULL,
+      highlight BOOLEAN DEFAULT false NOT NULL,
+      has_tv BOOLEAN DEFAULT false NOT NULL,
+      created_at TIMESTAMETZ DEFAULT now() NOT NULL
     );
-  end;
-  $$ language plpgsql security definer;
+
+    -- Tabela de Pacotes de TV
+    CREATE TABLE IF NOT EXISTS public.tv_packages (
+        id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+        name TEXT NOT NULL,
+        created_at TIMESTAMETZ DEFAULT now() NOT NULL
+    );
+
+    -- Tabela de Canais de TV
+    CREATE TABLE IF NOT EXISTS public.tv_channels (
+        id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+        name TEXT NOT NULL,
+        image_url TEXT,
+        created_at TIMESTAMETZ DEFAULT now() NOT NULL
+    );
+    
+    -- Tabela de Junção: Pacotes <-> Canais
+    CREATE TABLE IF NOT EXISTS public.tv_package_channels (
+        package_id UUID REFERENCES public.tv_packages(id) ON DELETE CASCADE,
+        channel_id UUID REFERENCES public.tv_channels(id) ON DELETE CASCADE,
+        PRIMARY KEY (package_id, channel_id)
+    );
+
+    -- Populando dados iniciais de canais se a tabela estiver vazia
+    IF NOT EXISTS (SELECT 1 FROM public.tv_channels) THEN
+        INSERT INTO public.tv_channels (name, image_url) VALUES
+        ('Canal Exemplo 1', 'https://picsum.photos/40/40?random=1'),
+        ('Canal Exemplo 2', 'https://picsum.photos/40/40?random=2'),
+        ('Canal Exemplo 3', 'https://picsum.photos/40/40?random=3'),
+        ('Canal Exemplo 4', 'https://picsum.photos/40/40?random=4'),
+        ('Canal Exemplo 5', 'https://picsum.photos/40/40?random=5');
+    END IF;
+
+  END;
+  $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+
+  -- Função para buscar pacotes com seus canais aninhados
+  CREATE OR REPLACE FUNCTION get_tv_packages_with_channels()
+  RETURNS JSONB AS $$
+  DECLARE
+      result JSONB;
+  BEGIN
+      SELECT jsonb_agg(
+          jsonb_build_object(
+              'id', tp.id,
+              'name', tp.name,
+              'created_at', tp.created_at,
+              'channels', COALESCE(
+                  (
+                      SELECT jsonb_agg(
+                          jsonb_build_object(
+                              'id', tc.id,
+                              'name', tc.name,
+                              'image_url', tc.image_url
+                          )
+                      )
+                      FROM public.tv_channels tc
+                      JOIN public.tv_package_channels tpc ON tc.id = tpc.channel_id
+                      WHERE tpc.package_id = tp.id
+                  ),
+                  '[]'::jsonb
+              )
+          )
+      )
+      INTO result
+      FROM public.tv_packages tp;
+
+      RETURN COALESCE(result, '[]'::jsonb);
+  END;
+  $$ LANGUAGE plpgsql;
 
 */
