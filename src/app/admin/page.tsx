@@ -94,6 +94,32 @@ const loginSchema = z.object({
 });
 type LoginFormData = z.infer<typeof loginSchema>;
 
+const featureSchema = z.object({
+  icon: z.string().min(1, "Ícone é obrigatório"),
+  text: z.string().min(3, "Descrição do recurso é obrigatória"),
+});
+
+const planSchema = z.object({
+  type: z.enum(["residencial", "empresarial"], {
+    required_error: "Tipo é obrigatório",
+  }),
+  speed: z.string().min(3, "Velocidade é obrigatória"),
+  price: z.coerce.number().min(0, "Preço deve ser positivo"),
+  features_with_icons: z.array(featureSchema).min(1, "Adicione pelo menos um recurso."),
+  highlight: z.boolean().default(false),
+  has_tv: z.boolean().default(false),
+});
+
+type PlanFormData = z.infer<typeof planSchema>;
+
+const defaultPlanValues: PlanFormData = {
+  type: "residencial",
+  speed: "",
+  price: 0,
+  features_with_icons: [{ icon: "Wifi", text: "Wi-Fi 6 de alta performance" }],
+  highlight: false,
+  has_tv: false,
+};
 
 // ==================================
 // Componente de Login
@@ -222,16 +248,261 @@ function AdminLogin({ onLogin }: { onLogin: (user: SupabaseUser) => void }) {
 }
 
 // ==================================
+// Componente de Adicionar/Editar Plano (Nova Lógica)
+// ==================================
+function AddPlanForm({
+  onPlanAdded,
+  onOpenChange,
+  iconList,
+}: {
+  onPlanAdded: () => void;
+  onOpenChange: (open: boolean) => void;
+  iconList: string[];
+}) {
+  const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const form = useForm<PlanFormData>({
+    resolver: zodResolver(planSchema),
+    defaultValues: defaultPlanValues,
+    mode: "onChange",
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "features_with_icons",
+  });
+  
+  const onSubmit = async (data: PlanFormData) => {
+    setIsSubmitting(true);
+    const supabase = createClient();
+    
+    const { error } = await supabase.from("plans").insert([data]);
+
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Erro ao salvar plano",
+        description: error.message,
+      });
+    } else {
+      toast({ title: "Sucesso!", description: "Plano salvo com sucesso." });
+      onPlanAdded(); // Atualiza a lista de planos
+      onOpenChange(false); // Fecha o modal
+    }
+    setIsSubmitting(false);
+  };
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <DialogHeader>
+          <DialogTitle>Adicionar Novo Plano</DialogTitle>
+          <DialogDescription>
+            Preencha os detalhes do novo plano que será exibido no site.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="max-h-[60vh] space-y-4 overflow-y-auto p-1">
+          <FormField
+            control={form.control}
+            name="type"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Tipo de Plano</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o tipo" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="residencial">Residencial</SelectItem>
+                    <SelectItem value="empresarial">Empresarial</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="speed"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Velocidade</FormLabel>
+                <FormControl>
+                  <Input placeholder="Ex: 500 Mega" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="price"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Preço (R$)</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    placeholder="Ex: 99.90"
+                    {...field}
+                    onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <div>
+            <FormLabel>Recursos</FormLabel>
+            <div className="mt-2 space-y-3">
+              {(Array.isArray(fields) ? fields : []).map((item, index) => (
+                <div key={item.id} className="flex items-start gap-2">
+                  <FormField
+                    control={form.control}
+                    name={`features_with_icons.${index}.icon`}
+                    render={({ field }) => (
+                      <FormItem className="w-1/3">
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Ícone" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent className="max-h-[250px]">
+                            {(Array.isArray(iconList) ? iconList : []).map((iconName) => {
+                                const IconComponent = icons[iconName as keyof typeof icons] as React.ElementType | undefined;
+                                return (
+                                  <SelectItem key={iconName} value={iconName}>
+                                    <div className="flex items-center gap-2">
+                                      {IconComponent ? <IconComponent className="h-4 w-4" /> : <Smile className="h-4 w-4" />}
+                                      {iconName}
+                                    </div>
+                                  </SelectItem>
+                                );
+                              })}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name={`features_with_icons.${index}.text`}
+                    render={({ field }) => (
+                      <FormItem className="flex-grow">
+                        <FormControl>
+                          <Input placeholder="Descrição do recurso" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="shrink-0 text-red-400 hover:bg-red-400/10 hover:text-red-400"
+                    onClick={() => remove(index)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="mt-3"
+              onClick={() => append({ icon: "Check", text: "" })}
+            >
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Adicionar Recurso
+            </Button>
+             {form.formState.errors.features_with_icons && (
+              <p className="text-sm text-red-500 mt-1">
+                {form.formState.errors.features_with_icons.message}
+              </p>
+            )}
+          </div>
+
+          <div className="flex items-center justify-between !mt-6 border-t border-white/10 pt-4">
+            <FormField
+              control={form.control}
+              name="highlight"
+              render={({ field }) => (
+                <FormItem className="flex items-center gap-x-2 space-y-0">
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <FormLabel className="cursor-pointer">
+                    Destacar plano?
+                  </FormLabel>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="has_tv"
+              render={({ field }) => (
+                <FormItem className="flex items-center gap-x-2 space-y-0">
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <FormLabel className="cursor-pointer">
+                    Inclui TV?
+                  </FormLabel>
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+          >
+            Cancelar
+          </Button>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+            Salvar Plano
+          </Button>
+        </DialogFooter>
+      </form>
+    </Form>
+  );
+}
+
+// ==================================
 // Componentes do Dashboard
 // ==================================
 const PlansContent = ({ iconList }: { iconList: string[] }) => {
   const [activeTab, setActiveTab] = useState<"residencial" | "empresarial">("residencial");
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
-  
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   async function getPlans() {
-    const supabase = createClient();
     setLoading(true);
+    const supabase = createClient();
     const { data, error } = await supabase
       .from("plans")
       .select("*")
@@ -258,12 +529,27 @@ const PlansContent = ({ iconList }: { iconList: string[] }) => {
           <h1 className="text-3xl font-bold">Gerenciar Planos</h1>
           <p className="text-white/60">Adicione, edite ou remova os planos exibidos no site.</p>
         </div>
+        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Adicionar Plano
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="border-white/10 bg-neutral-950 text-white sm:max-w-xl">
+            <AddPlanForm
+              onPlanAdded={getPlans}
+              onOpenChange={setIsModalOpen}
+              iconList={iconList}
+            />
+          </DialogContent>
+        </Dialog>
       </header>
 
-      <Card className="bg-neutral-950 border-white/10">
+      <Card className="border-white/10 bg-neutral-950">
         <CardHeader>
           <div className="flex items-center border-b border-white/10">
-          <button
+            <button
               onClick={() => setActiveTab("residencial")}
               className={`flex items-center gap-2 px-4 py-2 text-sm transition-colors ${
                 activeTab === "residencial"
