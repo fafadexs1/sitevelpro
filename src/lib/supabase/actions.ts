@@ -23,6 +23,7 @@ export async function setupDatabase() {
     create or replace function setup_plans_table()
     returns void as $$
     begin
+      -- Grant temporary permissions to the postgres user
       grant usage on schema public to postgres;
       grant all on all tables in schema public to postgres;
       
@@ -37,6 +38,6 @@ export async function setupDatabase() {
         created_at timestamp with time zone default timezone('utc'::text, now()) not null
       );
     end;
-    $$ language plpgsql;
+    $$ language plpgsql security definer;
   */
 }
