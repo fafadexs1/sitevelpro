@@ -103,7 +103,7 @@ export function Plans() {
           {plan.has_tv && <ChannelLogos />}
 
           <ul className="mb-6 space-y-2 text-sm">
-            {plan.features_with_icons?.map((f) => (
+            {(plan.features_with_icons || []).map((f) => (
               <li key={f.text} className="flex items-start gap-2">
                 <Icon name={f.icon} />
                 <span className="text-white/80">{f.text}</span>

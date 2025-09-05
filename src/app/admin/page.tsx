@@ -584,7 +584,7 @@ function PlansTable({ plans }: { plans: Plan[] }) {
                         <TableCell>R$ {plan.price.toFixed(2)}</TableCell>
                         <TableCell className="text-white/80">
                             <ul className="space-y-1">
-                            {plan.features_with_icons?.map(f => (
+                            {(plan.features_with_icons || []).map(f => (
                                 <li key={f.text} className="flex items-center">
                                     <Icon name={f.icon} />
                                     <span>{f.text}</span>
