@@ -42,6 +42,15 @@ import { setupDatabase } from '@/lib/supabase/actions';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 import * as icons from 'lucide-react';
 
+// Lista de ícones segura (evita undefined e exports não-ícone)
+const iconList = React.useMemo(() => {
+  const mod = (icons ?? {}) as Record<string, unknown>;
+  return Object.keys(mod)
+    .filter((k) => /^[A-Z]/.test(k)) // geralmente ícones começam com maiúscula
+    .filter((k) => !['createLucideIcon', 'LucideIcon'].includes(k));
+}, []);
+
+
 // ==================================
 // Tipagem dos Planos
 // ==================================
@@ -191,8 +200,6 @@ function AdminLogin({ onLogin }: { onLogin: (user: SupabaseUser) => void }) {
 // ==================================
 // Componente de Adicionar Plano
 // ==================================
-const iconList = Object.keys(icons).filter(key => key !== 'createLucideIcon' && key !== 'LucideIcon');
-
 function AddPlanForm({ onPlanAdded, onOpenChange }: { onPlanAdded: () => void, onOpenChange: (open: boolean) => void }) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -249,7 +256,7 @@ function AddPlanForm({ onPlanAdded, onOpenChange }: { onPlanAdded: () => void, o
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Tipo de Plano</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger><SelectValue placeholder="Selecione o tipo" /></SelectTrigger>
                     </FormControl>
@@ -266,35 +273,50 @@ function AddPlanForm({ onPlanAdded, onOpenChange }: { onPlanAdded: () => void, o
               <FormItem><FormLabel>Velocidade</FormLabel><FormControl><Input placeholder="Ex: 500 Mega" {...field} /></FormControl><FormMessage /></FormItem>
             )} />
              <FormField name="price" render={({ field }) => (
-              <FormItem><FormLabel>Preço (R$)</FormLabel><FormControl><Input type="number" step="0.01" placeholder="Ex: 99.90" {...field} /></FormControl><FormMessage /></FormItem>
+              <FormItem>
+                <FormLabel>Preço (R$)</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    placeholder="Ex: 99.90"
+                    {...field}
+                    value={field.value ?? 0}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
             )} />
             
             <div>
               <FormLabel>Recursos</FormLabel>
               <div className="space-y-2 mt-2">
-                {fields.map((field, index) => (
+                {(Array.isArray(fields) ? fields : []).map((field, index) => (
                   <div key={field.id} className="flex items-center gap-2 p-2 rounded-lg border border-white/10">
                     <FormField
                       control={methods.control}
                       name={`features_with_icons.${index}.icon`}
                       render={({ field }) => (
                         <FormItem className="w-1/3">
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                           <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                               <SelectTrigger><SelectValue placeholder="Ícone" /></SelectTrigger>
                             </FormControl>
-                            <SelectContent className="max-h-[200px]">
-                              {iconList.map(iconName => {
-                                const IconComponent = icons[iconName as keyof typeof icons] as React.ElementType;
+                            <SelectContent className="max-h-[260px]">
+                              {(Array.isArray(iconList) ? iconList : []).map((iconName) => {
+                                const IconComponent = icons[iconName as keyof typeof icons] as React.ElementType | undefined;
                                 return (
                                   <SelectItem key={iconName} value={iconName}>
                                     <div className="flex items-center gap-2">
-                                      <IconComponent className="h-4 w-4" />
+                                      {IconComponent ? <IconComponent className="h-4 w-4" /> : <Smile className="h-4 w-4" />}
                                       {iconName}
                                     </div>
                                   </SelectItem>
                                 );
                               })}
+                              {(!iconList || iconList.length === 0) && (
+                                <div className="px-3 py-2 text-xs text-white/60">Nenhum ícone disponível</div>
+                              )}
                             </SelectContent>
                           </Select>
                         </FormItem>
