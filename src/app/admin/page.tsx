@@ -112,6 +112,16 @@ const planSchema = z.object({
 
 type PlanFormData = z.infer<typeof planSchema>;
 
+const defaultPlanValues: PlanFormData = {
+  type: "residencial",
+  speed: "",
+  price: 0,
+  features_with_icons: [{ icon: "Wifi", text: "Wi-Fi 6 de alta performance" }],
+  highlight: false,
+  has_tv: false,
+};
+
+
 // ==================================
 // Componente de Login
 // ==================================
@@ -255,14 +265,7 @@ function AddPlanForm({
 
   const form = useForm<PlanFormData>({
     resolver: zodResolver(planSchema),
-    defaultValues: {
-      type: "residencial",
-      speed: "",
-      price: 0,
-      features_with_icons: [{ icon: "Wifi", text: "Wi-Fi 6 de alta performance" }],
-      highlight: false,
-      has_tv: false,
-    },
+    defaultValues: defaultPlanValues,
     mode: "onChange",
   });
 
@@ -288,7 +291,7 @@ function AddPlanForm({
       toast({ title: "Sucesso!", description: "Plano adicionado com sucesso." });
       onPlanAdded();
       onOpenChange(false);
-      form.reset();
+      form.reset(defaultPlanValues);
     }
     setIsSubmitting(false);
   };
@@ -347,12 +350,11 @@ function AddPlanForm({
               <FormItem>
                 <FormLabel>Preço (R$)</FormLabel>
                 <FormControl>
-                  <Input
+                   <Input
                     type="number"
                     placeholder="Ex: 99.90"
                     {...field}
-                    value={field.value || 0}
-                    onChange={e => field.onChange(parseFloat(e.target.value) || 0)}
+                    value={field.value ?? 0}
                   />
                 </FormControl>
                 <FormMessage />
@@ -555,7 +557,7 @@ const PlansContent = ({ iconList }: { iconList: string[] }) => {
               <Package className="h-4 w-4" /> Planos Residenciais
             </button>
             <button
-              onClick={() => setActiveTab("empresarial")}
+              onClick={()={() => setActiveTab("empresarial")}}
               className={`flex items-center gap-2 px-4 py-2 text-sm transition-colors ${
                 activeTab === "empresarial"
                   ? "border-b-2 border-primary text-primary"
@@ -840,3 +842,5 @@ export default function AdminPage() {
 
   return <AdminDashboard user={user} onLogout={() => setUser(null)} iconList={iconList} />;
 }
+
+    
