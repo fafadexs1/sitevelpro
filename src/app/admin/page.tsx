@@ -24,6 +24,7 @@ import {
   Package,
   Building,
   Tv,
+  UserPlus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -94,11 +95,11 @@ type TvPackage = {
 // ==================================
 // Schemas de Validação
 // ==================================
-const loginSchema = z.object({
+const authSchema = z.object({
   email: z.string().email("E-mail inválido."),
   password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres."),
 });
-type LoginFormData = z.infer<typeof loginSchema>;
+type AuthFormData = z.infer<typeof authSchema>;
 
 const planSchema = z.object({
   type: z.enum(["residencial", "empresarial"], {
@@ -127,35 +128,56 @@ const defaultPlanValues: PlanFormData = {
 function AdminLogin({ onLogin }: { onLogin: (user: SupabaseUser) => void }) {
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
   const { toast } = useToast();
   const supabase = createClient();
 
-  const form = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
+  const form = useForm<AuthFormData>({
+    resolver: zodResolver(authSchema),
     defaultValues: { email: "", password: "" },
   });
 
-  async function handleSubmit(data: LoginFormData) {
+  async function handleSubmit(data: AuthFormData) {
     setLoading(true);
-    const {
-      data: { user },
-      error,
-    } = await supabase.auth.signInWithPassword({
-      email: data.email,
-      password: data.password,
-    });
-
-    setLoading(false);
-    if (error) {
-      toast({
-        variant: "destructive",
-        title: "Erro de Login",
-        description: error.message,
+    if (isSignUp) {
+      const { error } = await supabase.auth.signUp({
+        email: data.email,
+        password: data.password,
       });
-    } else if (user) {
-      toast({ title: "Sucesso!", description: "Login realizado com sucesso." });
-      onLogin(user);
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Erro ao criar conta",
+          description: error.message,
+        });
+      } else {
+        toast({
+          title: "Sucesso!",
+          description: "Conta criada. Verifique seu e-mail para confirmação e faça o login.",
+        });
+        setIsSignUp(false); // Volta para a tela de login
+      }
+    } else {
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.signInWithPassword({
+        email: data.email,
+        password: data.password,
+      });
+
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Erro de Login",
+          description: error.message,
+        });
+      } else if (user) {
+        toast({ title: "Sucesso!", description: "Login realizado com sucesso." });
+        onLogin(user);
+      }
     }
+    setLoading(false);
   }
 
   return (
@@ -177,10 +199,10 @@ function AdminLogin({ onLogin }: { onLogin: (user: SupabaseUser) => void }) {
       >
         <div className="mb-6 text-center">
           <div className="mx-auto mb-3 grid h-14 w-14 place-items-center rounded-2xl bg-primary/20">
-            <LogIn className="h-6 w-6 text-primary" />
+            {isSignUp ? <UserPlus className="h-6 w-6 text-primary" /> : <LogIn className="h-6 w-6 text-primary" />}
           </div>
-          <h2 className="text-xl font-semibold">Acesso Restrito</h2>
-          <p className="text-sm text-white/60">Entre com suas credenciais</p>
+          <h2 className="text-xl font-semibold">{isSignUp ? "Criar Conta de Admin" : "Acesso Restrito"}</h2>
+          <p className="text-sm text-white/60">{isSignUp ? "Crie o primeiro usuário administrador" : "Entre com suas credenciais"}</p>
         </div>
 
         <Form {...form}>
@@ -237,11 +259,17 @@ function AdminLogin({ onLogin }: { onLogin: (user: SupabaseUser) => void }) {
             />
 
             <Button disabled={loading} type="submit" className="mt-4 w-full">
-              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Entrar"}
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : (isSignUp ? "Criar Conta" : "Entrar")}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </form>
         </Form>
+
+        <div className="mt-6 text-center text-sm">
+          <button onClick={() => setIsSignUp(!isSignUp)} className="text-primary/80 hover:text-primary">
+            {isSignUp ? "Já tem uma conta? Entre aqui." : "Não tem uma conta? Crie uma agora."}
+          </button>
+        </div>
       </motion.div>
     </div>
   );
@@ -820,3 +848,5 @@ export default function AdminPage() {
 
   return <AdminDashboard user={user} onLogout={() => setUser(null)} />;
 }
+
+    
