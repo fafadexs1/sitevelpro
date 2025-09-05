@@ -30,8 +30,7 @@ export async function setupDatabase() {
       price real not null,
       highlight boolean default false not null,
       has_tv boolean default false not null,
-      created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-      features_with_icons jsonb null
+      created_at timestamp with time zone default timezone('utc'::text, now()) not null
     );
   end;
   $$ language plpgsql security definer;
