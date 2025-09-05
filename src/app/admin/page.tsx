@@ -64,9 +64,8 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/utils/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { setupDatabase } from "@/lib/supabase/actions";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import * as icons from "lucide-react";
 import Image from "next/image";
@@ -625,57 +624,36 @@ const TvPackagesContent = () => {
     );
 };
   
-
 const DatabaseContent = () => {
-  const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
+    return (
+        <>
+            <header className="mb-8 flex items-center justify-between">
+                <div>
+                    <h1 className="text-3xl font-bold">Banco de Dados</h1>
+                    <p className="text-white/60">Gerencie a estrutura do seu banco de dados.</p>
+                </div>
+            </header>
 
-  const handleSetupDatabase = async () => {
-    setIsLoading(true);
-    try {
-      await setupDatabase();
-      toast({
-        title: "Sucesso!",
-        description: "O banco de dados foi configurado com as tabelas necessárias.",
-      });
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Erro ao configurar o banco de dados",
-        description: error.message,
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return (
-    <>
-      <header className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Banco de Dados</h1>
-          <p className="text-white/60">Gerencie a estrutura do seu banco de dados.</p>
-        </div>
-      </header>
-
-      <Card className="bg-neutral-950 border-white/10">
-        <CardHeader>
-          <CardTitle>Ações de Schema</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-white/70">
-            Esta ação irá criar as tabelas <code>plans</code>, <code>tv_packages</code> e <code>tv_channels</code> em seu banco de dados Supabase se elas
-            não existirem. É seguro executar esta ação múltiplas vezes.
-          </p>
-          <Button onClick={handleSetupDatabase} disabled={isLoading}>
-            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Database className="mr-2 h-4 w-4" />}
-            Configurar/Atualizar Banco de Dados
-          </Button>
-        </CardContent>
-      </Card>
-    </>
-  );
+            <Card className="bg-neutral-950 border-white/10">
+                <CardHeader>
+                    <CardTitle>Ações de Schema</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <p className="text-sm text-white/70">
+                        A configuração do banco de dados agora é gerenciada por um script SQL.
+                        Para criar as tabelas necessárias, execute o conteúdo do arquivo <code>setup.sql</code> no editor de SQL do seu painel Supabase.
+                    </p>
+                    <Button asChild variant="outline">
+                        <a href="https://supabase.com/dashboard" target="_blank" rel="noopener noreferrer">
+                            Abrir Painel Supabase
+                        </a>
+                    </Button>
+                </CardContent>
+            </Card>
+        </>
+    );
 };
+
 
 function AdminDashboard({
   user,
@@ -832,7 +810,7 @@ export default function AdminPage() {
       isMounted = false;
       listener?.subscription?.unsubscribe?.();
     };
-  }, [supabase]);
+  }, []);
 
   if (loading) {
     return (
@@ -848,5 +826,3 @@ export default function AdminPage() {
 
   return <AdminDashboard user={user} onLogout={() => setUser(null)} />;
 }
-
-    
