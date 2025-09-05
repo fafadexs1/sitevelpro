@@ -5,10 +5,10 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useForm, FormProvider, useFieldArray } from "react-hook-form";
+import { useForm, FormProvider, useFieldArray, useFormContext } from "react-hook-form";
 import {
   LogIn, User, Lock, Eye, EyeOff, ArrowRight, Loader2, Wifi,
-  LayoutDashboard, FileText, BarChart, Settings, LogOut, ChevronDown, Package, Building, Database, PlusCircle, Trash2, Smile
+  LayoutDashboard, FileText, BarChart, Settings, LogOut, ChevronDown, Package, Building, Database, PlusCircle, Trash2, Smile, Check
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -188,67 +188,8 @@ function AdminLogin({ onLogin }: { onLogin: (user: SupabaseUser) => void }) {
 }
 
 // ==================================
-// Componente de Adicionar Plano (Refatorado)
+// Componente de Campos do Formulário de Plano
 // ==================================
-function AddPlanForm({ onPlanAdded, onOpenChange, iconList }: { onPlanAdded: () => void, onOpenChange: (open: boolean) => void, iconList: string[] }) {
-    const { toast } = useToast();
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    
-    const methods = useForm<PlanFormData>({
-        resolver: zodResolver(planSchema),
-        defaultValues: {
-            type: "residencial",
-            speed: "",
-            price: 0,
-            features_with_icons: [{ icon: "Wifi", text: "Wi-Fi 6 de alta performance" }],
-            highlight: false,
-            has_tv: false,
-        }
-    });
-
-    const onSubmit = async (data: PlanFormData) => {
-        setIsSubmitting(true);
-        const supabase = createClient();
-        const { error } = await supabase.from('plans').insert([data]);
-
-        if (error) {
-            toast({ variant: "destructive", title: "Erro", description: `Não foi possível adicionar o plano: ${error.message}` });
-        } else {
-            toast({ title: "Sucesso!", description: "Plano adicionado com sucesso." });
-            onPlanAdded();
-            onOpenChange(false);
-            methods.reset();
-        }
-        setIsSubmitting(false);
-    };
-  
-    return (
-        <FormProvider {...methods}>
-            <Form {...methods}>
-                <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-4">
-                    <DialogHeader>
-                        <DialogTitle>Adicionar Novo Plano</DialogTitle>
-                        <DialogDescription>
-                            Preencha os detalhes do novo plano que será exibido no site.
-                        </DialogDescription>
-                    </DialogHeader>
-
-                    <div className="grid gap-4 py-4 max-h-[60vh] overflow-y-auto pr-2">
-                        <PlanFormFields iconList={iconList} />
-                    </div>
-                    
-                    <DialogFooter>
-                        <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>Cancelar</Button>
-                        <Button type="submit" disabled={isSubmitting}>
-                            {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin"/> : "Adicionar Plano"}
-                        </Button>
-                    </DialogFooter>
-                </form>
-            </Form>
-        </FormProvider>
-    );
-}
-
 function PlanFormFields({ iconList }: { iconList: string[] }) {
     const { control, formState: { errors } } = useFormContext<PlanFormData>();
 
@@ -278,24 +219,38 @@ function PlanFormFields({ iconList }: { iconList: string[] }) {
                     </FormItem>
                 )}
             />
-            <FormField name="speed" render={({ field }) => (
-                <FormItem><FormLabel>Velocidade</FormLabel><FormControl><Input placeholder="Ex: 500 Mega" {...field} /></FormControl><FormMessage /></FormItem>
-            )} />
-            <FormField name="price" render={({ field }) => (
-                <FormItem>
-                    <FormLabel>Preço (R$)</FormLabel>
-                    <FormControl>
-                        <Input
-                            type="number"
-                            step="0.01"
-                            placeholder="Ex: 99.90"
-                            {...field}
-                            value={field.value ?? 0}
-                        />
-                    </FormControl>
-                    <FormMessage />
-                </FormItem>
-            )} />
+            <FormField 
+                control={control}
+                name="speed" 
+                render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Velocidade</FormLabel>
+                        <FormControl>
+                            <Input placeholder="Ex: 500 Mega" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )} 
+            />
+            <FormField 
+                control={control}
+                name="price" 
+                render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Preço (R$)</FormLabel>
+                        <FormControl>
+                            <Input
+                                type="number"
+                                step="0.01"
+                                placeholder="Ex: 99.90"
+                                {...field}
+                                value={field.value ?? 0}
+                            />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )} 
+            />
             
             <div>
                 <FormLabel>Recursos</FormLabel>
@@ -369,6 +324,68 @@ function PlanFormFields({ iconList }: { iconList: string[] }) {
                 )} />
             </div>
         </>
+    );
+}
+
+// ==================================
+// Componente de Adicionar Plano
+// ==================================
+function AddPlanForm({ onPlanAdded, onOpenChange, iconList }: { onPlanAdded: () => void, onOpenChange: (open: boolean) => void, iconList: string[] }) {
+    const { toast } = useToast();
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    
+    const methods = useForm<PlanFormData>({
+        resolver: zodResolver(planSchema),
+        defaultValues: {
+            type: "residencial",
+            speed: "",
+            price: 0,
+            features_with_icons: [{ icon: "Wifi", text: "Wi-Fi 6 de alta performance" }],
+            highlight: false,
+            has_tv: false,
+        }
+    });
+
+    const onSubmit = async (data: PlanFormData) => {
+        setIsSubmitting(true);
+        const supabase = createClient();
+        const { error } = await supabase.from('plans').insert([data]);
+
+        if (error) {
+            toast({ variant: "destructive", title: "Erro", description: `Não foi possível adicionar o plano: ${error.message}` });
+        } else {
+            toast({ title: "Sucesso!", description: "Plano adicionado com sucesso." });
+            onPlanAdded();
+            onOpenChange(false);
+            methods.reset();
+        }
+        setIsSubmitting(false);
+    };
+  
+    return (
+        <FormProvider {...methods}>
+            <Form {...methods}>
+                <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-4">
+                    <DialogHeader>
+                        <DialogTitle>Adicionar Novo Plano</DialogTitle>
+                        <DialogDescription>
+                            Preencha os detalhes do novo plano que será exibido no site.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="grid gap-4 py-4 max-h-[60vh] overflow-y-auto pr-2">
+                        <PlanFormFields iconList={iconList} />
+                    </div>
+                    
+                    <DialogFooter>
+                        <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>Cancelar</Button>
+                        <Button type="submit" disabled={isSubmitting}>
+                            {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin"/> : "Adicionar Plano"}
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </Form>
+        </FormProvider>
     );
 }
 
@@ -664,3 +681,5 @@ export default function AdminPage() {
   
     return <AdminDashboard user={user} onLogout={() => setUser(null)} iconList={iconList} />;
 }
+
+    
