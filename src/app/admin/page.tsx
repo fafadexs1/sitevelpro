@@ -5,7 +5,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import {
   LogIn,
   User,
@@ -19,12 +19,12 @@ import {
   Database,
   PlusCircle,
   Trash2,
-  Smile,
   LogOut,
   Package,
   Building,
   Tv,
   UserPlus,
+  Clapperboard,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -67,7 +67,6 @@ import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
-import * as icons from "lucide-react";
 import Image from "next/image";
 import { ChannelPackageForm } from "@/components/admin/ChannelPackageForm";
 
@@ -83,10 +82,16 @@ type Plan = {
   has_tv: boolean;
 };
 
+type TvChannel = {
+  id: string;
+  name: string;
+  logo_url: string;
+  created_at: string;
+}
+
 type TvPackage = {
     id: string;
     name: string;
-    // channels will be added later
     created_at: string;
 };
 
@@ -119,6 +124,17 @@ const defaultPlanValues: PlanFormData = {
   highlight: false,
   has_tv: false,
 };
+
+const channelSchema = z.object({
+    name: z.string().min(1, "Nome do canal é obrigatório."),
+    logo_url: z.string().url("URL do logo inválida.").optional().or(z.literal('')),
+});
+type ChannelFormData = z.infer<typeof channelSchema>;
+
+const defaultChannelValues: ChannelFormData = {
+    name: "",
+    logo_url: "",
+}
 
 
 // ==================================
@@ -275,7 +291,7 @@ function AdminLogin({ onLogin }: { onLogin: (user: SupabaseUser) => void }) {
 }
 
 // ==================================
-// Componente de Adicionar Plano
+// Componente de Formulário
 // ==================================
 function AddPlanForm({
   onPlanAdded,
@@ -436,6 +452,96 @@ function AddPlanForm({
   );
 }
 
+function AddChannelForm({
+  onChannelAdded,
+  onOpenChange,
+}: {
+  onChannelAdded: () => void;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const form = useForm<ChannelFormData>({
+    resolver: zodResolver(channelSchema),
+    defaultValues: defaultChannelValues,
+  });
+
+  const onSubmit = async (data: ChannelFormData) => {
+    setIsSubmitting(true);
+    const supabase = createClient();
+    const { error } = await supabase.from("tv_channels").insert([data]);
+
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Erro",
+        description: `Não foi possível adicionar o canal: ${error.message}`,
+      });
+    } else {
+      toast({ title: "Sucesso!", description: "Canal adicionado com sucesso." });
+      onChannelAdded();
+      onOpenChange(false);
+      form.reset(defaultChannelValues);
+    }
+    setIsSubmitting(false);
+  };
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <DialogHeader>
+          <DialogTitle>Adicionar Novo Canal</DialogTitle>
+          <DialogDescription>
+            Insira o nome e a URL do logo do canal.
+          </DialogDescription>
+        </DialogHeader>
+
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Nome do Canal</FormLabel>
+              <FormControl>
+                <Input placeholder="Ex: Warner" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="logo_url"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>URL do Logo</FormLabel>
+              <FormControl>
+                <Input placeholder="https://exemplo.com/logo.png" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <DialogFooter>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+          >
+            Cancelar
+          </Button>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+            Salvar Canal
+          </Button>
+        </DialogFooter>
+      </form>
+    </Form>
+  );
+}
+
 
 // ==================================
 // Componentes do Dashboard
@@ -547,6 +653,96 @@ const PlansContent = () => {
       </Card>
     </>
   );
+};
+
+const TvChannelsContent = () => {
+    const [channels, setChannels] = useState<TvChannel[]>([]);
+    const [loading, setLoading] = useState(true);
+    const { toast } = useToast();
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const getChannels = async () => {
+        setLoading(true);
+        const supabase = createClient();
+        const { data, error } = await supabase.from('tv_channels').select('*').order('name', { ascending: true });
+        if (error) {
+            toast({ variant: 'destructive', title: 'Erro ao buscar canais', description: error.message });
+        } else {
+            setChannels(data as TvChannel[] ?? []);
+        }
+        setLoading(false);
+    };
+
+    useEffect(() => {
+        getChannels();
+    }, []);
+
+    if (loading) {
+        return <div className="flex items-center justify-center p-8"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
+    }
+
+    return (
+        <>
+            <header className="mb-8 flex items-center justify-between">
+                <div>
+                    <h1 className="text-3xl font-bold">Canais de TV</h1>
+                    <p className="text-white/60">Gerencie os canais disponíveis para os pacotes.</p>
+                </div>
+                <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+                    <DialogTrigger asChild>
+                        <Button onClick={() => setIsModalOpen(true)}>
+                            <PlusCircle className="mr-2 h-4 w-4" />
+                            Adicionar Canal
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent className="border-white/10 bg-neutral-950 text-white sm:max-w-md">
+                        <AddChannelForm 
+                            onChannelAdded={getChannels}
+                            onOpenChange={setIsModalOpen}
+                        />
+                    </DialogContent>
+                </Dialog>
+            </header>
+            
+            <Card className="border-white/10 bg-neutral-950">
+                <CardContent className="p-0">
+                    <Table>
+                        <TableHeader>
+                            <TableRow className="border-white/10 hover:bg-transparent">
+                                <TableHead className="w-20">Logo</TableHead>
+                                <TableHead>Nome</TableHead>
+                                <TableHead className="text-right">Ações</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {channels.map((channel) => (
+                                <TableRow key={channel.id} className="border-white/10">
+                                    <TableCell>
+                                        {channel.logo_url ? (
+                                            <Image src={channel.logo_url} alt={channel.name} width={40} height={40} className="rounded-md bg-white/10 p-1"/>
+                                        ) : (
+                                            <div className="w-10 h-10 rounded-md bg-white/10 flex items-center justify-center">
+                                                <Clapperboard className="h-5 w-5 text-white/50"/>
+                                            </div>
+                                        )}
+                                    </TableCell>
+                                    <TableCell className="font-medium">{channel.name}</TableCell>
+                                    <TableCell className="text-right">
+                                        <Button variant="ghost" size="sm">Editar</Button>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                             {channels.length === 0 && (
+                                <TableRow>
+                                    <TableCell colSpan={3} className="text-center text-white/60 py-8">Nenhum canal encontrado.</TableCell>
+                                </TableRow>
+                            )}
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
+        </>
+    );
 };
 
 const TvPackagesContent = () => {
@@ -662,7 +858,7 @@ function AdminDashboard({
   user: SupabaseUser;
   onLogout: () => void;
 }) {
-  const [activeView, setActiveView] = useState<"plans" | "tv_packages" | "database">("plans");
+  const [activeView, setActiveView] = useState<"plans" | "tv_channels" | "tv_packages" | "database">("plans");
   const supabase = createClient();
 
   const handleLogout = async () => {
@@ -672,6 +868,7 @@ function AdminDashboard({
 
   const navItems = [
     { key: "plans", label: "Planos", icon: LayoutDashboard },
+    { key: "tv_channels", label: "Canais de TV", icon: Clapperboard },
     { key: "tv_packages", label: "Pacotes de TV", icon: Tv },
     { key: "database", label: "Banco de Dados", icon: Database },
   ];
@@ -733,6 +930,7 @@ function AdminDashboard({
             transition={{ duration: 0.2 }}
           >
             {activeView === "plans" && <PlansContent />}
+            {activeView === "tv_channels" && <TvChannelsContent />}
             {activeView === "tv_packages" && <TvPackagesContent />}
             {activeView === "database" && <DatabaseContent />}
           </motion.div>
