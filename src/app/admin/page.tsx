@@ -3,12 +3,16 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { useForm, FormProvider } from "react-hook-form";
 import {
   LogIn, User, Lock, Eye, EyeOff, ArrowRight, Loader2, Wifi,
   LayoutDashboard, FileText, BarChart, Settings, LogOut, ChevronDown, Package, Building
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Table,
@@ -18,9 +22,22 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 // ==================================
 // Tipagem dos Planos
@@ -34,6 +51,21 @@ type Plan = {
   highlight: boolean;
   hasTv: boolean;
 };
+
+// ==================================
+// Schema de Validação
+// ==================================
+const planSchema = z.object({
+  type: z.enum(['residencial', 'empresarial'], { required_error: "Tipo é obrigatório" }),
+  speed: z.string().min(3, "Velocidade é obrigatória"),
+  price: z.coerce.number().min(0, "Preço deve ser positivo"),
+  features: z.string().min(1, "Adicione pelo menos um recurso").transform(val => val.split(',').map(s => s.trim())),
+  highlight: z.boolean().default(false),
+  hasTv: z.boolean().default(false),
+});
+
+type PlanFormData = z.infer<typeof planSchema>;
+
 
 // ==================================
 // Componente de Login
@@ -102,6 +134,114 @@ function AdminLogin({ onLogin }: { onLogin: () => void }) {
 
 
 // ==================================
+// Componente de Adicionar Plano
+// ==================================
+
+function AddPlanForm({ onPlanAdded, onOpenChange }: { onPlanAdded: () => void, onOpenChange: (open: boolean) => void }) {
+  const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const methods = useForm<PlanFormData>({
+    resolver: zodResolver(planSchema),
+    defaultValues: {
+      type: "residencial",
+      speed: "",
+      price: 0,
+      features: [],
+      highlight: false,
+      hasTv: false,
+    }
+  });
+
+  const onSubmit = async (data: PlanFormData) => {
+    setIsSubmitting(true);
+    const supabase = createClient();
+    const { error } = await supabase.from('plans').insert([data]);
+
+    if (error) {
+      toast({ variant: "destructive", title: "Erro", description: `Não foi possível adicionar o plano: ${error.message}` });
+    } else {
+      toast({ title: "Sucesso!", description: "Plano adicionado com sucesso." });
+      onPlanAdded();
+      onOpenChange(false);
+      methods.reset();
+    }
+    setIsSubmitting(false);
+  };
+  
+  return (
+    <FormProvider {...methods}>
+      <Form {...methods}>
+        <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-4">
+          <DialogHeader>
+            <DialogTitle>Adicionar Novo Plano</DialogTitle>
+            <DialogDescription>
+              Preencha os detalhes do novo plano que será exibido no site.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid gap-4 py-4">
+            <FormField
+              control={methods.control}
+              name="type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tipo de Plano</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger><SelectValue placeholder="Selecione o tipo" /></SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="residencial">Residencial</SelectItem>
+                      <SelectItem value="empresarial">Empresarial</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField name="speed" render={({ field }) => (
+              <FormItem><FormLabel>Velocidade</FormLabel><FormControl><Input placeholder="Ex: 500 Mega" {...field} /></FormControl><FormMessage /></FormItem>
+            )} />
+             <FormField name="price" render={({ field }) => (
+              <FormItem><FormLabel>Preço (R$)</FormLabel><FormControl><Input type="number" step="0.01" placeholder="Ex: 99.90" {...field} /></FormControl><FormMessage /></FormItem>
+            )} />
+             <FormField name="features" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Recursos</FormLabel>
+                <FormControl><Textarea placeholder="Separe os recursos por vírgula. Ex: Wi-Fi 6, Suporte 24/7" {...field} value={Array.isArray(field.value) ? field.value.join(', ') : field.value} /></FormControl>
+                <FormMessage />
+              </FormItem>
+            )} />
+            <div className="flex items-center justify-between">
+                <FormField control={methods.control} name="highlight" render={({ field }) => (
+                  <FormItem className="flex flex-row items-center gap-2 space-y-0">
+                    <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                    <FormLabel>Destacar plano?</FormLabel>
+                  </FormItem>
+                )} />
+                <FormField control={methods.control} name="hasTv" render={({ field }) => (
+                  <FormItem className="flex flex-row items-center gap-2 space-y-0">
+                    <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                    <FormLabel>Inclui TV?</FormLabel>
+                  </FormItem>
+                )} />
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>Cancelar</Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin"/> : "Adicionar Plano"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </Form>
+    </FormProvider>
+  );
+}
+
+
+// ==================================
 // Componentes do Dashboard
 // ==================================
 
@@ -109,19 +249,21 @@ function AdminDashboard({ onLogout }: { onLogout: () => void }) {
   const [activeTab, setActiveTab] = useState<'residencial' | 'empresarial'>('residencial');
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+
+  async function getPlans() {
+    const supabase = createClient();
+    setLoading(true);
+    const { data, error } = await supabase.from('plans').select('*').order('price', { ascending: true });
+    if (error) {
+      console.error("Erro ao buscar planos:", error);
+    } else {
+      setPlans(data as Plan[]);
+    }
+    setLoading(false);
+  }
 
   useEffect(() => {
-    async function getPlans() {
-      const supabase = createClient();
-      setLoading(true);
-      const { data, error } = await supabase.from('plans').select('*').order('price', { ascending: true });
-      if (error) {
-        console.error("Erro ao buscar planos:", error);
-      } else {
-        setPlans(data as Plan[]);
-      }
-      setLoading(false);
-    }
     getPlans();
   }, []);
 
@@ -169,7 +311,14 @@ function AdminDashboard({ onLogout }: { onLogout: () => void }) {
                 <h1 className="text-3xl font-bold">Gerenciar Planos</h1>
                 <p className="text-white/60">Adicione, edite ou remova os planos exibidos no site.</p>
             </div>
-             <Button>Adicionar Plano</Button>
+             <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
+              <DialogTrigger asChild>
+                <Button>Adicionar Plano</Button>
+              </DialogTrigger>
+              <DialogContent className="bg-neutral-950 border-white/10 text-white max-w-md">
+                <AddPlanForm onPlanAdded={getPlans} onOpenChange={setIsAddModalOpen} />
+              </DialogContent>
+            </Dialog>
         </header>
 
         <Card className="border-white/10 bg-neutral-950">
@@ -209,6 +358,10 @@ function AdminDashboard({ onLogout }: { onLogout: () => void }) {
 }
 
 function PlansTable({ plans }: { plans: Plan[] }) {
+    if (plans.length === 0) {
+        return <div className="text-center text-white/60 p-8">Nenhum plano deste tipo encontrado.</div>
+    }
+
     return (
         <Table>
             <TableHeader>
