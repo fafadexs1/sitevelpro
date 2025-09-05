@@ -61,27 +61,32 @@ export async function setupDatabase() {
     END $$;
   `;
 
-  // Executamos o bloco inteiro de SQL de uma vez.
-  const { error } = await supabase.rpc('execute_sql', { sql: schemaSetupQuery });
+  // A abordagem correta é criar uma função plpgsql que executa o script.
+  // Esta função é anônima e executada em uma única transação.
+  const { error } = await supabase.rpc('execute_sql_block', { sql: schemaSetupQuery });
 
   if (error) {
     console.error('Supabase setup error:', error);
-    // Verificamos se o erro é sobre a função não existir, o que indica um problema de permissão ou configuração inicial.
-    if (error.message.includes('function public.execute_sql(sql) does not exist')) {
-        const setupFnQuery = `
-          CREATE OR REPLACE FUNCTION public.execute_sql(sql_query text)
-          RETURNS void AS $$
+    // Se a função 'execute_sql_block' não existir, nós a criamos.
+    if (error.message.includes('function public.execute_sql_block(sql) does not exist')) {
+        const createFunctionSQL = `
+          CREATE OR REPLACE FUNCTION public.execute_sql_block(sql text)
+          RETURNS void
+          LANGUAGE plpgsql
+          AS $function$
           BEGIN
-            EXECUTE sql_query;
+            EXECUTE sql;
           END;
-          $$ LANGUAGE plpgsql;
+          $function$;
         `;
-         const { error: fnError } = await supabase.rpc('execute_sql', { sql: setupFnQuery });
-         if (fnError) {
-             throw new Error(`Falha ao criar a função helper de configuração: ${fnError.message}. Por favor, execute o SQL para criar a função 'execute_sql' no seu painel Supabase.`);
+         // Usar um RPC para criar a função primeiro.
+         const { error: fnError } = await supabase.rpc('execute_sql_block', { sql: createFunctionSQL });
+         if (fnError && !fnError.message.includes('function public.execute_sql_block(sql) does not exist')) {
+             throw new Error(`Falha ao criar a função helper de configuração: ${fnError.message}. Por favor, execute o SQL para criar a função 'execute_sql_block' no seu painel Supabase.`);
          }
+         
          // Tenta novamente após criar a função
-         const { error: retryError } = await supabase.rpc('execute_sql', { sql: schemaSetupQuery });
+         const { error: retryError } = await supabase.rpc('execute_sql_block', { sql: schemaSetupQuery });
           if(retryError){
              throw new Error(`Falha ao executar a configuração do schema na segunda tentativa: ${retryError.message}.`);
           }
