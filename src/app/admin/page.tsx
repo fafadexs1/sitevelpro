@@ -534,69 +534,71 @@ function AddChannelForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <DialogHeader>
-          <DialogTitle>Adicionar Novo Canal</DialogTitle>
-          <DialogDescription>
-            Insira o nome do canal e faça o upload do logo.
-          </DialogDescription>
-        </DialogHeader>
+        <fieldset disabled={isSubmitting} className="space-y-4">
+          <DialogHeader>
+            <DialogTitle>Adicionar Novo Canal</DialogTitle>
+            <DialogDescription>
+              Insira o nome do canal e faça o upload do logo.
+            </DialogDescription>
+          </DialogHeader>
 
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Nome do Canal</FormLabel>
-              <FormControl>
-                <Input placeholder="Ex: Warner" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="logo_file"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Logo do Canal</FormLabel>
-              <FormControl>
-                <div className="relative flex items-center justify-center w-full">
-                    <label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-neutral-900 border-white/20 hover:border-primary hover:bg-neutral-800">
-                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                            <Upload className="w-8 h-8 mb-3 text-white/50"/>
-                            <p className="mb-2 text-sm text-white/50"><span className="font-semibold">Clique para enviar</span> ou arraste</p>
-                            <p className="text-xs text-white/50">SVG, PNG, JPG or WEBP (MAX. 5MB)</p>
-                        </div>
-                        <Input 
-                            id="dropzone-file" 
-                            type="file" 
-                            className="hidden"
-                            accept={ACCEPTED_IMAGE_TYPES.join(',')}
-                            onChange={(e) => field.onChange(e.target.files ? e.target.files[0] : null)}
-                         />
-                    </label>
-                </div> 
-              </FormControl>
-               {field.value && <p className="text-sm text-white/70 mt-2">Arquivo selecionado: {field.value.name}</p>}
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Nome do Canal</FormLabel>
+                <FormControl>
+                  <Input placeholder="Ex: Warner" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="logo_file"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Logo do Canal</FormLabel>
+                <FormControl>
+                  <div className="relative flex items-center justify-center w-full">
+                      <label htmlFor="dropzone-file" className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg bg-neutral-900 border-white/20 ${isSubmitting ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:border-primary hover:bg-neutral-800'}`}>
+                          <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                              <Upload className="w-8 h-8 mb-3 text-white/50"/>
+                              <p className="mb-2 text-sm text-white/50"><span className="font-semibold">Clique para enviar</span> ou arraste</p>
+                              <p className="text-xs text-white/50">SVG, PNG, JPG or WEBP (MAX. 5MB)</p>
+                          </div>
+                          <Input 
+                              id="dropzone-file" 
+                              type="file" 
+                              className="hidden"
+                              accept={ACCEPTED_IMAGE_TYPES.join(',')}
+                              onChange={(e) => field.onChange(e.target.files ? e.target.files[0] : null)}
+                           />
+                      </label>
+                  </div> 
+                </FormControl>
+                 {field.value && <p className="text-sm text-white/70 mt-2">Arquivo selecionado: {field.value.name}</p>}
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        <DialogFooter>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-          >
-            Cancelar
-          </Button>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-            Salvar Canal
-          </Button>
-        </DialogFooter>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
+              Cancelar
+            </Button>
+            <Button type="submit">
+              {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              Salvar Canal
+            </Button>
+          </DialogFooter>
+        </fieldset>
       </form>
     </Form>
   );
