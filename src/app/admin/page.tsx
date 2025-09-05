@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -41,15 +41,6 @@ import { useToast } from '@/hooks/use-toast';
 import { setupDatabase } from '@/lib/supabase/actions';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 import * as icons from 'lucide-react';
-
-// Lista de ícones segura (evita undefined e exports não-ícone)
-const iconList = React.useMemo(() => {
-  const mod = (icons ?? {}) as Record<string, unknown>;
-  return Object.keys(mod)
-    .filter((k) => /^[A-Z]/.test(k)) // geralmente ícones começam com maiúscula
-    .filter((k) => !['createLucideIcon', 'LucideIcon'].includes(k));
-}, []);
-
 
 // ==================================
 // Tipagem dos Planos
@@ -200,7 +191,7 @@ function AdminLogin({ onLogin }: { onLogin: (user: SupabaseUser) => void }) {
 // ==================================
 // Componente de Adicionar Plano
 // ==================================
-function AddPlanForm({ onPlanAdded, onOpenChange }: { onPlanAdded: () => void, onOpenChange: (open: boolean) => void }) {
+function AddPlanForm({ onPlanAdded, onOpenChange, iconList }: { onPlanAdded: () => void, onOpenChange: (open: boolean) => void, iconList: string[] }) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -378,7 +369,7 @@ function AddPlanForm({ onPlanAdded, onOpenChange }: { onPlanAdded: () => void, o
 // Componentes do Dashboard
 // ==================================
 
-const PlansContent = () => {
+const PlansContent = ({iconList}: {iconList: string[]}) => {
     const [activeTab, setActiveTab] = useState<'residencial' | 'empresarial'>('residencial');
     const [plans, setPlans] = useState<Plan[]>([]);
     const [loading, setLoading] = useState(true);
@@ -414,7 +405,7 @@ const PlansContent = () => {
                         <Button>Adicionar Plano</Button>
                     </DialogTrigger>
                     <DialogContent className="bg-neutral-950 border-white/10 text-white sm:max-w-[600px]">
-                       <AddPlanForm onPlanAdded={getPlans} onOpenChange={setIsAddPlanOpen}/>
+                       <AddPlanForm onPlanAdded={getPlans} onOpenChange={setIsAddPlanOpen} iconList={iconList} />
                     </DialogContent>
                 </Dialog>
             </header>
@@ -504,7 +495,7 @@ const DatabaseContent = () => {
 };
 
 
-function AdminDashboard({ user, onLogout }: { user: SupabaseUser, onLogout: () => void }) {
+function AdminDashboard({ user, onLogout, iconList }: { user: SupabaseUser, onLogout: () => void, iconList: string[] }) {
     const [activeView, setActiveView] = useState<'plans' | 'database'>('plans');
     const supabase = createClient();
     
@@ -557,7 +548,7 @@ function AdminDashboard({ user, onLogout }: { user: SupabaseUser, onLogout: () =
                         exit={{ opacity: 0, y: -10 }}
                         transition={{ duration: 0.2 }}
                     >
-                        {activeView === 'plans' && <PlansContent />}
+                        {activeView === 'plans' && <PlansContent iconList={iconList} />}
                         {activeView === 'database' && <DatabaseContent />}
                     </motion.div>
                 </AnimatePresence>
@@ -623,6 +614,14 @@ export default function AdminPage() {
     const [user, setUser] = useState<SupabaseUser | null>(null);
     const [loading, setLoading] = useState(true);
     const supabase = createClient();
+    
+    // Lista de ícones segura (evita undefined e exports não-ícone)
+    const iconList = useMemo(() => {
+      const mod = (icons ?? {}) as Record<string, unknown>;
+      return Object.keys(mod)
+        .filter((k) => /^[A-Z]/.test(k)) // geralmente ícones começam com maiúscula
+        .filter((k) => !['createLucideIcon', 'LucideIcon'].includes(k));
+    }, []);
 
     useEffect(() => {
         const getSession = async () => {
@@ -656,7 +655,7 @@ export default function AdminPage() {
         return <AdminLogin onLogin={(loggedInUser) => setUser(loggedInUser)} />;
     }
   
-    return <AdminDashboard user={user} onLogout={() => setUser(null)} />;
+    return <AdminDashboard user={user} onLogout={() => setUser(null)} iconList={iconList} />;
 }
 
     
