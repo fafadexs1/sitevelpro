@@ -48,6 +48,17 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import {
   Form,
   FormControl,
   FormField,
@@ -726,6 +737,33 @@ const TvChannelsContent = () => {
         getChannels();
     }, []);
 
+    const handleDeleteChannel = async (channelId: string, logoUrl: string) => {
+        const supabase = createClient();
+
+        // 1. Deletar do Storage, se houver logo
+        if (logoUrl) {
+            const filePath = new URL(logoUrl).pathname.split('/canais/').pop();
+            if(filePath) {
+                const { error: storageError } = await supabase.storage.from('canais').remove([filePath]);
+                 if (storageError) {
+                    toast({ variant: 'destructive', title: 'Erro de Storage', description: `Não foi possível deletar o logo: ${storageError.message}` });
+                    return;
+                }
+            }
+        }
+        
+        // 2. Deletar do banco de dados
+        const { error: dbError } = await supabase.from('tv_channels').delete().eq('id', channelId);
+        
+        if (dbError) {
+             toast({ variant: 'destructive', title: 'Erro de Banco de Dados', description: `Não foi possível deletar o canal: ${dbError.message}` });
+        } else {
+            toast({ title: 'Sucesso', description: 'Canal deletado com sucesso.' });
+            getChannels(); // Refresh
+        }
+    };
+
+
     if (loading) {
         return <div className="flex items-center justify-center p-8"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
     }
@@ -777,7 +815,26 @@ const TvChannelsContent = () => {
                                     </TableCell>
                                     <TableCell className="font-medium">{channel.name}</TableCell>
                                     <TableCell className="text-right">
-                                        <Button variant="ghost" size="sm">Editar</Button>
+                                        <Button variant="ghost" size="sm" className="mr-2">Editar</Button>
+                                        <AlertDialog>
+                                            <AlertDialogTrigger asChild>
+                                                <Button variant="destructive" size="sm"><Trash2 className="w-4 h-4" /></Button>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent className="bg-neutral-950 border-white/10 text-white">
+                                                <AlertDialogHeader>
+                                                    <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
+                                                    <AlertDialogDescription className="text-white/70">
+                                                        Essa ação não pode ser desfeita. Isso irá apagar permanentemente o canal e seu logo.
+                                                    </AlertDialogDescription>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                                    <AlertDialogAction onClick={() => handleDeleteChannel(channel.id, channel.logo_url)}>
+                                                        Continuar
+                                                    </AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
                                     </TableCell>
                                 </TableRow>
                             ))}
@@ -817,6 +874,26 @@ const TvPackagesContent = () => {
         getPackages();
     }, []);
   
+     const handleDeletePackage = async (packageId: string) => {
+        const supabase = createClient();
+        
+        // 1. Deletar as associações na tabela de junção
+        const { error: relationError } = await supabase.from('tv_package_channels').delete().eq('package_id', packageId);
+        if (relationError) {
+            toast({ variant: 'destructive', title: 'Erro de Associação', description: `Não foi possível remover associações: ${relationError.message}` });
+            return;
+        }
+
+        // 2. Deletar o pacote em si
+        const { error: packageError } = await supabase.from('tv_packages').delete().eq('id', packageId);
+        if (packageError) {
+            toast({ variant: 'destructive', title: 'Erro de Banco de Dados', description: `Não foi possível deletar o pacote: ${packageError.message}` });
+        } else {
+            toast({ title: 'Sucesso', description: 'Pacote deletado com sucesso.' });
+            getPackages(); // Refresh
+        }
+    };
+
     if (loading) {
       return (
         <div className="flex items-center justify-center p-8">
@@ -850,17 +927,38 @@ const TvPackagesContent = () => {
   
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {packages.map((pkg) => (
-            <Card key={pkg.id} className="border-white/10 bg-neutral-900/60">
+            <Card key={pkg.id} className="border-white/10 bg-neutral-900/60 flex flex-col">
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   {pkg.name}
-                  <Button variant="ghost" size="sm">Editar</Button>
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="mb-2 text-sm text-white/70">X canais</p>
+              <CardContent className="flex-grow">
+                <p className="mb-2 text-sm text-white/70">ID: {pkg.id}</p>
                 {/* Channel logos will be added later */}
               </CardContent>
+              <div className="flex justify-end p-4 border-t border-white/10">
+                <Button variant="ghost" size="sm" className="mr-2">Editar</Button>
+                <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <Button variant="destructive" size="sm"><Trash2 className="w-4 h-4" /></Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent className="bg-neutral-950 border-white/10 text-white">
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
+                            <AlertDialogDescription className="text-white/70">
+                                Essa ação não pode ser desfeita. Isso irá apagar o pacote e todas as suas associações com canais.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => handleDeletePackage(pkg.id)}>
+                                Continuar
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+              </div>
             </Card>
           ))}
            {packages.length === 0 && <p className="text-white/60 col-span-full">Nenhum pacote de TV encontrado.</p>}
@@ -1073,5 +1171,3 @@ export default function AdminPage() {
 
   return <AdminDashboard user={user} onLogout={() => setUser(null)} />;
 }
-
-    
