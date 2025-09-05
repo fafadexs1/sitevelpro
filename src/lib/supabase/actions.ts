@@ -1,11 +1,13 @@
 
 'use server';
 
-import { createClient } from './server';
+import { createAdminClient } from './admin';
 
 export async function setupDatabase() {
-  const supabase = createClient();
+  const supabase = createAdminClient();
 
+  // The function is created in the Supabase SQL Editor.
+  // We call it from the server-side action.
   const { error } = await supabase.rpc('setup_plans_table');
 
   if (error) {
@@ -34,8 +36,4 @@ export async function setupDatabase() {
     end;
     $$ language plpgsql;
   */
-
-  // After running the above SQL, the `setupDatabase` function will work.
-  // The SQL creates a PostgreSQL function that the `supabase.rpc` call can execute.
-  // This is the standard way to perform administrative tasks securely from server-side code.
 }
