@@ -86,7 +86,7 @@ type Plan = {
 };
 
 // ==================================
-// Schemas de Validação
+// Schemas de Validação e Valores Padrão
 // ==================================
 const loginSchema = z.object({
   email: z.string().email("E-mail inválido."),
