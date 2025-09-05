@@ -248,7 +248,7 @@ function AdminLogin({ onLogin }: { onLogin: (user: SupabaseUser) => void }) {
 }
 
 // ==================================
-// Componente de Adicionar/Editar Plano (Nova Lógica)
+// Componente de Adicionar Plano (Lógica Recriada e Segura)
 // ==================================
 function AddPlanForm({
   onPlanAdded,
@@ -268,34 +268,36 @@ function AddPlanForm({
     mode: "onChange",
   });
 
+  const { control, handleSubmit, formState } = form;
+
   const { fields, append, remove } = useFieldArray({
-    control: form.control,
+    control,
     name: "features_with_icons",
   });
-  
+
   const onSubmit = async (data: PlanFormData) => {
     setIsSubmitting(true);
     const supabase = createClient();
-    
     const { error } = await supabase.from("plans").insert([data]);
 
     if (error) {
       toast({
         variant: "destructive",
-        title: "Erro ao salvar plano",
-        description: error.message,
+        title: "Erro",
+        description: `Não foi possível adicionar o plano: ${error.message}`,
       });
     } else {
-      toast({ title: "Sucesso!", description: "Plano salvo com sucesso." });
-      onPlanAdded(); // Atualiza a lista de planos
-      onOpenChange(false); // Fecha o modal
+      toast({ title: "Sucesso!", description: "Plano adicionado com sucesso." });
+      onPlanAdded();
+      onOpenChange(false);
+      form.reset();
     }
     setIsSubmitting(false);
   };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <DialogHeader>
           <DialogTitle>Adicionar Novo Plano</DialogTitle>
           <DialogDescription>
@@ -490,6 +492,7 @@ function AddPlanForm({
     </Form>
   );
 }
+
 
 // ==================================
 // Componentes do Dashboard
