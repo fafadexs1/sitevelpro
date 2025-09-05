@@ -30,7 +30,6 @@ export async function setupDatabase() {
         type text not null,
         speed text not null,
         price real not null,
-        features_with_icons jsonb,
         highlight boolean default false not null,
         has_tv boolean default false not null,
         created_at timestamp with time zone default timezone('utc'::text, now()) not null
@@ -40,5 +39,3 @@ export async function setupDatabase() {
 
   */
 }
-
-    
