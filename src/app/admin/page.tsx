@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -77,6 +78,7 @@ type Plan = {
   price: number;
   highlight: boolean;
   has_tv: boolean;
+  features: string[];
 };
 
 // ==================================
@@ -94,19 +96,22 @@ const planSchema = z.object({
   }),
   speed: z.string().min(3, "Velocidade é obrigatória"),
   price: z.coerce.number().min(0, "Preço deve ser positivo"),
+  features: z.string().optional(),
   highlight: z.boolean().default(false),
   has_tv: z.boolean().default(false),
 });
 
 type PlanFormData = z.infer<typeof planSchema>;
 
-const defaultPlanValues: PlanFormData = {
+const defaultPlanValues: Omit<PlanFormData, 'features'> & { features?: string } = {
   type: "residencial",
   speed: "",
   price: 0,
+  features: "",
   highlight: false,
   has_tv: false,
 };
+
 
 // ==================================
 // Componente de Login
@@ -256,7 +261,16 @@ function AddPlanForm({
   const onSubmit = async (data: PlanFormData) => {
     setIsSubmitting(true);
     const supabase = createClient();
-    const { error } = await supabase.from("plans").insert([data]);
+    
+    // Transformar o campo de texto de features em um array de strings
+    const featuresArray = data.features ? data.features.split('\n').map(s => s.trim()).filter(Boolean) : [];
+    
+    const submissionData = {
+      ...data,
+      features: featuresArray,
+    };
+
+    const { error } = await supabase.from("plans").insert([submissionData]);
 
     if (error) {
       toast({
@@ -268,7 +282,7 @@ function AddPlanForm({
       toast({ title: "Sucesso!", description: "Plano adicionado com sucesso." });
       onPlanAdded();
       onOpenChange(false);
-      form.reset();
+      form.reset(defaultPlanValues);
     }
     setIsSubmitting(false);
   };
@@ -335,6 +349,25 @@ function AddPlanForm({
                     onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                   />
                 </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="features"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Vantagens</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Wi-Fi 6 incluso&#10;Suporte 24/7&#10;Fibra 100%"
+                    className="h-24"
+                    {...field}
+                  />
+                </FormControl>
+                 <p className="text-xs text-white/50">Liste cada vantagem em uma nova linha.</p>
                 <FormMessage />
               </FormItem>
             )}
@@ -650,6 +683,7 @@ function PlansTable({ plans }: { plans: Plan[] }) {
         <TableRow className="border-white/10 hover:bg-transparent">
           <TableHead className="w-[150px]">Velocidade</TableHead>
           <TableHead>Preço</TableHead>
+          <TableHead>Vantagens</TableHead>
           <TableHead className="text-center">Destaque</TableHead>
           <TableHead className="text-right">Ações</TableHead>
         </TableRow>
@@ -659,6 +693,13 @@ function PlansTable({ plans }: { plans: Plan[] }) {
           <TableRow key={plan.id} className="border-white/10">
             <TableCell className="font-medium">{plan.speed}</TableCell>
             <TableCell>R$ {Number(plan.price || 0).toFixed(2)}</TableCell>
+            <TableCell>
+              <ul className="list-disc list-inside text-white/80 space-y-1">
+                {(plan.features || []).map((feature, index) => (
+                  <li key={index}>{feature}</li>
+                ))}
+              </ul>
+            </TableCell>
             <TableCell className="text-center">
               {plan.highlight && (
                 <Badge className="border-primary/30 bg-primary/20 text-primary">Sim</Badge>
