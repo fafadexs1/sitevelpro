@@ -28,6 +28,12 @@ const nextConfig: NextConfig = {
         hostname: 'velpro.net.br',
         port: '',
         pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'bqxdyinyzfxqghyuzsbs.supabase.co',
+        port: '',
+        pathname: '/**',
       }
     ],
   },

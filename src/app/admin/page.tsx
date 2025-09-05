@@ -25,6 +25,7 @@ import {
   Tv,
   UserPlus,
   Clapperboard,
+  Upload,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -99,6 +100,9 @@ type TvPackage = {
 // ==================================
 // Schemas de Validação
 // ==================================
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/svg+xml"];
+
 const authSchema = z.object({
   email: z.string().email("E-mail inválido."),
   password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres."),
@@ -127,14 +131,12 @@ const defaultPlanValues: PlanFormData = {
 
 const channelSchema = z.object({
     name: z.string().min(1, "Nome do canal é obrigatório."),
-    logo_url: z.string().url("URL do logo inválida.").optional().or(z.literal('')),
+    logo_file: z.any()
+        .refine((file) => file instanceof File, "Logo é obrigatório.")
+        .refine((file) => file.size <= MAX_FILE_SIZE, `Tamanho máximo de 5MB.`)
+        .refine((file) => ACCEPTED_IMAGE_TYPES.includes(file.type), "Apenas .jpg, .jpeg, .png, .svg e .webp são permitidos."),
 });
 type ChannelFormData = z.infer<typeof channelSchema>;
-
-const defaultChannelValues: ChannelFormData = {
-    name: "",
-    logo_url: "",
-}
 
 
 // ==================================
@@ -464,25 +466,56 @@ function AddChannelForm({
 
   const form = useForm<ChannelFormData>({
     resolver: zodResolver(channelSchema),
-    defaultValues: defaultChannelValues,
+    defaultValues: { name: "", logo_file: null },
   });
 
   const onSubmit = async (data: ChannelFormData) => {
     setIsSubmitting(true);
     const supabase = createClient();
-    const { error } = await supabase.from("tv_channels").insert([data]);
+    const file = data.logo_file;
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Math.random()}.${fileExt}`;
+    const filePath = `${fileName}`;
 
-    if (error) {
+    // 1. Upload da imagem para o Storage
+    const { error: uploadError } = await supabase.storage
+        .from('canais')
+        .upload(filePath, file);
+
+    if (uploadError) {
+        toast({ variant: "destructive", title: "Erro de Upload", description: uploadError.message });
+        setIsSubmitting(false);
+        return;
+    }
+
+    // 2. Obter a URL pública da imagem
+    const { data: publicUrlData } = supabase.storage
+        .from('canais')
+        .getPublicUrl(filePath);
+
+    if (!publicUrlData) {
+        toast({ variant: "destructive", title: "Erro de URL", description: "Não foi possível obter a URL pública do arquivo." });
+        setIsSubmitting(false);
+        return;
+    }
+
+    // 3. Inserir os dados na tabela 'tv_channels'
+    const { error: insertError } = await supabase.from("tv_channels").insert([{ 
+        name: data.name,
+        logo_url: publicUrlData.publicUrl 
+    }]);
+
+    if (insertError) {
       toast({
         variant: "destructive",
-        title: "Erro",
-        description: `Não foi possível adicionar o canal: ${error.message}`,
+        title: "Erro ao Salvar",
+        description: `Não foi possível adicionar o canal: ${insertError.message}`,
       });
     } else {
       toast({ title: "Sucesso!", description: "Canal adicionado com sucesso." });
       onChannelAdded();
       onOpenChange(false);
-      form.reset(defaultChannelValues);
+      form.reset();
     }
     setIsSubmitting(false);
   };
@@ -493,7 +526,7 @@ function AddChannelForm({
         <DialogHeader>
           <DialogTitle>Adicionar Novo Canal</DialogTitle>
           <DialogDescription>
-            Insira o nome e a URL do logo do canal.
+            Insira o nome do canal e faça o upload do logo.
           </DialogDescription>
         </DialogHeader>
 
@@ -512,13 +545,29 @@ function AddChannelForm({
         />
         <FormField
           control={form.control}
-          name="logo_url"
+          name="logo_file"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>URL do Logo</FormLabel>
+              <FormLabel>Logo do Canal</FormLabel>
               <FormControl>
-                <Input placeholder="https://exemplo.com/logo.png" {...field} />
+                <div className="relative flex items-center justify-center w-full">
+                    <label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-neutral-900 border-white/20 hover:border-primary hover:bg-neutral-800">
+                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                            <Upload className="w-8 h-8 mb-3 text-white/50"/>
+                            <p className="mb-2 text-sm text-white/50"><span className="font-semibold">Clique para enviar</span> ou arraste</p>
+                            <p className="text-xs text-white/50">SVG, PNG, JPG or WEBP (MAX. 5MB)</p>
+                        </div>
+                        <Input 
+                            id="dropzone-file" 
+                            type="file" 
+                            className="hidden"
+                            accept={ACCEPTED_IMAGE_TYPES.join(',')}
+                            onChange={(e) => field.onChange(e.target.files ? e.target.files[0] : null)}
+                         />
+                    </label>
+                </div> 
               </FormControl>
+               {field.value && <p className="text-sm text-white/70 mt-2">Arquivo selecionado: {field.value.name}</p>}
               <FormMessage />
             </FormItem>
           )}
@@ -675,7 +724,7 @@ const TvChannelsContent = () => {
 
     useEffect(() => {
         getChannels();
-    }, []);
+    }, [toast]);
 
     if (loading) {
         return <div className="flex items-center justify-center p-8"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
@@ -719,7 +768,7 @@ const TvChannelsContent = () => {
                                 <TableRow key={channel.id} className="border-white/10">
                                     <TableCell>
                                         {channel.logo_url ? (
-                                            <Image src={channel.logo_url} alt={channel.name} width={40} height={40} className="rounded-md bg-white/10 p-1"/>
+                                            <Image src={channel.logo_url} alt={channel.name} width={40} height={40} className="rounded-md bg-white/10 p-1 object-contain"/>
                                         ) : (
                                             <div className="w-10 h-10 rounded-md bg-white/10 flex items-center justify-center">
                                                 <Clapperboard className="h-5 w-5 text-white/50"/>
@@ -766,7 +815,7 @@ const TvPackagesContent = () => {
 
     useEffect(() => {
         getPackages();
-    }, []);
+    }, [toast]);
   
     if (loading) {
       return (
@@ -1008,7 +1057,7 @@ export default function AdminPage() {
       isMounted = false;
       listener?.subscription?.unsubscribe?.();
     };
-  }, []);
+  }, [supabase.auth]);
 
   if (loading) {
     return (

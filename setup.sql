@@ -1,48 +1,68 @@
--- Tabela de Planos de Internet
+-- Criar a tabela de planos
 CREATE TABLE IF NOT EXISTS public.plans (
-    id uuid DEFAULT gen_random_uuid() NOT NULL PRIMARY KEY,
+    id uuid NOT NULL DEFAULT gen_random_uuid(),
+    created_at timestamp with time zone NOT NULL DEFAULT now(),
     type text,
     speed text,
     price numeric,
     highlight boolean,
     has_tv boolean,
-    created_at timestamp with time zone DEFAULT now() NOT NULL
+    CONSTRAINT plans_pkey PRIMARY KEY (id)
 );
-
--- Tabela de Canais de TV
-CREATE TABLE IF NOT EXISTS public.tv_channels (
-    id uuid DEFAULT gen_random_uuid() NOT NULL PRIMARY KEY,
-    name text NOT NULL UNIQUE,
-    logo_url text,
-    created_at timestamp with time zone DEFAULT now() NOT NULL
-);
-
--- Tabela de Pacotes de TV
-CREATE TABLE IF NOT EXISTS public.tv_packages (
-    id uuid DEFAULT gen_random_uuid() NOT NULL PRIMARY KEY,
-    name text NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL
-);
-
--- Tabela de Junção (Muitos-para-Muitos) entre Pacotes e Canais
-CREATE TABLE IF NOT EXISTS public.tv_package_channels (
-    package_id uuid NOT NULL REFERENCES public.tv_packages(id) ON DELETE CASCADE,
-    channel_id uuid NOT NULL REFERENCES public.tv_channels(id) ON DELETE CASCADE,
-    PRIMARY KEY (package_id, channel_id)
-);
-
--- Inserir alguns canais de exemplo
-INSERT INTO public.tv_channels (name, logo_url) VALUES 
-('Globo', 'https://logopng.com.br/logos/globo-7.svg'),
-('Warner', 'https://logopng.com.br/logos/warner-bros-10.svg'),
-('ESPN', 'https://logopng.com.br/logos/espn-2.svg'),
-('TNT', 'https://logopng.com.br/logos/tnt-3.svg'),
-('Discovery', 'https://logopng.com.br/logos/discovery-channel-4.svg')
-ON CONFLICT (name) DO NOTHING;
-
-
--- Desativar Row Level Security para permitir acesso via API (anon key)
 ALTER TABLE public.plans DISABLE ROW LEVEL SECURITY;
+
+-- Criar a tabela de canais de TV
+CREATE TABLE IF NOT EXISTS public.tv_channels (
+    id uuid NOT NULL DEFAULT gen_random_uuid(),
+    created_at timestamp with time zone NOT NULL DEFAULT now(),
+    name text NOT NULL,
+    logo_url text,
+    CONSTRAINT tv_channels_pkey PRIMARY KEY (id),
+    CONSTRAINT tv_channels_name_key UNIQUE (name)
+);
 ALTER TABLE public.tv_channels DISABLE ROW LEVEL SECURITY;
+
+-- Criar a tabela de pacotes de TV
+CREATE TABLE IF NOT EXISTS public.tv_packages (
+    id uuid NOT NULL DEFAULT gen_random_uuid(),
+    created_at timestamp with time zone NOT NULL DEFAULT now(),
+    name text NOT NULL,
+    CONSTRAINT tv_packages_pkey PRIMARY KEY (id)
+);
 ALTER TABLE public.tv_packages DISABLE ROW LEVEL SECURITY;
+
+-- Criar a tabela de junção para pacotes e canais
+CREATE TABLE IF NOT EXISTS public.tv_package_channels (
+    package_id uuid NOT NULL,
+    channel_id uuid NOT NULL,
+    CONSTRAINT tv_package_channels_pkey PRIMARY KEY (package_id, channel_id),
+    CONSTRAINT tv_package_channels_channel_id_fkey FOREIGN KEY (channel_id) REFERENCES public.tv_channels(id) ON DELETE CASCADE,
+    CONSTRAINT tv_package_channels_package_id_fkey FOREIGN KEY (package_id) REFERENCES public.tv_packages(id) ON DELETE CASCADE
+);
 ALTER TABLE public.tv_package_channels DISABLE ROW LEVEL SECURITY;
+
+-- Inserir o bucket de armazenamento para os logos dos canais
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES ('canais', 'canais', true, 5242880, ARRAY['image/jpeg', 'image/png', 'image/svg+xml', 'image/webp'])
+ON CONFLICT (id) DO NOTHING;
+
+-- Definir políticas de acesso para o bucket "canais"
+-- Permitir acesso público de leitura
+CREATE POLICY "Public Read Access"
+ON storage.objects FOR SELECT
+USING ( bucket_id = 'canais' );
+
+-- Permitir que usuários autenticados façam upload
+CREATE POLICY "Authenticated Upload"
+ON storage.objects FOR INSERT
+WITH CHECK ( bucket_id = 'canais' AND auth.role() = 'authenticated' );
+
+-- Permitir que usuários autenticados atualizem seus próprios arquivos
+CREATE POLICY "Authenticated Update"
+ON storage.objects FOR UPDATE
+USING ( auth.uid() = owner_id AND bucket_id = 'canais' );
+
+-- Permitir que usuários autenticados deletem seus próprios arquivos
+CREATE POLICY "Authenticated Delete"
+ON storage.objects FOR DELETE
+USING ( auth.uid() = owner_id AND bucket_id = 'canais' );
