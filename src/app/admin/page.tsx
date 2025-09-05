@@ -69,6 +69,7 @@ import { setupDatabase } from "@/lib/supabase/actions";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import * as icons from "lucide-react";
 import Image from "next/image";
+import { ChannelPackageForm } from "@/components/admin/ChannelPackageForm";
 
 // ==================================
 // Tipagem
@@ -525,6 +526,8 @@ const TvPackagesContent = () => {
     const [packages, setPackages] = useState<TvPackage[]>([]);
     const [loading, setLoading] = useState(true);
     const { toast } = useToast();
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
   
     const getPackages = async () => {
         setLoading(true);
@@ -557,10 +560,20 @@ const TvPackagesContent = () => {
             <h1 className="text-3xl font-bold">Pacotes de TV</h1>
             <p className="text-white/60">Crie e gerencie os pacotes de canais.</p>
           </div>
-          <Button>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Novo Pacote
-          </Button>
+           <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+            <DialogTrigger asChild>
+                <Button onClick={() => setIsModalOpen(true)}>
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Novo Pacote
+                </Button>
+            </DialogTrigger>
+            <DialogContent className="border-white/10 bg-neutral-950 text-white sm:max-w-2xl">
+                 <ChannelPackageForm 
+                    onPackageAdded={getPackages}
+                    onOpenChange={setIsModalOpen}
+                 />
+            </DialogContent>
+           </Dialog>
         </header>
   
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

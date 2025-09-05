@@ -6,6 +6,27 @@ import { createAdminClient } from './admin';
 export async function setupDatabase() {
   const supabase = createAdminClient();
 
+  // A função `execute_sql` é criada e usada apenas dentro desta transação,
+  // garantindo que não dependemos de uma função pré-existente.
+  const createFunctionQuery = `
+    CREATE OR REPLACE FUNCTION public.execute_sql(sql text)
+    RETURNS void
+    LANGUAGE plpgsql
+    AS $function$
+    BEGIN
+      EXECUTE sql;
+    END;
+    $function$;
+  `;
+
+  const { error: fnError } = await supabase.rpc('execute_sql', { sql: createFunctionQuery });
+
+  // Ignoramos o erro "already exists" se a função foi criada em uma execução anterior.
+  if (fnError && !fnError.message.includes('already exists')) {
+     console.error('Error creating helper function:', fnError);
+     throw new Error(`Falha ao criar a função helper de configuração: ${fnError.message}.`);
+  }
+
   const queries = [
     // Tabela de Planos
     `CREATE TABLE IF NOT EXISTS public.plans (
@@ -13,7 +34,6 @@ export async function setupDatabase() {
       type text NOT NULL,
       speed text NOT NULL,
       price real NOT NULL,
-      features text[] NULL,
       highlight boolean NOT NULL DEFAULT false,
       has_tv boolean NOT NULL DEFAULT false,
       created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
@@ -60,24 +80,5 @@ export async function setupDatabase() {
       console.error('Supabase setup error for query:', query, 'Error:', error);
       throw new Error(`Falha ao executar a configuração do schema: ${error.message}.`);
     }
-  }
-
-  // Função para executar SQL arbitrário, necessária para a abordagem acima.
-  const { error: rpcError } = await supabase.rpc('execute_sql', {
-    sql: `
-      CREATE OR REPLACE FUNCTION public.execute_sql(sql text)
-      RETURNS void
-      LANGUAGE plpgsql
-      AS $function$
-      BEGIN
-        EXECUTE sql;
-      END;
-      $function$;
-    `
-  });
-
-  if (rpcError) {
-      console.error('Error creating execute_sql function:', rpcError);
-      // Não lançar erro aqui, pois a função pode já existir.
   }
 }

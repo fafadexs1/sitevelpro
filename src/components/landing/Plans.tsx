@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -25,17 +26,11 @@ import { createClient } from "@/lib/supabase/client";
 import * as icons from "lucide-react";
 
 
-type FeatureWithIcon = {
-  icon: string;
-  text: string;
-};
-
 type Plan = {
   id: string;
   type: 'residencial' | 'empresarial';
   speed: string;
   price: number;
-  features_with_icons: FeatureWithIcon[];
   highlight: boolean;
   has_tv: boolean;
 };
@@ -65,12 +60,6 @@ export function Plans() {
   const currentPlans = allPlans.filter(p => p.type === planType);
 
   const PlanCard = ({ plan, index }: { plan: Plan, index: number }) => {
-    
-    const Icon = ({ name }: { name: string }) => {
-      const LucideIcon = icons[name as keyof typeof icons] as React.ElementType;
-      if (!LucideIcon) return <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />;
-      return <LucideIcon className="mt-0.5 h-4 w-4 shrink-0 text-primary" />;
-    };
 
     return (
       <motion.div
@@ -101,14 +90,17 @@ export function Plans() {
           
           {plan.has_tv && <ChannelLogos />}
 
+          {/* This section can be re-enabled later when features are stored */}
+          {/* 
           <ul className="mb-6 space-y-2 text-sm">
-            {(plan.features_with_icons || []).map((f) => (
+            {(plan.features || []).map((f) => (
               <li key={f.text} className="flex items-start gap-2">
                 <Icon name={f.icon} />
                 <span className="text-white/80">{f.text}</span>
               </li>
             ))}
           </ul>
+          */}
         </div>
         <Link href="/assinar">
           <Button
