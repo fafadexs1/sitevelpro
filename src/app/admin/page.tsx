@@ -724,7 +724,7 @@ const TvChannelsContent = () => {
 
     useEffect(() => {
         getChannels();
-    }, [toast]);
+    }, []);
 
     if (loading) {
         return <div className="flex items-center justify-center p-8"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
@@ -815,7 +815,7 @@ const TvPackagesContent = () => {
 
     useEffect(() => {
         getPackages();
-    }, [toast]);
+    }, []);
   
     if (loading) {
       return (
@@ -1073,3 +1073,5 @@ export default function AdminPage() {
 
   return <AdminDashboard user={user} onLogout={() => setUser(null)} />;
 }
+
+    

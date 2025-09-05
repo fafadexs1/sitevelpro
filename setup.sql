@@ -1,68 +1,70 @@
--- Criar a tabela de planos
-CREATE TABLE IF NOT EXISTS public.plans (
-    id uuid NOT NULL DEFAULT gen_random_uuid(),
-    created_at timestamp with time zone NOT NULL DEFAULT now(),
-    type text,
-    speed text,
-    price numeric,
-    highlight boolean,
-    has_tv boolean,
-    CONSTRAINT plans_pkey PRIMARY KEY (id)
+-- Tabela de Planos de Internet
+CREATE TABLE IF NOT EXISTS plans (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    type TEXT NOT NULL, -- 'residencial' ou 'empresarial'
+    speed TEXT NOT NULL,
+    price NUMERIC(10, 2) NOT NULL,
+    highlight BOOLEAN DEFAULT FALSE,
+    has_tv BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMPTZ DEFAULT NOW()
 );
-ALTER TABLE public.plans DISABLE ROW LEVEL SECURITY;
+ALTER TABLE plans ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow public read access to plans" ON plans FOR SELECT USING (true);
+CREATE POLICY "Allow admin access to plans" ON plans FOR ALL USING (auth.role() = 'service_role');
 
--- Criar a tabela de canais de TV
-CREATE TABLE IF NOT EXISTS public.tv_channels (
-    id uuid NOT NULL DEFAULT gen_random_uuid(),
-    created_at timestamp with time zone NOT NULL DEFAULT now(),
-    name text NOT NULL,
-    logo_url text,
-    CONSTRAINT tv_channels_pkey PRIMARY KEY (id),
-    CONSTRAINT tv_channels_name_key UNIQUE (name)
+
+-- Tabela de Canais de TV
+CREATE TABLE IF NOT EXISTS tv_channels (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name TEXT NOT NULL UNIQUE,
+    logo_url TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW()
 );
-ALTER TABLE public.tv_channels DISABLE ROW LEVEL SECURITY;
+ALTER TABLE tv_channels ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow public read access to tv_channels" ON tv_channels FOR SELECT USING (true);
+CREATE POLICY "Allow admin access to tv_channels" ON tv_channels FOR ALL USING (auth.role() = 'service_role');
 
--- Criar a tabela de pacotes de TV
-CREATE TABLE IF NOT EXISTS public.tv_packages (
-    id uuid NOT NULL DEFAULT gen_random_uuid(),
-    created_at timestamp with time zone NOT NULL DEFAULT now(),
-    name text NOT NULL,
-    CONSTRAINT tv_packages_pkey PRIMARY KEY (id)
+
+-- Tabela de Pacotes de TV
+CREATE TABLE IF NOT EXISTS tv_packages (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name TEXT NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW()
 );
-ALTER TABLE public.tv_packages DISABLE ROW LEVEL SECURITY;
+ALTER TABLE tv_packages ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow public read access to tv_packages" ON tv_packages FOR SELECT USING (true);
+CREATE POLICY "Allow admin access to tv_packages" ON tv_packages FOR ALL USING (auth.role() = 'service_role');
 
--- Criar a tabela de junção para pacotes e canais
-CREATE TABLE IF NOT EXISTS public.tv_package_channels (
-    package_id uuid NOT NULL,
-    channel_id uuid NOT NULL,
-    CONSTRAINT tv_package_channels_pkey PRIMARY KEY (package_id, channel_id),
-    CONSTRAINT tv_package_channels_channel_id_fkey FOREIGN KEY (channel_id) REFERENCES public.tv_channels(id) ON DELETE CASCADE,
-    CONSTRAINT tv_package_channels_package_id_fkey FOREIGN KEY (package_id) REFERENCES public.tv_packages(id) ON DELETE CASCADE
+
+-- Tabela de Junção (Muitos-para-Muitos) entre Pacotes e Canais
+CREATE TABLE IF NOT EXISTS tv_package_channels (
+    package_id UUID REFERENCES tv_packages(id) ON DELETE CASCADE,
+    channel_id UUID REFERENCES tv_channels(id) ON DELETE CASCADE,
+    PRIMARY KEY (package_id, channel_id)
 );
-ALTER TABLE public.tv_package_channels DISABLE ROW LEVEL SECURITY;
+ALTER TABLE tv_package_channels ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow public read access to tv_package_channels" ON tv_package_channels FOR SELECT USING (true);
+CREATE POLICY "Allow admin access to tv_package_channels" ON tv_package_channels FOR ALL USING (auth.role() = 'service_role');
 
--- Inserir o bucket de armazenamento para os logos dos canais
-INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-VALUES ('canais', 'canais', true, 5242880, ARRAY['image/jpeg', 'image/png', 'image/svg+xml', 'image/webp'])
-ON CONFLICT (id) DO NOTHING;
 
--- Definir políticas de acesso para o bucket "canais"
--- Permitir acesso público de leitura
-CREATE POLICY "Public Read Access"
+-- Políticas de Acesso para o Bucket 'canais'
+CREATE POLICY "Allow public read access to channel logos"
 ON storage.objects FOR SELECT
 USING ( bucket_id = 'canais' );
 
--- Permitir que usuários autenticados façam upload
-CREATE POLICY "Authenticated Upload"
+CREATE POLICY "Allow authenticated users to upload channel logos"
 ON storage.objects FOR INSERT
-WITH CHECK ( bucket_id = 'canais' AND auth.role() = 'authenticated' );
+TO authenticated
+WITH CHECK ( bucket_id = 'canais' );
 
--- Permitir que usuários autenticados atualizem seus próprios arquivos
-CREATE POLICY "Authenticated Update"
-ON storage.objects FOR UPDATE
-USING ( auth.uid() = owner_id AND bucket_id = 'canais' );
 
--- Permitir que usuários autenticados deletem seus próprios arquivos
-CREATE POLICY "Authenticated Delete"
-ON storage.objects FOR DELETE
-USING ( auth.uid() = owner_id AND bucket_id = 'canais' );
+-- Inserir dados de exemplo (canais)
+INSERT INTO tv_channels (name, logo_url) VALUES
+('Globo', 'https://picsum.photos/seed/globo/80/80'),
+('Warner', 'https://picsum.photos/seed/warner/80/80'),
+('ESPN', 'https://picsum.photos/seed/espn/80/80'),
+('TNT', 'https://picsum.photos/seed/tnt/80/80'),
+('Discovery', 'https://picsum.photos/seed/discovery/80/80')
+ON CONFLICT (name) DO NOTHING;
+
+    
