@@ -557,7 +557,7 @@ const PlansContent = ({ iconList }: { iconList: string[] }) => {
               <Package className="h-4 w-4" /> Planos Residenciais
             </button>
             <button
-              onClick={()={() => setActiveTab("empresarial")}}
+              onClick={() => setActiveTab("empresarial")}
               className={`flex items-center gap-2 px-4 py-2 text-sm transition-colors ${
                 activeTab === "empresarial"
                   ? "border-b-2 border-primary text-primary"
@@ -842,5 +842,3 @@ export default function AdminPage() {
 
   return <AdminDashboard user={user} onLogout={() => setUser(null)} iconList={iconList} />;
 }
-
-    
