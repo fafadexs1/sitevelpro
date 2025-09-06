@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Gauge, Check, ChevronRight, MessageCircle, Globe, Loader2 } from "lucide-react";
+import { Gauge, Check, ChevronRight, Loader2 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import Link from 'next/link';
 import {
@@ -13,31 +13,23 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ChannelLogos } from "./ChannelLogos";
 import { createClient } from "@/utils/supabase/client";
-import * as icons from "lucide-react";
-
 
 type Plan = {
   id: string;
   type: 'residencial' | 'empresarial';
   speed: string;
   price: number;
+  original_price: number | null;
+  features: string[] | null;
   highlight: boolean;
   has_tv: boolean;
 };
 
 export function Plans() {
   const [planType, setPlanType] = useState<"residencial" | "empresarial">("residencial");
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const isMobile = useIsMobile();
   const [allPlans, setAllPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
@@ -83,24 +75,28 @@ export function Plans() {
               <Gauge className="h-5 w-5 text-primary" />
             </div>
           </div>
-          <div className="mb-4 flex items-end gap-1">
-            <span className="text-4xl font-black">{(plan.price || 0).toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
-            <span className="pb-2 text-white/70">/mês</span>
+          <div className="mb-4 flex items-baseline gap-2">
+            {plan.original_price && (
+                <span className="text-xl font-bold text-white/50 line-through">
+                    R$ {plan.original_price.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                </span>
+            )}
+            <div className="flex items-end gap-1">
+              <span className="text-4xl font-black">{plan.price.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
+              <span className="pb-2 text-white/70">/mês</span>
+            </div>
           </div>
           
           {plan.has_tv && <ChannelLogos />}
 
-          {/* This section can be re-enabled later when features are stored */}
-          {/* 
-          <ul className="mb-6 space-y-2 text-sm">
-            {(plan.features || []).map((f) => (
-              <li key={f.text} className="flex items-start gap-2">
-                <Icon name={f.icon} />
-                <span className="text-white/80">{f.text}</span>
+          <ul className="my-6 space-y-2 text-sm">
+            {(plan.features ?? []).map((feature, i) => (
+              <li key={i} className="flex items-start gap-2">
+                <Check className="h-4 w-4 mt-0.5 shrink-0 text-primary" />
+                <span className="text-white/80">{feature}</span>
               </li>
             ))}
           </ul>
-          */}
         </div>
         <Link href="/assinar">
           <Button

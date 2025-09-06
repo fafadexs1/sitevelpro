@@ -92,6 +92,8 @@ type Plan = {
   type: "residencial" | "empresarial";
   speed: string;
   price: number;
+  original_price: number | null;
+  features: string[] | null;
   highlight: boolean;
   has_tv: boolean;
 };
@@ -129,16 +131,20 @@ const planSchema = z.object({
   }),
   speed: z.string().min(3, "Velocidade é obrigatória"),
   price: z.coerce.number().min(0, "Preço deve ser positivo"),
+  original_price: z.coerce.number().optional().nullable(),
+  features: z.string().optional(),
   highlight: z.boolean().default(false),
   has_tv: z.boolean().default(false),
 });
 
 type PlanFormData = z.infer<typeof planSchema>;
 
-const defaultPlanValues: PlanFormData = {
+const defaultPlanValues = {
   type: "residencial",
   speed: "",
   price: 0,
+  original_price: null,
+  features: "",
   highlight: false,
   has_tv: false,
 };
@@ -320,49 +326,73 @@ function AdminLogin({ onLogin }: { onLogin: (user: SupabaseUser) => void }) {
 // ==================================
 // Componente de Formulário
 // ==================================
-function AddPlanForm({
+const PlanForm = ({
+  mode,
+  plan,
   onPlanAdded,
+  onPlanEdited,
   onOpenChange,
 }: {
-  onPlanAdded: () => void;
+  mode: "add" | "edit";
+  plan?: Plan | null;
+  onPlanAdded?: () => void;
+  onPlanEdited?: () => void;
   onOpenChange: (open: boolean) => void;
-}) {
+}) => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<PlanFormData>({
     resolver: zodResolver(planSchema),
-    defaultValues: defaultPlanValues,
-    mode: "onChange",
+    defaultValues:
+      mode === "edit" && plan
+        ? {
+            ...plan,
+            original_price: plan.original_price ?? undefined,
+            features: (plan.features ?? []).join("\n"),
+          }
+        : defaultPlanValues,
   });
 
   const onSubmit = async (data: PlanFormData) => {
     setIsSubmitting(true);
     const supabase = createClient();
-    const { error } = await supabase.from("plans").insert([data]);
 
-    if (error) {
-      toast({
-        variant: "destructive",
-        title: "Erro",
-        description: `Não foi possível adicionar o plano: ${error.message}`,
-      });
-    } else {
-      toast({ title: "Sucesso!", description: "Plano adicionado com sucesso." });
-      onPlanAdded();
-      onOpenChange(false);
-      form.reset(defaultPlanValues);
+    const planData = {
+      ...data,
+      features: data.features?.split("\n").filter(Boolean) ?? [],
+      original_price: data.original_price || null,
+    };
+
+    if (mode === "add") {
+      const { error } = await supabase.from("plans").insert([planData]);
+      if (error) {
+        toast({ variant: "destructive", title: "Erro", description: `Não foi possível adicionar o plano: ${error.message}` });
+      } else {
+        toast({ title: "Sucesso!", description: "Plano adicionado." });
+        onPlanAdded?.();
+      }
+    } else if (mode === "edit" && plan) {
+      const { error } = await supabase.from("plans").update(planData).eq("id", plan.id);
+      if (error) {
+        toast({ variant: "destructive", title: "Erro", description: `Não foi possível editar o plano: ${error.message}` });
+      } else {
+        toast({ title: "Sucesso!", description: "Plano editado." });
+        onPlanEdited?.();
+      }
     }
+
     setIsSubmitting(false);
+    onOpenChange(false);
   };
 
   return (
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <DialogHeader>
-            <DialogTitle>Adicionar Novo Plano</DialogTitle>
+            <DialogTitle>{mode === 'add' ? 'Adicionar Novo Plano' : 'Editar Plano'}</DialogTitle>
             <DialogDescription>
-              Preencha os detalhes do novo plano que será exibido no site.
+              {mode === 'add' ? 'Preencha os detalhes do novo plano.' : 'Modifique os detalhes do plano existente.'}
             </DialogDescription>
           </DialogHeader>
 
@@ -395,49 +425,63 @@ function AddPlanForm({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Velocidade</FormLabel>
+                  <FormControl><Input placeholder="Ex: 500 Mega" {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="price"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Preço Promocional (R$)</FormLabel>
+                    <FormControl>
+                      <Input type="number" step="0.01" placeholder="Ex: 99.90" {...field} onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="original_price"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Preço Original <span className="text-white/50">(Opcional)</span></FormLabel>
+                    <FormControl>
+                      <Input type="number" step="0.01" placeholder="Ex: 119.90" {...field} value={field.value ?? ''} onChange={(e) => field.onChange(parseFloat(e.target.value) || null)}/>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            
+            <FormField
+              control={form.control}
+              name="features"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Características <span className="text-white/50">(Uma por linha)</span></FormLabel>
                   <FormControl>
-                    <Input placeholder="Ex: 500 Mega" {...field} />
+                    <Textarea placeholder={"Wi-Fi 6\n200k de Upload\nSuporte 24/7"} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="price"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Preço (R$)</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      placeholder="Ex: 99.90"
-                      {...field}
-                      onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
             <div className="!mt-6 flex items-center justify-between border-t border-white/10 pt-4">
               <FormField
                 control={form.control}
                 name="highlight"
                 render={({ field }) => (
                   <FormItem className="flex items-center gap-x-2 space-y-0">
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                    <FormLabel className="cursor-pointer">
-                      Destacar plano?
-                    </FormLabel>
+                    <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                    <FormLabel className="cursor-pointer">Destacar plano?</FormLabel>
                   </FormItem>
                 )}
               />
@@ -446,15 +490,8 @@ function AddPlanForm({
                 name="has_tv"
                 render={({ field }) => (
                   <FormItem className="flex items-center gap-x-2 space-y-0">
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                    <FormLabel className="cursor-pointer">
-                      Inclui TV?
-                    </FormLabel>
+                    <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                    <FormLabel className="cursor-pointer">Inclui TV?</FormLabel>
                   </FormItem>
                 )}
               />
@@ -462,22 +499,17 @@ function AddPlanForm({
           </div>
 
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
-              Cancelar
-            </Button>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-              Salvar Plano
+              {mode === 'add' ? 'Adicionar Plano' : 'Salvar Alterações'}
             </Button>
           </DialogFooter>
         </form>
       </Form>
   );
-}
+};
+
 
 function AddChannelForm({
   onChannelAdded,
@@ -813,15 +845,13 @@ const PlansContent = () => {
   const [activeTab, setActiveTab] = useState<"residencial" | "empresarial">("residencial");
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
 
-  async function getPlans() {
+  const getPlans = async () => {
     setLoading(true);
     const supabase = createClient();
-    const { data, error } = await supabase
-      .from("plans")
-      .select("*")
-      .order("price", { ascending: true });
+    const { data, error } = await supabase.from("plans").select("*").order("price", { ascending: true });
 
     if (error) {
       console.error("Erro ao buscar planos:", error);
@@ -829,22 +859,33 @@ const PlansContent = () => {
       setPlans((data as Plan[]) ?? []);
     }
     setLoading(false);
-  }
+  };
 
   useEffect(() => {
-    let isMounted = true;
-    if (isMounted) {
-      getPlans();
-    }
-    return () => {
-      isMounted = false;
-    };
+    getPlans();
   }, []);
 
-  const filteredPlans = useMemo(
-    () => plans.filter((p) => p.type === activeTab),
-    [plans, activeTab]
-  );
+  const filteredPlans = useMemo(() => plans.filter((p) => p.type === activeTab), [plans, activeTab]);
+
+  const handlePlanAdded = () => {
+    getPlans();
+  };
+
+  const handlePlanEdited = () => {
+    setEditingPlan(null);
+    getPlans();
+  };
+
+  const handleDeletePlan = async (planId: string) => {
+    const supabase = createClient();
+    const { error } = await supabase.from('plans').delete().eq('id', planId);
+    if (error) {
+      toast({ variant: 'destructive', title: 'Erro', description: `Não foi possível deletar o plano: ${error.message}` });
+    } else {
+      toast({ title: 'Sucesso', description: 'Plano deletado.' });
+      getPlans();
+    }
+  };
 
   return (
     <>
@@ -853,21 +894,32 @@ const PlansContent = () => {
           <h1 className="text-3xl font-bold">Gerenciar Planos</h1>
           <p className="text-white/60">Adicione, edite ou remova os planos exibidos no site.</p>
         </div>
-        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
           <DialogTrigger asChild>
-            <Button onClick={() => setIsModalOpen(true)}>
+            <Button onClick={() => setIsAddModalOpen(true)}>
               <PlusCircle className="mr-2 h-4 w-4" />
               Adicionar Plano
             </Button>
           </DialogTrigger>
           <DialogContent className="border-white/10 bg-neutral-950 text-white sm:max-w-xl">
-            <AddPlanForm
-              onPlanAdded={getPlans}
-              onOpenChange={setIsModalOpen}
-            />
+            <PlanForm mode="add" onPlanAdded={handlePlanAdded} onOpenChange={setIsAddModalOpen} />
           </DialogContent>
         </Dialog>
       </header>
+
+      <Dialog open={!!editingPlan} onOpenChange={(isOpen) => !isOpen && setEditingPlan(null)}>
+        <DialogContent className="border-white/10 bg-neutral-950 text-white sm:max-w-xl">
+          {editingPlan && (
+            <PlanForm
+              mode="edit"
+              plan={editingPlan}
+              onPlanEdited={handlePlanEdited}
+              onOpenChange={(isOpen) => !isOpen && setEditingPlan(null)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
 
       <Card className="border-white/10 bg-neutral-950">
         <CardHeader>
@@ -908,7 +960,11 @@ const PlansContent = () => {
                   <Loader2 className="h-6 w-6 animate-spin text-primary" />
                 </div>
               ) : (
-                <PlansTable plans={filteredPlans} />
+                <PlansTable
+                  plans={filteredPlans}
+                  onEditPlan={setEditingPlan}
+                  onDeletePlan={handleDeletePlan}
+                />
               )}
             </motion.div>
           </AnimatePresence>
@@ -1311,7 +1367,17 @@ function AdminDashboard({
   );
 }
 
-function PlansTable({ plans }: { plans: Plan[] }) {
+const { toast } = useToast();
+
+function PlansTable({
+  plans,
+  onEditPlan,
+  onDeletePlan,
+}: {
+  plans: Plan[];
+  onEditPlan: (plan: Plan) => void;
+  onDeletePlan: (planId: string) => void;
+}) {
   if (!plans || plans.length === 0) {
     return <div className="p-8 text-center text-white/60">Nenhum plano deste tipo encontrado.</div>;
   }
@@ -1330,16 +1396,44 @@ function PlansTable({ plans }: { plans: Plan[] }) {
         {plans.map((plan) => (
           <TableRow key={plan.id} className="border-white/10">
             <TableCell className="font-medium">{plan.speed}</TableCell>
-            <TableCell>R$ {Number(plan.price || 0).toFixed(2)}</TableCell>
+            <TableCell>
+              <div className="flex items-center gap-2">
+                <span>R$ {Number(plan.price || 0).toFixed(2)}</span>
+                {plan.original_price && (
+                  <span className="text-xs text-white/50 line-through">
+                    R$ {Number(plan.original_price).toFixed(2)}
+                  </span>
+                )}
+              </div>
+            </TableCell>
             <TableCell className="text-center">
               {plan.highlight && (
                 <Badge className="border-primary/30 bg-primary/20 text-primary">Sim</Badge>
               )}
             </TableCell>
             <TableCell className="text-right">
-              <Button variant="ghost" size="sm">
-                Editar
+              <Button variant="ghost" size="sm" className="mr-2" onClick={() => onEditPlan(plan)}>
+                <Edit className="h-4 w-4" />
               </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" size="sm"><Trash2 className="w-4 h-4" /></Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent className="bg-neutral-950 border-white/10 text-white">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
+                    <AlertDialogDescription className="text-white/70">
+                      Essa ação não pode ser desfeita. Isso irá apagar permanentemente o plano.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => onDeletePlan(plan.id)}>
+                      Continuar
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </TableCell>
           </TableRow>
         ))}
