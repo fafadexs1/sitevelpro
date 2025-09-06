@@ -698,7 +698,7 @@ const PlanForm = ({
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
+            <Button type="button" variant="outline" onClick={()={() => onOpenChange(false)}}>Cancelar</Button>
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               {mode === 'add' ? 'Adicionar Plano' : 'Salvar Alterações'}
@@ -1653,9 +1653,9 @@ const SeoContent = () => {
                                     <FormItem className="flex flex-row items-center justify-between rounded-lg border border-white/10 p-4">
                                         <div className="space-y-0.5">
                                             <FormLabel className="text-base">Permitir Indexação</FormLabel>
-                                            <DialogDescription className="text-white/70">
+                                            <p className="text-sm text-white/70">
                                                 Ative para permitir que seu site apareça nos resultados de busca.
-                                            </DialogDescription>
+                                            </p>
                                         </div>
                                         <FormControl>
                                             <Switch
