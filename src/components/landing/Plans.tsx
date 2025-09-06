@@ -104,7 +104,10 @@ export function Plans() {
         )}
         <div className="flex-grow">
           <div className="mb-4 flex items-center justify-between">
-            <h3 className="text-2xl font-bold">{plan.speed} MEGA</h3>
+            <h3 className="flex items-baseline gap-1 text-2xl font-bold">
+              <span>{plan.speed}</span>
+              <span className="text-lg font-medium text-white/70">MEGA</span>
+            </h3>
             <div className="grid h-9 w-9 place-items-center rounded-lg bg-primary/15">
               <Gauge className="h-5 w-5 text-primary" />
             </div>
