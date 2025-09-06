@@ -9,6 +9,7 @@ import { ConversionTracker } from '@/components/analytics/ConversionTracker';
 import React from 'react';
 import Script from 'next/script';
 import { cookies } from 'next/headers';
+import { ConsentBanner } from '@/components/analytics/ConsentBanner';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -151,7 +152,7 @@ function TrackingScripts({
 
 export default async function RootLayout({
   children,
-}: Readonly<{ children: React.ReactNode }>) {
+}: Readonly<{ children: React.Node }>) {
   const allTags = await getTrackingTags();
   
   const headScripts = allTags.filter(t => t.placement === 'head_start');
@@ -161,6 +162,20 @@ export default async function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} dark`} suppressHydrationWarning>
       <head>
+        <Script id="google-consent-mode" strategy="beforeInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            
+            gtag('consent', 'default', {
+              'ad_storage': 'denied',
+              'analytics_storage': 'denied',
+              'ad_user_data': 'denied',
+              'ad_personalization': 'denied',
+              'wait_for_update': 500
+            });
+          `}
+        </Script>
         {/* Fontes via next/font */}
         <TrackingScripts tags={headScripts} position="head_start" />
       </head>
@@ -173,6 +188,7 @@ export default async function RootLayout({
         {children}
         <Toaster />
 
+        <ConsentBanner />
         <TrackingScripts tags={bodyEndScripts} position="body_end" />
       </body>
     </html>
