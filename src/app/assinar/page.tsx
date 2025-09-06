@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -80,11 +81,11 @@ const FormHeader = ({ title, description }: { title: string; description: string
 
 const FormNavigation = ({ currentStep, totalSteps, goBack, isSubmitting }: { currentStep: number; totalSteps: number; goBack: () => void, isSubmitting: boolean }) => (
   <div className="mt-8 flex justify-between items-center">
-    <Button type="button" variant="outline" onClick={goBack} disabled={currentStep === 1 || isSubmitting}>
+    <Button id={`step-${currentStep}-back`} type="button" variant="outline" onClick={goBack} disabled={currentStep === 1 || isSubmitting}>
       <ArrowLeft className="h-4 w-4 mr-2" />
       Voltar
     </Button>
-    <Button type="submit" disabled={isSubmitting}>
+    <Button id={`step-${currentStep}-next`} type="submit" disabled={isSubmitting}>
       {isSubmitting ? (
         <Loader2 className="h-4 w-4 animate-spin" />
       ) : (
@@ -110,7 +111,7 @@ const Step1 = () => (
           <FormControl>
             <div className="relative">
               <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/60" />
-              <Input placeholder="Seu nome" {...field} className="pl-9" />
+              <Input id="signup-fullname" placeholder="Seu nome" {...field} className="pl-9" />
             </div>
           </FormControl>
           <FormMessage />
@@ -123,7 +124,7 @@ const Step1 = () => (
             <FormControl>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/60" />
-                <Input placeholder="seu@email.com" {...field} className="pl-9" />
+                <Input id="signup-email" placeholder="seu@email.com" {...field} className="pl-9" />
               </div>
             </FormControl>
             <FormMessage />
@@ -135,7 +136,7 @@ const Step1 = () => (
             <FormControl>
               <div className="relative">
                 <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/60" />
-                <Input placeholder="(00) 00000-0000" {...field} className="pl-9" />
+                <Input id="signup-phone" placeholder="(00) 00000-0000" {...field} className="pl-9" />
               </div>
             </FormControl>
             <FormMessage />
@@ -234,8 +235,8 @@ const Step2 = ({ form }: { form: any }) => {
                 <FormControl>
                     <div className="relative">
                     <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/60" />
-                    <Input placeholder="00000-000" {...field} disabled={dontKnowCep} className="pl-9 pr-24" />
-                    <Button type="button" onClick={handleCepLookup} disabled={loadingCep || dontKnowCep} className="absolute right-1 top-1/2 -translate-y-1/2 h-8 px-2 text-xs">
+                    <Input id="signup-cep" placeholder="00000-000" {...field} disabled={dontKnowCep} className="pl-9 pr-24" />
+                    <Button id="signup-cep-lookup" type="button" onClick={handleCepLookup} disabled={loadingCep || dontKnowCep} className="absolute right-1 top-1/2 -translate-y-1/2 h-8 px-2 text-xs">
                         {loadingCep ? <Loader2 className="h-3 w-3 animate-spin"/> : "Buscar"}
                     </Button>
                     </div>
@@ -247,7 +248,7 @@ const Step2 = ({ form }: { form: any }) => {
                 <FormItem className="md:col-span-2">
                 <FormLabel>Rua</FormLabel>
                 <FormControl>
-                    <Input placeholder="Sua rua" {...field} />
+                    <Input id="signup-street" placeholder="Sua rua" {...field} />
                 </FormControl>
                 <FormMessage />
                 </FormItem>
@@ -260,6 +261,7 @@ const Step2 = ({ form }: { form: any }) => {
               <FormItem className="flex flex-row items-start gap-x-2 space-y-0 -mt-2">
                 <FormControl>
                   <Checkbox
+                    id="signup-no-cep"
                     checked={field.value}
                     onCheckedChange={field.onChange}
                   />
@@ -274,14 +276,14 @@ const Step2 = ({ form }: { form: any }) => {
             <FormField name="number" render={({ field }) => (
                 <FormItem>
                 <FormLabel>Número</FormLabel>
-                <FormControl><Input placeholder="123" {...field} /></FormControl>
+                <FormControl><Input id="signup-number" placeholder="123" {...field} /></FormControl>
                 <FormMessage />
                 </FormItem>
             )} />
             <FormField name="complement" render={({ field }) => (
                 <FormItem className="md:col-span-2">
                 <FormLabel>Complemento <span className="text-white/50">(opcional)</span></FormLabel>
-                <FormControl><Input placeholder="Apto, bloco, etc." {...field} /></FormControl>
+                <FormControl><Input id="signup-complement" placeholder="Apto, bloco, etc." {...field} /></FormControl>
                 <FormMessage />
                 </FormItem>
             )} />
@@ -290,7 +292,7 @@ const Step2 = ({ form }: { form: any }) => {
             <FormField name="neighborhood" render={({ field }) => (
                 <FormItem>
                 <FormLabel>Bairro</FormLabel>
-                <FormControl><Input placeholder="Seu bairro" {...field} /></FormControl>
+                <FormControl><Input id="signup-neighborhood" placeholder="Seu bairro" {...field} /></FormControl>
                 <FormMessage />
                 </FormItem>
             )} />
@@ -299,7 +301,7 @@ const Step2 = ({ form }: { form: any }) => {
                 <FormLabel>Estado</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
                   <FormControl>
-                    <SelectTrigger disabled={loadingUfs}>
+                    <SelectTrigger id="signup-state" disabled={loadingUfs}>
                       <SelectValue placeholder={loadingUfs ? "Carregando..." : "Selecione o estado"}/>
                     </SelectTrigger>
                   </FormControl>
@@ -315,7 +317,7 @@ const Step2 = ({ form }: { form: any }) => {
                 <FormLabel>Cidade</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} disabled={!selectedUf || loadingCities}>
                     <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger id="signup-city" disabled={!selectedUf || loadingCities}>
                             <SelectValue placeholder={!selectedUf ? "Selecione um estado" : loadingCities ? "Carregando..." : "Selecione a cidade"} />
                         </SelectTrigger>
                     </FormControl>
@@ -330,7 +332,7 @@ const Step2 = ({ form }: { form: any }) => {
         <div className="mt-4 pt-4 border-t border-white/10">
             <FormLabel>Localização Precisa (Opcional)</FormLabel>
             <div className="flex items-center gap-4 mt-2">
-                <Button type="button" variant="outline" onClick={handleGeolocation} disabled={loadingLocation}>
+                <Button id="signup-geolocation" type="button" variant="outline" onClick={handleGeolocation} disabled={loadingLocation}>
                     {loadingLocation ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <LocateFixed className="h-4 w-4 mr-2" />}
                     Usar minha localização
                 </Button>
@@ -388,7 +390,7 @@ const SuccessScreen = () => (
         <p className="text-white/70 mt-2 max-w-md mx-auto">
             Sua solicitação de assinatura foi enviada com sucesso. Em breve, nossa equipe entrará em contato para agendar a instalação.
         </p>
-        <Button asChild className="mt-8">
+        <Button asChild className="mt-8" id="signup-success-back">
             <Link href="/">Voltar para o início</Link>
         </Button>
     </motion.div>
@@ -475,7 +477,7 @@ export default function SignupPage() {
           {isSuccess ? <SuccessScreen /> : (
             <>
             <FormProvider {...methods}>
-              <form onSubmit={methods.handleSubmit(goNext)} className="space-y-6">
+              <form onSubmit={methods.handleSubmit(goNext)} className="space-y-6" data-lead-form="true">
                 <StepIndicator currentStep={currentStep} totalSteps={totalSteps} />
                 <FormHeader 
                     title={stepHeaders[currentStep-1].title} 

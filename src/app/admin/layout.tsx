@@ -139,6 +139,7 @@ function AdminLogin({ onLogin }: { onLogin: (user: SupabaseUser) => void }) {
                     <div className="relative">
                       <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/60" />
                       <Input
+                        id="email-input"
                         placeholder="admin@velpro.com"
                         {...field}
                         className="pl-9"
@@ -160,12 +161,14 @@ function AdminLogin({ onLogin }: { onLogin: (user: SupabaseUser) => void }) {
                     <div className="relative">
                       <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/60" />
                       <Input
+                        id="password-input"
                         type={show ? "text" : "password"}
                         placeholder="••••••••"
                         {...field}
                         className="pl-9 pr-10"
                       />
                       <button
+                        id="toggle-password-visibility"
                         type="button"
                         aria-label="toggle"
                         onClick={() => setShow((v) => !v)}
@@ -180,7 +183,7 @@ function AdminLogin({ onLogin }: { onLogin: (user: SupabaseUser) => void }) {
               )}
             />
 
-            <Button disabled={loading} type="submit" className="mt-4 w-full">
+            <Button id={isSignUp ? "signup-button" : "login-button"} disabled={loading} type="submit" className="mt-4 w-full">
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : (isSignUp ? "Criar Conta" : "Entrar")}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
@@ -188,7 +191,7 @@ function AdminLogin({ onLogin }: { onLogin: (user: SupabaseUser) => void }) {
         </Form>
 
         <div className="mt-6 text-center text-sm">
-          <button onClick={() => setIsSignUp(!isSignUp)} className="text-primary/80 hover:text-primary">
+          <button id="toggle-auth-mode" onClick={() => setIsSignUp(!isSignUp)} className="text-primary/80 hover:text-primary">
             {isSignUp ? "Já tem uma conta? Entre aqui." : "Não tem uma conta? Crie uma agora."}
           </button>
         </div>
@@ -242,6 +245,7 @@ function AdminDashboard({
           {navItems.map((item) => (
             <Button
               key={item.href}
+              id={`nav-link-${item.label.toLowerCase().replace(' ', '-')}`}
               variant="ghost"
               asChild
               className={`justify-start gap-2 ${
@@ -263,6 +267,7 @@ function AdminDashboard({
             <p className="truncate font-medium text-white">{user.email}</p>
           </div>
           <Button
+            id="logout-button"
             variant="ghost"
             onClick={handleLogout}
             className="w-full justify-start gap-2 text-white/70 hover:bg-white/5 hover:text-white"

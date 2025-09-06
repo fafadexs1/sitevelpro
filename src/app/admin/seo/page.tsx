@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -141,13 +142,13 @@ function RedirectForm({ onSave, onOpenChange, redirect }: { onSave: () => void, 
                 <DialogHeader>
                     <DialogTitle>{mode === 'add' ? 'Novo Redirecionamento' : 'Editar Redirecionamento'}</DialogTitle>
                 </DialogHeader>
-                <FormField control={form.control} name="source_path" render={({ field }) => (<FormItem> <FormLabel>De (Origem)</FormLabel> <FormControl><Input placeholder="/caminho-antigo" {...field} /></FormControl> <FormMessage /> </FormItem>)} />
-                <FormField control={form.control} name="destination_path" render={({ field }) => (<FormItem> <FormLabel>Para (Destino)</FormLabel> <FormControl><Input placeholder="/novo-caminho ou https://outro.site" {...field} /></FormControl> <FormMessage /> </FormItem>)} />
+                <FormField control={form.control} name="source_path" render={({ field }) => (<FormItem> <FormLabel>De (Origem)</FormLabel> <FormControl><Input id="redirect-source" placeholder="/caminho-antigo" {...field} /></FormControl> <FormMessage /> </FormItem>)} />
+                <FormField control={form.control} name="destination_path" render={({ field }) => (<FormItem> <FormLabel>Para (Destino)</FormLabel> <FormControl><Input id="redirect-destination" placeholder="/novo-caminho ou https://outro.site" {...field} /></FormControl> <FormMessage /> </FormItem>)} />
                 <FormField control={form.control} name="type" render={({ field }) => (
                     <FormItem>
                         <FormLabel>Tipo</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl><SelectTrigger><SelectValue placeholder="Selecione o tipo" /></SelectTrigger></FormControl>
+                            <FormControl><SelectTrigger id="redirect-type"><SelectValue placeholder="Selecione o tipo" /></SelectTrigger></FormControl>
                             <SelectContent>
                                 <SelectItem value="permanent">301 - Permanente</SelectItem>
                                 <SelectItem value="temporary">302 - Temporário</SelectItem>
@@ -157,8 +158,8 @@ function RedirectForm({ onSave, onOpenChange, redirect }: { onSave: () => void, 
                     </FormItem>
                 )} />
                 <DialogFooter>
-                    <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-                    <Button type="submit" disabled={isSubmitting}>{isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Salvar</Button>
+                    <Button id="redirect-form-cancel" type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
+                    <Button id="redirect-form-save" type="submit" disabled={isSubmitting}>{isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Salvar</Button>
                 </DialogFooter>
             </form>
         </Form>
@@ -351,8 +352,8 @@ export default function SeoPage() {
                             <Card className="border-white/10 bg-neutral-950">
                                 <CardHeader><CardTitle>Metadados Globais</CardTitle><CardDescription>Título e descrição padrão para as páginas do site.</CardDescription></CardHeader>
                                 <CardContent className="space-y-4">
-                                    <FormField control={form.control} name="site_title" render={({ field }) => ( <FormItem> <FormLabel>Título do Site</FormLabel> <FormControl><Input placeholder="Velpro Telecom | Internet Ultrarrápida" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-                                    <FormField control={form.control} name="site_description" render={({ field }) => ( <FormItem> <FormLabel>Descrição do Site</FormLabel> <FormControl><Textarea placeholder="Conecte-se com a Velpro e sinta a diferença..." {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+                                    <FormField control={form.control} name="site_title" render={({ field }) => ( <FormItem> <FormLabel>Título do Site</FormLabel> <FormControl><Input id="seo-site-title" placeholder="Velpro Telecom | Internet Ultrarrápida" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+                                    <FormField control={form.control} name="site_description" render={({ field }) => ( <FormItem> <FormLabel>Descrição do Site</FormLabel> <FormControl><Textarea id="seo-site-description" placeholder="Conecte-se com a Velpro e sinta a diferença..." {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
                                 </CardContent>
                             </Card>
                             
@@ -400,7 +401,7 @@ export default function SeoPage() {
                                     <FormField control={form.control} name="allow_indexing" render={({ field }) => (
                                         <FormItem className="flex flex-row items-center justify-between rounded-lg border border-white/10 p-4">
                                             <div className="space-y-0.5"><FormLabel className="text-base">Permitir Indexação</FormLabel><p className="text-sm text-white/70">Ative para permitir que seu site apareça nos resultados de busca.</p></div>
-                                            <FormControl><Switch checked={field.value} onCheckedChange={field.onChange}/></FormControl>
+                                            <FormControl><Switch id="seo-allow-indexing" checked={field.value} onCheckedChange={field.onChange}/></FormControl>
                                         </FormItem>
                                     )}/>
                                 </CardContent>
@@ -409,17 +410,17 @@ export default function SeoPage() {
                                     <p>Seu mapa do site está disponível em <Link href="/sitemap.xml" target="_blank" className="underline hover:text-primary">/sitemap.xml</Link>.</p>
                                 </CardFooter>
                             </Card>
-                            <div className="flex justify-end"><Button type="submit" disabled={isSubmitting}>{isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Salvar Configurações Gerais</Button></div>
+                            <div className="flex justify-end"><Button id="seo-save-general" type="submit" disabled={isSubmitting}>{isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Salvar Configurações Gerais</Button></div>
                         </form>
                     </Form>
                     
                     <Card className="border-white/10 bg-neutral-950">
-                        <CardHeader className="flex flex-row items-center justify-between"><div><CardTitle>SEO para Páginas Dinâmicas</CardTitle><CardDescription>Gerencie o SEO para páginas geradas dinamicamente.</CardDescription></div><Button onClick={() => { setEditingRule(null); setIsRuleModalOpen(true); }}><PlusCircle className="mr-2 h-4 w-4" />Nova Regra</Button></CardHeader>
+                        <CardHeader className="flex flex-row items-center justify-between"><div><CardTitle>SEO para Páginas Dinâmicas</CardTitle><CardDescription>Gerencie o SEO para páginas geradas dinamicamente.</CardDescription></div><Button id="seo-new-rule" onClick={() => { setEditingRule(null); setIsRuleModalOpen(true); }}><PlusCircle className="mr-2 h-4 w-4" />Nova Regra</Button></CardHeader>
                         <CardContent>
                             {loadingRules ? <div className="flex justify-center items-center h-40"><Loader2 className="h-6 w-6 animate-spin"/></div> : (
                                 <Table><TableHeader><TableRow className="border-white/10 hover:bg-transparent"><TableHead>Nome</TableHead><TableHead>Padrão de Slug</TableHead><TableHead>Schema</TableHead><TableHead>Index</TableHead><TableHead className="text-right">Ações</TableHead></TableRow></TableHeader>
                                     <TableBody>
-                                        {rules.map((rule) => (<TableRow key={rule.id} className="border-white/10"><TableCell className="font-medium">{rule.name}</TableCell><TableCell className="font-mono text-xs">{rule.slug_pattern}</TableCell><TableCell><Badge variant="secondary">{rule.schema_type}</Badge></TableCell><TableCell>{rule.allow_indexing ? <Badge className="border-primary/30 bg-primary/20 text-primary">Sim</Badge> : <Badge variant="destructive">Não</Badge>}</TableCell><TableCell className="text-right"><Button variant="ghost" size="sm" className="mr-2" onClick={() => handleEditRule(rule)}><Edit className="h-4 w-4" /></Button><AlertDialog><AlertDialogTrigger asChild><Button variant="destructive" size="sm"><Trash2 className="h-4 w-4" /></Button></AlertDialogTrigger><AlertDialogContent className="bg-neutral-950 border-white/10 text-white"><AlertDialogHeader><AlertDialogTitle>Tem certeza?</AlertDialogTitle><AlertDialogDescription>Essa ação não pode ser desfeita. Isso irá apagar permanentemente a regra de SEO.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Cancelar</AlertDialogCancel><AlertDialogAction onClick={() => handleDeleteRule(rule.id)}>Continuar</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog></TableCell></TableRow>))}
+                                        {rules.map((rule) => (<TableRow key={rule.id} className="border-white/10"><TableCell className="font-medium">{rule.name}</TableCell><TableCell className="font-mono text-xs">{rule.slug_pattern}</TableCell><TableCell><Badge variant="secondary">{rule.schema_type}</Badge></TableCell><TableCell>{rule.allow_indexing ? <Badge className="border-primary/30 bg-primary/20 text-primary">Sim</Badge> : <Badge variant="destructive">Não</Badge>}</TableCell><TableCell className="text-right"><Button id={`seo-edit-rule-${rule.id}`} variant="ghost" size="sm" className="mr-2" onClick={() => handleEditRule(rule)}><Edit className="h-4 w-4" /></Button><AlertDialog><AlertDialogTrigger asChild><Button id={`seo-delete-rule-trigger-${rule.id}`} variant="destructive" size="sm"><Trash2 className="h-4 w-4" /></Button></AlertDialogTrigger><AlertDialogContent className="bg-neutral-950 border-white/10 text-white"><AlertDialogHeader><AlertDialogTitle>Tem certeza?</AlertDialogTitle><AlertDialogDescription>Essa ação não pode ser desfeita. Isso irá apagar permanentemente a regra de SEO.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel id={`seo-delete-rule-cancel-${rule.id}`}>Cancelar</AlertDialogCancel><AlertDialogAction id={`seo-delete-rule-confirm-${rule.id}`} onClick={() => handleDeleteRule(rule.id)}>Continuar</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog></TableCell></TableRow>))}
                                         {rules.length === 0 && <TableRow><TableCell colSpan={5} className="text-center text-white/60 py-8">Nenhuma regra dinâmica encontrada.</TableCell></TableRow>}
                                     </TableBody>
                                 </Table>
@@ -432,16 +433,16 @@ export default function SeoPage() {
                         <CardHeader><CardTitle>Performance &amp; Indexação</CardTitle><CardDescription>Monitore e melhore a performance e o status de indexação do site.</CardDescription></CardHeader>
                         <CardContent className="space-y-4">
                             <div><h4 className="font-semibold text-sm mb-2">Core Web Vitals</h4><div className="p-3 rounded-lg border border-white/10 bg-neutral-900/60 text-xs text-white/70"><p>Dados de performance serão exibidos aqui após integração com a API do Google PageSpeed.</p><div className="flex justify-around mt-2"><span>LCP: --</span><span>INP: --</span><span>CLS: --</span></div></div></div>
-                            <div><h4 className="font-semibold text-sm mb-2">Status de Indexação</h4><div className="p-3 rounded-lg border border-white/10 bg-neutral-900/60 text-xs text-white/70"><p className="mb-2">Verifique se suas páginas estão no Google. Requer integração com a API do Google Search Console.</p><Button variant="outline" size="sm" asChild><a href="https://search.google.com/search-console" target="_blank" rel="noopener noreferrer" className="w-full">Abrir Search Console</a></Button></div></div>
-                            <div><h4 className="font-semibold text-sm mb-2">Revalidação de Cache (ISR)</h4><div className="space-y-2"><Input placeholder="/caminho/da/pagina" value={revalidationPath} onChange={(e) => setRevalidationPath(e.target.value)} className="bg-neutral-900"/><Button onClick={handleRevalidate} disabled={isRevalidating} className="w-full">{isRevalidating ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <RefreshCw className="mr-2 h-4 w-4"/>}Forçar Revalidação</Button></div><p className="text-xs text-white/60 mt-2">Use para limpar o cache de uma página específica após uma alteração.</p></div>
+                            <div><h4 className="font-semibold text-sm mb-2">Status de Indexação</h4><div className="p-3 rounded-lg border border-white/10 bg-neutral-900/60 text-xs text-white/70"><p className="mb-2">Verifique se suas páginas estão no Google. Requer integração com a API do Google Search Console.</p><Button variant="outline" size="sm" asChild id="seo-open-gsc"><a href="https://search.google.com/search-console" target="_blank" rel="noopener noreferrer" className="w-full">Abrir Search Console</a></Button></div></div>
+                            <div><h4 className="font-semibold text-sm mb-2">Revalidação de Cache (ISR)</h4><div className="space-y-2"><Input id="seo-revalidate-path" placeholder="/caminho/da/pagina" value={revalidationPath} onChange={(e) => setRevalidationPath(e.target.value)} className="bg-neutral-900"/><Button id="seo-revalidate-button" onClick={handleRevalidate} disabled={isRevalidating} className="w-full">{isRevalidating ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <RefreshCw className="mr-2 h-4 w-4"/>}Forçar Revalidação</Button></div><p className="text-xs text-white/60 mt-2">Use para limpar o cache de uma página específica após uma alteração.</p></div>
                         </CardContent>
                     </Card>
                     <Card className="border-white/10 bg-neutral-950">
                         <CardHeader><CardTitle>Gestão Avançada</CardTitle><CardDescription>Ferramentas para controle técnico e otimização fina do SEO.</CardDescription></CardHeader>
                         <CardContent className="space-y-4">
                             <div><h4 className="font-semibold text-sm mb-2">Preview de SERP</h4><div className="p-3 rounded-lg border border-white/10 bg-neutral-900/60"><div className="flex items-center gap-2"><div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center shrink-0"><Globe className="h-4 w-4 text-primary-foreground"/></div><div><p className="text-sm font-medium text-blue-400 truncate">{siteTitle || "Seu Título Aqui"}</p><p className="text-xs text-white/70">https://velpro.com.br</p></div></div><p className="text-xs text-white/70 mt-2 line-clamp-2">{siteDescription || "A descrição do seu site aparecerá aqui. Escreva algo conciso e atraente."}</p></div></div>
-                            <div><h4 className="font-semibold text-sm mb-2">Gerenciador de Redirecionamentos</h4><Button variant="outline" size="sm" className="w-full" onClick={() => { setEditingRedirect(null); setIsRedirectModalOpen(true); }}><Redo className="mr-2 h-4 w-4"/> Gerenciar Redirecionamentos</Button></div>
-                            <div><h4 className="font-semibold text-sm mb-2">Teste de Dados Estruturados</h4><div className="p-3 rounded-lg border border-white/10 bg-neutral-900/60 text-xs text-white/70"><p className="mb-2">Use a ferramenta oficial do Google para validar o Schema Markup.</p><Button variant="outline" size="sm" asChild><a href="https://search.google.com/test/rich-results" target="_blank" rel="noopener noreferrer" className="w-full"><ExternalLink className="mr-2 h-4 w-4"/> Teste de Rich Results</a></Button></div></div>
+                            <div><h4 className="font-semibold text-sm mb-2">Gerenciador de Redirecionamentos</h4><Button id="seo-manage-redirects" variant="outline" size="sm" className="w-full" onClick={() => { setEditingRedirect(null); setIsRedirectModalOpen(true); }}><Redo className="mr-2 h-4 w-4"/> Gerenciar Redirecionamentos</Button></div>
+                            <div><h4 className="font-semibold text-sm mb-2">Teste de Dados Estruturados</h4><div className="p-3 rounded-lg border border-white/10 bg-neutral-900/60 text-xs text-white/70"><p className="mb-2">Use a ferramenta oficial do Google para validar o Schema Markup.</p><Button id="seo-rich-results-test" variant="outline" size="sm" asChild><a href="https://search.google.com/test/rich-results" target="_blank" rel="noopener noreferrer" className="w-full"><ExternalLink className="mr-2 h-4 w-4"/> Teste de Rich Results</a></Button></div></div>
                         </CardContent>
                     </Card>
                 </div>
@@ -463,12 +464,12 @@ export default function SeoPage() {
                                                 </TableCell>
                                                 <TableCell><Badge variant={r.type === 'permanent' ? 'default' : 'secondary'}>{r.type === 'permanent' ? '301' : '302'}</Badge></TableCell>
                                                 <TableCell className="text-right">
-                                                    <Button variant="ghost" size="icon" className="h-7 w-7 mr-1" onClick={() => handleEditRedirect(r)}><Edit className="h-4 w-4"/></Button>
+                                                    <Button id={`seo-edit-redirect-${r.id}`} variant="ghost" size="icon" className="h-7 w-7 mr-1" onClick={() => handleEditRedirect(r)}><Edit className="h-4 w-4"/></Button>
                                                     <AlertDialog>
-                                                        <AlertDialogTrigger asChild><Button variant="destructive" size="icon" className="h-7 w-7"><Trash2 className="h-4 w-4"/></Button></AlertDialogTrigger>
+                                                        <AlertDialogTrigger asChild><Button id={`seo-delete-redirect-trigger-${r.id}`} variant="destructive" size="icon" className="h-7 w-7"><Trash2 className="h-4 w-4"/></Button></AlertDialogTrigger>
                                                         <AlertDialogContent className="bg-neutral-950 border-white/10 text-white">
                                                             <AlertDialogHeader><AlertDialogTitle>Tem certeza?</AlertDialogTitle><AlertDialogDescription>Isso irá apagar o redirecionamento.</AlertDialogDescription></AlertDialogHeader>
-                                                            <AlertDialogFooter><AlertDialogCancel>Cancelar</AlertDialogCancel><AlertDialogAction onClick={() => handleDeleteRedirect(r.id)}>Deletar</AlertDialogAction></AlertDialogFooter>
+                                                            <AlertDialogFooter><AlertDialogCancel id={`seo-delete-redirect-cancel-${r.id}`}>Cancelar</AlertDialogCancel><AlertDialogAction id={`seo-delete-redirect-confirm-${r.id}`} onClick={() => handleDeleteRedirect(r.id)}>Deletar</AlertDialogAction></AlertDialogFooter>
                                                         </AlertDialogContent>
                                                     </AlertDialog>
                                                 </TableCell>

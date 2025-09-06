@@ -1,8 +1,9 @@
 
+
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { PlusCircle, Trash2, Loader2, Tv } from "lucide-react";
+import { PlusCircle, Trash2, Loader2, Tv, Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import {
@@ -38,6 +39,7 @@ export default function TvPackagesPage() {
     const [packages, setPackages] = useState<TvPackage[]>([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingPackage, setEditingPackage] = useState<TvPackage | null>(null);
 
   
     const getPackages = async () => {
@@ -75,6 +77,12 @@ export default function TvPackagesPage() {
             getPackages(); // Refresh
         }
     };
+    
+    const handleSave = () => {
+        setIsModalOpen(false);
+        setEditingPackage(null);
+        getPackages();
+    };
 
     if (loading) {
       return (
@@ -93,14 +101,15 @@ export default function TvPackagesPage() {
           </div>
            <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
             <DialogTrigger asChild>
-                <Button>
+                <Button id="new-package-button" onClick={() => setEditingPackage(null)}>
                     <PlusCircle className="mr-2 h-4 w-4" />
                     Novo Pacote
                 </Button>
             </DialogTrigger>
             <DialogContent className="border-white/10 bg-neutral-950 text-white sm:max-w-2xl">
                  <ChannelPackageForm 
-                    onPackageAdded={getPackages}
+                    pkg={editingPackage}
+                    onPackageSaved={handleSave}
                     onOpenChange={setIsModalOpen}
                  />
             </DialogContent>
@@ -113,17 +122,19 @@ export default function TvPackagesPage() {
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   {pkg.name}
+                  <Tv className="w-5 h-5 text-white/50"/>
                 </CardTitle>
               </CardHeader>
               <CardContent className="flex-grow">
                 <p className="mb-2 text-sm text-white/70">ID: {pkg.id}</p>
-                {/* Channel logos will be added later */}
               </CardContent>
               <CardFooter className="flex justify-end p-4 border-t border-white/10">
-                <Button variant="ghost" size="sm" className="mr-2">Editar</Button>
+                <Button id={`edit-package-${pkg.id}`} variant="ghost" size="sm" className="mr-2" onClick={() => { setEditingPackage(pkg); setIsModalOpen(true);}}>
+                    <Edit className="h-4 w-4 mr-1"/>Editar
+                </Button>
                 <AlertDialog>
                     <AlertDialogTrigger asChild>
-                        <Button variant="destructive" size="sm"><Trash2 className="w-4 h-4" /></Button>
+                        <Button id={`delete-package-trigger-${pkg.id}`} variant="destructive" size="sm"><Trash2 className="w-4 h-4" /></Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent className="bg-neutral-950 border-white/10 text-white">
                         <AlertDialogHeader>
@@ -133,8 +144,8 @@ export default function TvPackagesPage() {
                             </p>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => handleDeletePackage(pkg.id)}>
+                            <AlertDialogCancel id={`delete-package-cancel-${pkg.id}`}>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction id={`delete-package-confirm-${pkg.id}`} onClick={() => handleDeletePackage(pkg.id)}>
                                 Continuar
                             </AlertDialogAction>
                         </AlertDialogFooter>

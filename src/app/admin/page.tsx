@@ -262,7 +262,7 @@ const PlanForm = ({
                   <FormLabel>Tipo de Plano</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger id="plan-type">
                         <SelectValue placeholder="Selecione o tipo" />
                       </SelectTrigger>
                     </FormControl>
@@ -282,7 +282,7 @@ const PlanForm = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Velocidade (Apenas números)</FormLabel>
-                  <FormControl><Input placeholder="Ex: 500" {...field} /></FormControl>
+                  <FormControl><Input id="plan-speed" placeholder="Ex: 500" {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -296,7 +296,7 @@ const PlanForm = ({
                   <FormItem>
                     <FormLabel>Preço Promocional (R$)</FormLabel>
                     <FormControl>
-                      <Input type="number" step="0.01" placeholder="Ex: 99.90" {...field} onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)} />
+                      <Input id="plan-price" type="number" step="0.01" placeholder="Ex: 99.90" {...field} onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -309,7 +309,7 @@ const PlanForm = ({
                   <FormItem>
                     <FormLabel>Preço Original <span className="text-white/50">(Opcional)</span></FormLabel>
                     <FormControl>
-                      <Input type="number" step="0.01" placeholder="Ex: 119.90" {...field} value={field.value ?? ''} onChange={(e) => field.onChange(parseFloat(e.target.value) || null)}/>
+                      <Input id="plan-original-price" type="number" step="0.01" placeholder="Ex: 119.90" {...field} value={field.value ?? ''} onChange={(e) => field.onChange(parseFloat(e.target.value) || null)}/>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -329,7 +329,7 @@ const PlanForm = ({
                       render={({ field }) => (
                         <FormItem className="w-1/3">
                           <FormControl>
-                            <Input placeholder="Ícone (ex: wifi)" {...field} />
+                            <Input id={`plan-feature-icon-${index}`} placeholder="Ícone (ex: wifi)" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -341,19 +341,20 @@ const PlanForm = ({
                       render={({ field }) => (
                         <FormItem className="flex-grow">
                           <FormControl>
-                            <Input placeholder="Texto do benefício" {...field} />
+                            <Input id={`plan-feature-text-${index}`} placeholder="Texto do benefício" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                    <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
+                    <Button id={`plan-feature-remove-${index}`} type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
                       <Trash2 className="h-4 w-4 text-red-500"/>
                     </Button>
                   </div>
                 ))}
               </div>
               <Button
+                  id="plan-feature-add"
                   type="button"
                   variant="outline"
                   size="sm"
@@ -372,7 +373,7 @@ const PlanForm = ({
                   name="highlight"
                   render={({ field }) => (
                     <FormItem className="flex items-center gap-x-2 space-y-0">
-                      <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                      <FormControl><Switch id="plan-highlight" checked={field.value} onCheckedChange={field.onChange} /></FormControl>
                       <FormLabel className="cursor-pointer">Destacar plano?</FormLabel>
                     </FormItem>
                   )}
@@ -382,7 +383,7 @@ const PlanForm = ({
                   name="has_tv"
                   render={({ field }) => (
                     <FormItem className="flex items-center gap-x-2 space-y-0">
-                      <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                      <FormControl><Switch id="plan-has-tv" checked={field.value} onCheckedChange={field.onChange} /></FormControl>
                       <FormLabel className="cursor-pointer">Inclui TV?</FormLabel>
                     </FormItem>
                   )}
@@ -409,6 +410,7 @@ const PlanForm = ({
                                 <div className="relative mb-3">
                                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/60" />
                                   <Input
+                                    id="plan-channel-search"
                                     placeholder="Buscar canal..."
                                     value={channelSearch}
                                     onChange={(e) => setChannelSearch(e.target.value)}
@@ -435,6 +437,7 @@ const PlanForm = ({
                                                 >
                                                     <FormControl>
                                                     <Checkbox
+                                                        id={`plan-channel-checkbox-${channel.id}`}
                                                         checked={isChecked}
                                                         disabled={limitReached}
                                                         onCheckedChange={(checked) => {
@@ -471,8 +474,8 @@ const PlanForm = ({
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button id="plan-form-cancel" type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
+            <Button id="plan-form-save" type="submit" disabled={isSubmitting}>
               {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               {mode === 'add' ? 'Adicionar Plano' : 'Salvar Alterações'}
             </Button>
@@ -533,12 +536,12 @@ function PlansTable({
               )}
             </TableCell>
             <TableCell className="text-right">
-              <Button variant="ghost" size="sm" className="mr-2" onClick={() => onEditPlan(plan)}>
+              <Button id={`edit-plan-${plan.id}`} variant="ghost" size="sm" className="mr-2" onClick={() => onEditPlan(plan)}>
                 <Edit className="h-4 w-4" />
               </Button>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="destructive" size="sm"><Trash2 className="h-4 w-4" /></Button>
+                  <Button id={`delete-plan-trigger-${plan.id}`} variant="destructive" size="sm"><Trash2 className="h-4 w-4" /></Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent className="bg-neutral-950 border-white/10 text-white">
                   <AlertDialogHeader>
@@ -548,8 +551,8 @@ function PlansTable({
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => onDeletePlan(plan.id)}>
+                    <AlertDialogCancel id={`delete-plan-cancel-${plan.id}`}>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction id={`delete-plan-confirm-${plan.id}`} onClick={() => onDeletePlan(plan.id)}>
                       Continuar
                     </AlertDialogAction>
                   </AlertDialogFooter>
@@ -621,7 +624,7 @@ export default function PlansPage() {
         </div>
         <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
           <DialogTrigger asChild>
-            <Button>
+            <Button id="add-plan-button">
               <PlusCircle className="mr-2 h-4 w-4" />
               Adicionar Plano
             </Button>
@@ -650,6 +653,7 @@ export default function PlansPage() {
         <CardHeader>
           <div className="flex items-center border-b border-white/10">
             <button
+              id="tab-residencial"
               onClick={() => setActiveTab("residencial")}
               className={`flex items-center gap-2 px-4 py-2 text-sm transition-colors ${
                 activeTab === "residencial"
@@ -660,6 +664,7 @@ export default function PlansPage() {
               <Package className="h-4 w-4" /> Planos Residenciais
             </button>
             <button
+              id="tab-empresarial"
               onClick={() => setActiveTab("empresarial")}
               className={`flex items-center gap-2 px-4 py-2 text-sm transition-colors ${
                 activeTab === "empresarial"

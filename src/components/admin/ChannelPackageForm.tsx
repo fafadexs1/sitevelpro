@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -28,6 +29,11 @@ import { Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { ScrollArea } from '../ui/scroll-area';
 
+type TvPackage = {
+    id: string;
+    name: string;
+};
+
 type Channel = {
   id: string;
   name: string;
@@ -42,31 +48,19 @@ const packageSchema = z.object({
 type PackageFormData = z.infer<typeof packageSchema>;
 
 export function ChannelPackageForm({
-  onPackageAdded,
+  pkg,
+  onPackageSaved,
   onOpenChange,
 }: {
-  onPackageAdded: () => void;
+  pkg: TvPackage | null;
+  onPackageSaved: () => void;
   onOpenChange: (open: boolean) => void;
 }) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [channels, setChannels] = useState<Channel[]>([]);
-  const [loadingChannels, setLoadingChannels] = useState(true);
-
-  useEffect(() => {
-    const getChannels = async () => {
-      const supabase = createClient();
-      setLoadingChannels(true);
-      const { data, error } = await supabase.from('tv_channels').select('*');
-      if (error) {
-        toast({ variant: 'destructive', title: 'Erro', description: 'Não foi possível carregar os canais.' });
-      } else {
-        setChannels(data as Channel[] ?? []);
-      }
-      setLoadingChannels(false);
-    };
-    getChannels();
-  }, [toast]);
+  const [loading, setLoading] = useState(true);
+  const mode = pkg ? 'edit' : 'add';
 
   const form = useForm<PackageFormData>({
     resolver: zodResolver(packageSchema),
@@ -76,51 +70,94 @@ export function ChannelPackageForm({
     },
   });
 
+  useEffect(() => {
+    const fetchData = async () => {
+        setLoading(true);
+        const supabase = createClient();
+        const { data: channelsData, error: channelsError } = await supabase.from('tv_channels').select('id, name, logo_url');
+        
+        if (channelsError) {
+            toast({ variant: 'destructive', title: 'Erro', description: 'Não foi possível carregar os canais.' });
+        } else {
+            setChannels(channelsData as Channel[] ?? []);
+        }
+
+        if (mode === 'edit' && pkg) {
+            form.setValue('name', pkg.name);
+            const { data: relations, error: relationsError } = await supabase
+                .from('tv_package_channels')
+                .select('channel_id')
+                .eq('package_id', pkg.id);
+            
+            if (relationsError) {
+                toast({ variant: 'destructive', title: 'Erro', description: 'Não foi possível carregar os canais do pacote.' });
+            } else {
+                form.setValue('channel_ids', relations.map(r => r.channel_id));
+            }
+        }
+        setLoading(false);
+    };
+    fetchData();
+  }, [toast, mode, pkg, form]);
+
   const onSubmit = async (data: PackageFormData) => {
     setIsSubmitting(true);
     const supabase = createClient();
 
-    // 1. Inserir o pacote
-    const { data: packageData, error: packageError } = await supabase
-      .from('tv_packages')
-      .insert({ name: data.name })
-      .select('id')
-      .single();
+    if (mode === 'add') {
+        // 1. Inserir o pacote
+        const { data: packageData, error: packageError } = await supabase
+            .from('tv_packages')
+            .insert({ name: data.name })
+            .select('id')
+            .single();
 
-    if (packageError || !packageData) {
-      toast({
-        variant: 'destructive',
-        title: 'Erro',
-        description: `Não foi possível criar o pacote: ${packageError?.message}`,
-      });
-      setIsSubmitting(false);
-      return;
+        if (packageError || !packageData) {
+            toast({ variant: 'destructive', title: 'Erro', description: `Não foi possível criar o pacote: ${packageError?.message}` });
+            setIsSubmitting(false);
+            return;
+        }
+
+        // 2. Inserir associações
+        const packageChannelRelations = data.channel_ids.map(channelId => ({
+            package_id: packageData.id,
+            channel_id: channelId,
+        }));
+        const { error: relationError } = await supabase.from('tv_package_channels').insert(packageChannelRelations);
+        if (relationError) {
+            toast({ variant: 'destructive', title: 'Erro de Associação', description: `Pacote criado, mas falha ao associar canais: ${relationError.message}` });
+        } else {
+            toast({ title: 'Sucesso!', description: 'Pacote criado.' });
+            onPackageSaved();
+        }
+
+    } else if (mode === 'edit' && pkg) {
+        // 1. Atualizar nome
+        const { error: packageError } = await supabase.from('tv_packages').update({ name: data.name }).eq('id', pkg.id);
+        if (packageError) {
+             toast({ variant: 'destructive', title: 'Erro', description: `Não foi possível atualizar o pacote: ${packageError.message}` });
+             setIsSubmitting(false);
+             return;
+        }
+
+        // 2. Sincronizar associações
+        // Deleta as antigas
+        await supabase.from('tv_package_channels').delete().eq('package_id', pkg.id);
+        // Insere as novas
+        const packageChannelRelations = data.channel_ids.map(channelId => ({
+            package_id: pkg.id,
+            channel_id: channelId,
+        }));
+        const { error: relationError } = await supabase.from('tv_package_channels').insert(packageChannelRelations);
+        
+        if (relationError) {
+            toast({ variant: 'destructive', title: 'Erro de Associação', description: `Falha ao atualizar canais: ${relationError.message}` });
+        } else {
+            toast({ title: 'Sucesso!', description: 'Pacote atualizado.' });
+            onPackageSaved();
+        }
     }
-
-    // 2. Inserir as associações na tabela de junção
-    const packageChannelRelations = data.channel_ids.map(channelId => ({
-      package_id: packageData.id,
-      channel_id: channelId,
-    }));
-
-    const { error: relationError } = await supabase
-      .from('tv_package_channels')
-      .insert(packageChannelRelations);
-
-    if (relationError) {
-      // Se a relação falhar, idealmente deveríamos deletar o pacote criado.
-      // Para simplicidade, apenas exibimos o erro.
-      toast({
-        variant: 'destructive',
-        title: 'Erro de Associação',
-        description: `Pacote criado, mas falha ao associar canais: ${relationError.message}`,
-      });
-    } else {
-      toast({ title: 'Sucesso!', description: 'Pacote de canais criado com sucesso.' });
-      onPackageAdded();
-      onOpenChange(false);
-    }
-
+    
     setIsSubmitting(false);
   };
 
@@ -128,37 +165,36 @@ export function ChannelPackageForm({
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <DialogHeader>
-          <DialogTitle>Novo Pacote de Canais</DialogTitle>
+          <DialogTitle>{mode === 'add' ? 'Novo Pacote de Canais' : `Editar Pacote: ${pkg?.name}`}</DialogTitle>
           <DialogDescription>
-            Dê um nome ao pacote e selecione os canais que farão parte dele.
+            {mode === 'add' ? 'Dê um nome ao pacote e selecione os canais.' : 'Modifique o nome ou os canais do pacote.'}
           </DialogDescription>
         </DialogHeader>
 
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Nome do Pacote</FormLabel>
-              <FormControl>
-                <Input placeholder="Ex: Pacote Cinema HD" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        {loading ? <div className="flex justify-center items-center h-60"><Loader2 className="h-8 w-8 animate-spin"/></div> : (
+        <>
+            <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+                <FormItem>
+                <FormLabel>Nome do Pacote</FormLabel>
+                <FormControl>
+                    <Input id="package-name" placeholder="Ex: Pacote Cinema HD" {...field} />
+                </FormControl>
+                <FormMessage />
+                </FormItem>
+            )}
+            />
 
-        <FormField
-          control={form.control}
-          name="channel_ids"
-          render={() => (
-            <FormItem>
-              <div className="mb-4">
-                <FormLabel className="text-base">Canais</FormLabel>
-              </div>
-               {loadingChannels ? (
-                 <div className="flex justify-center items-center h-40"><Loader2 className="h-6 w-6 animate-spin"/></div>
-                ) : (
+            <FormField
+            control={form.control}
+            name="channel_ids"
+            render={() => (
+                <FormItem>
+                <div className="mb-4">
+                    <FormLabel className="text-base">Canais</FormLabel>
+                </div>
                 <ScrollArea className="h-64">
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-2 p-1">
                     {channels.map((channel) => (
@@ -173,16 +209,17 @@ export function ChannelPackageForm({
                             >
                             <FormControl>
                                 <Checkbox
-                                checked={field.value?.includes(channel.id)}
-                                onCheckedChange={(checked) => {
-                                    return checked
-                                    ? field.onChange([...field.value, channel.id])
-                                    : field.onChange(
-                                        field.value?.filter(
-                                        (value) => value !== channel.id
-                                        )
-                                    );
-                                }}
+                                    id={`channel-checkbox-${channel.id}`}
+                                    checked={field.value?.includes(channel.id)}
+                                    onCheckedChange={(checked) => {
+                                        return checked
+                                        ? field.onChange([...field.value, channel.id])
+                                        : field.onChange(
+                                            field.value?.filter(
+                                            (value) => value !== channel.id
+                                            )
+                                        );
+                                    }}
                                 />
                             </FormControl>
                             {channel.logo_url && (
@@ -197,23 +234,27 @@ export function ChannelPackageForm({
                     ))}
                     </div>
                 </ScrollArea>
-                )}
                 <FormMessage />
-            </FormItem>
-          )}
-        />
+                </FormItem>
+            )}
+            />
+        </>
+        )}
+
 
         <DialogFooter>
           <Button
+            id="package-form-cancel"
             type="button"
             variant="outline"
             onClick={() => onOpenChange(false)}
+            disabled={isSubmitting}
           >
             Cancelar
           </Button>
-          <Button type="submit" disabled={isSubmitting}>
+          <Button id="package-form-save" type="submit" disabled={isSubmitting || loading}>
             {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-            Salvar Pacote
+            Salvar
           </Button>
         </DialogFooter>
       </form>

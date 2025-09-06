@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -181,7 +182,7 @@ function AddChannelForm({
               <FormItem>
                 <FormLabel>Nome do Canal</FormLabel>
                 <FormControl>
-                  <Input placeholder="Ex: Warner" {...field} />
+                  <Input id="channel-name" placeholder="Ex: Warner" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -195,7 +196,7 @@ function AddChannelForm({
               <FormItem>
                 <FormLabel>Descrição (Opcional)</FormLabel>
                 <FormControl>
-                  <Textarea placeholder="Descreva brevemente o canal..." {...field} />
+                  <Textarea id="channel-description" placeholder="Descreva brevemente o canal..." {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -234,13 +235,14 @@ function AddChannelForm({
 
           <DialogFooter>
             <Button
+              id="add-channel-cancel"
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
             >
               Cancelar
             </Button>
-            <Button type="submit">
+            <Button id="add-channel-save" type="submit">
               {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Salvar Canal
             </Button>
@@ -348,7 +350,7 @@ function EditChannelForm({
               <FormItem>
                 <FormLabel>Nome do Canal</FormLabel>
                 <FormControl>
-                  <Input placeholder="Ex: Warner" {...field} />
+                  <Input id={`edit-channel-name-${channel.id}`} placeholder="Ex: Warner" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -362,7 +364,7 @@ function EditChannelForm({
               <FormItem>
                 <FormLabel>Descrição (Opcional)</FormLabel>
                 <FormControl>
-                  <Textarea placeholder="Descreva brevemente o canal..." {...field} />
+                  <Textarea id={`edit-channel-description-${channel.id}`} placeholder="Descreva brevemente o canal..." {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -405,13 +407,14 @@ function EditChannelForm({
 
           <DialogFooter>
             <Button
+              id={`edit-channel-cancel-${channel.id}`}
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
             >
               Cancelar
             </Button>
-            <Button type="submit">
+            <Button id={`edit-channel-save-${channel.id}`} type="submit">
               {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Salvar Alterações
             </Button>
@@ -487,7 +490,7 @@ export default function TvChannelsPage() {
                 </div>
                 <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
                     <DialogTrigger asChild>
-                        <Button>
+                        <Button id="add-channel-button">
                             <PlusCircle className="mr-2 h-4 w-4" />
                             Adicionar Canal
                         </Button>
@@ -542,12 +545,12 @@ export default function TvChannelsPage() {
                                     <TableCell className="font-medium">{channel.name}</TableCell>
                                     <TableCell className="text-white/70 text-xs max-w-sm truncate">{channel.description || 'N/A'}</TableCell>
                                     <TableCell className="text-right">
-                                        <Button variant="ghost" size="sm" className="mr-2" onClick={() => setEditingChannel(channel)}>
+                                        <Button id={`edit-channel-button-${channel.id}`} variant="ghost" size="sm" className="mr-2" onClick={() => setEditingChannel(channel)}>
                                             <Edit className="w-4 h-4 mr-1"/> Editar
                                         </Button>
                                         <AlertDialog>
                                             <AlertDialogTrigger asChild>
-                                                <Button variant="destructive" size="sm"><Trash2 className="w-4 h-4" /></Button>
+                                                <Button id={`delete-channel-trigger-${channel.id}`} variant="destructive" size="sm"><Trash2 className="w-4 h-4" /></Button>
                                             </AlertDialogTrigger>
                                             <AlertDialogContent className="bg-neutral-950 border-white/10 text-white">
                                                 <AlertDialogHeader>
@@ -557,8 +560,8 @@ export default function TvChannelsPage() {
                                                     </AlertDialogDescription>
                                                 </AlertDialogHeader>
                                                 <AlertDialogFooter>
-                                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                                    <AlertDialogAction onClick={() => handleDeleteChannel(channel.id, channel.logo_url)}>
+                                                    <AlertDialogCancel id={`delete-channel-cancel-${channel.id}`}>Cancelar</AlertDialogCancel>
+                                                    <AlertDialogAction id={`delete-channel-confirm-${channel.id}`} onClick={() => handleDeleteChannel(channel.id, channel.logo_url)}>
                                                         Continuar
                                                     </AlertDialogAction>
                                                 </AlertDialogFooter>

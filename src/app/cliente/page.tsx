@@ -6,9 +6,10 @@ import {
   LogIn, User, Lock, Eye, EyeOff, Zap, Wifi, Gauge, CreditCard, Receipt,
   FileText, TrendingUp, ArrowRight, Loader2, ChevronRight, CheckCircle2,
   XCircle, QrCode, Copy, ShieldCheck, Settings, Headphones, Share2,
-  Ticket, Bell, Wallet, Tv
+  Ticket, Bell, Wallet, Tv, X
 } from "lucide-react";
 import Link from "next/link";
+import { useToast } from "@/hooks/use-toast";
 
 // =====================================================
 // Data Types
@@ -155,23 +156,23 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
           <label className="mb-3 block text-sm text-white/70">CPF ou CNPJ</label>
           <div className="mb-5 flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
             <User className="h-4 w-4 text-white/60" />
-            <input required placeholder="000.000.000-00" className="w-full bg-transparent outline-none placeholder:text-white/40" />
+            <input required id="login-document" placeholder="000.000.000-00" className="w-full bg-transparent outline-none placeholder:text-white/40" />
           </div>
 
           <label className="mb-3 mt-4 block text-sm text-white/70">Senha</label>
           <div className="mb-3 flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
             <Lock className="h-4 w-4 text-white/60" />
-            <input required type={show ? "text" : "password"} placeholder="••••••••" className="w-full bg-transparent outline-none placeholder:text-white/40" />
-            <button type="button" aria-label="toggle" onClick={() => setShow((v) => !v)} className="text-white/60 hover:text-white">
+            <input required id="login-password" type={show ? "text" : "password"} placeholder="••••••••" className="w-full bg-transparent outline-none placeholder:text-white/40" />
+            <button id="login-toggle-password" type="button" aria-label="toggle" onClick={() => setShow((v) => !v)} className="text-white/60 hover:text-white">
               {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
           <div className="mb-6 flex items-center justify-between text-xs text-white/60">
-            <label className="inline-flex items-center gap-2"><input type="checkbox" className="h-3.5 w-3.5 rounded border-white/20 bg-transparent" /> Lembrar</label>
-            <a className="hover:text-white" href="#">Esqueci a senha</a>
+            <label className="inline-flex items-center gap-2"><input id="login-remember" type="checkbox" className="h-3.5 w-3.5 rounded border-white/20 bg-transparent" /> Lembrar</label>
+            <a id="login-forgot-password" className="hover:text-white" href="#">Esqueci a senha</a>
           </div>
 
-          <button disabled={loading} className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2 font-medium text-primary-foreground hover:bg-primary/90">
+          <button id="login-submit" disabled={loading} className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2 font-medium text-primary-foreground hover:bg-primary/90">
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />} Acessar minha conta
           </button>
 
@@ -197,6 +198,7 @@ const TABS = [
 
 function Dashboard({onLogout}: {onLogout: () => void}) {
   const { contracts } = useMockApi();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<(typeof TABS)[number]["key"]>("overview");
   const [selectedContractId, setSelectedContractId] = useState(contracts[0]?.id);
   const contract = useMemo(() => contracts.find(c => c.id === selectedContractId)!, [contracts, selectedContractId]);
@@ -222,20 +224,20 @@ function Dashboard({onLogout}: {onLogout: () => void}) {
           </Link>
           <div className="flex flex-1 items-center justify-end gap-3 text-sm">
             {/* Contract selector */}
-            <select value={selectedContractId} onChange={(e) => setSelectedContractId(e.target.value)} className="max-w-[150px] truncate rounded-lg border border-white/10 bg-white/5 px-2 py-1.5 outline-none sm:max-w-xs">
+            <select id="contract-selector" value={selectedContractId} onChange={(e) => setSelectedContractId(e.target.value)} className="max-w-[150px] truncate rounded-lg border border-white/10 bg-white/5 px-2 py-1.5 outline-none sm:max-w-xs">
               {contracts.map(c => (
                 <option key={c.id} value={c.id}>{c.alias}</option>
               ))}
             </select>
             <div className="hidden items-center gap-2 sm:flex">
-              <button><Bell className="h-4 w-4 text-white/70" /></button>
-              <button><Settings className="h-4 w-4 text-white/70" /></button>
+              <button id="notifications-button"><Bell className="h-4 w-4 text-white/70" /></button>
+              <button id="settings-button"><Settings className="h-4 w-4 text-white/70" /></button>
               <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-2 py-1">
                 <div className="grid h-6 w-6 place-items-center rounded-lg bg-primary/20 text-[11px] font-bold">VO</div>
                 <span className="text-white/80">Olá, Você</span>
               </div>
             </div>
-             <button onClick={onLogout} className="text-white/70 hover:text-white">Sair</button>
+             <button id="dashboard-logout" onClick={onLogout} className="text-white/70 hover:text-white">Sair</button>
           </div>
         </div>
         {/* Top horizontal menu */}
@@ -244,6 +246,7 @@ function Dashboard({onLogout}: {onLogout: () => void}) {
             {TABS.map(t => (
               <button
                 key={t.key}
+                id={`tab-${t.key}`}
                 onClick={() => setActiveTab(t.key)}
                 className={`flex-shrink-0 whitespace-nowrap rounded-lg px-3 py-1.5 text-sm transition-colors ${activeTab === t.key ? "bg-primary text-primary-foreground" : "text-white/80 hover:bg-white/5"}`}
               >
@@ -268,11 +271,11 @@ function Dashboard({onLogout}: {onLogout: () => void}) {
               </div>
               <div className="flex flex-wrap items-center justify-start gap-2 sm:justify-end">
                 {unpaid.pix && (
-                  <button onClick={() => setPixModal({ open: true, code: unpaid.pix! })} className="inline-flex items-center gap-2 rounded-lg border border-primary/40 bg-primary/10 px-3 py-1.5 text-sm">
+                  <button id={`unpaid-alert-pix-${unpaid.id}`} onClick={() => setPixModal({ open: true, code: unpaid.pix! })} className="inline-flex items-center gap-2 rounded-lg border border-primary/40 bg-primary/10 px-3 py-1.5 text-sm">
                     <QrCode className="h-4 w-4" /> Copiar PIX
                   </button>
                 )}
-                <a href="#" className="inline-flex items-center gap-2 rounded-lg bg-white px-3 py-1.5 text-sm text-neutral-950">
+                <a id={`unpaid-alert-pdf-${unpaid.id}`} href="#" className="inline-flex items-center gap-2 rounded-lg bg-white px-3 py-1.5 text-sm text-neutral-950">
                   <Receipt className="h-4 w-4" /> 2ª via (PDF)
                 </a>
               </div>
@@ -323,9 +326,9 @@ function Dashboard({onLogout}: {onLogout: () => void}) {
                   <div className="mt-3 flex flex-wrap gap-2 text-xs">{contract.currentPlan.benefits.map(b=> <Pill key={b}>{b}</Pill>)}</div>
                   <div className="mt-3 flex items-center gap-2 text-sm text-white/70"><Tv className="h-4 w-4 text-primary"/> {contract.currentPlan.tvPack.name} • {contract.currentPlan.tvPack.channels}+ canais</div>
                   <div className="mt-4 flex flex-wrap gap-2">
-                    <button onClick={() => setActiveTab('contract')} className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-1.5 text-sm hover:bg-white/5"><FileText className="h-4 w-4"/> Ver contrato</button>
-                    <button onClick={() => setActiveTab('friends')} className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-1.5 text-sm hover:bg-white/5"><Share2 className="h-4 w-4"/> Indicar amigo</button>
-                    <button onClick={() => setActiveTab('tickets')} className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-1.5 text-sm hover:bg-white/5"><Headphones className="h-4 w-4"/> Suporte</button>
+                    <button id="overview-view-contract" onClick={() => setActiveTab('contract')} className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-1.5 text-sm hover:bg-white/5"><FileText className="h-4 w-4"/> Ver contrato</button>
+                    <button id="overview-refer-friend" onClick={() => setActiveTab('friends')} className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-1.5 text-sm hover:bg-white/5"><Share2 className="h-4 w-4"/> Indicar amigo</button>
+                    <button id="overview-support" onClick={() => setActiveTab('tickets')} className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-1.5 text-sm hover:bg-white/5"><Headphones className="h-4 w-4"/> Suporte</button>
                   </div>
                 </div>
 
@@ -333,7 +336,7 @@ function Dashboard({onLogout}: {onLogout: () => void}) {
                 <div className="rounded-2xl border border-white/10 bg-neutral-900/60 p-6">
                   <div className="mb-4 flex items-center justify-between">
                     <h3 className="text-lg font-semibold">Faturas recentes</h3>
-                    <button onClick={() => setActiveTab('invoices')} className="text-sm text-white/70 hover:text-white">Ver todas</button>
+                    <button id="overview-view-all-invoices" onClick={() => setActiveTab('invoices')} className="text-sm text-white/70 hover:text-white">Ver todas</button>
                   </div>
                   <div className="space-y-3">
                     {contract.invoices.slice(0,3).map((f) => (
@@ -348,9 +351,9 @@ function Dashboard({onLogout}: {onLogout: () => void}) {
                           ) : (
                             <span className="inline-flex items-center gap-1 rounded-md bg-red-500/15 px-2 py-1 text-xs text-red-200"><XCircle className="h-3.5 w-3.5" /> Em aberto</span>
                           )}
-                          <a href="#" className="inline-flex items-center gap-1 rounded-md border border-white/10 px-2 py-1 text-xs hover:bg-white/5"><Receipt className="h-3.5 w-3.5" /> 2ª via</a>
+                          <a id={`overview-invoice-pdf-${f.id}`} href="#" className="inline-flex items-center gap-1 rounded-md border border-white/10 px-2 py-1 text-xs hover:bg-white/5"><Receipt className="h-3.5 w-3.5" /> 2ª via</a>
                           {f.status !== "paid" && f.pix && (
-                            <button onClick={() => setPixModal({ open: true, code: f.pix! })} className="inline-flex items-center gap-1 rounded-md border border-white/10 px-2 py-1 text-xs hover:bg-white/5"><QrCode className="h-3.5 w-3.5" /> PIX</button>
+                            <button id={`overview-invoice-pix-${f.id}`} onClick={() => setPixModal({ open: true, code: f.pix! })} className="inline-flex items-center gap-1 rounded-md border border-white/10 px-2 py-1 text-xs hover:bg-white/5"><QrCode className="h-3.5 w-3.5" /> PIX</button>
                           )}
                         </div>
                       </div>
@@ -362,7 +365,7 @@ function Dashboard({onLogout}: {onLogout: () => void}) {
                 <div className="rounded-2xl border border-white/10 bg-neutral-900/60 p-6">
                   <div className="mb-4 flex items-center justify-between">
                     <h3 className="text-lg font-semibold">Chamados abertos</h3>
-                    <button onClick={() => setActiveTab('tickets')} className="text-sm text-white/70 hover:text-white">Ver todos</button>
+                    <button id="overview-view-all-tickets" onClick={() => setActiveTab('tickets')} className="text-sm text-white/70 hover:text-white">Ver todos</button>
                   </div>
                   <div className="space-y-3">
                     {contract.openTickets.map((t) => (
@@ -385,7 +388,7 @@ function Dashboard({onLogout}: {onLogout: () => void}) {
                 <div className="lg:col-span-2 rounded-2xl border border-white/10 bg-neutral-900/60 p-6">
                   <div className="mb-4 flex items-center justify-between">
                     <h3 className="text-lg font-semibold">Chamados técnicos — {contract.alias}</h3>
-                    <a href="#" className="text-sm text-white/70 hover:text-white">Novo chamado</a>
+                    <a id="new-ticket-button" href="#" className="text-sm text-white/70 hover:text-white">Novo chamado</a>
                   </div>
                   <div className="space-y-3">
                     {contract.openTickets.map((t) => (
@@ -427,8 +430,8 @@ function Dashboard({onLogout}: {onLogout: () => void}) {
                             <div className="text-xs text-white/60">Venc. {new Date(f.due).toLocaleDateString("pt-BR")} • R$ {f.amount.toFixed(2)}</div>
                           </div>
                           <div className="flex items-center gap-2">
-                            <a href="#" className="inline-flex items-center gap-1 rounded-md border border-white/10 px-2 py-1 text-xs hover:bg-white/5"><Receipt className="h-3.5 w-3.5" /> 2ª via</a>
-                            {f.pix && (<button onClick={() => setPixModal({ open: true, code: f.pix! })} className="inline-flex items-center gap-1 rounded-md border border-white/10 px-2 py-1 text-xs hover:bg-white/5"><QrCode className="h-3.5 w-3.5" /> PIX</button>)}
+                            <a id={`invoice-pdf-${f.id}`} href="#" className="inline-flex items-center gap-1 rounded-md border border-white/10 px-2 py-1 text-xs hover:bg-white/5"><Receipt className="h-3.5 w-3.5" /> 2ª via</a>
+                            {f.pix && (<button id={`invoice-pix-${f.id}`} onClick={() => setPixModal({ open: true, code: f.pix! })} className="inline-flex items-center gap-1 rounded-md border border-white/10 px-2 py-1 text-xs hover:bg-white/5"><QrCode className="h-3.5 w-3.5" /> PIX</button>)}
                           </div>
                         </div>
                       ))}
@@ -467,9 +470,9 @@ function Dashboard({onLogout}: {onLogout: () => void}) {
                           ) : (
                             <span className="inline-flex items-center gap-1 rounded-md bg-red-500/15 px-2 py-1 text-xs text-red-200"><XCircle className="h-3.5 w-3.5" /> Em aberto</span>
                           )}
-                          <a href="#" className="inline-flex items-center gap-1 rounded-md border border-white/10 px-2 py-1 text-xs hover:bg-white/5"><Receipt className="h-3.5 w-3.5" /> 2ª via</a>
+                          <a id={`invoice-history-pdf-${f.id}`} href="#" className="inline-flex items-center gap-1 rounded-md border border-white/10 px-2 py-1 text-xs hover:bg-white/5"><Receipt className="h-3.5 w-3.5" /> 2ª via</a>
                           {f.status !== "paid" && f.pix && (
-                            <button onClick={() => setPixModal({ open: true, code: f.pix! })} className="inline-flex items-center gap-1 rounded-md border border-white/10 px-2 py-1 text-xs hover:bg-white/5"><QrCode className="h-3.5 w-3.5" /> PIX</button>
+                            <button id={`invoice-history-pix-${f.id}`} onClick={() => setPixModal({ open: true, code: f.pix! })} className="inline-flex items-center gap-1 rounded-md border border-white/10 px-2 py-1 text-xs hover:bg-white/5"><QrCode className="h-3.5 w-3.5" /> PIX</button>
                           )}
                         </div>
                       </div>
@@ -511,7 +514,7 @@ function Dashboard({onLogout}: {onLogout: () => void}) {
                       <div className="mb-1 text-xs text-white/60">{p.tag}</div>
                       <div className="text-lg font-semibold">{p.name}</div>
                       <div className="text-white/70">R$ {p.price.toFixed(2)} / mês</div>
-                      <button className="mt-3 inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-1.5 text-sm text-primary-foreground hover:bg-primary/90">
+                      <button id={`upgrade-plan-${p.name.replace(/\s/g, '-')}`} className="mt-3 inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-1.5 text-sm text-primary-foreground hover:bg-primary/90">
                         Solicitar upgrade <ChevronRight className="h-4 w-4" />
                       </button>
                     </div>
@@ -525,7 +528,7 @@ function Dashboard({onLogout}: {onLogout: () => void}) {
                 <div className="text-lg font-semibold">Indique e ganhe</div>
                 <p className="mt-1 text-white/70">Convide seus amigos e ganhe desconto na fatura. Compartilhe o link abaixo:</p>
                 <div className="mt-3 rounded-xl border border-white/10 bg-white/5 p-3 text-sm break-all">https://velpro.com.br/indicar?cid={contract.id}</div>
-                <button className="mt-3 inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-1.5 text-sm hover:bg-white/5">
+                <button id="copy-referral-link" className="mt-3 inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-1.5 text-sm hover:bg-white/5">
                   <Share2 className="h-4 w-4" /> Copiar link
                 </button>
               </div>
@@ -542,8 +545,8 @@ function Dashboard({onLogout}: {onLogout: () => void}) {
                   <div><b>Endereço:</b> {contract.address}</div>
                 </div>
                 <div className="mt-4 flex gap-2">
-                  <a href="#" className="inline-flex items-center gap-2 rounded-lg bg-white px-3 py-1.5 text-sm text-neutral-950"><FileText className="h-4 w-4"/> Baixar PDF</a>
-                  <a href="#" className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-1.5 text-sm hover:bg-white/5"><Headphones className="h-4 w-4"/> Falar com suporte</a>
+                  <a id="download-contract-pdf" href="#" className="inline-flex items-center gap-2 rounded-lg bg-white px-3 py-1.5 text-sm text-neutral-950"><FileText className="h-4 w-4"/> Baixar PDF</a>
+                  <a id="contact-support-contract" href="#" className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-1.5 text-sm hover:bg-white/5"><Headphones className="h-4 w-4"/> Falar com suporte</a>
                 </div>
               </div>
             )}
@@ -558,18 +561,19 @@ function Dashboard({onLogout}: {onLogout: () => void}) {
             <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 20, opacity: 0 }} className="w-full max-w-lg rounded-2xl border border-white/10 bg-neutral-900 p-6">
               <div className="mb-4 flex items-center justify-between">
                 <div className="flex items-center gap-2 text-lg font-semibold"><QrCode className="h-5 w-5 text-primary" /> Código PIX</div>
-                <button onClick={() => setPixModal({ open: false, code: null })} className="rounded-lg border border-white/10 p-1 text-white/70 hover:bg-white/5"><XCircle className="h-4 w-4" /></button>
+                <button id="pix-modal-close" onClick={() => setPixModal({ open: false, code: null })} className="rounded-lg p-1 text-white/70 hover:bg-white/5 hover:text-white"><X className="h-5 w-5" /></button>
               </div>
               <div className="rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white/80 select-all break-all">
                 {pixModal.code}
               </div>
               <div className="mt-3 flex justify-end gap-2">
-                <button onClick={() => {
+                <button id="pix-modal-copy" onClick={() => {
                   if(pixModal.code) navigator.clipboard?.writeText(pixModal.code)
+                  toast({title: "Copiado!", description: "O código PIX foi copiado para a área de transferência."});
                 }} className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-1.5 text-sm hover:bg-white/5">
                   <Copy className="h-4 w-4" /> Copiar
                 </button>
-                <a href="#" className="inline-flex items-center gap-2 rounded-lg bg-white px-3 py-1.5 text-sm text-neutral-950"><Receipt className="h-4 w-4" /> Baixar boleto</a>
+                <a id="pix-modal-download-pdf" href="#" className="inline-flex items-center gap-2 rounded-lg bg-white px-3 py-1.5 text-sm text-neutral-950"><Receipt className="h-4 w-4" /> Baixar boleto</a>
               </div>
             </motion.div>
           </motion.div>

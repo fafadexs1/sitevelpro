@@ -116,13 +116,13 @@ function TagForm({ onSave, onOpenChange, tag }: { onSave: () => void, onOpenChan
                     <DialogTitle>{mode === 'add' ? 'Adicionar Nova Tag' : 'Editar Tag'}</DialogTitle>
                 </DialogHeader>
                  <div className="max-h-[65vh] space-y-4 overflow-y-auto p-1 pr-4">
-                    <FormField control={form.control} name="name" render={({ field }) => ( <FormItem> <FormLabel>Nome da Tag</FormLabel> <FormControl><Input placeholder="Ex: Google Analytics 4" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-                    <FormField control={form.control} name="script_content" render={({ field }) => ( <FormItem> <FormLabel>Conteúdo do Script</FormLabel> <FormControl><Textarea placeholder="Cole o código da tag aqui, incluindo as tags <script>...</script>" {...field} rows={6} /></FormControl> <FormMessage /> </FormItem> )}/>
+                    <FormField control={form.control} name="name" render={({ field }) => ( <FormItem> <FormLabel>Nome da Tag</FormLabel> <FormControl><Input id="tag-form-name" placeholder="Ex: Google Analytics 4" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+                    <FormField control={form.control} name="script_content" render={({ field }) => ( <FormItem> <FormLabel>Conteúdo do Script</FormLabel> <FormControl><Textarea id="tag-form-script" placeholder="Cole o código da tag aqui, incluindo as tags <script>...</script>" {...field} rows={6} /></FormControl> <FormMessage /> </FormItem> )}/>
                     <FormField control={form.control} name="placement" render={({ field }) => (
                         <FormItem>
                             <FormLabel>Posição da Tag</FormLabel>
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl><SelectTrigger><SelectValue placeholder="Selecione onde a tag será inserida" /></SelectTrigger></FormControl>
+                                <FormControl><SelectTrigger id="tag-form-placement"><SelectValue placeholder="Selecione onde a tag será inserida" /></SelectTrigger></FormControl>
                                 <SelectContent>
                                     <SelectItem value="head_start">Início do &lt;head&gt;</SelectItem>
                                     <SelectItem value="body_start">Início do &lt;body&gt;</SelectItem>
@@ -135,13 +135,13 @@ function TagForm({ onSave, onOpenChange, tag }: { onSave: () => void, onOpenChan
                     <FormField control={form.control} name="is_active" render={({ field }) => (
                         <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
                             <FormLabel>Ativa</FormLabel>
-                            <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                            <FormControl><Switch id="tag-form-active" checked={field.value} onCheckedChange={field.onChange} /></FormControl>
                         </FormItem>
                     )} />
                 </div>
                 <DialogFooter>
-                    <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-                    <Button type="submit" disabled={isSubmitting}>{isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Salvar</Button>
+                    <Button id="tag-form-cancel" type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
+                    <Button id="tag-form-save" type="submit" disabled={isSubmitting}>{isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Salvar</Button>
                 </DialogFooter>
             </form>
         </Form>
@@ -194,19 +194,19 @@ function EventForm({ onSave, onOpenChange, event }: { onSave: () => void, onOpen
                     <DialogTitle>{mode === 'add' ? 'Adicionar Evento Customizado' : 'Editar Evento'}</DialogTitle>
                 </DialogHeader>
                 <div className="max-h-[65vh] space-y-4 overflow-y-auto p-1 pr-4">
-                    <FormField control={form.control} name="name" render={({ field }) => ( <FormItem> <FormLabel>Nome do Evento</FormLabel> <FormControl><Input placeholder="Ex: Clique no botão Assinar" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-                    <FormField control={form.control} name="selector" render={({ field }) => ( <FormItem> <FormLabel>Seletor CSS</FormLabel> <FormControl><Input placeholder="#botao-assinar ou .btn-primary" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-                    <FormField control={form.control} name="event_snippet" render={({ field }) => ( <FormItem> <FormLabel>Snippet do Evento</FormLabel> <FormControl><Textarea placeholder="gtag('event', 'conversion', ...)" {...field} rows={4} /></FormControl> <FormMessage /> </FormItem> )}/>
+                    <FormField control={form.control} name="name" render={({ field }) => ( <FormItem> <FormLabel>Nome do Evento</FormLabel> <FormControl><Input id="event-form-name" placeholder="Ex: Clique no botão Assinar" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+                    <FormField control={form.control} name="selector" render={({ field }) => ( <FormItem> <FormLabel>Seletor CSS</FormLabel> <FormControl><Input id="event-form-selector" placeholder="#botao-assinar ou .btn-primary" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+                    <FormField control={form.control} name="event_snippet" render={({ field }) => ( <FormItem> <FormLabel>Snippet do Evento</FormLabel> <FormControl><Textarea id="event-form-snippet" placeholder="gtag('event', 'conversion', ...)" {...field} rows={4} /></FormControl> <FormMessage /> </FormItem> )}/>
                     <FormField control={form.control} name="is_active" render={({ field }) => (
                         <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
                             <FormLabel>Ativo</FormLabel>
-                            <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                            <FormControl><Switch id="event-form-active" checked={field.value} onCheckedChange={field.onChange} /></FormControl>
                         </FormItem>
                     )} />
                 </div>
                 <DialogFooter>
-                    <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-                    <Button type="submit" disabled={isSubmitting}>{isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Salvar</Button>
+                    <Button id="event-form-cancel" type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
+                    <Button id="event-form-save" type="submit" disabled={isSubmitting}>{isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Salvar</Button>
                 </DialogFooter>
             </form>
         </Form>
@@ -277,7 +277,7 @@ function TagsManager() {
                 <p className="text-sm text-white/70 max-w-2xl">
                     Adicione scripts como Google Analytics, Meta Pixel, etc. As tags ativas serão injetadas automaticamente nas páginas do seu site, no local que você definir.
                 </p>
-                <Button onClick={() => { setEditingTag(null); setIsModalOpen(true); }}><PlusCircle className="mr-2 h-4 w-4" /> Nova Tag</Button>
+                <Button id="new-tag-button" onClick={() => { setEditingTag(null); setIsModalOpen(true); }}><PlusCircle className="mr-2 h-4 w-4" /> Nova Tag</Button>
             </div>
             
             <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
@@ -303,7 +303,7 @@ function TagsManager() {
                                     <Tag className="w-5 h-5 text-primary"/>
                                     {tag.name}
                                 </CardTitle>
-                                <Switch checked={tag.is_active} onCheckedChange={() => handleToggleActive(tag)} aria-label={`Ativar/desativar tag ${tag.name}`} />
+                                <Switch id={`toggle-tag-${tag.id}`} checked={tag.is_active} onCheckedChange={() => handleToggleActive(tag)} aria-label={`Ativar/desativar tag ${tag.name}`} />
                             </CardHeader>
                             <CardContent className="flex-grow space-y-3">
                                  <Badge variant="secondary" className="font-mono text-xs">{tag.placement}</Badge>
@@ -312,16 +312,19 @@ function TagsManager() {
                                  </p>
                             </CardContent>
                             <CardFooter className="flex justify-end gap-2 border-t border-white/10 pt-4">
-                                <Button variant="ghost" size="sm" onClick={() => { setEditingTag(tag); setIsModalOpen(true); }}>
+                                <Button id={`edit-tag-${tag.id}`} variant="ghost" size="sm" onClick={() => { setEditingTag(tag); setIsModalOpen(true); }}>
                                     <Edit className="h-4 w-4 mr-2" /> Editar
                                 </Button>
                                 <AlertDialog>
                                     <AlertDialogTrigger asChild>
-                                        <Button variant="destructive" size="sm"><Trash2 className="h-4 w-4" /></Button>
+                                        <Button id={`delete-tag-trigger-${tag.id}`} variant="destructive" size="sm"><Trash2 className="h-4 w-4" /></Button>
                                     </AlertDialogTrigger>
                                     <AlertDialogContent className="bg-neutral-950 border-white/10 text-white">
                                         <AlertDialogHeader><AlertDialogTitle>Tem certeza?</AlertDialogTitle><AlertDialogDescription>Essa ação não pode ser desfeita. Isso irá apagar permanentemente a tag.</AlertDialogDescription></AlertDialogHeader>
-                                        <AlertDialogFooter><AlertDialogCancel>Cancelar</AlertDialogCancel><AlertDialogAction onClick={() => handleDelete(tag.id)}>Continuar</AlertDialogAction></AlertDialogFooter>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel id={`delete-tag-cancel-${tag.id}`}>Cancelar</AlertDialogCancel>
+                                            <AlertDialogAction id={`delete-tag-confirm-${tag.id}`} onClick={() => handleDelete(tag.id)}>Continuar</AlertDialogAction>
+                                        </AlertDialogFooter>
                                     </AlertDialogContent>
                                 </AlertDialog>
                             </CardFooter>
@@ -415,7 +418,7 @@ function ConversionMappingManager() {
                                         <p className="font-medium">{stdEvent.name}</p>
                                         <p className="text-xs text-white/60 font-mono">{stdEvent.selector}</p>
                                     </div>
-                                    <Switch checked={isActive} onCheckedChange={handleToggleStandard} />
+                                    <Switch id={`toggle-std-event-${stdEvent.name.replace(/\s/g, '')}`} checked={isActive} onCheckedChange={handleToggleStandard} />
                                 </div>
                             );
                         })
@@ -430,7 +433,7 @@ function ConversionMappingManager() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                      <div className="flex justify-end">
-                        <Button onClick={() => { setEditingEvent(null); setIsModalOpen(true); }}><PlusCircle className="mr-2 h-4 w-4" /> Novo Evento Customizado</Button>
+                        <Button id="new-custom-event" onClick={() => { setEditingEvent(null); setIsModalOpen(true); }}><PlusCircle className="mr-2 h-4 w-4" /> Novo Evento Customizado</Button>
                      </div>
                       {loading ? <div className="flex justify-center p-8"><Loader2 className="h-6 w-6 animate-spin" /></div> :
                         customEvents.length === 0 ? <p className="text-sm text-white/70 text-center py-8">Nenhum evento customizado criado.</p> :
@@ -441,15 +444,18 @@ function ConversionMappingManager() {
                                    <p className="text-xs text-white/60 font-mono">Seletor: {event.selector}</p>
                                </div>
                                <div className="flex items-center gap-4">
-                                   <Switch checked={event.is_active} onCheckedChange={() => handleToggleActive(event)} />
-                                   <Button variant="ghost" size="sm" onClick={() => { setEditingEvent(event); setIsModalOpen(true); }}><Edit className="h-4 w-4 mr-2"/>Editar</Button>
+                                   <Switch id={`toggle-custom-event-${event.id}`} checked={event.is_active} onCheckedChange={() => handleToggleActive(event)} />
+                                   <Button id={`edit-custom-event-${event.id}`} variant="ghost" size="sm" onClick={() => { setEditingEvent(event); setIsModalOpen(true); }}><Edit className="h-4 w-4 mr-2"/>Editar</Button>
                                    <AlertDialog>
                                         <AlertDialogTrigger asChild>
-                                            <Button variant="destructive" size="sm"><Trash2 className="h-4 w-4" /></Button>
+                                            <Button id={`delete-event-trigger-${event.id}`} variant="destructive" size="sm"><Trash2 className="h-4 w-4" /></Button>
                                         </AlertDialogTrigger>
                                         <AlertDialogContent className="bg-neutral-950 border-white/10 text-white">
                                             <AlertDialogHeader><AlertDialogTitle>Tem certeza?</AlertDialogTitle><AlertDialogDescription>Isso irá apagar permanentemente o evento de conversão.</AlertDialogDescription></AlertDialogHeader>
-                                            <AlertDialogFooter><AlertDialogCancel>Cancelar</AlertDialogCancel><AlertDialogAction onClick={() => handleDelete(event.id)}>Continuar</AlertDialogAction></AlertDialogFooter>
+                                            <AlertDialogFooter>
+                                                <AlertDialogCancel id={`delete-event-cancel-${event.id}`}>Cancelar</AlertDialogCancel>
+                                                <AlertDialogAction id={`delete-event-confirm-${event.id}`} onClick={() => handleDelete(event.id)}>Continuar</AlertDialogAction>
+                                            </AlertDialogFooter>
                                         </AlertDialogContent>
                                     </AlertDialog>
                                </div>
@@ -484,8 +490,8 @@ export default function GoogleAdsPage() {
             
             <Tabs defaultValue="tags" className="w-full">
                 <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="tags"><Tag className="mr-2"/>Gerenciador de Tags</TabsTrigger>
-                    <TabsTrigger value="conversions"><Terminal className="mr-2"/>Mapeamento de Conversões</TabsTrigger>
+                    <TabsTrigger value="tags" id="tags-tab"><Tag className="mr-2"/>Gerenciador de Tags</TabsTrigger>
+                    <TabsTrigger value="conversions" id="conversions-tab"><Terminal className="mr-2"/>Mapeamento de Conversões</TabsTrigger>
                 </TabsList>
                 <TabsContent value="tags" className="mt-6">
                     <TagsManager />
