@@ -1,8 +1,9 @@
-import type {Metadata} from 'next';
+import type { Metadata, ResolvingMetadata } from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 import { CanvasBackground } from '@/components/landing/CanvasBackground';
 import { Inter } from 'next/font/google';
+import { createClient } from '@/utils/supabase/server';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -10,11 +11,42 @@ const inter = Inter({
   display: 'swap',
 });
 
-export const metadata: Metadata = {
-  title: 'Velpro Telecom',
-  description: 'Internet ultrarrápida para tudo que importa.',
-  viewport: 'width=device-width, initial-scale=1',
-};
+// This function fetches SEO data from Supabase
+async function getSeoSettings() {
+  const supabase = createClient();
+  const { data } = await supabase
+    .from('seo_settings')
+    .select('site_title, site_description, og_image_url')
+    .single();
+  return data;
+}
+
+export async function generateMetadata(
+  parent: ResolvingMetadata
+): Promise<Metadata> {
+  const settings = await getSeoSettings();
+  const previousImages = (await parent).openGraph?.images || [];
+
+  const title = settings?.site_title || 'Velpro Telecom';
+  const description = settings?.site_description || 'Internet ultrarrápida para tudo que importa.';
+  const ogImage = settings?.og_image_url || null;
+
+  return {
+    title: title,
+    description: description,
+    openGraph: {
+      title: title,
+      description: description,
+      images: ogImage ? [ogImage, ...previousImages] : previousImages,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: title,
+      description: description,
+      images: ogImage ? [ogImage] : [],
+    },
+  };
+}
 
 export default function RootLayout({
   children,
