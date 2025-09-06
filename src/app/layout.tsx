@@ -1,5 +1,4 @@
 
-
 import type { Metadata, ResolvingMetadata } from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
@@ -80,10 +79,13 @@ export async function generateMetadata(
   };
 }
 
-const RawHTML = ({ html, ...props }: { html: string } & React.HTMLAttributes<any>) => (
-    <div {...props} dangerouslySetInnerHTML={{ __html: html }} />
-);
-
+const RawHTML = ({ html, ...props }: { html: string } & React.HTMLAttributes<any>) => {
+    // Este componente não renderiza um `div` extra. Ele injeta o HTML diretamente.
+    // É crucial que o HTML injetado seja válido para a posição em que é inserido.
+    // `suppressHydrationWarning` é usado aqui para evitar avisos em casos onde
+    // o script injetado modifica o DOM, o que é comum.
+    return <div {...props} dangerouslySetInnerHTML={{ __html: html }} suppressHydrationWarning />;
+};
 
 export default async function RootLayout({
   children,
@@ -100,19 +102,26 @@ export default async function RootLayout({
       <head>
         {/* Font links are handled by next/font now */}
         {headScripts.map((tag, index) => (
-            <RawHTML key={`tracking-tag-head-${tag.id}-${index}`} html={tag.script_content} />
+            // A key é importante para o React. Usamos um Fragment para não adicionar nós extras.
+            <React.Fragment key={`tracking-tag-head-${tag.id}-${index}`}>
+                <RawHTML html={tag.script_content} />
+            </React.Fragment>
         ))}
       </head>
       <body className="font-body antialiased">
          {bodyStartScripts.map((tag, index) => (
-            <RawHTML key={`tracking-tag-body-start-${tag.id}-${index}`} html={tag.script_content} />
+            <React.Fragment key={`tracking-tag-body-start-${tag.id}-${index}`}>
+                <RawHTML html={tag.script_content} />
+            </React.Fragment>
         ))}
         <ConversionTracker />
         <CanvasBackground />
         {children}
         <Toaster />
          {bodyEndScripts.map((tag, index) => (
-            <RawHTML key={`tracking-tag-body-end-${tag.id}-${index}`} html={tag.script_content} />
+             <React.Fragment key={`tracking-tag-body-end-${tag.id}-${index}`}>
+                <RawHTML html={tag.script_content} />
+            </React.Fragment>
         ))}
       </body>
     </html>
