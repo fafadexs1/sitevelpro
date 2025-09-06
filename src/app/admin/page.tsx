@@ -698,7 +698,7 @@ const PlanForm = ({
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={()={() => onOpenChange(false)}}>Cancelar</Button>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               {mode === 'add' ? 'Adicionar Plano' : 'Salvar Alterações'}
@@ -1427,9 +1427,9 @@ const TvPackagesContent = () => {
                     <AlertDialogContent className="bg-neutral-950 border-white/10 text-white">
                         <AlertDialogHeader>
                             <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
-                            <AlertDialogDescription className="text-white/70">
+                            <p className="text-sm text-white/70">
                                 Essa ação não pode ser desfeita. Isso irá apagar o pacote e todas as suas associações com canais.
-                            </AlertDialogDescription>
+                            </p>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                             <AlertDialogCancel>Cancelar</AlertDialogCancel>
