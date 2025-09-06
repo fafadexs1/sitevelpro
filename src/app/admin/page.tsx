@@ -56,6 +56,7 @@ import {
     AlertDialogCancel,
     AlertDialogContent,
     AlertDialogDescription,
+    AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
     AlertDialogTrigger,
@@ -1043,7 +1044,7 @@ const PlansContent = () => {
 
   useEffect(() => {
     getPlans();
-  }, []);
+  }, [toast]);
 
   const filteredPlans = useMemo(() => plans.filter((p) => p.type === activeTab), [plans, activeTab]);
 
@@ -1176,7 +1177,7 @@ const TvChannelsContent = () => {
 
     useEffect(() => {
         getChannels();
-    }, []);
+    }, [toast]);
 
     const handleDeleteChannel = async (channelId: string, logoUrl: string) => {
         const supabase = createClient();
@@ -1332,7 +1333,7 @@ const TvPackagesContent = () => {
 
     useEffect(() => {
         getPackages();
-    }, []);
+    }, [toast]);
   
      const handleDeletePackage = async (packageId: string) => {
         const supabase = createClient();
@@ -1563,8 +1564,8 @@ function PlansTable({
   }
 
   const formatPrice = (value: number | null | undefined): string => {
-    if (value === null || value === undefined) return "";
-    return `R$ ${Number(value).toFixed(2)}`;
+    if (value === null || value === undefined) return "N/A";
+    return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   };
 
   return (
