@@ -1,12 +1,14 @@
 
+// app/layout.tsx (ou app/(site)/layout.tsx)
 import type { Metadata, ResolvingMetadata } from 'next';
 import './globals.css';
-import { Toaster } from "@/components/ui/toaster"
+import { Toaster } from "@/components/ui/toaster";
 import { CanvasBackground } from '@/components/landing/CanvasBackground';
 import { Inter } from 'next/font/google';
 import { createClient } from '@/utils/supabase/server';
 import { ConversionTracker } from '@/components/analytics/ConversionTracker';
 import React from 'react';
+import Script from 'next/script';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -14,7 +16,13 @@ const inter = Inter({
   display: 'swap',
 });
 
-// This function fetches SEO data from Supabase
+type TrackingTag = {
+  id: string | number;
+  script_content: string;
+  placement: 'head_start' | 'body_start' | 'body_end';
+};
+
+// --- Data loaders (server) ---
 async function getSeoSettings() {
   try {
     const supabase = createClient();
@@ -22,28 +30,33 @@ async function getSeoSettings() {
       .from('seo_settings')
       .select('site_title, site_description, og_image_url, favicon_url')
       .single();
-    return data;
-  } catch (error) {
+    return data as {
+      site_title?: string | null;
+      site_description?: string | null;
+      og_image_url?: string | null;
+      favicon_url?: string | null;
+    } | null;
+  } catch {
     console.error("Could not fetch SEO settings, maybe the table does not exist or is empty.");
     return null;
   }
 }
 
-async function getTrackingTags() {
-    try {
-        const supabase = createClient();
-        const { data } = await supabase
-            .from('tracking_tags')
-            .select('id, script_content, placement')
-            .eq('is_active', true);
-        return data || [];
-    } catch (error) {
-        console.error("Could not fetch tracking tags.");
-        return [];
-    }
+async function getTrackingTags(): Promise<TrackingTag[]> {
+  try {
+    const supabase = createClient();
+    const { data } = await supabase
+      .from('tracking_tags')
+      .select('id, script_content, placement')
+      .eq('is_active', true);
+    return (data ?? []) as TrackingTag[];
+  } catch {
+    console.error("Could not fetch tracking tags.");
+    return [];
+  }
 }
 
-
+// --- Metadata ---
 export async function generateMetadata(
   { params }: { params: any },
   parent: ResolvingMetadata
@@ -61,63 +74,85 @@ export async function generateMetadata(
       default: title,
       template: `%s | ${title}`,
     },
-    description: description,
+    description,
     icons: {
-        icon: faviconUrl,
+      icon: faviconUrl,
     },
     openGraph: {
-      title: title,
-      description: description,
+      title,
+      description,
       images: ogImage ? [ogImage, ...previousImages] : previousImages,
     },
     twitter: {
       card: 'summary_large_image',
-      title: title,
-      description: description,
+      title,
+      description,
       images: ogImage ? [ogImage] : [],
     },
   };
 }
 
-const RenderRawHTML = ({ html, ...props }: { html: string } & React.HTMLAttributes<any>) => {
-  // Este componente não renderiza um `div` extra. Ele injeta o HTML diretamente.
-  // É crucial que o HTML injetado seja válido para a posição em que é inserido.
-  // `suppressHydrationWarning` é usado aqui para evitar avisos em casos onde
-  // o script injetado modifica o DOM, o que é comum.
-  return <React.Fragment {...props} dangerouslySetInnerHTML={{ __html: html }} />;
-};
-
+// --- Helper: render tracking scripts with next/script ---
+function TrackingScripts({
+  tags,
+  position,
+}: {
+  tags: TrackingTag[];
+  position: 'head_start' | 'body_start' | 'body_end';
+}) {
+  // Estratégias:
+  // - head_start / body_start: beforeInteractive (carrega antes da hidratação)
+  // - body_end: afterInteractive (após hidratação)
+  return (
+    <>
+      {tags
+        .filter(t => t.placement === position)
+        .map((tag) => {
+          const id = `tracking-tag-${position}-${tag.id}`;
+          const strategy = position === 'body_end' ? 'afterInteractive' : 'beforeInteractive';
+          return (
+            <Script
+              id={id}
+              key={id}
+              strategy={strategy as any}
+              dangerouslySetInnerHTML={{ __html: tag.script_content }}
+            />
+          );
+        })}
+    </>
+  );
+}
 
 export default async function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   const tags = await getTrackingTags();
   const headScripts = tags.filter(t => t.placement === 'head_start');
   const bodyStartScripts = tags.filter(t => t.placement === 'body_start');
   const bodyEndScripts = tags.filter(t => t.placement === 'body_end');
 
   return (
-    <html lang="en" className={`${inter.variable} dark`}>
+    <html lang="en" className={`${inter.variable} dark`} suppressHydrationWarning>
       <head>
-        {/* Font links are handled by next/font now */}
-        {headScripts.map((tag, index) => (
-            // A key é importante para o React. Usamos um Fragment para não adicionar nós extras.
-            <RenderRawHTML key={`tracking-tag-head-${tag.id}-${index}`} html={tag.script_content} />
-        ))}
+        {/* Fontes via next/font */}
+        {/* Tracking no início do head */}
+        <TrackingScripts tags={headScripts} position="head_start" />
       </head>
-      <body className="font-body antialiased">
-         {bodyStartScripts.map((tag, index) => (
-            <RenderRawHTML key={`tracking-tag-body-start-${tag.id}-${index}`} html={tag.script_content} />
-        ))}
+      {/* Algumas extensões/sdks injetam atributos no body antes do React -> silenciamos diferenças */}
+      <body className="font-body antialiased" suppressHydrationWarning>
+        {/* Tracking logo no início do body, antes da hidratação */}
+        <TrackingScripts tags={bodyStartScripts} position="body_start" />
+
+        {/* Seus componentes cliente. Certifique-se de que efeitos/Date.now()/Math.random()
+            só rodem dentro de useEffect ou usando refs para evitar conteúdo não determinístico no SSR */}
         <ConversionTracker />
         <CanvasBackground />
+
         {children}
         <Toaster />
-         {bodyEndScripts.map((tag, index) => (
-            <RenderRawHTML key={`tracking-tag-body-end-${tag.id}-${index}`} html={tag.script_content} />
-        ))}
+
+        {/* Tracking no final do body, após a hidratação */}
+        <TrackingScripts tags={bodyEndScripts} position="body_end" />
       </body>
     </html>
   );
