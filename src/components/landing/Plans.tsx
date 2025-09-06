@@ -26,6 +26,7 @@ type Plan = {
   features: string[] | null;
   highlight: boolean;
   has_tv: boolean;
+  featured_channel_ids: string[] | null;
 };
 
 // Mapeamento de nomes de ícones para componentes de ícone
@@ -105,7 +106,7 @@ export function Plans() {
         <div className="flex-grow">
           <div className="mb-4 flex items-center justify-between">
             <h3 className="flex items-baseline gap-1 text-2xl font-bold">
-              <span>{plan.speed}</span>
+              <span className="text-3xl font-black">{plan.speed}</span>
               <span className="text-lg font-medium text-white/70">MEGA</span>
             </h3>
             <div className="grid h-9 w-9 place-items-center rounded-lg bg-primary/15">
@@ -125,7 +126,7 @@ export function Plans() {
             </div>
           </div>
           
-          {plan.has_tv && <ChannelLogos />}
+          {plan.has_tv && plan.featured_channel_ids && <ChannelLogos channelIds={plan.featured_channel_ids} />}
 
           <ul className="my-6 space-y-2 text-sm">
             {(plan.features ?? []).map((feature, i) => {

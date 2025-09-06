@@ -31,7 +31,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -55,7 +55,6 @@ import {
     AlertDialogCancel,
     AlertDialogContent,
     AlertDialogDescription,
-    AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
     AlertDialogTrigger,
@@ -84,6 +83,8 @@ import type { User as SupabaseUser } from "@supabase/supabase-js";
 import Image from "next/image";
 import { ChannelPackageForm } from "@/components/admin/ChannelPackageForm";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 // ==================================
 // Tipagem
@@ -97,6 +98,7 @@ type Plan = {
   features: string[] | null;
   highlight: boolean;
   has_tv: boolean;
+  featured_channel_ids: string[] | null;
 };
 
 type TvChannel = {
@@ -130,7 +132,7 @@ const planSchema = z.object({
   type: z.enum(["residencial", "empresarial"], {
     required_error: "Tipo é obrigatório",
   }),
-  speed: z.string().min(3, "Velocidade é obrigatória"),
+  speed: z.string().min(1, "Velocidade é obrigatória"),
   price: z.coerce.number().min(0, "Preço deve ser positivo"),
   original_price: z.coerce.number().optional().nullable(),
   features: z.array(z.object({
@@ -139,6 +141,7 @@ const planSchema = z.object({
   })).optional(),
   highlight: z.boolean().default(false),
   has_tv: z.boolean().default(false),
+  featured_channel_ids: z.array(z.string()).max(5, "Selecione no máximo 5 canais.").optional(),
 });
 
 type PlanFormData = z.infer<typeof planSchema>;
@@ -151,6 +154,7 @@ const defaultPlanValues = {
   features: [{ icon: "check", text: "" }],
   highlight: false,
   has_tv: false,
+  featured_channel_ids: [],
 };
 
 const channelSchema = z.object({
@@ -345,6 +349,8 @@ const PlanForm = ({
 }) => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [channels, setChannels] = useState<TvChannel[]>([]);
+  const [loadingChannels, setLoadingChannels] = useState(false);
 
   // Helper para converter de/para o formato do BD
   const fromDbToForm = (features: string[] | null) => {
@@ -362,7 +368,6 @@ const PlanForm = ({
     if (!features) return [];
     return features.map(f => `${f.icon}: ${f.text}`);
   };
-  
 
   const form = useForm<PlanFormData>({
     resolver: zodResolver(planSchema),
@@ -373,6 +378,7 @@ const PlanForm = ({
             price: plan.price ?? 0,
             original_price: plan.original_price ?? undefined,
             features: fromDbToForm(plan.features),
+            featured_channel_ids: plan.featured_channel_ids ?? []
           }
         : defaultPlanValues,
   });
@@ -381,6 +387,26 @@ const PlanForm = ({
     control: form.control,
     name: "features",
   });
+  
+  const hasTv = form.watch("has_tv");
+
+  useEffect(() => {
+    async function getChannels() {
+      if (hasTv) {
+        setLoadingChannels(true);
+        const supabase = createClient();
+        const { data, error } = await supabase.from('tv_channels').select('*');
+        if (error) {
+          toast({ variant: 'destructive', title: 'Erro', description: 'Não foi possível carregar os canais.' });
+        } else {
+          setChannels(data as TvChannel[] ?? []);
+        }
+        setLoadingChannels(false);
+      }
+    }
+    getChannels();
+  }, [hasTv, toast]);
+
 
   const onSubmit = async (data: PlanFormData) => {
     setIsSubmitting(true);
@@ -390,6 +416,7 @@ const PlanForm = ({
       ...data,
       features: fromFormToDb(data.features),
       original_price: data.original_price || null,
+      featured_channel_ids: data.has_tv ? data.featured_channel_ids : []
     };
 
     if (mode === "add") {
@@ -452,8 +479,8 @@ const PlanForm = ({
               name="speed"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Velocidade</FormLabel>
-                  <FormControl><Input placeholder="Ex: 500 Mega" {...field} /></FormControl>
+                  <FormLabel>Velocidade (Apenas números)</FormLabel>
+                  <FormControl><Input placeholder="Ex: 500" {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -535,28 +562,99 @@ const PlanForm = ({
                   Adicionar Característica
               </Button>
             </div>
+            
+            <div className="!mt-6 space-y-4 border-t border-white/10 pt-4">
+               <div className="flex items-center justify-between">
+                <FormField
+                  control={form.control}
+                  name="highlight"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center gap-x-2 space-y-0">
+                      <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                      <FormLabel className="cursor-pointer">Destacar plano?</FormLabel>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="has_tv"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center gap-x-2 space-y-0">
+                      <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                      <FormLabel className="cursor-pointer">Inclui TV?</FormLabel>
+                    </FormItem>
+                  )}
+                />
+              </div>
 
-            <div className="!mt-6 flex items-center justify-between border-t border-white/10 pt-4">
-              <FormField
-                control={form.control}
-                name="highlight"
-                render={({ field }) => (
-                  <FormItem className="flex items-center gap-x-2 space-y-0">
-                    <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-                    <FormLabel className="cursor-pointer">Destacar plano?</FormLabel>
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="has_tv"
-                render={({ field }) => (
-                  <FormItem className="flex items-center gap-x-2 space-y-0">
-                    <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-                    <FormLabel className="cursor-pointer">Inclui TV?</FormLabel>
-                  </FormItem>
-                )}
-              />
+              {hasTv && (
+                 <AnimatePresence>
+                    <motion.div 
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="overflow-hidden"
+                    >
+                         <FormField
+                            control={form.control}
+                            name="featured_channel_ids"
+                            render={() => (
+                                <FormItem>
+                                <div className="mb-4">
+                                    <FormLabel className="text-base">Canais em Destaque</FormLabel>
+                                    <p className="text-sm text-white/60">Selecione até 5 canais para destacar neste plano.</p>
+                                </div>
+                                {loadingChannels ? (
+                                    <div className="flex justify-center items-center h-40"><Loader2 className="h-6 w-6 animate-spin"/></div>
+                                ) : (
+                                    <ScrollArea className="h-52">
+                                        <div className="grid grid-cols-2 gap-2 p-1">
+                                        {channels.map((channel) => (
+                                            <FormField
+                                            key={channel.id}
+                                            control={form.control}
+                                            name="featured_channel_ids"
+                                            render={({ field }) => {
+                                                const isChecked = field.value?.includes(channel.id);
+                                                const limitReached = !isChecked && field.value?.length === 5;
+                                                return (
+                                                <FormItem
+                                                    key={channel.id}
+                                                    className={`flex flex-row items-center gap-2 space-y-0 rounded-lg border p-3 transition-colors ${limitReached ? 'opacity-50' : 'cursor-pointer'} bg-neutral-900 border-white/10`}
+                                                >
+                                                    <FormControl>
+                                                    <Checkbox
+                                                        checked={isChecked}
+                                                        disabled={limitReached}
+                                                        onCheckedChange={(checked) => {
+                                                        if (limitReached) return;
+                                                        return checked
+                                                            ? field.onChange([...(field.value ?? []), channel.id])
+                                                            : field.onChange(field.value?.filter((value) => value !== channel.id));
+                                                        }}
+                                                    />
+                                                    </FormControl>
+                                                    {channel.logo_url && (
+                                                    <Image src={channel.logo_url} alt={channel.name} width={24} height={24} className="rounded-sm"/>
+                                                    )}
+                                                    <FormLabel className={`font-normal text-sm ${limitReached ? '' : 'cursor-pointer'}`}>
+                                                    {channel.name}
+                                                    </FormLabel>
+                                                </FormItem>
+                                                )
+                                            }}
+                                            />
+                                        ))}
+                                        </div>
+                                    </ScrollArea>
+                                )}
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </motion.div>
+                </AnimatePresence>
+              )}
             </div>
           </div>
 
@@ -927,7 +1025,7 @@ const PlansContent = () => {
 
   useEffect(() => {
     getPlans();
-  }, []);
+  }, [toast]);
 
   const filteredPlans = useMemo(() => plans.filter((p) => p.type === activeTab), [plans, activeTab]);
 
@@ -1281,7 +1379,7 @@ const TvPackagesContent = () => {
                 <p className="mb-2 text-sm text-white/70">ID: {pkg.id}</p>
                 {/* Channel logos will be added later */}
               </CardContent>
-              <div className="flex justify-end p-4 border-t border-white/10">
+              <CardFooter className="flex justify-end p-4 border-t border-white/10">
                 <Button variant="ghost" size="sm" className="mr-2">Editar</Button>
                 <AlertDialog>
                     <AlertDialogTrigger asChild>
@@ -1302,7 +1400,7 @@ const TvPackagesContent = () => {
                         </AlertDialogFooter>
                     </AlertDialogContent>
                 </AlertDialog>
-              </div>
+              </CardFooter>
             </Card>
           ))}
            {packages.length === 0 && <p className="text-white/60 col-span-full">Nenhum pacote de TV encontrado.</p>}
@@ -1328,7 +1426,7 @@ const DatabaseContent = () => {
                 <CardContent className="space-y-4">
                     <p className="text-sm text-white/70">
                         A configuração do banco de dados agora é gerenciada por um script SQL.
-                        Para criar as tabelas necessárias, execute o conteúdo do arquivo <code>setup.sql</code> no editor de SQL do seu painel Supabase.
+                        Para criar ou atualizar as tabelas, execute o conteúdo do arquivo <code>setup.sql</code> no editor de SQL do seu painel Supabase.
                     </p>
                     <Button asChild variant="outline">
                         <a href="https://supabase.com/dashboard" target="_blank" rel="noopener noreferrer">
@@ -1444,6 +1542,11 @@ function PlansTable({
     return <div className="p-8 text-center text-white/60">Nenhum plano deste tipo encontrado.</div>;
   }
 
+  const formatPrice = (value: number | null | undefined): string => {
+    if (value === null || value === undefined) return "";
+    return `R$ ${Number(value).toFixed(2)}`;
+  };
+
   return (
     <Table>
       <TableHeader>
@@ -1457,13 +1560,13 @@ function PlansTable({
       <TableBody>
         {plans.map((plan) => (
           <TableRow key={plan.id} className="border-white/10">
-            <TableCell className="font-medium">{plan.speed}</TableCell>
+            <TableCell className="font-medium">{plan.speed} MEGA</TableCell>
             <TableCell>
               <div className="flex items-center gap-2">
-                <span>R$ {Number(plan.price || 0).toFixed(2)}</span>
+                <span>{formatPrice(plan.price)}</span>
                 {plan.original_price && (
                   <span className="text-xs text-white/50 line-through">
-                    R$ {Number(plan.original_price).toFixed(2)}
+                    {formatPrice(plan.original_price)}
                   </span>
                 )}
               </div>
@@ -1551,5 +1654,3 @@ export default function AdminPage() {
 
   return <AdminDashboard user={user} onLogout={() => setUser(null)} />;
 }
-
-    

@@ -1,31 +1,75 @@
+
+"use client";
+
+import { useEffect, useState } from "react";
 import Image from "next/image";
+import { createClient } from "@/utils/supabase/client";
 
-const channelLogos = [
-  { name: "Globo", src: "https://picsum.photos/40/40?random=1", dataAiHint: "Globo logo" },
-  { name: "Warner", src: "https://picsum.photos/40/40?random=2", dataAiHint: "Warner logo" },
-  { name: "ESPN", src: "https://picsum.photos/40/40?random=3", dataAiHint: "ESPN logo" },
-  { name: "TNT", src: "https://picsum.photos/40/40?random=4", dataAiHint: "TNT logo" },
-  { name: "Discovery", src: "https://picsum.photos/40/40?random=5", dataAiHint: "Discovery logo" },
-];
+type Channel = {
+  id: string;
+  name: string;
+  logo_url: string;
+};
 
-export function ChannelLogos() {
+export function ChannelLogos({ channelIds }: { channelIds: string[] }) {
+  const [channels, setChannels] = useState<Channel[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchChannels() {
+      if (!channelIds || channelIds.length === 0) {
+        setChannels([]);
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from("tv_channels")
+        .select("id, name, logo_url")
+        .in("id", channelIds);
+
+      if (error) {
+        console.error("Error fetching featured channels:", error);
+        setChannels([]);
+      } else {
+        // Ordenar os canais na mesma ordem de channelIds
+        const orderedChannels = channelIds.map(id => data.find(c => c.id === id)).filter(Boolean) as Channel[];
+        setChannels(orderedChannels);
+      }
+      setLoading(false);
+    }
+
+    fetchChannels();
+  }, [channelIds]);
+
+  if (loading) {
+    return <div className="h-10 my-4" />;
+  }
+  
+  if (!channels.length) {
+    return null;
+  }
+
   return (
     <div className="my-4">
-      <p className="text-sm text-center text-white/70 mb-2">Principais canais inclusos:</p>
+      <p className="text-sm text-center text-white/70 mb-2">
+        Canais em destaque:
+      </p>
       <div className="flex items-center justify-center -space-x-3">
-        {channelLogos.map((logo) => (
+        {channels.map((logo) => (
           <div
             key={logo.name}
             className="w-10 h-10 rounded-full bg-white shadow-md overflow-hidden border-2 border-neutral-800 transition-transform hover:scale-110 hover:-translate-y-1"
             title={logo.name}
           >
             <Image
-              src={logo.src}
+              src={logo.logo_url}
               alt={`${logo.name} logo`}
               width={40}
               height={40}
-              data-ai-hint={logo.dataAiHint}
-              className="object-cover w-full h-full"
+              className="object-contain w-full h-full p-0.5"
             />
           </div>
         ))}
