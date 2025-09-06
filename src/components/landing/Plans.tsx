@@ -51,6 +51,13 @@ export function Plans() {
 
   const currentPlans = allPlans.filter(p => p.type === planType);
 
+  const formatPrice = (value: number) => {
+    return value.toLocaleString("pt-BR", { style: 'currency', currency: 'BRL', minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  }
+  const formatPriceAsNumber = (value: number) => {
+    return value.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  }
+
   const PlanCard = ({ plan, index }: { plan: Plan, index: number }) => {
 
     return (
@@ -78,12 +85,13 @@ export function Plans() {
           <div className="mb-4 flex items-baseline gap-2">
             {plan.original_price && (
                 <span className="text-xl font-bold text-white/50 line-through">
-                    R$ {plan.original_price.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                    {formatPrice(plan.original_price)}
                 </span>
             )}
-            <div className="flex items-end gap-1">
-              <span className="text-4xl font-black">{plan.price.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
-              <span className="pb-2 text-white/70">/mês</span>
+             <div className="flex items-baseline gap-1">
+              <span className="text-sm font-bold">R$</span>
+              <span className="text-4xl font-black">{formatPriceAsNumber(plan.price)}</span>
+              <span className="text-white/70">/mês</span>
             </div>
           </div>
           
