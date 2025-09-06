@@ -1,8 +1,38 @@
-import { type NextRequest } from 'next/server'
+import { type NextRequest, NextResponse } from 'next/server'
 import { updateSession } from '@/utils/supabase/middleware'
+import { createClient } from '@/utils/supabase/server';
 
 export async function middleware(request: NextRequest) {
-  return await updateSession(request)
+  // Primeiro, lida com a sessão do Supabase
+  const { response, supabase } = await updateSession(request);
+
+  // Lógica de Redirecionamento
+  const { pathname } = request.nextUrl;
+  
+  // Evita redirecionamentos em caminhos de API, assets ou admin
+  if (pathname.startsWith('/api') || pathname.startsWith('/_next') || pathname.startsWith('/admin')) {
+    return response;
+  }
+
+  const { data: redirect, error } = await supabase
+    .from('redirects')
+    .select('destination_path, type')
+    .eq('source_path', pathname)
+    .single();
+
+  if (error) {
+    // Se não for o erro "PGRST116" (nenhuma linha encontrada), logue o erro.
+    if (error.code !== 'PGRST116') {
+      console.error('Redirect lookup error:', error);
+    }
+  }
+
+  if (redirect) {
+    const statusCode = redirect.type === 'permanent' ? 301 : 302;
+    return NextResponse.redirect(new URL(redirect.destination_path, request.url), statusCode);
+  }
+  
+  return response;
 }
 
 export const config = {

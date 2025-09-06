@@ -56,5 +56,6 @@ export const updateSession = async (request: NextRequest) => {
 
   await supabase.auth.getUser();
 
-  return response;
+  // Retorna a resposta e a instância do supabase para uso posterior no middleware principal
+  return { response, supabase };
 };
