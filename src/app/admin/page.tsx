@@ -1369,8 +1369,6 @@ function AdminDashboard({
   );
 }
 
-const { toast } = useToast();
-
 function PlansTable({
   plans,
   onEditPlan,
