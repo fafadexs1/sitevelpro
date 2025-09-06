@@ -1,4 +1,3 @@
-
 // app/layout.tsx
 import type { Metadata, ResolvingMetadata } from 'next';
 import './globals.css';
@@ -9,6 +8,7 @@ import { createClient } from '@/utils/supabase/server';
 import { ConversionTracker } from '@/components/analytics/ConversionTracker';
 import React from 'react';
 import Script from 'next/script';
+import { cookies } from 'next/headers';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -25,6 +25,8 @@ type TrackingTag = {
 // --- Data loaders (server) ---
 async function getSeoSettings() {
   try {
+    // A chamada a cookies() força a renderização dinâmica, desabilitando o cache.
+    cookies(); 
     const supabase = createClient();
     const { data } = await supabase
       .from('seo_settings')
@@ -44,6 +46,8 @@ async function getSeoSettings() {
 
 async function getTrackingTags(): Promise<TrackingTag[]> {
   try {
+    // A chamada a cookies() força a renderização dinâmica, desabilitando o cache.
+    cookies();
     const supabase = createClient();
     const { data } = await supabase
       .from('tracking_tags')
@@ -92,27 +96,33 @@ export async function generateMetadata(
   };
 }
 
-// --- Helper: Sanitize GTM script content for Next/Script ---
+// Helper para sanitizar o conteúdo de scripts para o next/script
 const sanitizeScriptContent = (content: string): string => {
-    // Remove <script> and </script> tags, but keep the content
-    return content.replace(/<script[^>]*>|<\/script>/g, '');
+    // Remove <script> e </script> tags, mas mantém o conteúdo
+    const scriptMatch = content.match(/<script[^>]*>([\s\S]*?)<\/script>/);
+    return scriptMatch ? scriptMatch[1] : '';
 };
 
-// --- Helper: Render noscript tags safely ---
+// Helper para renderizar noscript tags de forma segura
 const TrackingNoScript = ({ tags }: { tags: TrackingTag[] }) => {
     return (
         <>
-            {tags.map((tag, index) => (
+            {tags.map((tag, index) => {
+                const noScriptMatch = tag.script_content.match(/<noscript>([\s\S]*?)<\/noscript>/);
+                if (!noScriptMatch) return null;
+                return (
                  <noscript
                     key={`noscript-${tag.id}-${index}`}
-                    dangerouslySetInnerHTML={{ __html: tag.script_content }}
+                    dangerouslySetInnerHTML={{ __html: noScriptMatch[1] }}
                  />
-            ))}
+                )
+            })}
         </>
     );
 };
 
-// --- Helper: Render standard scripts with next/script ---
+
+// Helper para renderizar scripts com next/script
 function TrackingScripts({
   tags,
   position,
