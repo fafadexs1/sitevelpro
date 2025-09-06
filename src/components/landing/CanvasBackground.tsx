@@ -9,7 +9,7 @@ export function CanvasBackground() {
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    // Não executa a lógica de animação no servidor ou em mobile
+    // Não executa a lógica de animação no servidor (isMobile === undefined) ou em mobile (isMobile === true)
     if (isMobile === undefined || isMobile === true) return;
 
     const canvas = canvasRef.current;
@@ -140,15 +140,7 @@ export function CanvasBackground() {
       cancelAnimationFrame(animationFrameId);
     }
   }, [isMobile]);
-
-  // No servidor (isMobile === undefined) ou em mobile (isMobile === true), renderiza um placeholder simples.
-  // A animação complexa do canvas só roda no desktop, após a montagem do componente.
-  if (isMobile === undefined || isMobile === true) {
-    return (
-        <div className="canvas-background-wrapper" style={{ backgroundColor: 'rgb(23, 23, 23)' }} />
-    )
-  }
-
+  
   return (
     <>
       <style jsx global>{`
@@ -160,6 +152,7 @@ export function CanvasBackground() {
           height: 100vh;
           z-index: -20;
           pointer-events: none;
+          background-color: rgb(23, 23, 23);
         }
         canvas#canvasBg {
           width: 100%;
