@@ -26,6 +26,7 @@ import {
   UserPlus,
   Clapperboard,
   Upload,
+  Edit,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -151,6 +152,16 @@ const channelSchema = z.object({
         .refine((file) => ACCEPTED_IMAGE_TYPES.includes(file.type), "Apenas .jpg, .jpeg, .png, .svg e .webp são permitidos."),
 });
 type ChannelFormData = z.infer<typeof channelSchema>;
+
+const editChannelSchema = z.object({
+    name: z.string().min(1, "Nome do canal é obrigatório."),
+    description: z.string().optional(),
+    logo_file: z.any()
+        .optional() // Opcional na edição
+        .refine((file) => !file || (file instanceof File && file.size <= MAX_FILE_SIZE), `Tamanho máximo de 5MB.`)
+        .refine((file) => !file || (file instanceof File && ACCEPTED_IMAGE_TYPES.includes(file.type)), "Apenas .jpg, .jpeg, .png, .svg e .webp são permitidos."),
+});
+type EditChannelFormData = z.infer<typeof editChannelSchema>;
 
 
 // ==================================
@@ -582,14 +593,14 @@ function AddChannelForm({
                 <FormLabel>Logo do Canal</FormLabel>
                 <FormControl>
                   <div className="relative flex items-center justify-center w-full">
-                      <label htmlFor="dropzone-file" className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg bg-neutral-900 border-white/20 ${isSubmitting ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:border-primary hover:bg-neutral-800'}`}>
+                      <label htmlFor="dropzone-file-add" className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg bg-neutral-900 border-white/20 ${isSubmitting ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:border-primary hover:bg-neutral-800'}`}>
                           <div className="flex flex-col items-center justify-center pt-5 pb-6">
                               <Upload className="w-8 h-8 mb-3 text-white/50"/>
                               <p className="mb-2 text-sm text-white/50"><span className="font-semibold">Clique para enviar</span> ou arraste</p>
                               <p className="text-xs text-white/50">SVG, PNG, JPG or WEBP (MAX. 5MB)</p>
                           </div>
                           <Input 
-                              id="dropzone-file" 
+                              id="dropzone-file-add" 
                               type="file" 
                               className="hidden"
                               accept={ACCEPTED_IMAGE_TYPES.join(',')}
@@ -615,6 +626,177 @@ function AddChannelForm({
             <Button type="submit">
               {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Salvar Canal
+            </Button>
+          </DialogFooter>
+        </fieldset>
+      </form>
+    </Form>
+  );
+}
+
+
+function EditChannelForm({
+  channel,
+  onChannelEdited,
+  onOpenChange,
+}: {
+  channel: TvChannel;
+  onChannelEdited: () => void;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const form = useForm<EditChannelFormData>({
+    resolver: zodResolver(editChannelSchema),
+    defaultValues: {
+      name: channel.name,
+      description: channel.description || "",
+      logo_file: null,
+    },
+  });
+
+  const onSubmit = async (data: EditChannelFormData) => {
+    setIsSubmitting(true);
+    const supabase = createClient();
+    let newLogoUrl = channel.logo_url;
+
+    // 1. Se um novo logo foi enviado, faça o upload
+    if (data.logo_file) {
+        const file = data.logo_file;
+        const fileExt = file.name.split('.').pop();
+        const newFileName = `${Math.random()}.${fileExt}`;
+        const newFilePath = `${newFileName}`;
+
+        // Deleta o logo antigo
+        if (channel.logo_url) {
+            const oldFilePath = new URL(channel.logo_url).pathname.split('/canais/').pop();
+            if (oldFilePath) {
+                await supabase.storage.from('canais').remove([oldFilePath]);
+            }
+        }
+
+        // Upload do novo logo
+        const { error: uploadError } = await supabase.storage.from('canais').upload(newFilePath, file);
+        if (uploadError) {
+            toast({ variant: "destructive", title: "Erro de Upload", description: uploadError.message });
+            setIsSubmitting(false);
+            return;
+        }
+
+        // Obtém a nova URL pública
+        const { data: publicUrlData } = supabase.storage.from('canais').getPublicUrl(newFilePath);
+        newLogoUrl = publicUrlData!.publicUrl;
+    }
+
+    // 2. Atualiza os dados na tabela 'tv_channels'
+    const { error: updateError } = await supabase
+        .from("tv_channels")
+        .update({
+            name: data.name,
+            description: data.description,
+            logo_url: newLogoUrl,
+        })
+        .eq("id", channel.id);
+
+    if (updateError) {
+        toast({
+            variant: "destructive",
+            title: "Erro ao Atualizar",
+            description: `Não foi possível atualizar o canal: ${updateError.message}`,
+        });
+    } else {
+        toast({ title: "Sucesso!", description: "Canal atualizado com sucesso." });
+        onChannelEdited();
+        onOpenChange(false);
+    }
+    setIsSubmitting(false);
+  };
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <fieldset disabled={isSubmitting} className="space-y-4">
+          <DialogHeader>
+            <DialogTitle>Editar Canal</DialogTitle>
+            <DialogDescription>
+              Modifique os detalhes do canal. Envie um novo logo para substituí-lo.
+            </DialogDescription>
+          </DialogHeader>
+
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Nome do Canal</FormLabel>
+                <FormControl>
+                  <Input placeholder="Ex: Warner" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Descrição (Opcional)</FormLabel>
+                <FormControl>
+                  <Textarea placeholder="Descreva brevemente o canal..." {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="logo_file"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Substituir Logo (Opcional)</FormLabel>
+                 <div className="flex items-center gap-4">
+                    <Image src={channel.logo_url} alt={channel.name} width={40} height={40} className="rounded-md bg-white/10 p-1 object-contain"/>
+                    <p className="text-xs text-white/60">Logo atual. Envie um novo arquivo abaixo para substituir.</p>
+                 </div>
+                <FormControl>
+                  <div className="relative flex items-center justify-center w-full mt-2">
+                      <label htmlFor={`dropzone-file-edit-${channel.id}`} className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg bg-neutral-900 border-white/20 ${isSubmitting ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:border-primary hover:bg-neutral-800'}`}>
+                          <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                              <Upload className="w-8 h-8 mb-3 text-white/50"/>
+                              <p className="mb-2 text-sm text-white/50"><span className="font-semibold">Clique para enviar</span> ou arraste</p>
+                              <p className="text-xs text-white/50">SVG, PNG, JPG or WEBP (MAX. 5MB)</p>
+                          </div>
+                          <Input 
+                              id={`dropzone-file-edit-${channel.id}`}
+                              type="file" 
+                              className="hidden"
+                              accept={ACCEPTED_IMAGE_TYPES.join(',')}
+                              onChange={(e) => field.onChange(e.target.files ? e.target.files[0] : null)}
+                           />
+                      </label>
+                  </div> 
+                </FormControl>
+                 {field.value && <p className="text-sm text-white/70 mt-2">Novo arquivo: {field.value.name}</p>}
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
+              Cancelar
+            </Button>
+            <Button type="submit">
+              {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              Salvar Alterações
             </Button>
           </DialogFooter>
         </fieldset>
@@ -740,7 +922,9 @@ const TvChannelsContent = () => {
     const [channels, setChannels] = useState<TvChannel[]>([]);
     const [loading, setLoading] = useState(true);
     const { toast } = useToast();
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [editingChannel, setEditingChannel] = useState<TvChannel | null>(null);
+
 
     const getChannels = async () => {
         setLoading(true);
@@ -796,9 +980,9 @@ const TvChannelsContent = () => {
                     <h1 className="text-3xl font-bold">Canais de TV</h1>
                     <p className="text-white/60">Gerencie os canais disponíveis para os pacotes.</p>
                 </div>
-                <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+                <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
                     <DialogTrigger asChild>
-                        <Button onClick={() => setIsModalOpen(true)}>
+                        <Button onClick={() => setIsAddModalOpen(true)}>
                             <PlusCircle className="mr-2 h-4 w-4" />
                             Adicionar Canal
                         </Button>
@@ -806,12 +990,27 @@ const TvChannelsContent = () => {
                     <DialogContent className="border-white/10 bg-neutral-950 text-white sm:max-w-md">
                         <AddChannelForm 
                             onChannelAdded={getChannels}
-                            onOpenChange={setIsModalOpen}
+                            onOpenChange={setIsAddModalOpen}
                         />
                     </DialogContent>
                 </Dialog>
             </header>
             
+            <Dialog open={!!editingChannel} onOpenChange={(isOpen) => !isOpen && setEditingChannel(null)}>
+                <DialogContent className="border-white/10 bg-neutral-950 text-white sm:max-w-md">
+                    {editingChannel && (
+                        <EditChannelForm
+                            channel={editingChannel}
+                            onChannelEdited={() => {
+                                setEditingChannel(null);
+                                getChannels();
+                            }}
+                            onOpenChange={(isOpen) => !isOpen && setEditingChannel(null)}
+                        />
+                    )}
+                </DialogContent>
+            </Dialog>
+
             <Card className="border-white/10 bg-neutral-950">
                 <CardContent className="p-0">
                     <Table>
@@ -838,7 +1037,9 @@ const TvChannelsContent = () => {
                                     <TableCell className="font-medium">{channel.name}</TableCell>
                                     <TableCell className="text-white/70 text-xs max-w-sm truncate">{channel.description || 'N/A'}</TableCell>
                                     <TableCell className="text-right">
-                                        <Button variant="ghost" size="sm" className="mr-2">Editar</Button>
+                                        <Button variant="ghost" size="sm" className="mr-2" onClick={() => setEditingChannel(channel)}>
+                                            <Edit className="w-4 h-4 mr-1"/> Editar
+                                        </Button>
                                         <AlertDialog>
                                             <AlertDialogTrigger asChild>
                                                 <Button variant="destructive" size="sm"><Trash2 className="w-4 h-4" /></Button>
@@ -1194,5 +1395,3 @@ export default function AdminPage() {
 
   return <AdminDashboard user={user} onLogout={() => setUser(null)} />;
 }
-
-    
