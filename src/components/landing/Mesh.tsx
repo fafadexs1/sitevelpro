@@ -1,3 +1,4 @@
+
 "use client";
 
 import { motion } from "framer-motion";
@@ -60,6 +61,7 @@ export function Mesh() {
             </div>
              <motion.a 
                 href="#planos"
+                id="mesh-cta-planos"
                 variants={itemVariants}
                 className="mt-8 inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 font-medium text-primary-foreground shadow-lg shadow-primary/20 transition-colors hover:bg-primary/90"
               >

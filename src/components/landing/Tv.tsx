@@ -151,6 +151,7 @@ export function TvSection() {
                             Qualidade de imagem e som de cinema com uma grade de mais de 100 canais para toda a família. Filmes, séries, esportes e muito mais, tudo em alta definição.
                         </p>
                         <a 
+                            id="tv-cta-pacotes"
                             href="#planos"
                             className="mt-8 inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 font-medium text-primary-foreground shadow-lg shadow-primary/20 transition-colors hover:bg-primary/90"
                         >

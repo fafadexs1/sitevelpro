@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -10,7 +11,7 @@ export function ChatWidget() {
   return (
     <>
       <button
-        id="chat-widget-button"
+        id="chat-widget-toggle"
         onClick={() => setIsOpen(true)}
         className="fixed bottom-6 right-6 z-50 inline-flex items-center gap-2 rounded-full bg-primary px-4 py-3 font-medium text-primary-foreground shadow-xl shadow-primary/20 transition-transform hover:bg-primary/90 active:scale-95"
         aria-label="Abrir chat de suporte"

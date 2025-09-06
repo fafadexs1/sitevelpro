@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -8,18 +9,18 @@ export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const navItems = [
-    { href: "#planos", label: "Planos" },
-    { href: "#cobertura", label: "Cobertura" },
-    { href: "#vantagens", label: "Vantagens" },
-    { href: "#ceo", label: "CEO" },
-    { href: "#faq", label: "FAQ" },
-    { href: "#contato", label: "Contato" },
+    { href: "#planos", label: "Planos", id: "nav-planos" },
+    { href: "#cobertura", label: "Cobertura", id: "nav-cobertura" },
+    { href: "#vantagens", label: "Vantagens", id: "nav-vantagens" },
+    { href: "#ceo", label: "CEO", id: "nav-ceo" },
+    { href: "#faq", label: "FAQ", id: "nav-faq" },
+    { href: "#contato", label: "Contato", id: "nav-contato" },
   ];
 
   return (
     <header className="sticky top-0 z-40 border-b border-white/5 bg-neutral-950/60 backdrop-blur supports-[backdrop-filter]:bg-neutral-950/60">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
-        <a href="#home" className="group flex items-center gap-3">
+        <a id="nav-logo" href="#home" className="group flex items-center gap-3">
           <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-primary to-green-400 text-neutral-950 shadow-lg shadow-primary/20">
             <Wifi className="h-5 w-5" />
           </div>
@@ -33,7 +34,7 @@ export function Header() {
 
         <nav className="hidden items-center gap-6 md:flex">
           {navItems.map((item) => (
-            <a key={item.href} href={item.href} className="text-white/80 transition-colors hover:text-white">
+            <a key={item.href} id={item.id} href={item.href} className="text-white/80 transition-colors hover:text-white">
               {item.label}
             </a>
           ))}
@@ -41,12 +42,14 @@ export function Header() {
 
         <div className="hidden items-center gap-2 md:flex">
           <Link
+            id="header-cta-cliente"
             href="/cliente"
             className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2 font-medium text-white transition-colors hover:bg-white/5"
           >
             <User className="h-4 w-4" /> Área do Cliente
           </Link>
           <a
+            id="header-cta-assine"
             href="#planos"
             className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 font-medium text-primary-foreground shadow-lg shadow-primary/20 transition-colors hover:bg-primary/90"
           >
@@ -55,6 +58,7 @@ export function Header() {
         </div>
 
         <button
+          id="mobile-menu-toggle"
           aria-label="Abrir menu"
           className="rounded-xl border border-white/10 p-2 md:hidden"
           onClick={() => setMobileOpen((v) => !v)}
@@ -70,6 +74,7 @@ export function Header() {
             {navItems.map((item) => (
               <a
                 key={item.href}
+                id={`mobile-${item.id}`}
                 href={item.href}
                 onClick={() => setMobileOpen(false)}
                 className="rounded-lg px-3 py-2 transition-colors hover:bg-white/5"
@@ -78,6 +83,7 @@ export function Header() {
               </a>
             ))}
              <Link
+              id="mobile-header-cta-cliente"
               href="/cliente"
               onClick={() => setMobileOpen(false)}
               className="mt-1 inline-flex items-center justify-center gap-2 rounded-lg border border-white/10 px-3 py-2"
@@ -85,6 +91,7 @@ export function Header() {
               <User className="h-4 w-4" /> Área do Cliente
             </Link>
             <a
+              id="mobile-header-cta-assine"
               href="#planos"
               onClick={() => setMobileOpen(false)}
               className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-3 py-2 font-medium text-primary-foreground"
