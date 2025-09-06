@@ -6,7 +6,6 @@ import { Toaster } from "@/components/ui/toaster"
 import { CanvasBackground } from '@/components/landing/CanvasBackground';
 import { Inter } from 'next/font/google';
 import { createClient } from '@/utils/supabase/server';
-import Script from 'next/script';
 import { ConversionTracker } from '@/components/analytics/ConversionTracker';
 
 const inter = Inter({
@@ -35,7 +34,7 @@ async function getTrackingTags() {
         const supabase = createClient();
         const { data } = await supabase
             .from('tracking_tags')
-            .select('script_content, placement')
+            .select('id, script_content, placement')
             .eq('is_active', true);
         return data || [];
     } catch (error) {
@@ -86,28 +85,28 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const tags = await getTrackingTags();
-  const headScripts = tags.filter(t => t.placement === 'head_start').map(t => t.script_content);
-  const bodyStartScripts = tags.filter(t => t.placement === 'body_start').map(t => t.script_content);
-  const bodyEndScripts = tags.filter(t => t.placement === 'body_end').map(t => t.script_content);
+  const headScripts = tags.filter(t => t.placement === 'head_start');
+  const bodyStartScripts = tags.filter(t => t.placement === 'body_start');
+  const bodyEndScripts = tags.filter(t => t.placement === 'body_end');
 
   return (
     <html lang="en" className={`${inter.variable} dark`}>
       <head>
         {/* Font links are handled by next/font now */}
-        {headScripts.map((script, index) => (
-            <Script id={`tracking-tag-head-${index}`} strategy="afterInteractive" dangerouslySetInnerHTML={{ __html: script }} />
+        {headScripts.map((tag, index) => (
+            <script key={`tracking-tag-head-${tag.id}-${index}`} type="text/javascript" dangerouslySetInnerHTML={{ __html: tag.script_content }} />
         ))}
       </head>
       <body className="font-body antialiased">
-         {bodyStartScripts.map((script, index) => (
-            <Script id={`tracking-tag-body-start-${index}`} strategy="lazyOnload" dangerouslySetInnerHTML={{ __html: script }} />
+         {bodyStartScripts.map((tag, index) => (
+            <script key={`tracking-tag-body-start-${tag.id}-${index}`} type="text/javascript" dangerouslySetInnerHTML={{ __html: tag.script_content }} />
         ))}
         <ConversionTracker />
         <CanvasBackground />
         {children}
         <Toaster />
-         {bodyEndScripts.map((script, index) => (
-            <Script id={`tracking-tag-body-end-${index}`} strategy="lazyOnload" dangerouslySetInnerHTML={{ __html: script }} />
+         {bodyEndScripts.map((tag, index) => (
+            <script key={`tracking-tag-body-end-${tag.id}-${index}`} type="text/javascript" dangerouslySetInnerHTML={{ __html: tag.script_content }} />
         ))}
       </body>
     </html>
