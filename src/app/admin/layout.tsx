@@ -30,6 +30,7 @@ import { createClient } from "@/utils/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { usePathname } from 'next/navigation'
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 
 
 // ==================================
@@ -224,7 +225,7 @@ function AdminDashboard({
   return (
     <div className="flex min-h-screen bg-neutral-900 text-white">
       {/* Sidebar */}
-      <aside className="hidden w-64 flex-col border-r border-white/10 bg-neutral-950 p-4 md:flex">
+      <aside className="sticky top-0 hidden h-screen w-64 flex-col border-r border-white/10 bg-neutral-950 p-4 md:flex">
         <div className="mb-8 flex w-fit items-center gap-3">
           <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-primary to-green-400 text-neutral-950 shadow-lg shadow-primary/20">
             <Wifi className="h-5 w-5" />
