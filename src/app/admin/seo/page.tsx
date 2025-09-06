@@ -154,7 +154,6 @@ export default function SeoPage() {
             site_title: data.site_title,
             site_description: data.site_description,
             allow_indexing: data.allow_indexing,
-            og_image_url: ogImageUrl,
             updated_at: new Date().toISOString(),
         });
 
@@ -271,6 +270,39 @@ export default function SeoPage() {
                                 </CardContent>
                             </Card>
 
+                            <Card className="border-white/10 bg-neutral-950">
+                                <CardHeader>
+                                    <CardTitle>Visibilidade nos Buscadores</CardTitle>
+                                    <CardDescription>Controle se os mecanismos de busca podem indexar seu site.</CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                        <FormField
+                                        control={form.control}
+                                        name="allow_indexing"
+                                        render={({ field }) => (
+                                            <FormItem className="flex flex-row items-center justify-between rounded-lg border border-white/10 p-4">
+                                                <div className="space-y-0.5">
+                                                    <FormLabel className="text-base">Permitir Indexação</FormLabel>
+                                                    <p className="text-sm text-white/70">
+                                                        Ative para permitir que seu site apareça nos resultados de busca.
+                                                    </p>
+                                                </div>
+                                                <FormControl>
+                                                    <Switch
+                                                        checked={field.value}
+                                                        onCheckedChange={field.onChange}
+                                                    />
+                                                </FormControl>
+                                            </FormItem>
+                                        )}
+                                    />
+                                </CardContent>
+                                    <CardFooter className="flex-col items-start gap-2 text-xs text-white/60">
+                                    <p>A alteração será refletida no arquivo <Link href="/robots.txt" target="_blank" className="underline hover:text-primary">/robots.txt</Link>.</p>
+                                        <p>Seu mapa do site está disponível em <Link href="/sitemap.xml" target="_blank" className="underline hover:text-primary">/sitemap.xml</Link>.</p>
+                                </CardFooter>
+                            </Card>
+
                             <div className="flex justify-end">
                                 <Button type="submit" disabled={isSubmitting}>
                                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -356,39 +388,6 @@ export default function SeoPage() {
                     </Card>
                 </div>
                 <div className="lg:col-span-1 space-y-8">
-                     <Card className="border-white/10 bg-neutral-950">
-                        <CardHeader>
-                            <CardTitle>Visibilidade nos Buscadores</CardTitle>
-                            <CardDescription>Controle se os mecanismos de busca podem indexar seu site.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                                <FormField
-                                control={form.control}
-                                name="allow_indexing"
-                                render={({ field }) => (
-                                    <FormItem className="flex flex-row items-center justify-between rounded-lg border border-white/10 p-4">
-                                        <div className="space-y-0.5">
-                                            <FormLabel className="text-base">Permitir Indexação</FormLabel>
-                                            <p className="text-sm text-white/70">
-                                                Ative para permitir que seu site apareça nos resultados de busca.
-                                            </p>
-                                        </div>
-                                        <FormControl>
-                                            <Switch
-                                                checked={field.value}
-                                                onCheckedChange={field.onChange}
-                                            />
-                                        </FormControl>
-                                    </FormItem>
-                                )}
-                            />
-                        </CardContent>
-                            <CardFooter className="flex-col items-start gap-2 text-xs text-white/60">
-                            <p>A alteração será refletida no arquivo <Link href="/robots.txt" target="_blank" className="underline hover:text-primary">/robots.txt</Link>.</p>
-                                <p>Seu mapa do site está disponível em <Link href="/sitemap.xml" target="_blank" className="underline hover:text-primary">/sitemap.xml</Link>.</p>
-                        </CardFooter>
-                    </Card>
-
                     <Card className="border-white/10 bg-neutral-950">
                         <CardHeader>
                             <CardTitle>Performance &amp; Indexação</CardTitle>
@@ -449,3 +448,4 @@ export default function SeoPage() {
             </Dialog>
         </>
     );
+}
