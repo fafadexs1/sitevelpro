@@ -28,6 +28,7 @@ import {
   Upload,
   Edit,
   GripVertical,
+  Search,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -351,6 +352,7 @@ const PlanForm = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [channels, setChannels] = useState<TvChannel[]>([]);
   const [loadingChannels, setLoadingChannels] = useState(false);
+  const [channelSearch, setChannelSearch] = useState("");
 
   // Helper para converter de/para o formato do BD
   const fromDbToForm = (features: string[] | null) => {
@@ -406,6 +408,12 @@ const PlanForm = ({
     }
     getChannels();
   }, [hasTv, toast]);
+
+  const filteredChannels = useMemo(() => {
+    return channels.filter(channel => 
+        channel.name.toLowerCase().includes(channelSearch.toLowerCase())
+    );
+  }, [channels, channelSearch]);
 
 
   const onSubmit = async (data: PlanFormData) => {
@@ -604,12 +612,21 @@ const PlanForm = ({
                                     <FormLabel className="text-base">Canais em Destaque</FormLabel>
                                     <p className="text-sm text-white/60">Selecione até 5 canais para destacar neste plano.</p>
                                 </div>
+                                <div className="relative mb-3">
+                                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/60" />
+                                  <Input
+                                    placeholder="Buscar canal..."
+                                    value={channelSearch}
+                                    onChange={(e) => setChannelSearch(e.target.value)}
+                                    className="pl-9"
+                                  />
+                                </div>
                                 {loadingChannels ? (
                                     <div className="flex justify-center items-center h-40"><Loader2 className="h-6 w-6 animate-spin"/></div>
                                 ) : (
                                     <ScrollArea className="h-52">
                                         <div className="grid grid-cols-2 gap-2 p-1">
-                                        {channels.map((channel) => (
+                                        {filteredChannels.map((channel) => (
                                             <FormField
                                             key={channel.id}
                                             control={form.control}
@@ -645,6 +662,7 @@ const PlanForm = ({
                                             }}
                                             />
                                         ))}
+                                        {filteredChannels.length === 0 && <p className="text-center text-sm text-white/60 py-4">Nenhum canal encontrado.</p>}
                                         </div>
                                     </ScrollArea>
                                 )}
@@ -1025,7 +1043,7 @@ const PlansContent = () => {
 
   useEffect(() => {
     getPlans();
-  }, [toast]);
+  }, []);
 
   const filteredPlans = useMemo(() => plans.filter((p) => p.type === activeTab), [plans, activeTab]);
 
@@ -1449,6 +1467,7 @@ function AdminDashboard({
 }) {
   const [activeView, setActiveView] = useState<"plans" | "tv_channels" | "tv_packages" | "database">("plans");
   const supabase = createClient();
+  const { toast } = useToast();
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -1538,6 +1557,7 @@ function PlansTable({
   onEditPlan: (plan: Plan) => void;
   onDeletePlan: (planId: string) => void;
 }) {
+
   if (!plans || plans.length === 0) {
     return <div className="p-8 text-center text-white/60">Nenhum plano deste tipo encontrado.</div>;
   }
