@@ -1,78 +1,78 @@
--- Criar a tabela de planos
-CREATE TABLE IF NOT EXISTS plans (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    type TEXT NOT NULL,
-    speed TEXT NOT NULL,
-    price NUMERIC NOT NULL,
-    original_price NUMERIC,
-    features TEXT[],
-    highlight BOOLEAN DEFAULT FALSE,
-    has_tv BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+
+-- Create the 'plans' table
+CREATE TABLE IF NOT EXISTS public.plans (
+    id uuid NOT NULL DEFAULT gen_random_uuid(),
+    created_at timestamp with time zone NOT NULL DEFAULT now(),
+    type text,
+    speed text,
+    price numeric,
+    highlight boolean,
+    has_tv boolean,
+    features text[],
+    original_price numeric,
+    CONSTRAINT plans_pkey PRIMARY KEY (id)
 );
-ALTER TABLE plans ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "Enable public read access" ON plans;
-CREATE POLICY "Enable public read access" ON plans FOR SELECT USING (true);
+-- Disable RLS for 'plans' table
+ALTER TABLE public.plans DISABLE ROW LEVEL SECURITY;
 
 
--- Criar a tabela de canais de TV
-CREATE TABLE IF NOT EXISTS tv_channels (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name TEXT NOT NULL,
-    description TEXT,
-    logo_url TEXT,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+-- Create the 'tv_channels' table
+CREATE TABLE IF NOT EXISTS public.tv_channels (
+    id uuid NOT NULL DEFAULT gen_random_uuid(),
+    created_at timestamp with time zone NOT NULL DEFAULT now(),
+    name text,
+    logo_url text,
+    description text,
+    CONSTRAINT tv_channels_pkey PRIMARY KEY (id)
 );
-ALTER TABLE tv_channels ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "Enable public read access" ON tv_channels;
-CREATE POLICY "Enable public read access" ON tv_channels FOR SELECT USING (true);
-DROP POLICY IF EXISTS "Enable insert for authenticated users" ON tv_channels;
-CREATE POLICY "Enable insert for authenticated users" ON tv_channels FOR INSERT TO authenticated WITH CHECK (true);
-DROP POLICY IF EXISTS "Enable update for authenticated users" ON tv_channels;
-CREATE POLICY "Enable update for authenticated users" ON tv_channels FOR UPDATE TO authenticated USING (true);
-DROP POLICY IF EXISTS "Enable delete for authenticated users" ON tv_channels;
-CREATE POLICY "Enable delete for authenticated users" ON tv_channels FOR DELETE TO authenticated USING (true);
+-- Disable RLS for 'tv_channels' table
+ALTER TABLE public.tv_channels DISABLE ROW LEVEL SECURITY;
 
 
--- Criar a tabela de pacotes de TV
-CREATE TABLE IF NOT EXISTS tv_packages (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name TEXT NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+-- Create the 'tv_packages' table
+CREATE TABLE IF NOT EXISTS public.tv_packages (
+    id uuid NOT NULL DEFAULT gen_random_uuid(),
+    name text,
+    created_at timestamp with time zone NOT NULL DEFAULT now(),
+    CONSTRAINT tv_packages_pkey PRIMARY KEY (id)
 );
-ALTER TABLE tv_packages ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "Enable public read access" ON tv_packages;
-CREATE POLICY "Enable public read access" ON tv_packages FOR SELECT USING (true);
-DROP POLICY IF EXISTS "Enable insert for authenticated users" ON tv_packages;
-CREATE POLICY "Enable insert for authenticated users" ON tv_packages FOR INSERT TO authenticated WITH CHECK (true);
-DROP POLICY IF EXISTS "Enable delete for authenticated users" ON tv_packages;
-CREATE POLICY "Enable delete for authenticated users" ON tv_packages FOR DELETE TO authenticated USING (true);
+-- Disable RLS for 'tv_packages' table
+ALTER TABLE public.tv_packages DISABLE ROW LEVEL SECURITY;
 
 
--- Criar a tabela de junção entre pacotes e canais
-CREATE TABLE IF NOT EXISTS tv_package_channels (
-    package_id UUID REFERENCES tv_packages(id) ON DELETE CASCADE,
-    channel_id UUID REFERENCES tv_channels(id) ON DELETE CASCADE,
-    PRIMARY KEY (package_id, channel_id)
+-- Create the 'tv_package_channels' table
+CREATE TABLE IF NOT EXISTS public.tv_package_channels (
+    id bigint NOT NULL,
+    created_at timestamp with time zone NOT NULL DEFAULT now(),
+    package_id uuid,
+    channel_id uuid,
+    CONSTRAINT tv_package_channels_pkey PRIMARY KEY (id),
+    CONSTRAINT tv_package_channels_channel_id_fkey FOREIGN KEY (channel_id) REFERENCES tv_channels(id) ON DELETE CASCADE,
+    CONSTRAINT tv_package_channels_package_id_fkey FOREIGN KEY (package_id) REFERENCES tv_packages(id) ON DELETE CASCADE
 );
-ALTER TABLE tv_package_channels ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "Enable public read access" ON tv_package_channels;
-CREATE POLICY "Enable public read access" ON tv_package_channels FOR SELECT USING (true);
-DROP POLICY IF EXISTS "Enable insert for authenticated users" ON tv_package_channels;
-CREATE POLICY "Enable insert for authenticated users" ON tv_package_channels FOR INSERT TO authenticated WITH CHECK (true);
-DROP POLICY IF EXISTS "Enable delete for authenticated users" ON tv_package_channels;
-CREATE POLICY "Enable delete for authenticated users" ON tv_package_channels FOR DELETE TO authenticated USING (true);
+-- Create sequence for 'tv_package_channels'
+CREATE SEQUENCE IF NOT EXISTS public.tv_package_channels_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER TABLE public.tv_package_channels ALTER COLUMN id SET DEFAULT nextval('public.tv_package_channels_id_seq'::regclass);
+-- Disable RLS for 'tv_package_channels'
+ALTER TABLE public.tv_package_channels DISABLE ROW LEVEL SECURITY;
 
--- Configuração do Storage para o bucket 'canais'
--- (O bucket já foi criado manualmente, então apenas garantimos as políticas)
-DROP POLICY IF EXISTS "Public read access for logos" ON storage.objects;
-CREATE POLICY "Public read access for logos" ON storage.objects FOR SELECT USING (bucket_id = 'canais');
 
-DROP POLICY IF EXISTS "Allow authenticated uploads" ON storage.objects;
-CREATE POLICY "Allow authenticated uploads" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'canais');
+-- Policies for 'canais' bucket
+-- Allow public read access to all files in the bucket
+CREATE POLICY "Public Read Access" ON storage.objects
+FOR SELECT USING ( bucket_id = 'canais' );
 
-DROP POLICY IF EXISTS "Allow authenticated updates" ON storage.objects;
-CREATE POLICY "Allow authenticated updates" ON storage.objects FOR UPDATE TO authenticated USING (bucket_id = 'canais');
+-- Allow authenticated users to upload, update, and delete files in the bucket
+CREATE POLICY "Authenticated Upload" ON storage.objects
+FOR INSERT WITH CHECK ( bucket_id = 'canais' AND auth.role() = 'authenticated' );
 
-DROP POLICY IF EXISTS "Allow authenticated deletes" ON storage.objects;
-CREATE POLICY "Allow authenticated deletes" ON storage.objects FOR DELETE TO authenticated USING (bucket_id = 'canais');
+CREATE POLICY "Authenticated Update" ON storage.objects
+FOR UPDATE WITH CHECK ( bucket_id = 'canais' AND auth.role() = 'authenticated' );
+
+CREATE POLICY "Authenticated Delete" ON storage.objects
+FOR DELETE WITH CHECK ( bucket_id = 'canais' AND auth.role() = 'authenticated' );

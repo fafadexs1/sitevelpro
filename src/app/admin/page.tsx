@@ -845,6 +845,7 @@ const PlansContent = () => {
   const [activeTab, setActiveTab] = useState<"residencial" | "empresarial">("residencial");
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
 
@@ -854,6 +855,7 @@ const PlansContent = () => {
     const { data, error } = await supabase.from("plans").select("*").order("price", { ascending: true });
 
     if (error) {
+      toast({ variant: 'destructive', title: 'Erro ao buscar planos', description: error.message });
       console.error("Erro ao buscar planos:", error);
     } else {
       setPlans((data as Plan[]) ?? []);
@@ -1417,7 +1419,7 @@ function PlansTable({
               </Button>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="destructive" size="sm"><Trash2 className="w-4 h-4" /></Button>
+                  <Button variant="destructive" size="sm"><Trash2 className="w-4 w-4" /></Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent className="bg-neutral-950 border-white/10 text-white">
                   <AlertDialogHeader>
