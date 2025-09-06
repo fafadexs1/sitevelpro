@@ -348,6 +348,7 @@ const PlanForm = ({
       mode === "edit" && plan
         ? {
             ...plan,
+            price: plan.price ?? 0,
             original_price: plan.original_price ?? undefined,
             features: (plan.features ?? []).join("\n"),
           }
@@ -977,9 +978,9 @@ const PlansContent = () => {
 };
 
 const TvChannelsContent = () => {
+    const { toast } = useToast();
     const [channels, setChannels] = useState<TvChannel[]>([]);
     const [loading, setLoading] = useState(true);
-    const { toast } = useToast();
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [editingChannel, setEditingChannel] = useState<TvChannel | null>(null);
 
@@ -1134,9 +1135,9 @@ const TvChannelsContent = () => {
 };
 
 const TvPackagesContent = () => {
+    const { toast } = useToast();
     const [packages, setPackages] = useState<TvPackage[]>([]);
     const [loading, setLoading] = useState(true);
-    const { toast } = useToast();
     const [isModalOpen, setIsModalOpen] = useState(false);
 
   
