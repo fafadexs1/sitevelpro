@@ -28,17 +28,17 @@ async function getSeoSettings() {
   }
 }
 
-async function getGoogleAdsSettings() {
+async function getTrackingTags() {
     try {
         const supabase = createClient();
         const { data } = await supabase
-            .from('google_ads_settings')
-            .select('gads_tracking_id, gtm_container_id')
-            .single();
-        return data;
+            .from('tracking_tags')
+            .select('script_content, placement')
+            .eq('is_active', true);
+        return data || [];
     } catch (error) {
-        console.error("Could not fetch Google Ads settings.");
-        return null;
+        console.error("Could not fetch tracking tags.");
+        return [];
     }
 }
 
@@ -83,55 +83,29 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const adsSettings = await getGoogleAdsSettings();
+  const tags = await getTrackingTags();
+  const headScripts = tags.filter(t => t.placement === 'head_start').map(t => t.script_content);
+  const bodyStartScripts = tags.filter(t => t.placement === 'body_start').map(t => t.script_content);
+  const bodyEndScripts = tags.filter(t => t.placement === 'body_end').map(t => t.script_content);
 
   return (
     <html lang="en" className={`${inter.variable} dark`}>
       <head>
         {/* Font links are handled by next/font now */}
-        {adsSettings?.gtm_container_id && (
-            <Script id="google-tag-manager" strategy="afterInteractive">
-                {`
-                    (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-                    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-                    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-                    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-                    })(window,document,'script','dataLayer','${adsSettings.gtm_container_id}');
-                `}
-            </Script>
-        )}
-        {adsSettings?.gads_tracking_id && (
-            <Script
-                async
-                src={`https://www.googletagmanager.com/gtag/js?id=${adsSettings.gads_tracking_id}`}
-                strategy="afterInteractive"
-            />
-        )}
-        {adsSettings?.gads_tracking_id && (
-            <Script id="google-ads-init" strategy="afterInteractive">
-                {`
-                    window.dataLayer = window.dataLayer || [];
-                    function gtag(){dataLayer.push(arguments);}
-                    gtag('js', new Date());
-                    gtag('config', '${adsSettings.gads_tracking_id}');
-                `}
-            </Script>
-        )}
+        {headScripts.map((script, index) => (
+            <Script id={`tracking-tag-head-${index}`} strategy="afterInteractive" dangerouslySetInnerHTML={{ __html: script }} />
+        ))}
       </head>
       <body className="font-body antialiased">
-        {adsSettings?.gtm_container_id && (
-            <noscript>
-                <iframe
-                    src={`https://www.googletagmanager.com/ns.html?id=${adsSettings.gtm_container_id}`}
-                    height="0"
-                    width="0"
-                    style={{ display: 'none', visibility: 'hidden' }}
-                ></iframe>
-            </noscript>
-        )}
+         {bodyStartScripts.map((script, index) => (
+            <Script id={`tracking-tag-body-start-${index}`} strategy="lazyOnload" dangerouslySetInnerHTML={{ __html: script }} />
+        ))}
         <CanvasBackground />
         {children}
         <Toaster />
+         {bodyEndScripts.map((script, index) => (
+            <Script id={`tracking-tag-body-end-${index}`} strategy="lazyOnload" dangerouslySetInnerHTML={{ __html: script }} />
+        ))}
       </body>
     </html>
   );
