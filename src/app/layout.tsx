@@ -1,4 +1,5 @@
 
+
 import type { Metadata, ResolvingMetadata } from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
@@ -6,6 +7,7 @@ import { CanvasBackground } from '@/components/landing/CanvasBackground';
 import { Inter } from 'next/font/google';
 import { createClient } from '@/utils/supabase/server';
 import Script from 'next/script';
+import { ConversionTracker } from '@/components/analytics/ConversionTracker';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -100,6 +102,7 @@ export default async function RootLayout({
          {bodyStartScripts.map((script, index) => (
             <Script id={`tracking-tag-body-start-${index}`} strategy="lazyOnload" dangerouslySetInnerHTML={{ __html: script }} />
         ))}
+        <ConversionTracker />
         <CanvasBackground />
         {children}
         <Toaster />

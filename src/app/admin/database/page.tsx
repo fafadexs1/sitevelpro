@@ -117,6 +117,17 @@ create table if not exists tracking_tags (
     created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
+-- Cria a tabela de eventos de conversão
+create table if not exists conversion_events (
+    id uuid default gen_random_uuid() primary key,
+    name text not null,
+    type text not null, -- 'standard' or 'custom'
+    selector text, -- a CSS selector for custom events
+    event_snippet text not null,
+    is_active boolean default true not null,
+    created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
 -- Cria o bucket 'canais' se ele não existir
 -- As políticas RLS garantem que ele seja público
 insert into storage.buckets (id, name, public)

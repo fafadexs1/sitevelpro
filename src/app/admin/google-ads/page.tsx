@@ -1,11 +1,12 @@
 
+
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Loader2, Save, PlusCircle, Trash2, Edit, Tag, Settings, Power } from "lucide-react";
+import { Loader2, Save, PlusCircle, Trash2, Edit, Tag, Settings, Power, Terminal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -18,9 +19,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { createClient } from "@/utils/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // ==================================
-// Tipagem e Schema
+// Tipagem e Schemas
 // ==================================
 export type TrackingTag = {
   id: string;
@@ -40,8 +42,37 @@ const tagSchema = z.object({
 
 type TagFormData = z.infer<typeof tagSchema>;
 
+export type ConversionEvent = {
+  id: string;
+  name: string;
+  type: 'standard' | 'custom';
+  selector: string | null;
+  event_snippet: string;
+  is_active: boolean;
+};
+
+const eventSchema = z.object({
+  name: z.string().min(1, "O nome do evento é obrigatório."),
+  type: z.enum(['standard', 'custom']),
+  selector: z.string().optional(),
+  event_snippet: z.string().min(1, "O snippet do evento é obrigatório."),
+  is_active: z.boolean().default(true),
+}).refine(data => data.type !== 'custom' || (data.selector && data.selector.length > 0), {
+    message: "O seletor CSS é obrigatório para eventos customizados.",
+    path: ["selector"],
+});
+
+type EventFormData = z.infer<typeof eventSchema>;
+
+const STANDARD_CONVERSIONS: Omit<ConversionEvent, 'id' | 'is_active'>[] = [
+    { name: 'Clique no WhatsApp', type: 'standard', selector: 'a[href^="https://wa.me"]', event_snippet: "gtag('event', 'conversion', {'send_to': 'AW-CONVERSION_ID/WhatsApp_Click'});" },
+    { name: 'Clique no Telefone', type: 'standard', selector: 'a[href^="tel:"]', event_snippet: "gtag('event', 'conversion', {'send_to': 'AW-CONVERSION_ID/Phone_Click'});" },
+    { name: 'Formulário Enviado (Lead)', type: 'standard', selector: 'form[data-lead-form="true"]', event_snippet: "gtag('event', 'conversion', {'send_to': 'AW-CONVERSION_ID/Lead_Form_Submit'});" },
+];
+
+
 // ==================================
-// Componente de Formulário
+// Componente de Formulário (Tag)
 // ==================================
 function TagForm({ onSave, onOpenChange, tag }: { onSave: () => void, onOpenChange: (open: boolean) => void, tag?: TrackingTag | null }) {
     const { toast } = useToast();
@@ -117,11 +148,76 @@ function TagForm({ onSave, onOpenChange, tag }: { onSave: () => void, onOpenChan
     )
 }
 
+// ==================================
+// Componente de Formulário (Evento)
+// ==================================
+function EventForm({ onSave, onOpenChange, event }: { onSave: () => void, onOpenChange: (open: boolean) => void, event?: ConversionEvent | null }) {
+    const { toast } = useToast();
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const supabase = createClient();
+    const mode = event ? 'edit' : 'add';
+
+    const form = useForm<EventFormData>({
+        resolver: zodResolver(eventSchema),
+        defaultValues: {
+            name: event?.name || '',
+            type: event?.type || 'custom',
+            selector: event?.selector || '',
+            event_snippet: event?.event_snippet || '',
+            is_active: event?.is_active ?? true,
+        },
+    });
+
+    const onSubmit = async (data: EventFormData) => {
+        setIsSubmitting(true);
+        let error;
+
+        if (mode === 'add') {
+            ({ error } = await supabase.from('conversion_events').insert(data));
+        } else if (event) {
+            ({ error } = await supabase.from('conversion_events').update(data).eq('id', event.id));
+        }
+
+        if (error) {
+            toast({ variant: 'destructive', title: 'Erro', description: `Não foi possível salvar o evento: ${error.message}` });
+        } else {
+            toast({ title: 'Sucesso!', description: `Evento ${mode === 'add' ? 'criado' : 'atualizado'}.` });
+            onSave();
+        }
+        setIsSubmitting(false);
+    };
+
+    return (
+        <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <DialogHeader>
+                    <DialogTitle>{mode === 'add' ? 'Adicionar Evento Customizado' : 'Editar Evento'}</DialogTitle>
+                </DialogHeader>
+                <div className="max-h-[65vh] space-y-4 overflow-y-auto p-1 pr-4">
+                    <FormField control={form.control} name="name" render={({ field }) => ( <FormItem> <FormLabel>Nome do Evento</FormLabel> <FormControl><Input placeholder="Ex: Clique no botão Assinar" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+                    <FormField control={form.control} name="selector" render={({ field }) => ( <FormItem> <FormLabel>Seletor CSS</FormLabel> <FormControl><Input placeholder="#botao-assinar ou .btn-primary" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+                    <FormField control={form.control} name="event_snippet" render={({ field }) => ( <FormItem> <FormLabel>Snippet do Evento</FormLabel> <FormControl><Textarea placeholder="gtag('event', 'conversion', ...)" {...field} rows={4} /></FormControl> <FormMessage /> </FormItem> )}/>
+                    <FormField control={form.control} name="is_active" render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                            <FormLabel>Ativo</FormLabel>
+                            <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                        </FormItem>
+                    )} />
+                </div>
+                <DialogFooter>
+                    <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
+                    <Button type="submit" disabled={isSubmitting}>{isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Salvar</Button>
+                </DialogFooter>
+            </form>
+        </Form>
+    );
+}
 
 // ==================================
-// Página Principal
+// Abas da Página
 // ==================================
-export default function GoogleAdsPage() {
+
+function TagsManager() {
     const { toast } = useToast();
     const supabase = createClient();
     
@@ -130,7 +226,7 @@ export default function GoogleAdsPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingTag, setEditingTag] = useState<TrackingTag | null>(null);
 
-    const fetchTags = async () => {
+    const fetchTags = useCallback(async () => {
         setLoading(true);
         const { data, error } = await supabase.from('tracking_tags').select('*').order('created_at', { ascending: false });
         if (error) {
@@ -139,11 +235,11 @@ export default function GoogleAdsPage() {
             setTags(data);
         }
         setLoading(false);
-    };
+    }, [supabase, toast]);
 
     useEffect(() => {
         fetchTags();
-    }, []);
+    }, [fetchTags]);
 
     const handleSave = () => {
         setIsModalOpen(false);
@@ -175,25 +271,15 @@ export default function GoogleAdsPage() {
         }
     };
 
-
-    if (loading) {
-        return <div className="flex items-center justify-center p-8"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
-    }
-
     return (
-        <>
-            <header className="mb-8 flex items-center justify-between">
-                <div>
-                    <h1 className="text-3xl font-bold">Gerenciador de Tags</h1>
-                    <p className="text-white/60">Adicione e gerencie scripts de rastreamento de marketing e análise.</p>
-                </div>
+        <div className="space-y-6">
+            <div className="flex items-center justify-between">
+                <p className="text-sm text-white/70 max-w-2xl">
+                    Adicione scripts como Google Analytics, Meta Pixel, etc. As tags ativas serão injetadas automaticamente nas páginas do seu site, no local que você definir.
+                </p>
                 <Button onClick={() => { setEditingTag(null); setIsModalOpen(true); }}><PlusCircle className="mr-2 h-4 w-4" /> Nova Tag</Button>
-            </header>
+            </div>
             
-            <p className="text-sm text-white/70 mb-6 max-w-2xl">
-                Adicione scripts como Google Analytics, Meta Pixel, etc. As tags ativas serão injetadas automaticamente nas páginas do seu site, no local que você definir.
-            </p>
-
             <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
                 <DialogContent className="border-white/10 bg-neutral-950 text-white sm:max-w-2xl">
                     <TagForm onSave={handleSave} onOpenChange={setIsModalOpen} tag={editingTag} />
@@ -243,6 +329,171 @@ export default function GoogleAdsPage() {
                     ))}
                 </div>
             )}
+        </div>
+    );
+}
+
+function ConversionMappingManager() {
+    const { toast } = useToast();
+    const supabase = createClient();
+
+    const [events, setEvents] = useState<ConversionEvent[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingEvent, setEditingEvent] = useState<ConversionEvent | null>(null);
+
+    const fetchEvents = useCallback(async () => {
+        setLoading(true);
+        const { data, error } = await supabase.from('conversion_events').select('*').order('created_at', { ascending: false });
+        if (error) {
+            toast({ variant: 'destructive', title: 'Erro ao buscar eventos', description: error.message });
+        } else {
+            setEvents(data);
+        }
+        setLoading(false);
+    }, [supabase, toast]);
+
+    useEffect(() => {
+        fetchEvents();
+    }, [fetchEvents]);
+
+    const handleToggleActive = async (event: ConversionEvent) => {
+        const { error } = await supabase.from('conversion_events').update({ is_active: !event.is_active }).eq('id', event.id);
+        if (error) {
+            toast({ variant: 'destructive', title: 'Erro', description: 'Não foi possível alterar o status.' });
+        } else {
+            toast({ title: 'Sucesso!', description: `Evento ${!event.is_active ? 'ativado' : 'desativado'}.` });
+            fetchEvents();
+        }
+    };
+    
+    const handleDelete = async (eventId: string) => {
+        const { error } = await supabase.from('conversion_events').delete().eq('id', eventId);
+        if (error) {
+            toast({ variant: 'destructive', title: 'Erro ao deletar evento', description: error.message });
+        } else {
+            toast({ title: 'Sucesso', description: 'Evento deletado.' });
+            fetchEvents();
+        }
+    }
+    
+    const standardEvents = events.filter(e => e.type === 'standard');
+    const customEvents = events.filter(e => e.type === 'custom');
+
+    return (
+        <div className="space-y-8">
+            <Card className="border-white/10 bg-neutral-900/60">
+                <CardHeader>
+                    <CardTitle>Conversões Padrão</CardTitle>
+                    <CardDescription>Ative ou desative o rastreamento para eventos comuns do site.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    {loading ? <Loader2 className="animate-spin" /> :
+                        STANDARD_CONVERSIONS.map(stdEvent => {
+                            const dbEvent = standardEvents.find(e => e.selector === stdEvent.selector);
+                            const isActive = dbEvent?.is_active ?? false;
+                            
+                            const handleToggleStandard = async () => {
+                                let error;
+                                if (dbEvent) {
+                                    ({error} = await supabase.from('conversion_events').update({is_active: !dbEvent.is_active}).eq('id', dbEvent.id));
+                                } else {
+                                    ({error} = await supabase.from('conversion_events').insert({...stdEvent, is_active: true}));
+                                }
+
+                                if (error) {
+                                    toast({ variant: 'destructive', title: 'Erro', description: `Não foi possível alterar: ${error.message}` });
+                                } else {
+                                    toast({ title: 'Sucesso!', description: `Evento ${!isActive ? 'ativado' : 'desativado'}.` });
+                                    fetchEvents();
+                                }
+                            }
+                            
+                            return (
+                                <div key={stdEvent.name} className="flex items-center justify-between rounded-lg border border-white/10 p-4">
+                                    <div>
+                                        <p className="font-medium">{stdEvent.name}</p>
+                                        <p className="text-xs text-white/60 font-mono">{stdEvent.selector}</p>
+                                    </div>
+                                    <Switch checked={isActive} onCheckedChange={handleToggleStandard} />
+                                </div>
+                            );
+                        })
+                    }
+                </CardContent>
+            </Card>
+
+            <Card className="border-white/10 bg-neutral-900/60">
+                <CardHeader>
+                    <CardTitle>Eventos Customizados</CardTitle>
+                    <CardDescription>Crie eventos de conversão para ações específicas, como cliques em botões.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                     <div className="flex justify-end">
+                        <Button onClick={() => { setEditingEvent(null); setIsModalOpen(true); }}><PlusCircle className="mr-2 h-4 w-4" /> Novo Evento Customizado</Button>
+                     </div>
+                      {loading ? <div className="flex justify-center p-8"><Loader2 className="h-6 w-6 animate-spin" /></div> :
+                        customEvents.length === 0 ? <p className="text-sm text-white/70 text-center py-8">Nenhum evento customizado criado.</p> :
+                        customEvents.map(event => (
+                            <div key={event.id} className="flex items-center justify-between rounded-lg border border-white/10 p-4">
+                               <div>
+                                   <p className="font-medium">{event.name}</p>
+                                   <p className="text-xs text-white/60 font-mono">Seletor: {event.selector}</p>
+                               </div>
+                               <div className="flex items-center gap-4">
+                                   <Switch checked={event.is_active} onCheckedChange={() => handleToggleActive(event)} />
+                                   <Button variant="ghost" size="sm" onClick={() => { setEditingEvent(event); setIsModalOpen(true); }}><Edit className="h-4 w-4 mr-2"/>Editar</Button>
+                                   <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <Button variant="destructive" size="sm"><Trash2 className="h-4 w-4" /></Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent className="bg-neutral-950 border-white/10 text-white">
+                                            <AlertDialogHeader><AlertDialogTitle>Tem certeza?</AlertDialogTitle><AlertDialogDescription>Isso irá apagar permanentemente o evento de conversão.</AlertDialogDescription></AlertDialogHeader>
+                                            <AlertDialogFooter><AlertDialogCancel>Cancelar</AlertDialogCancel><AlertDialogAction onClick={() => handleDelete(event.id)}>Continuar</AlertDialogAction></AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                               </div>
+                            </div>
+                        ))
+                      }
+                </CardContent>
+            </Card>
+            
+            <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+                <DialogContent className="border-white/10 bg-neutral-950 text-white sm:max-w-2xl">
+                    <EventForm onSave={() => { setIsModalOpen(false); fetchEvents(); }} onOpenChange={setIsModalOpen} event={editingEvent} />
+                </DialogContent>
+            </Dialog>
+
+        </div>
+    );
+}
+
+// ==================================
+// Página Principal
+// ==================================
+export default function GoogleAdsPage() {
+    return (
+        <>
+            <header className="mb-8 flex items-center justify-between">
+                <div>
+                    <h1 className="text-3xl font-bold">Rastreamento e Conversões</h1>
+                    <p className="text-white/60">Adicione scripts de marketing e meça os resultados de suas campanhas.</p>
+                </div>
+            </header>
+            
+            <Tabs defaultValue="tags" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="tags"><Tag className="mr-2"/>Gerenciador de Tags</TabsTrigger>
+                    <TabsTrigger value="conversions"><Terminal className="mr-2"/>Mapeamento de Conversões</TabsTrigger>
+                </TabsList>
+                <TabsContent value="tags" className="mt-6">
+                    <TagsManager />
+                </TabsContent>
+                <TabsContent value="conversions" className="mt-6">
+                    <ConversionMappingManager />
+                </TabsContent>
+            </Tabs>
         </>
     );
 }
