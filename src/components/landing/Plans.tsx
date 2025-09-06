@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Gauge, Check, ChevronRight, Loader2 } from "lucide-react";
+import { Gauge, Check, ChevronRight, Loader2, Wifi, Upload, Download, Tv, Smartphone } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import Link from 'next/link';
 import {
@@ -52,11 +52,31 @@ export function Plans() {
   const currentPlans = allPlans.filter(p => p.type === planType);
 
   const formatPrice = (value: number) => {
-    return value.toLocaleString("pt-BR", { style: 'currency', currency: 'BRL', minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    return value.toLocaleString("pt-BR", { style: 'currency', currency: 'BRL' });
   }
   const formatPriceAsNumber = (value: number) => {
     return value.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
   }
+
+  const getFeatureIcon = (feature: string) => {
+    const lowerFeature = feature.toLowerCase();
+    if (lowerFeature.includes('wi-fi') || lowerFeature.includes('wifi')) {
+      return <Wifi className="h-4 w-4 mt-0.5 shrink-0 text-primary" />;
+    }
+    if (lowerFeature.includes('upload')) {
+        return <Upload className="h-4 w-4 mt-0.5 shrink-0 text-primary" />;
+    }
+    if (lowerFeature.includes('download')) {
+        return <Download className="h-4 w-4 mt-0.5 shrink-0 text-primary" />;
+    }
+    if (lowerFeature.includes('tv') || lowerFeature.includes('canais')) {
+        return <Tv className="h-4 w-4 mt-0.5 shrink-0 text-primary" />;
+    }
+    if (lowerFeature.includes('app') || lowerFeature.includes('aplicativo')) {
+        return <Smartphone className="h-4 w4 mt-0.5 shrink-0 text-primary" />;
+    }
+    return <Check className="h-4 w-4 mt-0.5 shrink-0 text-primary" />;
+  };
 
   const PlanCard = ({ plan, index }: { plan: Plan, index: number }) => {
 
@@ -100,7 +120,7 @@ export function Plans() {
           <ul className="my-6 space-y-2 text-sm">
             {(plan.features ?? []).map((feature, i) => (
               <li key={i} className="flex items-start gap-2">
-                <Check className="h-4 w-4 mt-0.5 shrink-0 text-primary" />
+                {getFeatureIcon(feature)}
                 <span className="text-white/80">{feature}</span>
               </li>
             ))}
