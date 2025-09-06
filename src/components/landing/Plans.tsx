@@ -98,7 +98,7 @@ export function Plans() {
         } bg-neutral-900/60 p-6 shadow-xl`}
       >
         {plan.highlight && (
-          <div className="absolute -top-3 left-6 z-10 rounded-full border border-primary/50 bg-primary/10 px-2 py-0.5 text-xs text-primary">
+          <div className="absolute -top-3 left-6 z-10 rounded-full border border-primary/50 bg-neutral-950/40 px-3 py-1 text-xs text-primary">
             Mais popular
           </div>
         )}
