@@ -7,6 +7,7 @@ import { CanvasBackground } from '@/components/landing/CanvasBackground';
 import { Inter } from 'next/font/google';
 import { createClient } from '@/utils/supabase/server';
 import { ConversionTracker } from '@/components/analytics/ConversionTracker';
+import React from 'react';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -80,8 +81,9 @@ export async function generateMetadata(
 }
 
 const RawHTML = ({ html, ...props }: { html: string } & React.HTMLAttributes<any>) => (
-  <div {...props} dangerouslySetInnerHTML={{ __html: html }} />
+    <div {...props} dangerouslySetInnerHTML={{ __html: html }} />
 );
+
 
 export default async function RootLayout({
   children,
