@@ -5,14 +5,13 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Loader2, Megaphone, Save, PlusCircle, Trash2, Edit, Tag } from "lucide-react";
+import { Loader2, Save, PlusCircle, Trash2, Edit, Tag, Settings, Power } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -190,34 +189,60 @@ export default function GoogleAdsPage() {
                 </div>
                 <Button onClick={() => { setEditingTag(null); setIsModalOpen(true); }}><PlusCircle className="mr-2 h-4 w-4" /> Nova Tag</Button>
             </header>
+            
+            <p className="text-sm text-white/70 mb-6 max-w-2xl">
+                Adicione scripts como Google Analytics, Meta Pixel, etc. As tags ativas serão injetadas automaticamente nas páginas do seu site, no local que você definir.
+            </p>
 
             <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
                 <DialogContent className="border-white/10 bg-neutral-950 text-white sm:max-w-2xl">
                     <TagForm onSave={handleSave} onOpenChange={setIsModalOpen} tag={editingTag} />
                 </DialogContent>
             </Dialog>
-
-            <Card className="border-white/10 bg-neutral-950">
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <Tag className="w-6 h-6 text-primary"/>
-                        Tags de Rastreamento
-                    </CardTitle>
-                    <CardDescription>
-                       Adicione scripts como Google Analytics, Meta Pixel, etc. As tags ativas serão injetadas em todas as páginas do site.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                     {loading ? <div className="flex justify-center items-center h-40"><Loader2 className="h-6 w-6 animate-spin"/></div> : (
-                        <Table><TableHeader><TableRow className="border-white/10 hover:bg-transparent"><TableHead>Nome</TableHead><TableHead>Posição</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Ações</TableHead></TableRow></TableHeader>
-                            <TableBody>
-                                {tags.map((tag) => (<TableRow key={tag.id} className="border-white/10"><TableCell className="font-medium">{tag.name}</TableCell><TableCell className="font-mono text-xs">{tag.placement}</TableCell><TableCell><Switch checked={tag.is_active} onCheckedChange={() => handleToggleActive(tag)} /></TableCell><TableCell className="text-right"><Button variant="ghost" size="sm" className="mr-2" onClick={() => { setEditingTag(tag); setIsModalOpen(true); }}><Edit className="h-4 w-4" /></Button><AlertDialog><AlertDialogTrigger asChild><Button variant="destructive" size="sm"><Trash2 className="h-4 w-4" /></Button></AlertDialogTrigger><AlertDialogContent className="bg-neutral-950 border-white/10 text-white"><AlertDialogHeader><AlertDialogTitle>Tem certeza?</AlertDialogTitle><AlertDialogDescription>Essa ação não pode ser desfeita. Isso irá apagar permanentemente a tag.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Cancelar</AlertDialogCancel><AlertDialogAction onClick={() => handleDelete(tag.id)}>Continuar</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog></TableCell></TableRow>))}
-                                {tags.length === 0 && <TableRow><TableCell colSpan={4} className="text-center text-white/60 py-8">Nenhuma tag criada.</TableCell></TableRow>}
-                            </TableBody>
-                        </Table>
-                    )}
-                </CardContent>
-            </Card>
+            
+            {loading ? (
+                <div className="flex items-center justify-center p-8"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+            ) : tags.length === 0 ? (
+                <div className="flex flex-col items-center justify-center text-center py-16 px-4 rounded-xl border-2 border-dashed border-white/10 bg-neutral-900/50">
+                    <Tag className="w-12 h-12 text-white/30 mb-4"/>
+                    <h3 className="text-lg font-semibold">Nenhuma tag criada ainda</h3>
+                    <p className="text-sm text-white/60 max-w-sm mx-auto">Clique em "Nova Tag" para adicionar seu primeiro script de rastreamento e começar a coletar dados.</p>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {tags.map((tag) => (
+                        <Card key={tag.id} className="border-white/10 bg-neutral-900/60 flex flex-col">
+                            <CardHeader className="flex-row items-center justify-between">
+                                <CardTitle className="flex items-center gap-2 text-lg">
+                                    <Tag className="w-5 h-5 text-primary"/>
+                                    {tag.name}
+                                </CardTitle>
+                                <Switch checked={tag.is_active} onCheckedChange={() => handleToggleActive(tag)} aria-label={`Ativar/desativar tag ${tag.name}`} />
+                            </CardHeader>
+                            <CardContent className="flex-grow space-y-3">
+                                 <Badge variant="secondary" className="font-mono text-xs">{tag.placement}</Badge>
+                                 <p className="text-xs text-white/60 line-clamp-2 font-mono bg-neutral-950 p-2 rounded-md border border-white/10">
+                                    {tag.script_content}
+                                 </p>
+                            </CardContent>
+                            <CardFooter className="flex justify-end gap-2 border-t border-white/10 pt-4">
+                                <Button variant="ghost" size="sm" onClick={() => { setEditingTag(tag); setIsModalOpen(true); }}>
+                                    <Edit className="h-4 w-4 mr-2" /> Editar
+                                </Button>
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <Button variant="destructive" size="sm"><Trash2 className="h-4 w-4" /></Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent className="bg-neutral-950 border-white/10 text-white">
+                                        <AlertDialogHeader><AlertDialogTitle>Tem certeza?</AlertDialogTitle><AlertDialogDescription>Essa ação não pode ser desfeita. Isso irá apagar permanentemente a tag.</AlertDialogDescription></AlertDialogHeader>
+                                        <AlertDialogFooter><AlertDialogCancel>Cancelar</AlertDialogCancel><AlertDialogAction onClick={() => handleDelete(tag.id)}>Continuar</AlertDialogAction></AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
+                            </CardFooter>
+                        </Card>
+                    ))}
+                </div>
+            )}
         </>
     );
 }
