@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Gauge, Check, ChevronRight, Loader2, Wifi, Upload, Download, Tv, Smartphone } from "lucide-react";
+import { Gauge, Check, ChevronRight, Loader2, Wifi, Upload, Download, Tv, Smartphone, ShieldCheck, Zap } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import Link from 'next/link';
 import {
@@ -26,6 +26,19 @@ type Plan = {
   features: string[] | null;
   highlight: boolean;
   has_tv: boolean;
+};
+
+// Mapeamento de nomes de ícones para componentes de ícone
+const ICONS: { [key: string]: React.ElementType } = {
+  check: Check,
+  wifi: Wifi,
+  upload: Upload,
+  download: Download,
+  tv: Tv,
+  smartphone: Smartphone,
+  gauge: Gauge,
+  shield: ShieldCheck,
+  zap: Zap,
 };
 
 export function Plans() {
@@ -59,23 +72,15 @@ export function Plans() {
   }
 
   const getFeatureIcon = (feature: string) => {
-    const lowerFeature = feature.toLowerCase();
-    if (lowerFeature.includes('wi-fi') || lowerFeature.includes('wifi')) {
-      return <Wifi className="h-4 w-4 mt-0.5 shrink-0 text-primary" />;
-    }
-    if (lowerFeature.includes('upload')) {
-        return <Upload className="h-4 w-4 mt-0.5 shrink-0 text-primary" />;
-    }
-    if (lowerFeature.includes('download')) {
-        return <Download className="h-4 w-4 mt-0.5 shrink-0 text-primary" />;
-    }
-    if (lowerFeature.includes('tv') || lowerFeature.includes('canais')) {
-        return <Tv className="h-4 w-4 mt-0.5 shrink-0 text-primary" />;
-    }
-    if (lowerFeature.includes('app') || lowerFeature.includes('aplicativo')) {
-        return <Smartphone className="h-4 w4 mt-0.5 shrink-0 text-primary" />;
-    }
-    return <Check className="h-4 w-4 mt-0.5 shrink-0 text-primary" />;
+    const parts = feature.split(':');
+    const iconName = parts.length > 1 ? parts[0].trim().toLowerCase() : 'check';
+    const IconComponent = ICONS[iconName] || Check;
+    const text = parts.length > 1 ? parts.slice(1).join(':').trim() : feature;
+    
+    return {
+      Icon: <IconComponent className="h-4 w-4 mt-0.5 shrink-0 text-primary" />,
+      text: text,
+    };
   };
 
   const PlanCard = ({ plan, index }: { plan: Plan, index: number }) => {
@@ -118,12 +123,15 @@ export function Plans() {
           {plan.has_tv && <ChannelLogos />}
 
           <ul className="my-6 space-y-2 text-sm">
-            {(plan.features ?? []).map((feature, i) => (
-              <li key={i} className="flex items-start gap-2">
-                {getFeatureIcon(feature)}
-                <span className="text-white/80">{feature}</span>
-              </li>
-            ))}
+            {(plan.features ?? []).map((feature, i) => {
+              const { Icon, text } = getFeatureIcon(feature);
+              return (
+                <li key={i} className="flex items-start gap-2">
+                  {Icon}
+                  <span className="text-white/80">{text}</span>
+                </li>
+              );
+            })}
           </ul>
         </div>
         <Link href="/assinar">
