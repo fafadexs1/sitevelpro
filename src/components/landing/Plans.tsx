@@ -87,7 +87,7 @@ export function Plans() {
   };
 
   const PlanCard = ({ plan, index }: { plan: Plan, index: number }) => {
-    const slug = plan.speed.replace(/\s+/g, '-').toLowerCase();
+    const slug = `${plan.type}-${plan.speed.replace(/\s+/g, '-').toLowerCase()}`;
 
     return (
       <motion.div
@@ -141,17 +141,15 @@ export function Plans() {
             })}
           </ul>
         </div>
-        <Link href="/assinar">
-          <Button
-            id={`plan-cta-assinar-${slug}`}
-            asChild
-            className="mt-auto w-full"
-          >
-            <span className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2 font-medium text-primary-foreground transition-colors hover:bg-primary/90">
-              Assinar <ChevronRight className="h-4 w-4" />
-            </span>
-          </Button>
-        </Link>
+        <Button
+          id={`plan-cta-assinar-${slug}`}
+          asChild
+          className="mt-auto w-full"
+        >
+          <Link href="/assinar">
+            Assinar <ChevronRight className="h-4 w-4" />
+          </Link>
+        </Button>
       </motion.div>
     )
   };

@@ -222,7 +222,7 @@ const PlanForm = ({
     };
 
     if (mode === "add") {
-      const { error } = await supabase.from("plans").insert([planData]);
+      const { error } = await supabase.from("plans").insert([planData]).select('id').single();
       if (error) {
         toast({ variant: "destructive", title: "Erro", description: `Não foi possível adicionar o plano: ${error.message}` });
       } else {
