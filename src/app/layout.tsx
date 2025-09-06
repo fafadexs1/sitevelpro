@@ -13,15 +13,21 @@ const inter = Inter({
 
 // This function fetches SEO data from Supabase
 async function getSeoSettings() {
-  const supabase = createClient();
-  const { data } = await supabase
-    .from('seo_settings')
-    .select('site_title, site_description, og_image_url')
-    .single();
-  return data;
+  try {
+    const supabase = createClient();
+    const { data } = await supabase
+      .from('seo_settings')
+      .select('site_title, site_description, og_image_url')
+      .single();
+    return data;
+  } catch (error) {
+    console.error("Could not fetch SEO settings, maybe the table does not exist or is empty.");
+    return null;
+  }
 }
 
 export async function generateMetadata(
+  { params }: { params: any },
   parent: ResolvingMetadata
 ): Promise<Metadata> {
   const settings = await getSeoSettings();
@@ -32,7 +38,10 @@ export async function generateMetadata(
   const ogImage = settings?.og_image_url || null;
 
   return {
-    title: title,
+    title: {
+      default: title,
+      template: `%s | ${title}`,
+    },
     description: description,
     openGraph: {
       title: title,
