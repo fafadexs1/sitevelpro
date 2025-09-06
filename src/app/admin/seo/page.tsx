@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Loader2, Upload, Globe } from "lucide-react";
+import { Loader2, Upload, Globe, Settings2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -241,11 +241,25 @@ export default function SeoPage() {
                              <p>Seu mapa do site está disponível em <Link href="/sitemap.xml" target="_blank" className="underline hover:text-primary">/sitemap.xml</Link>.</p>
                         </CardFooter>
                     </Card>
+                    
+                    <Card className="border-white/10 bg-neutral-950">
+                        <CardHeader>
+                            <CardTitle>SEO para Páginas Dinâmicas</CardTitle>
+                            <p className="text-sm text-white/60">Gerencie o SEO para páginas geradas dinamicamente, como páginas por cidade ou plano.</p>
+                        </CardHeader>
+                        <CardContent className="flex items-center justify-center text-center text-white/70 h-40">
+                            <div className="space-y-2">
+                                <Settings2 className="mx-auto h-8 w-8"/>
+                                <p>Em breve: Interface para gerenciar regras de SEO dinâmicas.</p>
+                                <p className="text-xs text-white/50">O banco de dados já foi preparado para esta funcionalidade.</p>
+                            </div>
+                        </CardContent>
+                    </Card>
 
                     <div className="flex justify-end">
                         <Button type="submit" disabled={isSubmitting}>
                              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                             Salvar Configurações de SEO
+                             Salvar Configurações Gerais
                         </Button>
                     </div>
                 </form>
