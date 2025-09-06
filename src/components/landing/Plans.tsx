@@ -93,12 +93,12 @@ export function Plans() {
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: index * 0.05 }}
-        className={`relative z-10 flex h-full flex-col rounded-2xl border ${
+        className={`relative flex h-full flex-col rounded-2xl border ${
           plan.highlight ? "border-primary/60" : "border-white/10"
         } bg-neutral-900/60 p-6 shadow-xl`}
       >
         {plan.highlight && (
-          <div className="absolute -top-3 left-6 rounded-full border border-primary/50 bg-primary/10 px-2 py-0.5 text-xs text-primary">
+          <div className="absolute -top-3 left-6 z-10 rounded-full border border-primary/50 bg-primary/10 px-2 py-0.5 text-xs text-primary">
             Mais popular
           </div>
         )}
