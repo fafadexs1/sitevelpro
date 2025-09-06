@@ -4,7 +4,6 @@
 import { motion } from "framer-motion";
 import { Wifi, Router, Smartphone, Laptop, Tablet, Home, ChevronRight, Share2, Tv, Film, Clapperboard } from "lucide-react";
 import React, { useEffect, useState } from 'react';
-import { useIsMobile } from "@/hooks/use-mobile";
 
 const channels = [
     { name: "Filmes", icon: <Film className="w-8 h-8"/> },
@@ -105,8 +104,12 @@ function DesktopView() {
 }
 
 export function Mesh() {
-    const isMobile = useIsMobile();
+    const [isMounted, setIsMounted] = useState(false);
     
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
     return (
         <section id="mesh" className="border-t border-white/5 py-16 sm:py-24">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -126,7 +129,7 @@ export function Mesh() {
                             Ver planos com Mesh <ChevronRight className="h-4 w-4" />
                         </a>
                     </div>
-                     {isMobile === undefined ? (
+                     {!isMounted ? (
                         <div className="w-full aspect-square max-w-lg mx-auto bg-neutral-900/50 rounded-2xl" />
                     ) : (
                         <DesktopView />
