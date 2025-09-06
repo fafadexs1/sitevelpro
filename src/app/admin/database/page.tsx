@@ -79,6 +79,7 @@ create table if not exists seo_settings (
   site_title text not null,
   site_description text not null,
   og_image_url text,
+  favicon_url text,
   allow_indexing boolean default true not null,
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null,
   constraint single_row_check check (id = 1)

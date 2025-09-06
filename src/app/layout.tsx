@@ -17,7 +17,7 @@ async function getSeoSettings() {
     const supabase = createClient();
     const { data } = await supabase
       .from('seo_settings')
-      .select('site_title, site_description, og_image_url')
+      .select('site_title, site_description, og_image_url, favicon_url')
       .single();
     return data;
   } catch (error) {
@@ -36,6 +36,7 @@ export async function generateMetadata(
   const title = settings?.site_title || 'Velpro Telecom';
   const description = settings?.site_description || 'Internet ultrarrápida para tudo que importa.';
   const ogImage = settings?.og_image_url || null;
+  const faviconUrl = settings?.favicon_url || '/favicon.ico';
 
   return {
     title: {
@@ -43,6 +44,9 @@ export async function generateMetadata(
       template: `%s | ${title}`,
     },
     description: description,
+    icons: {
+        icon: faviconUrl,
+    },
     openGraph: {
       title: title,
       description: description,

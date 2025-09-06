@@ -41,6 +41,7 @@ type SeoSettings = {
     site_title: string;
     site_description: string;
     og_image_url: string | null;
+    favicon_url: string | null;
     allow_indexing: boolean;
 }
 
@@ -70,6 +71,7 @@ type Redirect = {
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+const ACCEPTED_FAVICON_TYPES = ["image/png", "image/x-icon", "image/svg+xml"];
 
 const seoSchema = z.object({
   site_title: z.string().min(1, "Título do site é obrigatório."),
@@ -79,6 +81,10 @@ const seoSchema = z.object({
     .optional()
     .refine((file) => !file || (file instanceof File && file.size <= MAX_FILE_SIZE), `Tamanho máximo de 5MB.`)
     .refine((file) => !file || (file instanceof File && ACCEPTED_IMAGE_TYPES.includes(file.type)), "Apenas .jpg, .jpeg, .png e .webp são permitidos."),
+  favicon_file: z.any()
+    .optional()
+    .refine((file) => !file || (file instanceof File && file.size <= 200 * 1024), `Tamanho máximo de 200KB.`)
+    .refine((file) => !file || (file instanceof File && ACCEPTED_FAVICON_TYPES.includes(file.type)), "Apenas .png, .ico e .svg são permitidos."),
 });
 type SeoFormData = z.infer<typeof seoSchema>;
 
@@ -186,7 +192,7 @@ export default function SeoPage() {
 
     const form = useForm<SeoFormData>({
         resolver: zodResolver(seoSchema),
-        defaultValues: { site_title: '', site_description: '', allow_indexing: true, og_image_file: null },
+        defaultValues: { site_title: '', site_description: '', allow_indexing: true, og_image_file: null, favicon_file: null },
     });
 
     const siteTitle = form.watch('site_title');
@@ -232,6 +238,7 @@ export default function SeoPage() {
     const onGeneralSubmit = async (data: SeoFormData) => {
         setIsSubmitting(true);
         let ogImageUrl = settings?.og_image_url;
+        let faviconUrl = settings?.favicon_url;
 
         if (data.og_image_file) {
             const file = data.og_image_file;
@@ -239,7 +246,7 @@ export default function SeoPage() {
 
             const { error: uploadError } = await supabase.storage.from('site-assets').upload(filePath, file, { upsert: true });
             if (uploadError) {
-                toast({ variant: "destructive", title: "Erro de Upload", description: uploadError.message });
+                toast({ variant: "destructive", title: "Erro de Upload (OG)", description: uploadError.message });
                 setIsSubmitting(false);
                 return;
             }
@@ -247,11 +254,26 @@ export default function SeoPage() {
             ogImageUrl = urlData.publicUrl;
         }
 
+        if (data.favicon_file) {
+            const file = data.favicon_file;
+            const filePath = `favicon.${file.name.split('.').pop()}`;
+
+            const { error: uploadError } = await supabase.storage.from('site-assets').upload(filePath, file, { upsert: true });
+            if (uploadError) {
+                toast({ variant: "destructive", title: "Erro de Upload (Favicon)", description: uploadError.message });
+                setIsSubmitting(false);
+                return;
+            }
+            const { data: urlData } = supabase.storage.from('site-assets').getPublicUrl(filePath);
+            faviconUrl = urlData.publicUrl;
+        }
+
         const { error } = await supabase.from('seo_settings').upsert({
             id: 1,
             site_title: data.site_title,
             site_description: data.site_description,
             og_image_url: ogImageUrl,
+            favicon_url: faviconUrl,
             allow_indexing: data.allow_indexing,
             updated_at: new Date().toISOString(),
         });
@@ -333,17 +355,34 @@ export default function SeoPage() {
                                     <FormField control={form.control} name="site_description" render={({ field }) => ( <FormItem> <FormLabel>Descrição do Site</FormLabel> <FormControl><Textarea placeholder="Conecte-se com a Velpro e sinta a diferença..." {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
                                 </CardContent>
                             </Card>
+                            
                             <Card className="border-white/10 bg-neutral-950">
-                                <CardHeader><CardTitle>Compartilhamento Social (Open Graph)</CardTitle><CardDescription>Imagem que aparece ao compartilhar o link do site. (Recomendado: 1200x630px)</CardDescription></CardHeader>
-                                <CardContent className="space-y-4">
+                                <CardHeader><CardTitle>Identidade Visual do Site</CardTitle><CardDescription>Gerencie o favicon e a imagem para compartilhamento.</CardDescription></CardHeader>
+                                <CardContent className="grid md:grid-cols-2 gap-6">
+                                     <FormField control={form.control} name="favicon_file" render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Favicon</FormLabel>
+                                            <FormControl>
+                                            <div className="relative flex items-center justify-center w-full">
+                                                <label htmlFor="dropzone-file-favicon" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-neutral-900 border-white/20 hover:border-primary hover:bg-neutral-800">
+                                                    <div className="flex flex-col items-center justify-center pt-5 pb-6"><Upload className="w-8 h-8 mb-3 text-white/50"/><p className="mb-2 text-sm text-white/50"><span className="font-semibold">Clique para enviar</span> ou arraste</p><p className="text-xs text-white/50">PNG, ICO, SVG (MAX. 200KB)</p></div>
+                                                    <Input id="dropzone-file-favicon" type="file" className="hidden" accept={ACCEPTED_FAVICON_TYPES.join(',')} onChange={(e) => field.onChange(e.target.files ? e.target.files[0] : null)}/>
+                                                </label>
+                                            </div> 
+                                            </FormControl>
+                                            {field.value?.name && <p className="text-sm text-white/70 mt-2">Novo arquivo: {field.value.name}</p>}
+                                            {settings?.favicon_url && !field.value?.name && (<div className="mt-4"><p className="text-sm text-white/70 mb-2">Favicon atual:</p><Image src={settings.favicon_url} alt="Favicon" width={32} height={32} className="rounded-md border border-white/10 bg-white/5 p-1"/></div>)}
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}/>
                                     <FormField control={form.control} name="og_image_file" render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Imagem OG</FormLabel>
+                                            <FormLabel>Imagem Open Graph (1200x630px)</FormLabel>
                                             <FormControl>
                                             <div className="relative flex items-center justify-center w-full">
                                                 <label htmlFor="dropzone-file-og" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-neutral-900 border-white/20 hover:border-primary hover:bg-neutral-800">
                                                     <div className="flex flex-col items-center justify-center pt-5 pb-6"><Upload className="w-8 h-8 mb-3 text-white/50"/><p className="mb-2 text-sm text-white/50"><span className="font-semibold">Clique para enviar</span> ou arraste</p><p className="text-xs text-white/50">PNG, JPG, WEBP (MAX. 5MB)</p></div>
-                                                    <Input id="dropzone-file-og" type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={(e) => field.onChange(e.target.files ? e.target.files[0] : null)}/>
+                                                    <Input id="dropzone-file-og" type="file" className="hidden" accept={ACCEPTED_IMAGE_TYPES.join(',')} onChange={(e) => field.onChange(e.target.files ? e.target.files[0] : null)}/>
                                                 </label>
                                             </div> 
                                             </FormControl>
@@ -354,6 +393,7 @@ export default function SeoPage() {
                                     )}/>
                                 </CardContent>
                             </Card>
+
                             <Card className="border-white/10 bg-neutral-950">
                                 <CardHeader><CardTitle>Visibilidade nos Buscadores</CardTitle><CardDescription>Controle se os mecanismos de busca podem indexar seu site.</CardDescription></CardHeader>
                                 <CardContent>
@@ -446,5 +486,3 @@ export default function SeoPage() {
         </>
     );
 }
-
-    
