@@ -20,6 +20,10 @@ export function Testimonials() {
     { name: "Luciana • Home Office", text: "Chamadas perfeitas e redundância bem configurada.", stars: 5 },
   ];
 
+  if (isMobile === undefined) {
+    return <div className="h-[200px]" />; // Placeholder or loader
+  }
+
   return (
     <section className="border-t border-white/5 bg-neutral-950/40 py-16 sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

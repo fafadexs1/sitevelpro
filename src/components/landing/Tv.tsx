@@ -4,6 +4,7 @@
 import { motion } from "framer-motion";
 import { Tv, Film, Clapperboard, ChevronRight } from "lucide-react";
 import React from 'react';
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const channels = [
     { name: "Filmes", icon: <Film className="w-8 h-8"/> },
@@ -22,18 +23,6 @@ const channels = [
 
 const radius = 420;
 const perspective = 750;
-
-function useIsMobile() {
-    const [isMobile, setIsMobile] = React.useState(false);
-    React.useEffect(() => {
-        const checkDevice = () => setIsMobile(window.innerWidth < 1024);
-        checkDevice();
-        window.addEventListener('resize', checkDevice);
-        return () => window.removeEventListener('resize', checkDevice);
-    }, []);
-    return isMobile;
-}
-
 
 function DesktopView() {
     const [rotateX, setRotateX] = React.useState(0);
@@ -139,6 +128,10 @@ function MobileView() {
 export function TvSection() {
     const isMobile = useIsMobile();
     
+    if (isMobile === undefined) {
+      return <div className="h-[500px]" />; // Placeholder or loader
+    }
+
     return (
         <section id="tv" className="border-t border-white/5 py-16 sm:py-24">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
