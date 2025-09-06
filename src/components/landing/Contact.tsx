@@ -1,3 +1,4 @@
+
 import { Phone, MessageCircle, MapPin } from "lucide-react";
 
 export function Contact() {
@@ -7,18 +8,21 @@ export function Contact() {
       title: "Telefone",
       desc: "0800 000 000",
       href: "tel:+5508000000000",
+      id: "contact-link-telefone",
     },
     {
       icon: <MessageCircle className="h-5 w-5 text-primary" />,
       title: "WhatsApp",
       desc: "Assine ou tire dúvidas pelo WhatsApp",
       href: "https://wa.me/5500000000000",
+      id: "contact-link-whatsapp",
     },
     {
       icon: <MapPin className="h-5 w-5 text-primary" />,
       title: "Endereço",
       desc: "Av. da Fibra, 1000 — Centro • Sua Cidade",
       href: "#",
+      id: "contact-link-endereco",
     },
   ];
 
@@ -33,6 +37,7 @@ export function Contact() {
           {contactOptions.map((item) => (
             <a
               key={item.title}
+              id={item.id}
               href={item.href}
               target={item.href.startsWith('http') ? '_blank' : undefined}
               rel={item.href.startsWith('http') ? 'noreferrer' : undefined}

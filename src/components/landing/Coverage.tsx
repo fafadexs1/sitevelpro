@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -35,13 +36,14 @@ export function Coverage() {
         <form onSubmit={handleCoverageCheck} className="grid max-w-xl gap-3 sm:flex sm:items-center">
           <label htmlFor="cep" className="sr-only">CEP</label>
           <input
-            id="cep"
+            id="cep-input"
             value={cep}
             onChange={(e) => setCep(e.target.value)}
             placeholder="Digite seu CEP"
             className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 outline-none placeholder:text-white/40 transition-colors focus:ring-2 focus:ring-primary sm:max-w-xs"
           />
           <button
+            id="coverage-check-button"
             type="submit"
             className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 font-medium text-neutral-950 transition-colors hover:bg-white/90"
           >

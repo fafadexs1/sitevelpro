@@ -1,3 +1,4 @@
+
 "use client";
 
 import { motion } from "framer-motion";
@@ -29,12 +30,14 @@ export function Hero() {
           </p>
           <div className="flex flex-wrap gap-3">
             <a
+              id="hero-cta-cobertura"
               href="#cobertura"
               className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 font-medium text-neutral-950 transition-colors hover:bg-white/90"
             >
               Consultar cobertura <MapPin className="h-4 w-4" />
             </a>
             <a
+              id="hero-cta-planos"
               href="#planos"
               className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-5 py-3 font-medium text-white transition-colors hover:bg-white/5"
             >

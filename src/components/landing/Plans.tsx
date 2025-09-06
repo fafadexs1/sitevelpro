@@ -87,6 +87,7 @@ export function Plans() {
   };
 
   const PlanCard = ({ plan, index }: { plan: Plan, index: number }) => {
+    const slug = plan.speed.replace(/\s+/g, '-').toLowerCase();
 
     return (
       <motion.div
@@ -142,6 +143,7 @@ export function Plans() {
         </div>
         <Link href="/assinar">
           <Button
+            id={`plan-cta-assinar-${slug}`}
             asChild
             className="mt-auto w-full"
           >
