@@ -107,6 +107,14 @@ create table if not exists redirects (
     created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
+-- Cria a tabela de configurações do Google Ads
+create table if not exists google_ads_settings (
+  id int primary key default 1,
+  gads_tracking_id text, -- Ex: AW-123456789
+  gtm_container_id text, -- Ex: GTM-ABCDEFG
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  constraint single_row_check check (id = 1)
+);
 
 -- Cria o bucket 'canais' se ele não existir
 -- As políticas RLS garantem que ele seja público

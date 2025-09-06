@@ -21,7 +21,8 @@ import {
   Tv,
   UserPlus,
   Clapperboard,
-  Globe
+  Globe,
+  Megaphone
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -219,6 +220,7 @@ function AdminDashboard({
     { href: "/admin/tv-channels", label: "Canais de TV", icon: Clapperboard },
     { href: "/admin/tv-packages", label: "Pacotes de TV", icon: Tv },
     { href: "/admin/seo", label: "SEO", icon: Globe },
+    { href: "/admin/google-ads", label: "Google Ads", icon: Megaphone },
     { href: "/admin/database", label: "Banco de Dados", icon: Database },
   ];
 
