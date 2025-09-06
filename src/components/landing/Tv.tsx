@@ -3,7 +3,7 @@
 
 import { motion } from "framer-motion";
 import { Tv, Film, Clapperboard, ChevronRight } from "lucide-react";
-import React from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const channels = [
@@ -24,10 +24,31 @@ const channels = [
 const radius = 420;
 const perspective = 750;
 
+type AnimatedItem = {
+    i: number;
+    channel: typeof channels[number];
+    angle: number;
+    x: number;
+    z: number;
+    scale: number;
+};
+
 function DesktopView() {
     const [rotateX, setRotateX] = React.useState(0);
     const [rotateY, setRotateY] = React.useState(0);
     const containerRef = React.useRef<HTMLDivElement>(null);
+    const [animatedItems, setAnimatedItems] = useState<AnimatedItem[]>([]);
+
+    useEffect(() => {
+        const items = channels.map((channel, i) => {
+            const angle = (i / channels.length) * 2 * Math.PI;
+            const x = radius * Math.sin(angle);
+            const z = radius * Math.cos(angle);
+            const scale = 0.8 + ((z + radius) / (2 * radius)) * 0.25;
+            return { i, channel, angle, x, z, scale };
+        }).sort((a, b) => a.z - b.z);
+        setAnimatedItems(items);
+    }, []);
 
     const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
         if (!containerRef.current) return;
@@ -43,17 +64,6 @@ function DesktopView() {
         setRotateY(0);
     };
 
-    const items = React.useMemo(() => {
-        return channels
-        .map((channel, i) => {
-            const angle = (i / channels.length) * 2 * Math.PI;
-            const x = radius * Math.sin(angle);
-            const z = radius * Math.cos(angle);
-            const scale = 0.8 + ((z + radius) / (2 * radius)) * 0.25;
-            return { i, channel, angle, x, z, scale };
-        })
-        .sort((a, b) => a.z - b.z);
-    }, []);
 
     return (
         <div
@@ -72,7 +82,7 @@ function DesktopView() {
                     transition: 'transform 0.2s ease-out'
                 }}
             >
-                {items.map(({ i, channel, angle, x, z, scale }) => {
+                {animatedItems.map(({ i, channel, angle, x, z, scale }) => {
                     const isFront = z > 0;
                     if (!isFront) return null;
 
