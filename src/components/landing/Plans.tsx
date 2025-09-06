@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Gauge, Check, ChevronRight, Loader2, Wifi, Upload, Download, Tv, Smartphone, ShieldCheck, Zap } from "lucide-react";
+import { Gauge, Check, ChevronRight, Loader2, Wifi, Upload, Download, Tv, Smartphone, ShieldCheck, Zap, Rocket, Home } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import Link from 'next/link';
 import {
@@ -39,6 +39,8 @@ const ICONS: { [key: string]: React.ElementType } = {
   gauge: Gauge,
   shield: ShieldCheck,
   zap: Zap,
+  rocket: Rocket,
+  home: Home
 };
 
 export function Plans() {
@@ -102,7 +104,7 @@ export function Plans() {
         )}
         <div className="flex-grow">
           <div className="mb-4 flex items-center justify-between">
-            <h3 className="text-xl font-semibold">{plan.speed}</h3>
+            <h3 className="text-2xl font-bold">{plan.speed}</h3>
             <div className="grid h-9 w-9 place-items-center rounded-lg bg-primary/15">
               <Gauge className="h-5 w-5 text-primary" />
             </div>
