@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Loader2, Upload, Globe, Settings2, PlusCircle, Trash2, Edit, RefreshCw, Activity, CheckCircle } from "lucide-react";
+import { Loader2, Upload, Globe, Settings2, PlusCircle, Trash2, Edit, RefreshCw, Activity, CheckCircle, Search, ExternalLink, Redo } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from "@/components/ui/card";
@@ -94,6 +94,9 @@ export default function SeoPage() {
         },
     });
 
+    const siteTitle = form.watch('site_title');
+    const siteDescription = form.watch('site_description');
+
     // Fetchers
     const getSeoSettings = async () => {
         setLoadingSettings(true);
@@ -153,6 +156,7 @@ export default function SeoPage() {
             id: 1, // Always operate on the single settings row
             site_title: data.site_title,
             site_description: data.site_description,
+            og_image_url: ogImageUrl,
             allow_indexing: data.allow_indexing,
             updated_at: new Date().toISOString(),
         });
@@ -276,7 +280,7 @@ export default function SeoPage() {
                                     <CardDescription>Controle se os mecanismos de busca podem indexar seu site.</CardDescription>
                                 </CardHeader>
                                 <CardContent>
-                                        <FormField
+                                    <FormField
                                         control={form.control}
                                         name="allow_indexing"
                                         render={({ field }) => (
@@ -297,9 +301,9 @@ export default function SeoPage() {
                                         )}
                                     />
                                 </CardContent>
-                                    <CardFooter className="flex-col items-start gap-2 text-xs text-white/60">
+                                <CardFooter className="flex-col items-start gap-2 text-xs text-white/60">
                                     <p>A alteração será refletida no arquivo <Link href="/robots.txt" target="_blank" className="underline hover:text-primary">/robots.txt</Link>.</p>
-                                        <p>Seu mapa do site está disponível em <Link href="/sitemap.xml" target="_blank" className="underline hover:text-primary">/sitemap.xml</Link>.</p>
+                                    <p>Seu mapa do site está disponível em <Link href="/sitemap.xml" target="_blank" className="underline hover:text-primary">/sitemap.xml</Link>.</p>
                                 </CardFooter>
                             </Card>
 
@@ -431,6 +435,52 @@ export default function SeoPage() {
                                     </Button>
                                 </div>
                                 <p className="text-xs text-white/60 mt-2">Use para limpar o cache de uma página específica após uma alteração.</p>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="border-white/10 bg-neutral-950">
+                        <CardHeader>
+                            <CardTitle>Gestão Avançada</CardTitle>
+                             <CardDescription>Ferramentas para controle técnico e otimização fina do SEO.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div>
+                                <h4 className="font-semibold text-sm mb-2">Preview de SERP</h4>
+                                <div className="p-3 rounded-lg border border-white/10 bg-neutral-900/60">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center shrink-0">
+                                            <Globe className="h-4 w-4 text-primary-foreground"/>
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-medium text-white truncate">{siteTitle || "Seu Título Aqui"}</p>
+                                            <p className="text-xs text-white/70">https://velpro.com.br</p>
+                                        </div>
+                                    </div>
+                                    <p className="text-xs text-white/70 mt-2 line-clamp-2">
+                                        {siteDescription || "A descrição do seu site aparecerá aqui. Escreva algo conciso e atraente para os usuários."}
+                                    </p>
+                                </div>
+                            </div>
+                             <div>
+                                <h4 className="font-semibold text-sm mb-2">Gerenciador de Redirecionamentos</h4>
+                                <div className="p-3 rounded-lg border border-white/10 bg-neutral-900/60 text-xs text-white/70">
+                                    <p className="mb-2">Funcionalidade para gerenciar redirecionamentos 301/302 será implementada aqui.</p>
+                                     <Button variant="outline" size="sm" className="w-full" disabled>
+                                        <Redo className="mr-2 h-4 w-4"/> Gerenciar Redirecionamentos
+                                    </Button>
+                                </div>
+                            </div>
+                             <div>
+                                <h4 className="font-semibold text-sm mb-2">Teste de Dados Estruturados</h4>
+                                <div className="p-3 rounded-lg border border-white/10 bg-neutral-900/60 text-xs text-white/70">
+                                    <p className="mb-2">Use a ferramenta oficial do Google para validar o Schema Markup (JSON-LD) de suas páginas.</p>
+                                    <Button variant="outline" size="sm" asChild>
+                                        <a href="https://search.google.com/test/rich-results" target="_blank" rel="noopener noreferrer" className="w-full">
+                                            <ExternalLink className="mr-2 h-4 w-4"/> Teste de Rich Results
+                                        </a>
+                                    </Button>
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
