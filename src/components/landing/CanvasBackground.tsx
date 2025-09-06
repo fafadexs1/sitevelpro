@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useEffect, useRef } from 'react';
@@ -8,9 +9,9 @@ export function CanvasBackground() {
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    if (isMobile === true) return; // Se for mobile, não faz nada.
+    // Não executa a lógica de animação no servidor ou em mobile
+    if (isMobile === undefined || isMobile === true) return;
 
-    // A lógica a seguir só executa no cliente e quando não é mobile
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -45,10 +46,10 @@ export function CanvasBackground() {
 
     function random(min: number, max: number){ return Math.random()*(max-min)+min; }
     function randColor(a: number){
-      // Cor primária é #04BD03 (R:4, G:189, B:3)
-      const g = 150 + Math.floor(Math.random()*40); // 150-190
-      const r = Math.floor(Math.random()*60);
-      const b = Math.floor(Math.random()*60);
+      // Cor primária é #34D399 (Emerald Green)
+      const g = 180 + Math.floor(Math.random()*40); // 180-220
+      const r = 30 + Math.floor(Math.random()*40); // 30-70
+      const b = 120 + Math.floor(Math.random()*40); // 120-160
       return `rgba(${r},${g},${b},${a})`;
     }
 
@@ -126,7 +127,7 @@ export function CanvasBackground() {
 
     let animationFrameId: number;
     function loop() {
-      ctx.fillStyle = `rgba(0,0,0,${CLEAR_ALPHA})`;
+      ctx.fillStyle = `rgba(10,10,10,${CLEAR_ALPHA})`; // Fundo um pouco mais claro para combinar com o novo tema
       ctx.fillRect(0, 0, w, h);
 
       strands.forEach(s => { s.update(); s.draw(); });
@@ -140,9 +141,11 @@ export function CanvasBackground() {
     }
   }, [isMobile]);
 
-  if (isMobile) {
+  // No servidor (isMobile === undefined) ou em mobile (isMobile === true), renderiza um placeholder simples.
+  // A animação complexa do canvas só roda no desktop, após a montagem do componente.
+  if (isMobile === undefined || isMobile === true) {
     return (
-        <div className="canvas-background-wrapper" style={{ backgroundColor: 'black' }} />
+        <div className="canvas-background-wrapper" style={{ backgroundColor: 'rgb(23, 23, 23)' }} />
     )
   }
 
