@@ -79,6 +79,10 @@ export async function generateMetadata(
   };
 }
 
+const RawHTML = ({ html, ...props }: { html: string } & React.HTMLAttributes<any>) => (
+  <div {...props} dangerouslySetInnerHTML={{ __html: html }} />
+);
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -94,19 +98,19 @@ export default async function RootLayout({
       <head>
         {/* Font links are handled by next/font now */}
         {headScripts.map((tag, index) => (
-            <script key={`tracking-tag-head-${tag.id}-${index}`} type="text/javascript" dangerouslySetInnerHTML={{ __html: tag.script_content }} />
+            <RawHTML key={`tracking-tag-head-${tag.id}-${index}`} html={tag.script_content} />
         ))}
       </head>
       <body className="font-body antialiased">
          {bodyStartScripts.map((tag, index) => (
-            <script key={`tracking-tag-body-start-${tag.id}-${index}`} type="text/javascript" dangerouslySetInnerHTML={{ __html: tag.script_content }} />
+            <RawHTML key={`tracking-tag-body-start-${tag.id}-${index}`} html={tag.script_content} />
         ))}
         <ConversionTracker />
         <CanvasBackground />
         {children}
         <Toaster />
          {bodyEndScripts.map((tag, index) => (
-            <script key={`tracking-tag-body-end-${tag.id}-${index}`} type="text/javascript" dangerouslySetInnerHTML={{ __html: tag.script_content }} />
+            <RawHTML key={`tracking-tag-body-end-${tag.id}-${index}`} html={tag.script_content} />
         ))}
       </body>
     </html>
