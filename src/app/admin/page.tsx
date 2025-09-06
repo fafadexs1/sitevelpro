@@ -5,7 +5,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import {
   LogIn,
   User,
@@ -27,6 +27,7 @@ import {
   Clapperboard,
   Upload,
   Edit,
+  GripVertical,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -132,7 +133,10 @@ const planSchema = z.object({
   speed: z.string().min(3, "Velocidade é obrigatória"),
   price: z.coerce.number().min(0, "Preço deve ser positivo"),
   original_price: z.coerce.number().optional().nullable(),
-  features: z.string().optional(),
+  features: z.array(z.object({
+    icon: z.string().min(1, "Ícone obrigatório"),
+    text: z.string().min(1, "Texto obrigatório"),
+  })).optional(),
   highlight: z.boolean().default(false),
   has_tv: z.boolean().default(false),
 });
@@ -144,7 +148,7 @@ const defaultPlanValues = {
   speed: "",
   price: 0,
   original_price: null,
-  features: "",
+  features: [{ icon: "check", text: "" }],
   highlight: false,
   has_tv: false,
 };
@@ -342,6 +346,24 @@ const PlanForm = ({
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Helper para converter de/para o formato do BD
+  const fromDbToForm = (features: string[] | null) => {
+    if (!features) return [];
+    return features.map(f => {
+      const parts = f.split(':');
+      if (parts.length > 1) {
+        return { icon: parts[0].trim(), text: parts.slice(1).join(':').trim() };
+      }
+      return { icon: 'check', text: f };
+    });
+  };
+
+  const fromFormToDb = (features?: Array<{icon: string; text: string}>) => {
+    if (!features) return [];
+    return features.map(f => `${f.icon}: ${f.text}`);
+  };
+  
+
   const form = useForm<PlanFormData>({
     resolver: zodResolver(planSchema),
     defaultValues:
@@ -350,9 +372,14 @@ const PlanForm = ({
             ...plan,
             price: plan.price ?? 0,
             original_price: plan.original_price ?? undefined,
-            features: (plan.features ?? []).join("\n"),
+            features: fromDbToForm(plan.features),
           }
         : defaultPlanValues,
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "features",
   });
 
   const onSubmit = async (data: PlanFormData) => {
@@ -361,7 +388,7 @@ const PlanForm = ({
 
     const planData = {
       ...data,
-      features: data.features?.split("\n").filter(Boolean) ?? [],
+      features: fromFormToDb(data.features),
       original_price: data.original_price || null,
     };
 
@@ -461,19 +488,53 @@ const PlanForm = ({
               />
             </div>
             
-            <FormField
-              control={form.control}
-              name="features"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Características <span className="text-white/50">(Uma por linha)</span></FormLabel>
-                  <FormControl>
-                    <Textarea placeholder={"Wi-Fi 6\n200k de Upload\nSuporte 24/7"} {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+             <div>
+              <FormLabel>Características</FormLabel>
+              <div className="mt-2 space-y-3">
+                {fields.map((field, index) => (
+                  <div key={field.id} className="flex items-center gap-2">
+                    <GripVertical className="h-5 w-5 text-white/40 flex-shrink-0" />
+                    <FormField
+                      control={form.control}
+                      name={`features.${index}.icon`}
+                      render={({ field }) => (
+                        <FormItem className="w-1/3">
+                          <FormControl>
+                            <Input placeholder="Ícone (ex: wifi)" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name={`features.${index}.text`}
+                      render={({ field }) => (
+                        <FormItem className="flex-grow">
+                          <FormControl>
+                            <Input placeholder="Texto do benefício" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
+                      <Trash2 className="h-4 w-4 text-red-500"/>
+                    </Button>
+                  </div>
+                ))}
+              </div>
+              <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="mt-3"
+                  onClick={() => append({ icon: 'check', text: '' })}
+                >
+                  <PlusCircle className="mr-2 h-4 w-4"/>
+                  Adicionar Característica
+              </Button>
+            </div>
 
             <div className="!mt-6 flex items-center justify-between border-t border-white/10 pt-4">
               <FormField
@@ -1418,7 +1479,7 @@ function PlansTable({
               </Button>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="destructive" size="sm"><Trash2 className="w-4 w-4" /></Button>
+                  <Button variant="destructive" size="sm"><Trash2 className="w-4 h-4" /></Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent className="bg-neutral-950 border-white/10 text-white">
                   <AlertDialogHeader>
@@ -1490,3 +1551,5 @@ export default function AdminPage() {
 
   return <AdminDashboard user={user} onLogout={() => setUser(null)} />;
 }
+
+    
