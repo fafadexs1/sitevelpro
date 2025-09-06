@@ -8,8 +8,9 @@ export function CanvasBackground() {
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    if (isMobile) return;
+    if (isMobile === true) return; // Se for mobile, não faz nada.
 
+    // A lógica a seguir só executa no cliente e quando não é mobile
     const canvas = canvasRef.current;
     if (!canvas) return;
 
