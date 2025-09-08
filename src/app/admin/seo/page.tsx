@@ -373,7 +373,13 @@ export default function SeoPage() {
                                             </div> 
                                             </FormControl>
                                             {field.value?.name && <p className="text-sm text-white/70 mt-2">Novo arquivo: {field.value.name}</p>}
-                                            {settings?.favicon_url && !field.value?.name && (<div className="mt-4"><p className="text-sm text-white/70 mb-2">Favicon atual:</p><Image src={settings.favicon_url} alt="Favicon" width={48} height={48} className="rounded-md border border-white/10 p-1"/></div>)}
+                                            {settings?.favicon_url && !field.value?.name && (
+                                                <div className="mt-4">
+                                                    <p className="text-sm text-white/70 mb-2">Favicon atual:</p>
+                                                    <Image src={settings.favicon_url} alt="Favicon" width={48} height={48} className="rounded-md border border-white/10 p-1"/>
+                                                    <p className="text-xs text-white/50 mt-2 break-all">URL: {settings.favicon_url}</p>
+                                                </div>
+                                            )}
                                             <FormMessage />
                                         </FormItem>
                                     )}/>
