@@ -1,3 +1,4 @@
+
 // app/layout.tsx
 import type { Metadata, ResolvingMetadata } from 'next';
 import './globals.css';
@@ -31,13 +32,14 @@ async function getSeoSettings() {
     const supabase = createClient();
     const { data } = await supabase
       .from('seo_settings')
-      .select('site_title, site_description, og_image_url, favicon_url')
+      .select('site_title, site_description, og_image_url, favicon_url, updated_at')
       .single();
     return data as {
       site_title?: string | null;
       site_description?: string | null;
       og_image_url?: string | null;
       favicon_url?: string | null;
+      updated_at?: string | null;
     } | null;
   } catch {
     console.error("Could not fetch SEO settings, maybe the table does not exist or is empty.");
@@ -72,7 +74,14 @@ export async function generateMetadata(
   const title = settings?.site_title || 'Velpro Telecom';
   const description = settings?.site_description || 'Internet ultrarrápida para tudo que importa.';
   const ogImage = settings?.og_image_url || null;
-  const faviconUrl = settings?.favicon_url || '/favicon.ico';
+  
+  // Cache busting para o favicon
+  let faviconUrl = settings?.favicon_url || '/favicon.ico';
+  if (settings?.favicon_url && settings.updated_at) {
+    const version = new Date(settings.updated_at).getTime();
+    faviconUrl = `${settings.favicon_url}?v=${version}`;
+  }
+
 
   return {
     title: {
@@ -152,7 +161,7 @@ function TrackingScripts({
 
 export default async function RootLayout({
   children,
-}: Readonly<{ children: React.Node }>) {
+}: Readonly<{ children: React.ReactNode }>) {
   const allTags = await getTrackingTags();
   
   const headScripts = allTags.filter(t => t.placement === 'head_start');
