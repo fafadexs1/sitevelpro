@@ -6,6 +6,8 @@ import { ChevronRight, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
+import Link from "next/link";
+import { Button } from "../ui/button";
 
 type Channel = {
   id: string;
@@ -50,13 +52,14 @@ export function TvSection() {
             canais para toda a família. Filmes, séries, esportes e muito mais,
             tudo em alta definição.
           </p>
-          <a
-            id="tv-cta-pacotes"
-            href="#planos"
-            className="mt-8 inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 font-medium text-primary-foreground shadow-lg shadow-primary/20 transition-colors hover:bg-primary/90"
-          >
-            Conhecer pacotes de TV <ChevronRight className="h-4 w-4" />
-          </a>
+          <Button asChild id="tv-cta-pacotes" className="mt-8">
+            <Link
+              href="/tv"
+              className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 font-medium text-primary-foreground shadow-lg shadow-primary/20 transition-colors hover:bg-primary/90"
+            >
+              Conhecer pacotes de TV <ChevronRight className="h-4 w-4" />
+            </Link>
+          </Button>
         </div>
 
         <div className="relative">
