@@ -28,12 +28,31 @@ type TrackingTag = {
 
 // --- Data loaders (server) ---
 async function getSeoSettings() {
+  console.log('[LOG] Iniciando busca por configurações de SEO...');
   try {
     const supabase = createClient();
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('seo_settings')
       .select('site_title, site_description, og_image_url, favicon_url, updated_at')
       .single();
+
+    if (error && error.code !== 'PGRST116') { // PGRST116: no rows found
+        console.error('[LOG] Erro ao buscar SEO settings do Supabase:', error);
+        return null;
+    }
+
+    if (!data) {
+        console.warn('[LOG] Nenhuma configuração de SEO encontrada no banco de dados.');
+        return null;
+    }
+
+    console.log('[LOG] Configurações de SEO encontradas:', { 
+      site_title: data.site_title, 
+      og_image_url: data.og_image_url,
+      favicon_url: data.favicon_url,
+      updated_at: data.updated_at 
+    });
+
     return data as {
       site_title?: string | null;
       site_description?: string | null;
@@ -41,8 +60,8 @@ async function getSeoSettings() {
       favicon_url?: string | null;
       updated_at?: string | null;
     } | null;
-  } catch {
-    console.error("Could not fetch SEO settings, maybe the table does not exist or is empty.");
+  } catch(e) {
+    console.error("[LOG] Exceção crítica na função getSeoSettings:", e);
     return null;
   }
 }
@@ -150,14 +169,21 @@ function TrackingScripts({
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  console.log('[LOG] Renderizando RootLayout...');
   const allTags = await getTrackingTags();
   const settings = await getSeoSettings();
+  console.log('[LOG] Configurações recebidas pelo RootLayout:', settings);
 
   const headScripts = allTags.filter(t => t.placement === 'head_start');
   const bodyStartNoScripts = allTags.filter(t => t.placement === 'body_start');
   const bodyEndScripts = allTags.filter(t => t.placement === 'body_end');
 
-  const faviconUrl = settings?.favicon_url ? `${settings.favicon_url}?v=${new Date(settings.updated_at ?? Date.now()).getTime()}` : "/favicon.png";
+  // Construção da URL do Favicon com cache-busting
+  const faviconUrl = settings?.favicon_url 
+    ? `${settings.favicon_url}?v=${new Date(settings.updated_at ?? Date.now()).getTime()}` 
+    : "/favicon.png"; // Fallback para um ícone padrão
+
+  console.log(`[LOG] URL final do favicon a ser renderizada: ${faviconUrl}`);
 
   return (
     <html lang="en" className={`${inter.variable} dark`} suppressHydrationWarning>
