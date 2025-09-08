@@ -17,7 +17,7 @@ export function Footer() {
         <p>© {year || new Date().getFullYear()} Velpro Telecom — Todos os direitos reservados.</p>
         <div className="flex items-center gap-5">
           <Link href="/politica-de-privacidade" className="transition-colors hover:text-white">Privacidade</Link>
-          <a href="#" className="transition-colors hover:text-white">Termos</a>
+          <Link href="/termos-de-uso" className="transition-colors hover:text-white">Termos</Link>
           <a href="#" className="transition-colors hover:text-white">Status da rede</a>
         </div>
       </div>
