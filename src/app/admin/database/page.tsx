@@ -165,24 +165,25 @@ using ( auth.uid() = owner_id );
 
 
 -- Políticas de acesso para o bucket 'site-assets'
-create policy "Public read access for site assets"
-on storage.objects for select
-using ( bucket_id = 'site-assets' );
+-- Remove as políticas antigas se existirem
+DROP POLICY IF EXISTS "Public read access for site assets" ON storage.objects;
+DROP POLICY IF EXISTS "Allow authenticated uploads for site assets" ON storage.objects;
+DROP POLICY IF EXISTS "Allow authenticated updates for site assets" ON storage.objects;
+DROP POLICY IF EXISTS "Allow authenticated deletes for site assets" ON storage.objects;
 
-create policy "Allow authenticated uploads for site assets"
-on storage.objects for insert
-to authenticated
-with check ( bucket_id = 'site-assets' );
+-- Permite acesso total para usuários autenticados ao bucket 'site-assets'
+CREATE POLICY "Authenticated access for site assets"
+ON storage.objects
+FOR ALL
+TO authenticated
+USING (bucket_id = 'site-assets')
+WITH CHECK (bucket_id = 'site-assets');
 
-create policy "Allow authenticated updates for site assets"
-on storage.objects for update
-to authenticated
-using ( auth.uid() = owner_id );
-
-create policy "Allow authenticated deletes for site assets"
-on storage.objects for delete
-to authenticated
-using ( auth.uid() = owner_id );
+-- Permite leitura pública para o bucket 'site-assets'
+CREATE POLICY "Public read access for site assets"
+ON storage.objects
+FOR SELECT
+USING (bucket_id = 'site-assets');
     `.trim();
 
     const handleCopy = () => {
