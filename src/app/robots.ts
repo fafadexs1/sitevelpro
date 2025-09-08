@@ -1,3 +1,4 @@
+
 import { createClient } from '@/utils/supabase/server';
 import { MetadataRoute } from 'next';
 import { cookies } from 'next/headers';
