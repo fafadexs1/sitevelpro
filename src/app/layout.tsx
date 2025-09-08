@@ -30,7 +30,7 @@ async function getSeoSettings() {
     const { data } = await supabase
       .from('seo_settings')
       .select('site_title, site_description, og_image_url, updated_at')
-      .single({ cache: 'no-store' });
+      .single();
     return data as {
       site_title?: string | null;
       site_description?: string | null;
@@ -155,7 +155,7 @@ export default async function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} dark`} suppressHydrationWarning>
       <head>
-        <link rel="icon" type="image/png" href="https://bqxdyinyzfxqghyuzsbs.supabase.co/storage/v1/object/public/site-assets/favicon.png" />
+        <link rel="icon" type="image/png" href="/favicon.png" />
         <Script id="google-consent-mode" strategy="beforeInteractive">
           {`
             window.dataLayer = window.dataLayer || [];
