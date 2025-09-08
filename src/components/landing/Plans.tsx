@@ -89,6 +89,7 @@ export function Plans() {
 
   const PlanCard = ({ plan, index }: { plan: Plan, index: number }) => {
     const slug = `${plan.type}-${plan.speed.replace(/\s+/g, '-').toLowerCase()}`;
+    const planName = `${plan.speed} MEGA`;
 
     return (
       <motion.div
@@ -144,7 +145,12 @@ export function Plans() {
         </div>
         <Popover>
             <PopoverTrigger asChild>
-                <Button id={`plan-cta-assinar-${slug}`} className="mt-auto w-full">
+                <Button id={`plan-cta-assinar-${slug}`} className="mt-auto w-full"
+                    data-track-event="cta_click"
+                    data-track-prop-button-id={`assinar-plano-${slug}`}
+                    data-track-prop-plan-name={planName}
+                    data-track-prop-plan-price={plan.price}
+                >
                     Assinar <ChevronRight className="h-4 w-4" />
                 </Button>
             </PopoverTrigger>

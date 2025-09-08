@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { motion } from "framer-motion";
@@ -32,6 +33,8 @@ export function Hero() {
             <a
               id="hero-cta-cobertura"
               href="#cobertura"
+              data-track-event="cta_click"
+              data-track-prop-button-id="consultar-cobertura-hero"
               className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 font-medium text-neutral-950 transition-colors hover:bg-white/90"
             >
               Consultar cobertura <MapPin className="h-4 w-4" />
@@ -39,6 +42,8 @@ export function Hero() {
             <a
               id="hero-cta-planos"
               href="#planos"
+              data-track-event="cta_click"
+              data-track-prop-button-id="ver-planos-hero"
               className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-5 py-3 font-medium text-white transition-colors hover:bg-white/5"
             >
               Ver planos <ChevronRight className="h-4 w-4" />

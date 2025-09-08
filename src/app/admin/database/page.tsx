@@ -138,6 +138,17 @@ create table if not exists visits (
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
+-- Cria a tabela de eventos para estatísticas
+create table if not exists events (
+    id uuid default gen_random_uuid() primary key,
+    visitor_id text not null,
+    pathname text not null,
+    name text not null, -- ex: 'cta_click'
+    properties jsonb,
+    created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+
 -- Cria o bucket 'canais' se ele não existir
 -- As políticas RLS garantem que ele seja público
 insert into storage.buckets (id, name, public)

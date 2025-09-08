@@ -44,6 +44,8 @@ export function Header() {
           <Link
             id="header-cta-cliente"
             href="/cliente"
+            data-track-event="cta_click"
+            data-track-prop-button-id="area-cliente-header"
             className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2 font-medium text-white transition-colors hover:bg-white/5"
           >
             <User className="h-4 w-4" /> Área do Cliente
@@ -51,6 +53,8 @@ export function Header() {
           <a
             id="header-cta-assine"
             href="#planos"
+            data-track-event="cta_click"
+            data-track-prop-button-id="assine-ja-header"
             className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 font-medium text-primary-foreground shadow-lg shadow-primary/20 transition-colors hover:bg-primary/90"
           >
             Assine já <ChevronRight className="h-4 w-4" />
@@ -86,6 +90,8 @@ export function Header() {
               id="mobile-header-cta-cliente"
               href="/cliente"
               onClick={() => setMobileOpen(false)}
+              data-track-event="cta_click"
+              data-track-prop-button-id="area-cliente-mobile"
               className="mt-1 inline-flex items-center justify-center gap-2 rounded-lg border border-white/10 px-3 py-2"
             >
               <User className="h-4 w-4" /> Área do Cliente
@@ -94,6 +100,8 @@ export function Header() {
               id="mobile-header-cta-assine"
               href="#planos"
               onClick={() => setMobileOpen(false)}
+              data-track-event="cta_click"
+              data-track-prop-button-id="assine-ja-mobile"
               className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-3 py-2 font-medium text-primary-foreground"
             >
               Assine já <ChevronRight className="h-4 w-4" />

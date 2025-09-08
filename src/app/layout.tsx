@@ -1,4 +1,5 @@
 
+
 // app/layout.tsx
 import type { Metadata, ResolvingMetadata } from 'next';
 import './globals.css';
@@ -12,6 +13,7 @@ import Script from 'next/script';
 import { cookies } from 'next/headers';
 import { ConsentBanner } from '@/components/analytics/ConsentBanner';
 import { VisitTracker } from '@/components/analytics/VisitTracker';
+import { EventTracker } from '@/components/analytics/EventTracker';
 
 export const revalidate = 0;
 
@@ -215,6 +217,7 @@ export default async function RootLayout({
         <TrackingNoScript tags={bodyStartNoScripts} />
         
         <VisitTracker />
+        <EventTracker />
         <ConversionTracker />
         <CanvasBackground />
 

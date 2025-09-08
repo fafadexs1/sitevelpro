@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { createClient } from '@/utils/supabase/client';
-import { BarChart, Users, Repeat, UserPlus, Loader2, File, Eye } from 'lucide-react';
+import { BarChart, Users, Repeat, UserPlus, Loader2, File, Eye, MousePointerClick } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
@@ -33,6 +33,16 @@ type DailyVisits = {
     visits: number;
 };
 
+type Event = {
+    name: string;
+    properties: Record<string, any>;
+};
+
+type CtaClick = {
+    name: string;
+    count: number;
+};
+
 export default function StatisticsPage() {
     const [loading, setLoading] = useState(true);
     const [totalVisits, setTotalVisits] = useState(0);
@@ -41,45 +51,53 @@ export default function StatisticsPage() {
     const [topPages, setTopPages] = useState<PageVisit[]>([]);
     const [recurringVisitors, setRecurringVisitors] = useState<RecurringVisitor[]>([]);
     const [dailyVisits, setDailyVisits] = useState<DailyVisits[]>([]);
+    const [planClicks, setPlanClicks] = useState<CtaClick[]>([]);
+    const [otherClicks, setOtherClicks] = useState<CtaClick[]>([]);
 
     useEffect(() => {
         async function fetchData() {
             setLoading(true);
             const supabase = createClient();
-
-            // Fetch all visits in the last 30 days
             const thirtyDaysAgo = subDays(new Date(), 30).toISOString();
-            const { data: visits, error } = await supabase
+
+            // Fetch visits
+            const { data: visits, error: visitsError } = await supabase
                 .from('visits')
                 .select('visitor_id, pathname, is_new_visitor, created_at')
                 .gte('created_at', thirtyDaysAgo);
 
-            if (error) {
-                console.error("Error fetching stats:", error);
+            if (visitsError) {
+                console.error("Error fetching visits:", visitsError);
                 setLoading(false);
                 return;
             }
+            
+            // Fetch events
+            const { data: events, error: eventsError } = await supabase
+                .from('events')
+                .select('name, properties')
+                .eq('name', 'cta_click')
+                .gte('created_at', thirtyDaysAgo);
+                
+            if (eventsError) {
+                console.error("Error fetching events:", eventsError);
+            }
 
-            // Calculate KPIs
+
+            // --- Process Visits Data ---
             setTotalVisits(visits.length);
             const uniqueVisitorIds = new Set(visits.map(v => v.visitor_id));
             setUniqueVisitors(uniqueVisitorIds.size);
             const newVisitorCount = new Set(visits.filter(v => v.is_new_visitor).map(v => v.visitor_id)).size;
             setNewVisitors(newVisitorCount);
 
-            // Calculate Top Pages
             const pageCounts = visits.reduce((acc, visit) => {
                 acc[visit.pathname] = (acc[visit.pathname] || 0) + 1;
                 return acc;
             }, {} as Record<string, number>);
-            
-            const sortedPages = Object.entries(pageCounts)
-                .map(([pathname, visit_count]) => ({ pathname, visit_count }))
-                .sort((a, b) => b.visit_count - a.visit_count)
-                .slice(0, 5);
+            const sortedPages = Object.entries(pageCounts).map(([pathname, visit_count]) => ({ pathname, visit_count })).sort((a, b) => b.visit_count - a.visit_count).slice(0, 5);
             setTopPages(sortedPages);
             
-            // Calculate Daily Visits for Chart
             const dailyCounts: Record<string, number> = {};
             for (let i = 29; i >= 0; i--) {
                 const date = format(subDays(new Date(), i), 'yyyy-MM-dd');
@@ -94,8 +112,6 @@ export default function StatisticsPage() {
             const chartData = Object.entries(dailyCounts).map(([date, visits]) => ({ date, visits }));
             setDailyVisits(chartData);
 
-
-            // Calculate Recurring Visitors
             const visitorData: Record<string, { count: number; last_visit: string }> = {};
             visits.forEach(visit => {
                 if (!visitorData[visit.visitor_id]) {
@@ -106,12 +122,31 @@ export default function StatisticsPage() {
                     visitorData[visit.visitor_id].last_visit = visit.created_at;
                 }
             });
-            const recurring = Object.entries(visitorData)
-                .filter(([, data]) => data.count > 1)
-                .map(([visitor_id, data]) => ({ visitor_id, visit_count: data.count, last_visit: data.last_visit }))
-                .sort((a, b) => b.visit_count - a.visit_count)
-                .slice(0, 5);
+            const recurring = Object.entries(visitorData).filter(([, data]) => data.count > 1).map(([visitor_id, data]) => ({ visitor_id, visit_count: data.count, last_visit: data.last_visit })).sort((a, b) => b.visit_count - a.visit_count).slice(0, 5);
             setRecurringVisitors(recurring);
+            
+            // --- Process Events Data ---
+            if (events) {
+                const planClickCounts = events
+                    .filter(e => e.properties.plan_name)
+                    .reduce((acc, e) => {
+                        const planKey = `${e.properties.plan_name}`;
+                        acc[planKey] = (acc[planKey] || 0) + 1;
+                        return acc;
+                    }, {} as Record<string, number>);
+
+                const otherClickCounts = events
+                    .filter(e => e.properties.button_id)
+                    .reduce((acc, e) => {
+                        const buttonKey = e.properties.button_id;
+                        acc[buttonKey] = (acc[buttonKey] || 0) + 1;
+                        return acc;
+                    }, {} as Record<string, number>);
+
+                setPlanClicks(Object.entries(planClickCounts).map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count));
+                setOtherClicks(Object.entries(otherClickCounts).map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count));
+            }
+
 
             setLoading(false);
         }
@@ -273,6 +308,46 @@ export default function StatisticsPage() {
                     </CardContent>
                 </Card>
             </div>
+            
+            <div className="grid gap-8 md:grid-cols-2 mt-8">
+                 <Card className="border-white/10 bg-neutral-900/60">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><MousePointerClick className="text-primary"/>Cliques nos Planos</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <Table>
+                            <TableHeader><TableRow className="border-white/10 hover:bg-transparent"><TableHead>Plano</TableHead><TableHead className="text-right">Cliques</TableHead></TableRow></TableHeader>
+                            <TableBody>
+                                {planClicks.map(click => (
+                                    <TableRow key={click.name} className="border-white/10">
+                                        <TableCell className="font-medium">{click.name}</TableCell>
+                                        <TableCell className="text-right font-medium">{click.count}</TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </CardContent>
+                </Card>
+                 <Card className="border-white/10 bg-neutral-900/60">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><MousePointerClick className="text-primary"/>Cliques em outros CTAs</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <Table>
+                            <TableHeader><TableRow className="border-white/10 hover:bg-transparent"><TableHead>Botão</TableHead><TableHead className="text-right">Cliques</TableHead></TableRow></TableHeader>
+                            <TableBody>
+                                {otherClicks.map(click => (
+                                     <TableRow key={click.name} className="border-white/10">
+                                        <TableCell className="font-medium">{click.name}</TableCell>
+                                        <TableCell className="text-right font-medium">{click.count}</TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </CardContent>
+                </Card>
+            </div>
+
         </>
     );
 }
