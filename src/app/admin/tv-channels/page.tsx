@@ -2,7 +2,7 @@
 
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useForm } from "react-hook-form";
@@ -13,6 +13,7 @@ import {
   Edit,
   Loader2,
   Clapperboard,
+  Star,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -66,6 +67,7 @@ type TvChannel = {
   name: string;
   description: string | null;
   logo_url: string;
+  is_featured: boolean;
   created_at: string;
 }
 
@@ -433,6 +435,7 @@ export default function TvChannelsPage() {
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [editingChannel, setEditingChannel] = useState<TvChannel | null>(null);
 
+    const featuredCount = useMemo(() => channels.filter(c => c.is_featured).length, [channels]);
 
     const getChannels = async () => {
         setLoading(true);
@@ -448,12 +451,11 @@ export default function TvChannelsPage() {
 
     useEffect(() => {
         getChannels();
-    }, [toast]);
+    }, []);
 
     const handleDeleteChannel = async (channelId: string, logoUrl: string) => {
         const supabase = createClient();
 
-        // 1. Deletar do Storage, se houver logo
         if (logoUrl) {
             const filePath = new URL(logoUrl).pathname.split('/canais/').pop();
             if(filePath) {
@@ -465,14 +467,36 @@ export default function TvChannelsPage() {
             }
         }
         
-        // 2. Deletar do banco de dados
         const { error: dbError } = await supabase.from('tv_channels').delete().eq('id', channelId);
         
         if (dbError) {
              toast({ variant: 'destructive', title: 'Erro de Banco de Dados', description: `Não foi possível deletar o canal: ${dbError.message}` });
         } else {
             toast({ title: 'Sucesso', description: 'Canal deletado com sucesso.' });
-            getChannels(); // Refresh
+            getChannels();
+        }
+    };
+    
+    const handleToggleFeatured = async (channel: TvChannel) => {
+        if (!channel.is_featured && featuredCount >= 10) {
+            toast({
+                variant: 'destructive',
+                title: 'Limite Atingido',
+                description: 'Você só pode ter 10 canais em destaque. Desmarque um para adicionar outro.',
+            });
+            return;
+        }
+
+        const supabase = createClient();
+        const { error } = await supabase
+            .from('tv_channels')
+            .update({ is_featured: !channel.is_featured })
+            .eq('id', channel.id);
+
+        if (error) {
+            toast({ variant: 'destructive', title: 'Erro', description: 'Não foi possível atualizar o canal.' });
+        } else {
+            getChannels();
         }
     };
 
@@ -486,7 +510,7 @@ export default function TvChannelsPage() {
             <header className="mb-8 flex items-center justify-between">
                 <div>
                     <h1 className="text-3xl font-bold">Canais de TV</h1>
-                    <p className="text-white/60">Gerencie os canais disponíveis para os pacotes.</p>
+                    <p className="text-white/60">Gerencie os canais e marque até 10 como destaque para a página inicial.</p>
                 </div>
                 <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
                     <DialogTrigger asChild>
@@ -524,6 +548,7 @@ export default function TvChannelsPage() {
                     <Table>
                         <TableHeader>
                             <TableRow className="border-white/10 hover:bg-transparent">
+                                <TableHead className="w-16 text-center">Destaque</TableHead>
                                 <TableHead className="w-20">Logo</TableHead>
                                 <TableHead>Nome</TableHead>
                                 <TableHead>Descrição</TableHead>
@@ -533,6 +558,17 @@ export default function TvChannelsPage() {
                         <TableBody>
                             {channels.map((channel) => (
                                 <TableRow key={channel.id} className="border-white/10">
+                                     <TableCell className="text-center">
+                                        <Button
+                                            id={`feature-channel-button-${channel.id}`}
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => handleToggleFeatured(channel)}
+                                            className="mx-auto"
+                                        >
+                                            <Star className={`h-5 w-5 transition-colors ${channel.is_featured ? 'text-yellow-400 fill-yellow-400' : 'text-white/50 hover:text-yellow-400'}`}/>
+                                        </Button>
+                                    </TableCell>
                                     <TableCell>
                                         {channel.logo_url ? (
                                             <Image src={channel.logo_url} alt={channel.name} width={40} height={40} className="rounded-md bg-white/10 p-1 object-contain"/>
@@ -572,7 +608,7 @@ export default function TvChannelsPage() {
                             ))}
                              {channels.length === 0 && (
                                 <TableRow>
-                                    <TableCell colSpan={4} className="text-center text-white/60 py-8">Nenhum canal encontrado.</TableCell>
+                                    <TableCell colSpan={5} className="text-center text-white/60 py-8">Nenhum canal encontrado.</TableCell>
                                 </TableRow>
                             )}
                         </TableBody>

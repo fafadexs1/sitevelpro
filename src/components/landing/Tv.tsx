@@ -24,11 +24,12 @@ export function TvSection() {
       const { data, error } = await supabase
         .from("tv_channels")
         .select("id, name, logo_url")
+        .eq("is_featured", true)
         .order("name")
-        .limit(12);
+        .limit(10);
 
       if (error) {
-        console.error("Error fetching channels:", error);
+        console.error("Error fetching featured channels:", error);
       } else {
         setChannels(data);
       }

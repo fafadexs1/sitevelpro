@@ -55,6 +55,7 @@ create table if not exists tv_channels (
     name text not null,
     description text,
     logo_url text,
+    is_featured boolean default false not null,
     created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
