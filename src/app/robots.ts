@@ -3,6 +3,15 @@ import { createClient } from '@/utils/supabase/server';
 import { MetadataRoute } from 'next';
 import { cookies } from 'next/headers';
 
+async function getSiteUrl(): Promise<string> {
+    let siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+    if (siteUrl) {
+        return siteUrl.endsWith('/') ? siteUrl.slice(0, -1) : siteUrl;
+    }
+    // Fallback se a variável de ambiente não estiver definida
+    return 'http://localhost:3000';
+}
+
 export default async function robots(): Promise<MetadataRoute.Robots> {
   // A chamada a cookies() força a renderização dinâmica, desabilitando o cache.
   cookies();
@@ -23,7 +32,7 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
     };
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+  const siteUrl = await getSiteUrl();
 
   return {
     rules: {
@@ -33,3 +42,4 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
     sitemap: `${siteUrl}/sitemap.xml`,
   };
 }
+
