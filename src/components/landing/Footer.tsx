@@ -18,7 +18,7 @@ export function Footer() {
         <div className="flex items-center gap-5">
           <Link href="/politica-de-privacidade" className="transition-colors hover:text-white">Privacidade</Link>
           <Link href="/termos-de-uso" className="transition-colors hover:text-white">Termos</Link>
-          <a href="#" className="transition-colors hover:text-white">Status da rede</a>
+          <Link href="/status" className="transition-colors hover:text-white">Status da rede</Link>
         </div>
       </div>
     </footer>
