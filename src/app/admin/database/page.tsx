@@ -165,13 +165,14 @@ using ( auth.uid() = owner_id );
 
 
 -- Políticas de acesso para o bucket 'site-assets'
--- Remove as políticas antigas se existirem
+-- Remove as políticas antigas se existirem para evitar conflitos
+DROP POLICY IF EXISTS "Authenticated access for site assets" ON storage.objects;
 DROP POLICY IF EXISTS "Public read access for site assets" ON storage.objects;
 DROP POLICY IF EXISTS "Allow authenticated uploads for site assets" ON storage.objects;
 DROP POLICY IF EXISTS "Allow authenticated updates for site assets" ON storage.objects;
 DROP POLICY IF EXISTS "Allow authenticated deletes for site assets" ON storage.objects;
 
--- Permite acesso total para usuários autenticados ao bucket 'site-assets'
+-- Permite acesso total (leitura, escrita, etc.) para usuários autenticados ao bucket 'site-assets'
 CREATE POLICY "Authenticated access for site assets"
 ON storage.objects
 FOR ALL
@@ -179,7 +180,7 @@ TO authenticated
 USING (bucket_id = 'site-assets')
 WITH CHECK (bucket_id = 'site-assets');
 
--- Permite leitura pública para o bucket 'site-assets'
+-- Permite que qualquer pessoa (público) leia os arquivos do bucket 'site-assets'
 CREATE POLICY "Public read access for site assets"
 ON storage.objects
 FOR SELECT
