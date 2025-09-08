@@ -181,14 +181,18 @@ export default async function RootLayout({
   // Construção da URL do Favicon com cache-busting
   const faviconUrl = settings?.favicon_url 
     ? `${settings.favicon_url}?v=${new Date(settings.updated_at ?? Date.now()).getTime()}` 
-    : "/favicon.png"; // Fallback para um ícone padrão
+    : null; // Se não houver favicon no DB, não renderiza nada.
 
-  console.log(`[LOG] URL final do favicon a ser renderizada: ${faviconUrl}`);
+  if(faviconUrl) {
+    console.log(`[LOG] URL final do favicon a ser renderizada: ${faviconUrl}`);
+  } else {
+    console.warn(`[LOG] Nenhum favicon_url encontrado nas configurações. A tag de ícone não será renderizada.`);
+  }
 
   return (
     <html lang="en" className={`${inter.variable} dark`} suppressHydrationWarning>
       <head>
-        <link rel="icon" href={faviconUrl} type="image/png" />
+        {faviconUrl && <link rel="icon" href={faviconUrl} type="image/png" />}
         <Script id="google-consent-mode" strategy="beforeInteractive">
           {`
             window.dataLayer = window.dataLayer || [];
