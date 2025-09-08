@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Gauge, Check, ChevronRight, Loader2, Wifi, Upload, Download, Tv, Smartphone, ShieldCheck, Zap, Rocket, Home } from "lucide-react";
+import { Gauge, Check, ChevronRight, Loader2, Wifi, Upload, Download, Tv, Smartphone, ShieldCheck, Zap, Rocket, Home, MessageSquare, Globe } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import Link from 'next/link';
 import {
@@ -16,6 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ChannelLogos } from "./ChannelLogos";
 import { createClient } from "@/utils/supabase/client";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 type Plan = {
   id: string;
@@ -141,15 +142,29 @@ export function Plans() {
             })}
           </ul>
         </div>
-        <Button
-          id={`plan-cta-assinar-${slug}`}
-          asChild
-          className="mt-auto w-full"
-        >
-          <Link href="/assinar">
-            Assinar <ChevronRight className="h-4 w-4" />
-          </Link>
-        </Button>
+        <Popover>
+            <PopoverTrigger asChild>
+                <Button id={`plan-cta-assinar-${slug}`} className="mt-auto w-full">
+                    Assinar <ChevronRight className="h-4 w-4" />
+                </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-56 p-2 bg-neutral-900 border-white/10 text-white">
+                <div className="grid gap-2">
+                    <Button variant="ghost" className="justify-start" asChild>
+                        <Link href="/assinar">
+                            <Globe className="mr-2 h-4 w-4"/>
+                            Continuar pelo site
+                        </Link>
+                    </Button>
+                     <Button variant="ghost" className="justify-start" asChild>
+                        <Link href="https://wa.me/5500000000000" target="_blank">
+                            <MessageSquare className="mr-2 h-4 w-4"/>
+                            Falar no WhatsApp
+                        </Link>
+                    </Button>
+                </div>
+            </PopoverContent>
+        </Popover>
       </motion.div>
     )
   };
