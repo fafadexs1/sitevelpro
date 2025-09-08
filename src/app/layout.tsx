@@ -26,18 +26,15 @@ type TrackingTag = {
 // --- Data loaders (server) ---
 async function getSeoSettings() {
   try {
-    // A chamada a cookies() força a renderização dinâmica, desabilitando o cache.
-    cookies(); 
     const supabase = createClient();
     const { data } = await supabase
       .from('seo_settings')
-      .select('site_title, site_description, og_image_url, favicon_url, updated_at')
-      .single();
+      .select('site_title, site_description, og_image_url, updated_at')
+      .single({ cache: 'no-store' });
     return data as {
       site_title?: string | null;
       site_description?: string | null;
       og_image_url?: string | null;
-      favicon_url?: string | null;
       updated_at?: string | null;
     } | null;
   } catch {
@@ -48,7 +45,6 @@ async function getSeoSettings() {
 
 async function getTrackingTags(): Promise<TrackingTag[]> {
   try {
-    // A chamada a cookies() força a renderização dinâmica, desabilitando o cache.
     cookies();
     const supabase = createClient();
     const { data } = await supabase
@@ -73,14 +69,6 @@ export async function generateMetadata(
   const title = settings?.site_title || 'Velpro Telecom';
   const description = settings?.site_description || 'Internet ultrarrápida para tudo que importa.';
   const ogImage = settings?.og_image_url || null;
-  
-  // Cache busting para o favicon
-  let faviconUrl = settings?.favicon_url || '/favicon.ico';
-  if (settings?.favicon_url && settings.updated_at) {
-    const version = new Date(settings.updated_at).getTime();
-    faviconUrl = `${settings.favicon_url}?v=${version}`;
-  }
-
 
   return {
     title: {
@@ -88,9 +76,6 @@ export async function generateMetadata(
       template: `%s | ${title}`,
     },
     description,
-    icons: {
-      icon: faviconUrl,
-    },
     openGraph: {
       title,
       description,
@@ -170,6 +155,7 @@ export default async function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} dark`} suppressHydrationWarning>
       <head>
+        <link rel="icon" type="image/png" href="https://bqxdyinyzfxqghyuzsbs.supabase.co/storage/v1/object/public/site-assets/favicon.png" />
         <Script id="google-consent-mode" strategy="beforeInteractive">
           {`
             window.dataLayer = window.dataLayer || [];
