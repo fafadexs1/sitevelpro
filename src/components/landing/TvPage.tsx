@@ -4,10 +4,11 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { motion } from "framer-motion";
-import { Tv, Smartphone, Laptop, Clapperboard, ChevronRight, Loader2 } from "lucide-react";
+import { Tv, Smartphone, Laptop, Clapperboard, ChevronRight, Loader2, Computer, AlertTriangle } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "../ui/button";
+import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 
 type Channel = {
   id: string;
@@ -121,17 +122,84 @@ export function TvPage() {
                     ))}
                 </motion.div>
             )}
-
-             <div className="text-center mt-16">
-                <p className="text-white/70 mb-4">Gostou da nossa seleção? Escolha o plano ideal para você.</p>
-                <Button asChild size="lg">
-                    <Link href="/#planos">
-                        Ver Planos e Preços <ChevronRight />
-                    </Link>
-                </Button>
-            </div>
         </div>
       </div>
+       <div className="py-16 sm:py-24 border-t border-white/5">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <div className="mb-12 text-center">
+                    <h2 className="text-3xl font-bold">Dispositivos Compatíveis</h2>
+                    <p className="text-white/60 mt-2">Assista em suas telas favoritas, onde e quando quiser.</p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-sm">
+                    <div className="rounded-2xl border border-white/10 bg-neutral-900/60 p-6">
+                        <div className="flex items-center gap-3 mb-4">
+                            <Computer className="h-6 w-6 text-primary" />
+                            <h3 className="text-xl font-bold">Computador</h3>
+                        </div>
+                        <ul className="space-y-2 text-white/70">
+                            <li>Google Chrome</li>
+                            <li>Mozilla Firefox</li>
+                            <li>Microsoft Edge</li>
+                        </ul>
+                    </div>
+                    <div className="rounded-2xl border border-white/10 bg-neutral-900/60 p-6">
+                        <div className="flex items-center gap-3 mb-4">
+                            <Tv className="h-6 w-6 text-primary" />
+                            <h3 className="text-xl font-bold">TV</h3>
+                        </div>
+                        <ul className="space-y-2 text-white/70">
+                            <li>Amazon Fire TV</li>
+                            <li>Android TV</li>
+                            <li>Roku</li>
+                            <li>Chromecast</li>
+                            <li>
+                                LG (WebOS)
+                                <ul className="pl-4 text-xs text-white/50">
+                                    <li>Versão mínima WebOS: 4.5.0</li>
+                                    <li>Modelos: Série 7 em diante</li>
+                                </ul>
+                            </li>
+                            <li>
+                                Samsung (Tizen)
+                                <ul className="pl-4 text-xs text-white/50">
+                                    <li>Modelos: Série 7 em diante</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                    <div className="rounded-2xl border border-white/10 bg-neutral-900/60 p-6">
+                        <div className="flex items-center gap-3 mb-4">
+                            <Smartphone className="h-6 w-6 text-primary" />
+                            <h3 className="text-xl font-bold">Celulares e Tablets</h3>
+                        </div>
+                        <ul className="space-y-2 text-white/70">
+                            <li>Celulares e Tablets Android</li>
+                            <li>iPhone e iPad</li>
+                        </ul>
+                         <p className="text-xs text-white/50 mt-4">
+                            Certifique-se de que seus dispositivos e aplicativos estão atualizados para garantir a melhor experiência.
+                         </p>
+                    </div>
+                </div>
+
+                <Alert variant="default" className="mt-12 max-w-4xl mx-auto bg-yellow-400/5 border-yellow-400/20 text-yellow-200">
+                    <AlertTriangle className="h-4 w-4 !text-yellow-400" />
+                    <AlertTitle className="text-yellow-300">Dica de Performance</AlertTitle>
+                    <AlertDescription>
+                        Para a melhor experiência de TV, recomendamos conectar sua TV ou dispositivo de streaming diretamente ao roteador com um cabo de rede. Conexões Wi-Fi podem sofrer instabilidades e causar travamentos no sinal.
+                    </AlertDescription>
+                </Alert>
+            </div>
+        </div>
+
+      <div className="text-center py-16 sm:py-24 border-t border-white/5">
+        <p className="text-white/70 mb-4">Gostou da nossa seleção? Escolha o plano ideal para você.</p>
+        <Button asChild size="lg">
+            <Link href="/#planos">
+                Ver Planos e Preços <ChevronRight />
+            </Link>
+        </Button>
+    </div>
     </>
   );
 }
