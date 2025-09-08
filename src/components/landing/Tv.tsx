@@ -2,25 +2,41 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Loader2 } from "lucide-react";
 import Image from "next/image";
+import { useEffect, useState } from "react";
+import { createClient } from "@/utils/supabase/client";
 
-const channelLogos = [
-  { name: "HBO", src: "https://picsum.photos/id/1/100/60", dataAiHint: "hbo logo" },
-  { name: "Warner", src: "https://picsum.photos/id/2/100/60", dataAiHint: "warner logo" },
-  { name: "Sony", src: "https://picsum.photos/id/3/100/60", dataAiHint: "sony channel logo" },
-  { name: "AXN", src: "https://picsum.photos/id/4/100/60", dataAiHint: "axn logo" },
-  { name: "Cinemax", src: "https://picsum.photos/id/5/100/60", dataAiHint: "cinemax logo" },
-  { name: "Universal", src: "https://picsum.photos/id/6/100/60", dataAiHint: "universal channel logo" },
-  { name: "ESPN", src: "https://picsum.photos/id/7/100/60", dataAiHint: "espn logo" },
-  { name: "Discovery", src: "https://picsum.photos/id/8/100/60", dataAiHint: "discovery channel logo" },
-  { name: "History", src: "https://picsum.photos/id/9/100/60", dataAiHint: "history channel logo" },
-  { name: "Cartoon Network", src: "https://picsum.photos/id/10/100/60", dataAiHint: "cartoon network logo" },
-  { name: "Nickelodeon", src: "https://picsum.photos/id/11/100/60", dataAiHint: "nickelodeon logo" },
-  { name: "Gloob", src: "https://picsum.photos/id/12/100/60", dataAiHint: "gloob logo" },
-];
+type Channel = {
+  id: string;
+  name: string;
+  logo_url: string;
+};
 
 export function TvSection() {
+  const [channels, setChannels] = useState<Channel[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchChannels() {
+      const supabase = createClient();
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("tv_channels")
+        .select("id, name, logo_url")
+        .order("name")
+        .limit(12);
+
+      if (error) {
+        console.error("Error fetching channels:", error);
+      } else {
+        setChannels(data);
+      }
+      setLoading(false);
+    }
+    fetchChannels();
+  }, []);
+
   return (
     <section id="tv" className="border-t border-white/5 py-16 sm:py-24">
       <div className="mx-auto grid max-w-7xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
@@ -43,30 +59,41 @@ export function TvSection() {
         </div>
 
         <div className="relative">
-            <div className="grid grid-cols-3 gap-4 sm:grid-cols-4">
-                {channelLogos.map((channel, i) => (
-                    <motion.div
-                        key={channel.name}
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        whileInView={{ opacity: 1, scale: 1 }}
-                        viewport={{ once: true, amount: 0.5 }}
-                        transition={{ delay: i * 0.05, type: 'spring', stiffness: 100 }}
-                        className="aspect-video rounded-lg border border-white/10 bg-neutral-900/60 p-2 sm:p-4 flex items-center justify-center"
-                    >
-                        <Image
-                            src={channel.src}
-                            alt={channel.name}
-                            data-ai-hint={channel.dataAiHint}
-                            width={100}
-                            height={60}
-                            className="w-full h-auto object-contain"
-                        />
-                    </motion.div>
-                ))}
+          {loading ? (
+            <div className="flex h-64 items-center justify-center">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/50 to-transparent" />
+          ) : (
+            <>
+              <div className="grid grid-cols-3 gap-4 sm:grid-cols-4">
+                {channels.map((channel, i) => (
+                  <motion.div
+                    key={channel.id}
+                    title={channel.name}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true, amount: 0.5 }}
+                    transition={{
+                      delay: i * 0.05,
+                      type: "spring",
+                      stiffness: 100,
+                    }}
+                    className="flex aspect-video items-center justify-center rounded-lg border border-white/10 bg-neutral-900/60 p-2 sm:p-4"
+                  >
+                    <Image
+                      src={channel.logo_url}
+                      alt={channel.name}
+                      width={100}
+                      height={60}
+                      className="h-auto w-full object-contain"
+                    />
+                  </motion.div>
+                ))}
+              </div>
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/50 to-transparent" />
+            </>
+          )}
         </div>
-
       </div>
     </section>
   );
