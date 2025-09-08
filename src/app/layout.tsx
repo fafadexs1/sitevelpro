@@ -1,3 +1,4 @@
+
 // app/layout.tsx
 import type { Metadata, ResolvingMetadata } from 'next';
 import './globals.css';
@@ -10,6 +11,8 @@ import React from 'react';
 import Script from 'next/script';
 import { cookies } from 'next/headers';
 import { ConsentBanner } from '@/components/analytics/ConsentBanner';
+
+export const revalidate = 0;
 
 const inter = Inter({
   subsets: ['latin'],
@@ -29,12 +32,13 @@ async function getSeoSettings() {
     const supabase = createClient();
     const { data } = await supabase
       .from('seo_settings')
-      .select('site_title, site_description, og_image_url, updated_at')
+      .select('site_title, site_description, og_image_url, favicon_url, updated_at')
       .single();
     return data as {
       site_title?: string | null;
       site_description?: string | null;
       og_image_url?: string | null;
+      favicon_url?: string | null;
       updated_at?: string | null;
     } | null;
   } catch {
@@ -69,7 +73,7 @@ export async function generateMetadata(
   const title = settings?.site_title || 'Velpro Telecom';
   const description = settings?.site_description || 'Internet ultrarrápida para tudo que importa.';
   const ogImage = settings?.og_image_url || null;
-
+  
   return {
     title: {
       default: title,
@@ -147,15 +151,18 @@ export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const allTags = await getTrackingTags();
-  
+  const settings = await getSeoSettings();
+
   const headScripts = allTags.filter(t => t.placement === 'head_start');
   const bodyStartNoScripts = allTags.filter(t => t.placement === 'body_start');
   const bodyEndScripts = allTags.filter(t => t.placement === 'body_end');
 
+  const faviconUrl = settings?.favicon_url ? `${settings.favicon_url}?v=${new Date(settings.updated_at ?? Date.now()).getTime()}` : "/favicon.png";
+
   return (
     <html lang="en" className={`${inter.variable} dark`} suppressHydrationWarning>
       <head>
-        <link rel="icon" type="image/png" href="/favicon.png" />
+        <link rel="icon" href={faviconUrl} type="image/png" />
         <Script id="google-consent-mode" strategy="beforeInteractive">
           {`
             window.dataLayer = window.dataLayer || [];
