@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
@@ -14,6 +15,7 @@ import {
   Edit,
   GripVertical,
   Search,
+  MessageSquare,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -68,6 +70,7 @@ import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Textarea } from "@/components/ui/textarea";
 
 
 // ==================================
@@ -83,6 +86,8 @@ type Plan = {
   highlight: boolean;
   has_tv: boolean;
   featured_channel_ids: string[] | null;
+  whatsapp_number: string | null;
+  whatsapp_message: string | null;
 };
 
 type TvChannel = {
@@ -110,6 +115,8 @@ const planSchema = z.object({
   highlight: z.boolean().default(false),
   has_tv: z.boolean().default(false),
   featured_channel_ids: z.array(z.string()).max(5, "Selecione no máximo 5 canais.").optional(),
+  whatsapp_number: z.string().optional().nullable(),
+  whatsapp_message: z.string().optional().nullable(),
 });
 
 type PlanFormData = z.infer<typeof planSchema>;
@@ -123,6 +130,8 @@ const defaultPlanValues = {
   highlight: false,
   has_tv: false,
   featured_channel_ids: [],
+  whatsapp_number: "",
+  whatsapp_message: "Olá, gostaria de saber mais sobre o plano de {{VELOCIDADE}} MEGA.",
 };
 
 
@@ -174,7 +183,9 @@ const PlanForm = ({
             price: plan.price ?? 0,
             original_price: plan.original_price ?? undefined,
             features: fromDbToForm(plan.features),
-            featured_channel_ids: plan.featured_channel_ids ?? []
+            featured_channel_ids: plan.featured_channel_ids ?? [],
+            whatsapp_number: plan.whatsapp_number ?? '',
+            whatsapp_message: plan.whatsapp_message ?? defaultPlanValues.whatsapp_message,
           }
         : defaultPlanValues,
   });
@@ -218,7 +229,9 @@ const PlanForm = ({
       ...data,
       features: fromFormToDb(data.features),
       original_price: data.original_price || null,
-      featured_channel_ids: data.has_tv ? data.featured_channel_ids : []
+      featured_channel_ids: data.has_tv ? data.featured_channel_ids : [],
+      whatsapp_number: data.whatsapp_number || null,
+      whatsapp_message: data.whatsapp_message || null,
     };
 
     if (mode === "add") {
@@ -470,6 +483,37 @@ const PlanForm = ({
                     </motion.div>
                 </AnimatePresence>
               )}
+            </div>
+
+            <div className="!mt-6 space-y-4 border-t border-white/10 pt-4">
+                <h3 className="font-semibold flex items-center gap-2"><MessageSquare className="w-4 h-4 text-primary" /> Contato via WhatsApp</h3>
+                <FormField
+                    control={form.control}
+                    name="whatsapp_number"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Número do WhatsApp <span className="text-white/50">(Opcional)</span></FormLabel>
+                        <FormControl>
+                            <Input id="plan-whatsapp-number" placeholder="5561999998888" {...field} value={field.value ?? ''} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                 <FormField
+                    control={form.control}
+                    name="whatsapp_message"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Mensagem Padrão <span className="text-white/50">(Opcional)</span></FormLabel>
+                        <FormControl>
+                            <Textarea id="plan-whatsapp-message" {...field} value={field.value ?? ''} />
+                        </FormControl>
+                        <p className="text-xs text-white/60">Use {'{{VELOCIDADE}}'} para inserir a velocidade do plano na mensagem.</p>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
             </div>
           </div>
 

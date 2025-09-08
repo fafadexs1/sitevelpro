@@ -28,6 +28,8 @@ type Plan = {
   highlight: boolean;
   has_tv: boolean;
   featured_channel_ids: string[] | null;
+  whatsapp_number: string | null;
+  whatsapp_message: string | null;
 };
 
 // Mapeamento de nomes de ícones para componentes de ícone
@@ -90,6 +92,14 @@ export function Plans() {
   const PlanCard = ({ plan, index }: { plan: Plan, index: number }) => {
     const slug = `${plan.type}-${plan.speed.replace(/\s+/g, '-').toLowerCase()}`;
     const planName = `${plan.speed} MEGA`;
+    
+    const defaultWhatsappNumber = "5561999998888";
+    const defaultWhatsappMessage = `Olá, gostaria de saber mais sobre o plano de ${plan.speed} MEGA.`;
+
+    const whatsappNumber = plan.whatsapp_number || defaultWhatsappNumber;
+    const whatsappMessage = (plan.whatsapp_message || defaultWhatsappMessage).replace(/{{VELOCIDADE}}/g, plan.speed);
+    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`;
+
 
     return (
       <motion.div
@@ -163,7 +173,7 @@ export function Plans() {
                         </Link>
                     </Button>
                      <Button variant="ghost" className="justify-start" asChild>
-                        <Link href="https://wa.me/5500000000000" target="_blank">
+                        <Link href={whatsappUrl} target="_blank">
                             <MessageSquare className="mr-2 h-4 w-4"/>
                             Falar no WhatsApp
                         </Link>

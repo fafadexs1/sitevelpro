@@ -46,6 +46,8 @@ create table if not exists plans (
   highlight boolean default false,
   has_tv boolean default false,
   featured_channel_ids uuid[],
+  whatsapp_number text,
+  whatsapp_message text,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
