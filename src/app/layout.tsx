@@ -11,6 +11,7 @@ import React from 'react';
 import Script from 'next/script';
 import { cookies } from 'next/headers';
 import { ConsentBanner } from '@/components/analytics/ConsentBanner';
+import { VisitTracker } from '@/components/analytics/VisitTracker';
 
 export const revalidate = 0;
 
@@ -213,6 +214,7 @@ export default async function RootLayout({
       <body className="font-body antialiased" suppressHydrationWarning>
         <TrackingNoScript tags={bodyStartNoScripts} />
         
+        <VisitTracker />
         <ConversionTracker />
         <CanvasBackground />
 
