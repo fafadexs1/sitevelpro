@@ -25,6 +25,7 @@ import {
   Megaphone,
   BarChart2,
   Map,
+  Play,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -221,6 +222,7 @@ function AdminDashboard({
   };
 
   const navItems = [
+    { href: "/admin/hero-slides", label: "Slides do Herói", icon: Play },
     { href: "/admin", label: "Planos", icon: LayoutDashboard },
     { href: "/admin/tv-channels", label: "Canais de TV", icon: Clapperboard },
     { href: "/admin/tv-packages", label: "Pacotes de TV", icon: Tv },
@@ -249,7 +251,7 @@ function AdminDashboard({
           {navItems.map((item) => (
             <Button
               key={item.href}
-              id={`nav-link-${item.label.toLowerCase().replace(' ', '-')}`}
+              id={`nav-link-${item.label.toLowerCase().replace(/ /g, '-')}`}
               variant="ghost"
               asChild
               className={`justify-start gap-2 ${

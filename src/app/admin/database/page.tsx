@@ -35,6 +35,26 @@ returns table (
     ) as request;
 $$ language sql;
 
+-- Cria a tabela de slides do herói
+create table if not exists hero_slides (
+  id uuid default gen_random_uuid() primary key,
+  pre_title text,
+  title_regular text,
+  title_highlighted text,
+  subtitle text,
+  image_url text,
+  button_primary_text text,
+  button_primary_link text,
+  button_secondary_text text,
+  button_secondary_link text,
+  feature_1_text text,
+  feature_2_text text,
+  is_active boolean default true not null,
+  sort_order integer default 0,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+
 -- Cria a tabela de planos
 create table if not exists plans (
   id uuid default gen_random_uuid() primary key,
@@ -49,6 +69,8 @@ create table if not exists plans (
   whatsapp_number text,
   whatsapp_message text,
   conditions text,
+  upload_speed text,
+  download_speed text,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
@@ -171,6 +193,12 @@ insert into storage.buckets (id, name, public)
 values ('site-assets', 'site-assets', true)
 on conflict (id) do nothing;
 
+-- Cria o bucket 'hero-slides' se ele não existir
+insert into storage.buckets (id, name, public)
+values ('hero-slides', 'hero-slides', true)
+on conflict (id) do nothing;
+
+
 -- Políticas de acesso para o bucket 'canais'
 -- Permite leitura anônima de arquivos
 create policy "Public read access for logos"
@@ -217,6 +245,20 @@ CREATE POLICY "Public read access for site assets"
 ON storage.objects
 FOR SELECT
 USING (bucket_id = 'site-assets');
+
+-- Políticas de acesso para o bucket 'hero-slides'
+CREATE POLICY "Public read access for hero slides"
+ON storage.objects
+FOR SELECT
+USING (bucket_id = 'hero-slides');
+
+CREATE POLICY "Allow authenticated access for hero slides"
+ON storage.objects
+FOR ALL
+TO authenticated
+USING (bucket_id = 'hero-slides')
+WITH CHECK (bucket_id = 'hero-slides');
+
     `.trim();
 
     const handleCopy = () => {
