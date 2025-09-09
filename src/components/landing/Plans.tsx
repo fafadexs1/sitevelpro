@@ -169,7 +169,7 @@ export function Plans() {
                 <div className="inline-block h-1 w-12 bg-[#03bf03] rounded-full mt-2"/>
             </div>
 
-          <ul className="my-6 space-y-3 text-sm">
+          <ul className="my-6 space-y-3 text-sm flex flex-col items-center">
             {(plan.features ?? []).map((feature, i) => {
               const { Icon, text } = getFeatureIcon(feature);
               return (
