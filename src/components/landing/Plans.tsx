@@ -284,9 +284,9 @@ export function Plans() {
             </div>
         ) : isMobile ? (
           <Carousel opts={{ loop: false }} className="relative w-full">
-            <CarouselContent>
+            <CarouselContent className="-ml-4">
               {currentPlans.map((p, i) => (
-                <CarouselItem key={`${planType}-carousel-${i}`} className="basis-4/5">
+                <CarouselItem key={`${planType}-carousel-${i}`} className="basis-4/5 pl-4 pt-6">
                     <div className="p-1 h-full">
                       <PlanCard plan={p} index={i}/>
                     </div>
