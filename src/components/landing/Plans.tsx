@@ -16,7 +16,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { ChannelLogos } from "./ChannelLogos";
 import { createClient } from "@/utils/supabase/client";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 
 type Plan = {
@@ -72,13 +71,6 @@ export function Plans() {
 
   const currentPlans = allPlans.filter(p => p.type === planType);
 
-  const formatPrice = (value: number) => {
-    return value.toLocaleString("pt-BR", { style: 'currency', currency: 'BRL' });
-  }
-  const formatPriceAsNumber = (value: number) => {
-    return value.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-  }
-
   const getFeatureIcon = (feature: string) => {
     const parts = feature.split(':');
     const iconName = parts.length > 1 ? parts[0].trim().toLowerCase() : 'check';
@@ -114,32 +106,21 @@ export function Plans() {
         } bg-neutral-900/60 p-6 shadow-xl`}
       >
         {plan.highlight && (
-          <div className="absolute -top-3 left-6 z-10 rounded-full border border-primary/50 bg-neutral-950/40 px-3 py-1 text-xs text-primary">
-            Mais popular
+          <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10 w-fit whitespace-nowrap rounded-full bg-primary px-3 py-1 text-xs font-bold text-primary-foreground shadow-lg">
+            OFERTA IMPERDÍVEL
           </div>
         )}
-        <div className="flex-grow">
-          <div className="mb-4 flex items-center justify-between">
-            <h3 className="flex items-baseline gap-1 text-2xl font-bold">
-              <span className="text-3xl font-black">{plan.speed}</span>
-              <span className="text-lg font-medium text-white/70">MEGA</span>
-            </h3>
-            <div className="grid h-9 w-9 place-items-center rounded-lg bg-primary/15">
-              <Gauge className="h-5 w-5 text-primary" />
+        <div className="flex-grow pt-4">
+            <h3 className="text-4xl font-black tracking-tighter">{plan.speed} <span className="text-3xl font-bold text-white/70">MEGA</span></h3>
+            
+            <div className="mt-3 mb-4 space-y-1">
+                {plan.original_price && (
+                    <p className="text-white/60 line-through">De R$ {plan.original_price.toFixed(2).replace('.', ',')}</p>
+                )}
+                <p className="text-xl font-bold">
+                    Por <span className="text-3xl font-black">R$ {plan.price.toFixed(2).replace('.', ',')}</span>/mês
+                </p>
             </div>
-          </div>
-          <div className="mb-4 flex items-baseline gap-2">
-             <div className="flex items-baseline gap-1">
-              <span className="text-sm font-bold">R$</span>
-              <span className="text-4xl font-black">{formatPriceAsNumber(plan.price)}</span>
-              <span className="text-white/70">/mês</span>
-            </div>
-            {plan.original_price && (
-                <span className="text-xl font-bold text-white/50 line-through">
-                    {formatPrice(plan.original_price)}
-                </span>
-            )}
-          </div>
           
           {plan.has_tv && plan.featured_channel_ids && <ChannelLogos channelIds={plan.featured_channel_ids} />}
 
@@ -157,39 +138,28 @@ export function Plans() {
         </div>
         
         <div className="flex flex-col gap-2 mt-auto">
-             <Popover>
-                <PopoverTrigger asChild>
-                    <Button id={`plan-cta-assinar-${slug}`}
+            <div className="grid grid-cols-2 gap-2">
+                <Button id={`plan-cta-assinar-${slug}`}
+                        asChild
                         data-track-event="cta_click"
                         data-track-prop-button-id={`assinar-plano-${slug}`}
                         data-track-prop-plan-name={planName}
                         data-track-prop-plan-price={plan.price}
-                    >
-                        Assinar <ChevronRight className="h-4 w-4" />
-                    </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-56 p-2 bg-neutral-900 border-white/10 text-white">
-                    <div className="grid gap-2">
-                        <Button variant="ghost" className="justify-start" asChild>
-                            <Link href="/assinar">
-                                <Globe className="mr-2 h-4 w-4"/>
-                                Continuar pelo site
-                            </Link>
-                        </Button>
-                        <Button variant="ghost" className="justify-start" asChild>
-                            <Link href={whatsappUrl} target="_blank">
-                                <MessageSquare className="mr-2 h-4 w-4"/>
-                                Falar no WhatsApp
-                            </Link>
-                        </Button>
-                    </div>
-                </PopoverContent>
-            </Popover>
-
+                >
+                    <Link href="/assinar">Assinar</Link>
+                </Button>
+                <Button id={`plan-cta-whatsapp-${slug}`} variant="outline" asChild>
+                    <Link href={whatsappUrl} target="_blank">
+                        <MessageSquare className="mr-2 h-4 w-4"/>
+                        WhatsApp
+                    </Link>
+                </Button>
+            </div>
+            
             {plan.conditions && (
                  <Sheet>
                     <SheetTrigger asChild>
-                         <Button variant="link" className="text-xs text-white/60">Conferir condições</Button>
+                         <Button variant="link" className="text-xs text-white/60 h-auto py-1">Conferir condições</Button>
                     </SheetTrigger>
                     <SheetContent className="bg-neutral-950 border-white/10 text-white">
                         <SheetHeader>
