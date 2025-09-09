@@ -25,6 +25,7 @@ export async function generateStaticParams() {
     }
 
     if (!cities) {
+        console.warn('No cities found for static generation.');
         return [];
     }
 
