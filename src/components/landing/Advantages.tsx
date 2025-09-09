@@ -19,7 +19,7 @@ export function Advantages() {
     { icon: <Zap className="h-5 w-5 text-primary" />, title: "Wi‑Fi 6", desc: "Mais alcance, mais dispositivos e menos interferência." },
     { icon: <Rocket className="h-5 w-5 text-primary" />, title: "Instalação express", desc: "Agendamento rápido e instalação sem complicação." },
     { icon: <Wifi className="h-5 w-5 text-primary" />, title: "Cobertura inteligente", desc: "Mesh opcional para casas e empresas maiores." },
-    { icon: <Phone className="h-5 w-5 text-primary" />, title: "Suporte que resolve", desc: "Gente de verdade atendendo quando você precisa." },
+    { icon: <Phone className="h-5 w-5 text-primary" />, title: "Suporte qualificado", desc: "Atendimento humano e eficiente quando você precisa." },
   ];
 
   if (isMobile === undefined) {
@@ -27,7 +27,7 @@ export function Advantages() {
   }
 
   return (
-    <section id="vantagens" className="border-t border-white/5 bg-neutral-950/40 py-16 sm:py-24">
+    <section id="vantagens" className="border-t border-white/5 bg-background py-16 sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mb-10 max-w-2xl lg:mb-12">
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Por que Velpro?</h2>

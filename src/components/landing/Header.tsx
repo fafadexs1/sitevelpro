@@ -10,23 +10,23 @@ export function Header() {
 
   const navItems = [
     { href: "#planos", label: "Planos", id: "nav-planos" },
-    { href: "#cobertura", label: "Cobertura", id: "nav-cobertura" },
     { href: "#vantagens", label: "Vantagens", id: "nav-vantagens" },
-    { href: "#ceo", label: "CEO", id: "nav-ceo" },
+    { href: "#tv", label: "TV", id: "nav-tv" },
+    { href: "#ceo", label: "A Velpro", id: "nav-ceo" },
     { href: "#faq", label: "FAQ", id: "nav-faq" },
     { href: "#contato", label: "Contato", id: "nav-contato" },
   ];
 
   return (
-    <header className="sticky top-0 z-40 border-b border-white/5 bg-neutral-950/60 backdrop-blur supports-[backdrop-filter]:bg-neutral-950/60">
+    <header className="sticky top-0 z-40 border-b border-border/40 bg-background/60 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
         <a id="nav-logo" href="#home" className="group flex items-center gap-3">
-          <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-primary to-green-400 text-neutral-950 shadow-lg shadow-primary/20">
+          <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-primary to-orange-400 text-white shadow-lg shadow-primary/20">
             <Wifi className="h-5 w-5" />
           </div>
           <div>
             <p className="text-lg font-semibold leading-none">Velpro Telecom</p>
-            <p className="text-xs text-white/60 transition-colors group-hover:text-white/80">
+            <p className="text-xs text-muted-foreground transition-colors group-hover:text-foreground/80">
               Fibra 100% + Wi‑Fi 6
             </p>
           </div>
@@ -34,7 +34,7 @@ export function Header() {
 
         <nav className="hidden items-center gap-6 md:flex">
           {navItems.map((item) => (
-            <a key={item.href} id={item.id} href={item.href} className="text-white/80 transition-colors hover:text-white">
+            <a key={item.href} id={item.id} href={item.href} className="text-muted-foreground transition-colors hover:text-foreground">
               {item.label}
             </a>
           ))}
@@ -46,7 +46,7 @@ export function Header() {
             href="/cliente"
             data-track-event="cta_click"
             data-track-prop-button-id="area-cliente-header"
-            className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2 font-medium text-white transition-colors hover:bg-white/5"
+            className="inline-flex items-center gap-2 rounded-xl border border-border px-4 py-2 font-medium text-foreground transition-colors hover:bg-accent"
           >
             <User className="h-4 w-4" /> Área do Cliente
           </Link>
@@ -57,14 +57,14 @@ export function Header() {
             data-track-prop-button-id="assine-ja-header"
             className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 font-medium text-primary-foreground shadow-lg shadow-primary/20 transition-colors hover:bg-primary/90"
           >
-            Assine já <ChevronRight className="h-4 w-4" />
+            Aproveitar oferta <ChevronRight className="h-4 w-4" />
           </a>
         </div>
 
         <button
           id="mobile-menu-toggle"
           aria-label="Abrir menu"
-          className="rounded-xl border border-white/10 p-2 md:hidden"
+          className="rounded-xl border border-border p-2 md:hidden"
           onClick={() => setMobileOpen((v) => !v)}
         >
           <Menu className="h-5 w-5" />
@@ -73,7 +73,7 @@ export function Header() {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="border-t border-white/5 md:hidden">
+        <div className="border-t border-border md:hidden">
           <div className="mx-auto grid max-w-7xl gap-3 px-4 py-3 sm:px-6 lg:px-8">
             {navItems.map((item) => (
               <a
@@ -81,7 +81,7 @@ export function Header() {
                 id={`mobile-${item.id}`}
                 href={item.href}
                 onClick={() => setMobileOpen(false)}
-                className="rounded-lg px-3 py-2 transition-colors hover:bg-white/5"
+                className="rounded-lg px-3 py-2 transition-colors hover:bg-accent"
               >
                 {item.label}
               </a>
@@ -92,7 +92,7 @@ export function Header() {
               onClick={() => setMobileOpen(false)}
               data-track-event="cta_click"
               data-track-prop-button-id="area-cliente-mobile"
-              className="mt-1 inline-flex items-center justify-center gap-2 rounded-lg border border-white/10 px-3 py-2"
+              className="mt-1 inline-flex items-center justify-center gap-2 rounded-lg border border-border px-3 py-2"
             >
               <User className="h-4 w-4" /> Área do Cliente
             </Link>
@@ -104,7 +104,7 @@ export function Header() {
               data-track-prop-button-id="assine-ja-mobile"
               className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-3 py-2 font-medium text-primary-foreground"
             >
-              Assine já <ChevronRight className="h-4 w-4" />
+              Aproveitar Oferta <ChevronRight className="h-4 w-4" />
             </a>
           </div>
         </div>

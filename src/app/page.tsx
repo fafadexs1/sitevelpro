@@ -13,12 +13,11 @@ import { Footer } from "@/components/landing/Footer";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-transparent text-white">
+    <div className="min-h-screen bg-background text-foreground">
       <Header />
       <main>
         <Hero />
         <Plans />
-        <Coverage />
         <Advantages />
         <Mesh />
         <TvSection />
