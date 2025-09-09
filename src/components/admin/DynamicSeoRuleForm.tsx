@@ -131,7 +131,7 @@ export function DynamicSeoRuleForm({ rule, onRuleSaved, onOpenChange }: DynamicS
                     <FormControl>
                         <Input placeholder="/internet-em-{cidade}" {...field} />
                     </FormControl>
-                     <p className="text-xs text-white/50">Use variáveis como {'{cidade}'} para gerar múltiplas páginas ou insira um caminho estático.</p>
+                     <p className="text-xs text-white/50">Use variáveis (ex: {'{cidade}'}) para gerar múltiplas páginas ou insira um caminho estático (ex: /promo-x).</p>
                     <FormMessage />
                     </FormItem>
                 )}

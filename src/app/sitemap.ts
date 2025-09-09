@@ -33,14 +33,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     const { data: allRules, error: rulesError } = await supabase
         .from('dynamic_seo_rules')
-        .select('slug_pattern')
+        .select('slug_pattern, allow_indexing')
         .eq('allow_indexing', true);
 
     if (rulesError) throw rulesError;
 
     if (allRules) {
         const rulesWithVariable = allRules.filter(rule => rule.slug_pattern.includes('{cidade}'));
-        const rulesWithoutVariable = allRules.filter(rule => !rule.slug_pattern.includes('{cidade}'));
+        const rulesWithoutVariable = allRules.filter(rule => !rule.slug_pattern.includes('{'));
 
         // Processa regras que dependem da tabela de cidades
         if (rulesWithVariable.length > 0) {
