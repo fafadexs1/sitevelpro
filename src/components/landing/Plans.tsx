@@ -254,6 +254,7 @@ export function Plans() {
                     </DialogHeader>
                     <div className="flex flex-col gap-3 pt-4">
                          <Button
+                            id={`continue-site-plano-${slug}`}
                             asChild
                             variant="default"
                             size="lg"
@@ -268,6 +269,7 @@ export function Plans() {
                             </Link>
                         </Button>
                         <Button
+                            id={`whatsapp-plano-${slug}`}
                             asChild
                             variant="outline"
                             size="lg"
