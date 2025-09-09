@@ -1,3 +1,4 @@
+
 import { Header } from "@/components/landing/Header";
 import { Hero } from "@/components/landing/Hero";
 import { Plans } from "@/components/landing/Plans";
@@ -18,6 +19,7 @@ export default function Home() {
       <main>
         <Hero />
         <Plans />
+        <Coverage />
         <Advantages />
         <Mesh />
         <TvSection />

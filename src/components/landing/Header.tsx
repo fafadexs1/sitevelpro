@@ -25,7 +25,7 @@ export function Header() {
             <Wifi className="h-5 w-5" />
           </div>
           <div>
-            <p className="text-lg font-semibold leading-none">Velpro Telecom</p>
+            <p className="text-lg font-semibold leading-none text-foreground">Velpro Telecom</p>
             <p className="text-xs text-muted-foreground transition-colors group-hover:text-foreground/80">
               Fibra 100% + Wi‑Fi 6
             </p>
@@ -34,7 +34,7 @@ export function Header() {
 
         <nav className="hidden items-center gap-6 md:flex">
           {navItems.map((item) => (
-            <a key={item.href} id={item.id} href={item.href} className="text-muted-foreground transition-colors hover:text-foreground">
+            <a key={item.href} id={item.id} href={item.href} className="text-sm text-muted-foreground transition-colors hover:text-foreground">
               {item.label}
             </a>
           ))}
@@ -46,7 +46,7 @@ export function Header() {
             href="/cliente"
             data-track-event="cta_click"
             data-track-prop-button-id="area-cliente-header"
-            className="inline-flex items-center gap-2 rounded-xl border border-border px-4 py-2 font-medium text-foreground transition-colors hover:bg-accent"
+            className="inline-flex items-center gap-2 rounded-xl border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
           >
             <User className="h-4 w-4" /> Área do Cliente
           </Link>
@@ -55,7 +55,7 @@ export function Header() {
             href="#planos"
             data-track-event="cta_click"
             data-track-prop-button-id="assine-ja-header"
-            className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 font-medium text-primary-foreground shadow-lg shadow-primary/20 transition-colors hover:bg-primary/90"
+            className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-lg shadow-primary/20 transition-colors hover:bg-primary/90"
           >
             Aproveitar oferta <ChevronRight className="h-4 w-4" />
           </a>
@@ -73,7 +73,7 @@ export function Header() {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="border-t border-border md:hidden">
+        <div className="border-t border-border bg-background md:hidden">
           <div className="mx-auto grid max-w-7xl gap-3 px-4 py-3 sm:px-6 lg:px-8">
             {navItems.map((item) => (
               <a
@@ -81,7 +81,7 @@ export function Header() {
                 id={`mobile-${item.id}`}
                 href={item.href}
                 onClick={() => setMobileOpen(false)}
-                className="rounded-lg px-3 py-2 transition-colors hover:bg-accent"
+                className="rounded-lg px-3 py-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
               >
                 {item.label}
               </a>

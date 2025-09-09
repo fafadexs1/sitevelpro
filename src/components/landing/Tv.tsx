@@ -41,13 +41,13 @@ export function TvSection() {
   }, []);
 
   return (
-    <section id="tv" className="border-t border-white/5 py-16 sm:py-24">
+    <section id="tv" className="border-t border-border bg-secondary py-16 sm:py-24">
       <div className="mx-auto grid max-w-7xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+          <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             Uma nova dimensão de entretenimento na sua TV
           </h2>
-          <p className="mt-4 text-white/70">
+          <p className="mt-4 text-muted-foreground">
             Qualidade de imagem e som de cinema com uma grade de mais de 100
             canais para toda a família. Filmes, séries, esportes e muito mais,
             tudo em alta definição.
@@ -82,7 +82,7 @@ export function TvSection() {
                       type: "spring",
                       stiffness: 100,
                     }}
-                    className="flex aspect-video items-center justify-center rounded-lg border border-white/10 bg-neutral-900/60 p-2 sm:p-4"
+                    className="flex aspect-video items-center justify-center rounded-lg border border-border bg-card p-2 sm:p-4"
                   >
                     <Image
                       src={channel.logo_url}
@@ -94,7 +94,7 @@ export function TvSection() {
                   </motion.div>
                 ))}
               </div>
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/50 to-transparent" />
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-secondary via-secondary/50 to-transparent" />
             </>
           )}
         </div>

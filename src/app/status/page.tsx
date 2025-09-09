@@ -18,20 +18,20 @@ interface ServiceStatus {
 
 const statusConfig = {
   operational: {
-    icon: <CheckCircle className="h-5 w-5 text-green-400" />,
+    icon: <CheckCircle className="h-5 w-5 text-green-500" />,
     text: "Operacional",
-    color: "text-green-400",
-    bgColor: "bg-green-400/10",
-    borderColor: "border-green-400/20",
-    pingColor: "text-green-300",
+    color: "text-green-500",
+    bgColor: "bg-green-500/10",
+    borderColor: "border-green-500/20",
+    pingColor: "text-green-400",
   },
   degraded: {
-    icon: <AlertTriangle className="h-5 w-5 text-yellow-400" />,
+    icon: <AlertTriangle className="h-5 w-5 text-yellow-500" />,
     text: "Performance Degradada",
-    color: "text-yellow-400",
-    bgColor: "bg-yellow-400/10",
-    borderColor: "border-yellow-400/20",
-    pingColor: "text-yellow-300",
+    color: "text-yellow-500",
+    bgColor: "bg-yellow-500/10",
+    borderColor: "border-yellow-500/20",
+    pingColor: "text-yellow-400",
   },
   outage: {
     icon: <XCircle className="h-5 w-5 text-red-500" />,
@@ -76,8 +76,8 @@ const Globe = () => (
         >
           <defs>
             <radialGradient id="grad1" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
-              <stop offset="0%" style={{stopColor: "rgba(4, 189, 3, 0.15)", stopOpacity: 1}} />
-              <stop offset="100%" style={{stopColor: "rgba(4, 189, 3, 0)", stopOpacity: 1}} />
+              <stop offset="0%" style={{stopColor: "hsla(var(--primary) / 0.15)", stopOpacity: 1}} />
+              <stop offset="100%" style={{stopColor: "hsla(var(--primary) / 0)", stopOpacity: 1}} />
             </radialGradient>
           </defs>
           <rect width="100%" height="100%" fill="url(#grad1)" />
@@ -102,10 +102,10 @@ export default function StatusPage() {
     const overallStatus = regions.some(r => r.status === 'outage') ? 'outage' : regions.some(r => r.status === 'degraded') ? 'degraded' : 'operational';
 
     const renderStatusCard = (item: ServiceStatus, isGame = false) => (
-        <div key={item.name} className={cn("p-4 rounded-lg flex items-center justify-between border", statusConfig[item.status].borderColor, statusConfig[item.status].bgColor)}>
+        <div key={item.name} className={cn("p-4 rounded-lg flex items-center justify-between border bg-card", statusConfig[item.status].borderColor)}>
             <div className="flex items-center gap-3">
-                {isGame ? <Gamepad2 className="h-5 w-5 text-white/60"/> : <MapPin className="h-5 w-5 text-white/60"/>}
-                <span className="font-medium text-white/90">{item.name}</span>
+                {isGame ? <Gamepad2 className="h-5 w-5 text-muted-foreground"/> : <MapPin className="h-5 w-5 text-muted-foreground"/>}
+                <span className="font-medium text-card-foreground">{item.name}</span>
             </div>
             <div className="flex items-center gap-3">
                 {item.latency && (
@@ -119,27 +119,24 @@ export default function StatusPage() {
     );
 
     return (
-        <div className="min-h-screen bg-neutral-950 text-white flex flex-col">
+        <div className="min-h-screen bg-background text-foreground flex flex-col">
             <Header />
             <main className="flex-grow">
-                 <div className="relative border-b border-white/5 py-16 sm:py-24 overflow-hidden">
+                 <div className="relative border-b border-border py-16 sm:py-24 overflow-hidden">
                     <Globe />
                     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
-                         <div className="mb-4 inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm" style={{
-                            backgroundColor: statusConfig[overallStatus].bgColor.replace('bg-',''),
-                            color: statusConfig[overallStatus].color.replace('text-','')
-                         }}>
+                         <div className={cn("mb-4 inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm", statusConfig[overallStatus].bgColor, statusConfig[overallStatus].color)}>
                             {statusConfig[overallStatus].icon}
                             <span>{statusConfig[overallStatus].text}</span>
                         </div>
                         <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Status da Rede</h1>
-                        <p className="mt-4 text-lg text-white/70 max-w-2xl mx-auto">
+                        <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
                             Acompanhe em tempo real a performance da nossa infraestrutura, latência para jogos e o status dos serviços em sua região.
                         </p>
                     </div>
                 </div>
 
-                <div className="py-12 sm:py-16">
+                <div className="py-12 sm:py-16 bg-secondary">
                     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                             
@@ -165,8 +162,8 @@ export default function StatusPage() {
                                     <h2 className="text-xl font-semibold flex items-center gap-3 mb-4"><Server className="text-primary"/>Serviços da Plataforma</h2>
                                     <div className="space-y-3">
                                         {initialServices.map(service => (
-                                             <div key={service.name} className="flex items-center justify-between text-sm p-3 rounded-lg bg-neutral-900 border border-white/10">
-                                                <span className="text-white/80">{service.name}</span>
+                                             <div key={service.name} className="flex items-center justify-between text-sm p-3 rounded-lg bg-card border border-border">
+                                                <span className="text-card-foreground/80">{service.name}</span>
                                                 <div className={cn("flex items-center gap-2", statusConfig[service.status].color)}>
                                                     {statusConfig[service.status].icon}
                                                     <span className="text-xs">{statusConfig[service.status].text}</span>
@@ -182,15 +179,15 @@ export default function StatusPage() {
                                             <div key={incident.title} className="relative pl-8">
                                                 <div className={cn(
                                                     "absolute left-3 top-1.5 h-full w-px",
-                                                    incident.status === "resolved" ? "bg-green-400/20" : "bg-yellow-400/20"
+                                                    incident.status === "resolved" ? "bg-green-500/20" : "bg-yellow-500/20"
                                                 )}/>
                                                 <div className={cn(
                                                     "absolute left-[6.5px] top-1.5 h-3.5 w-3.5 rounded-full border-2",
-                                                    incident.status === "resolved" ? "bg-green-400/20 border-green-400" : "bg-yellow-400/20 border-yellow-400 animate-pulse"
+                                                    incident.status === "resolved" ? "bg-green-500/20 border-green-500" : "bg-yellow-500/20 border-yellow-500 animate-pulse"
                                                 )}/>
-                                                <p className="text-xs text-white/60">{incident.date}</p>
-                                                <h3 className="font-semibold text-white/90">{incident.title}</h3>
-                                                <p className="text-sm text-white/70">{incident.description}</p>
+                                                <p className="text-xs text-muted-foreground">{incident.date}</p>
+                                                <h3 className="font-semibold text-foreground/90">{incident.title}</h3>
+                                                <p className="text-sm text-muted-foreground">{incident.description}</p>
                                             </div>
                                         ))}
                                     </div>

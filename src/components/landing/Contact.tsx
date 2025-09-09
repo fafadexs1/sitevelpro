@@ -27,11 +27,11 @@ export function Contact() {
   ];
 
   return (
-    <section id="contato" className="border-t border-white/5 bg-neutral-950/40 py-16 sm:py-24">
+    <section id="contato" className="border-t border-border bg-background py-16 sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mb-8 max-w-2xl lg:mb-12">
-          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Fale com a gente</h2>
-          <p className="mt-2 text-white/70">Tire dúvidas, consulte planos e agende a instalação.</p>
+          <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">Fale com a gente</h2>
+          <p className="mt-2 text-muted-foreground">Tire dúvidas, consulte planos e agende a instalação.</p>
         </div>
         <div className="grid gap-6 md:grid-cols-3">
           {contactOptions.map((item) => (
@@ -41,11 +41,11 @@ export function Contact() {
               href={item.href}
               target={item.href.startsWith('http') ? '_blank' : undefined}
               rel={item.href.startsWith('http') ? 'noreferrer' : undefined}
-              className="block rounded-2xl border border-white/10 bg-neutral-900/60 p-6 transition-colors hover:border-white/20"
+              className="block rounded-2xl border border-border bg-card p-6 transition-colors hover:border-primary/40 hover:bg-accent"
             >
               <div className="mb-3 grid h-10 w-10 place-items-center rounded-lg bg-primary/15">{item.icon}</div>
-              <h3 className="text-lg font-semibold">{item.title}</h3>
-              <p className="mt-1 text-white/70">{item.desc}</p>
+              <h3 className="text-lg font-semibold text-card-foreground">{item.title}</h3>
+              <p className="mt-1 text-muted-foreground">{item.desc}</p>
             </a>
           ))}
         </div>

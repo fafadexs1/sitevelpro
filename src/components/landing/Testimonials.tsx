@@ -25,11 +25,11 @@ export function Testimonials() {
   }
 
   return (
-    <section className="border-t border-white/5 bg-neutral-950/40 py-16 sm:py-24">
+    <section className="border-t border-border bg-background py-16 sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mb-10 max-w-2xl lg:mb-12">
-          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Clientes que sentem a diferença</h2>
-          <p className="mt-2 text-white/70">Histórias reais de quem depende da internet todos os dias.</p>
+          <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">Clientes que sentem a diferença</h2>
+          <p className="mt-2 text-muted-foreground">Histórias reais de quem depende da internet todos os dias.</p>
         </div>
         {isMobile ? (
            <Carousel opts={{ loop: true }} className="w-full">
@@ -37,35 +37,35 @@ export function Testimonials() {
               {testimonials.map((t) => (
                 <CarouselItem key={t.name}>
                   <div className="p-1">
-                    <Card className="rounded-2xl border-white/10 bg-neutral-900/60 p-6 h-full">
+                    <Card className="rounded-2xl bg-card p-6 h-full">
                       <CardContent className="flex flex-col items-start p-0 gap-3 justify-center">
                         <div className="flex items-center gap-1">
                           {Array.from({ length: t.stars }).map((_, i) => (
                             <Star key={i} className="h-4 w-4 fill-primary text-primary" />
                           ))}
                         </div>
-                        <p className="text-white/80">{t.text}</p>
-                        <p className="mt-4 text-sm text-white/60">{t.name}</p>
+                        <p className="text-card-foreground/80">{t.text}</p>
+                        <p className="mt-4 text-sm text-muted-foreground">{t.name}</p>
                       </CardContent>
                     </Card>
                   </div>
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious className="left-2 bg-neutral-900/50 border-white/10 hover:bg-neutral-900" />
-            <CarouselNext className="right-2 bg-neutral-900/50 border-white/10 hover:bg-neutral-900" />
+            <CarouselPrevious className="left-2 bg-background/50 border-border hover:bg-accent" />
+            <CarouselNext className="right-2 bg-background/50 border-border hover:bg-accent" />
           </Carousel>
         ) : (
           <div className="grid gap-6 md:grid-cols-3">
             {testimonials.map((t) => (
-              <div key={t.name} className="rounded-2xl border border-white/10 bg-neutral-900/60 p-6">
+              <div key={t.name} className="rounded-2xl border border-border bg-card p-6">
                 <div className="mb-3 flex items-center gap-1">
                   {Array.from({ length: t.stars }).map((_, i) => (
                     <Star key={i} className="h-4 w-4 fill-primary text-primary" />
                   ))}
                 </div>
-                <p className="text-white/80">{t.text}</p>
-                <p className="mt-4 text-sm text-white/60">{t.name}</p>
+                <p className="text-card-foreground/80">{t.text}</p>
+                <p className="mt-4 text-sm text-muted-foreground">{t.name}</p>
               </div>
             ))}
           </div>

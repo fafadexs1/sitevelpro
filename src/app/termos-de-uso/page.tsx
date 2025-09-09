@@ -59,21 +59,21 @@ export default function TermsOfServicePage() {
   ];
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-white flex flex-col">
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
       <Header />
       <main className="flex-grow">
-        <div className="bg-neutral-900/50 border-b border-white/5 py-16 sm:py-24">
+        <div className="bg-secondary border-b border-border py-16 sm:py-24">
             <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
                  <FileText className="h-12 w-12 text-primary mx-auto mb-4" />
                 <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Termos de Uso</h1>
-                <p className="mt-4 text-lg text-white/70">
+                <p className="mt-4 text-lg text-muted-foreground">
                     Última atualização: 08 de Setembro de 2025.
                 </p>
-                 <p className="mt-2 text-sm text-white/60">Entenda as regras e condições para usar nossos serviços.</p>
+                 <p className="mt-2 text-sm text-muted-foreground/80">Entenda as regras e condições para usar nossos serviços.</p>
             </div>
         </div>
 
-        <div className="py-16 sm:py-24">
+        <div className="py-16 sm:py-24 bg-background">
             <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 space-y-12">
                 {termsSections.map((section) => (
                     <div key={section.title} className="flex flex-col sm:flex-row items-start gap-6">
@@ -82,13 +82,13 @@ export default function TermsOfServicePage() {
                         </div>
                         <div>
                             <h2 className="text-2xl font-semibold mb-2">{section.title}</h2>
-                            <p className="text-white/70 leading-relaxed">{section.content}</p>
+                            <p className="text-muted-foreground leading-relaxed">{section.content}</p>
                         </div>
                     </div>
                 ))}
 
-                 <div className="text-center pt-8 border-t border-white/10">
-                    <p className="text-white/70">Para voltar à página inicial, clique abaixo.</p>
+                 <div className="text-center pt-8 border-t border-border">
+                    <p className="text-muted-foreground">Para voltar à página inicial, clique abaixo.</p>
                     <Link href="/" className="mt-4 inline-block text-primary hover:text-primary/80 transition-colors">
                         Voltar ao Início
                     </Link>

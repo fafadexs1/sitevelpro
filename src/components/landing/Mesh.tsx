@@ -61,7 +61,7 @@ function DesktopView() {
                 {devices.map(({ icon: Icon }, i) => (
                     <motion.div
                         key={i}
-                        className="absolute w-14 h-14 bg-neutral-900 border border-white/10 rounded-full grid place-items-center"
+                        className="absolute w-14 h-14 bg-card border border-border rounded-full grid place-items-center"
                         style={{
                             top: `calc(50% - ${deviceIconOffset}px + ${radius * Math.sin(i * 2 * Math.PI / devices.length)}px)`,
                             left: `calc(50% - ${deviceIconOffset}px + ${radius * Math.cos(i * 2 * Math.PI / devices.length)}px)`,
@@ -70,7 +70,7 @@ function DesktopView() {
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.5 + i * 0.1, type: "spring" }}
                     >
-                        <Icon className="w-6 h-6 text-white/70" />
+                        <Icon className="w-6 h-6 text-muted-foreground" />
                     </motion.div>
                 ))}
             </div>
@@ -81,7 +81,7 @@ function DesktopView() {
                         x1="200" y1="200" 
                         x2={200 + radius * Math.cos(i * 2 * Math.PI / devices.length)} 
                         y2={200 + radius * Math.sin(i * 2 * Math.PI / devices.length)}
-                        stroke="white" strokeWidth="0.5"
+                        stroke="hsl(var(--foreground))" strokeWidth="0.5"
                         initial={{ pathLength: 0 }}
                         animate={{ pathLength: 1 }}
                         transition={{ duration: 1, delay: i * 0.1, ease: "easeInOut" }}
@@ -94,7 +94,7 @@ function DesktopView() {
                         y1={200 + radius * Math.sin(i * 2 * Math.PI / devices.length)}
                         x2={200 + radius * Math.cos((i + 1) * 2 * Math.PI / devices.length)}
                         y2={200 + radius * Math.sin((i + 1) * 2 * Math.PI / devices.length)}
-                        stroke="white" strokeWidth="0.5"
+                        stroke="hsl(var(--foreground))" strokeWidth="0.5"
                         initial={{ pathLength: 0 }}
                         animate={{ pathLength: 1 }}
                         transition={{ duration: 0.8, delay: 0.5 + i * 0.1, ease: "easeInOut" }}
@@ -107,20 +107,20 @@ function DesktopView() {
 
 export function Mesh() {
     return (
-        <section id="mesh" className="border-t border-white/5 py-16 sm:py-24">
+        <section id="mesh" className="border-t border-border bg-background py-16 sm:py-24">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div className="grid lg:grid-cols-2 gap-12 items-center">
                     <div>
-                        <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+                        <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
                            Sinal forte e estável em todos os cantos da casa
                         </h2>
-                        <p className="mt-4 text-white/70">
+                        <p className="mt-4 text-muted-foreground">
                            Com a tecnologia Mesh, criamos uma rede unificada e inteligente que cobre todos os ambientes, eliminando pontos cegos e garantindo a melhor conexão para todos os seus dispositivos, não importa onde você esteja.
                         </p>
                         <a 
                             id="mesh-cta-planos"
                             href="#planos"
-                            className="mt-8 inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 font-medium text-neutral-950 transition-colors hover:bg-white/90"
+                            className="mt-8 inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
                         >
                             Ver planos com Mesh <ChevronRight className="h-4 w-4" />
                         </a>

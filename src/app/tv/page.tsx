@@ -5,7 +5,7 @@ import { TvPage } from "@/components/landing/TvPage";
 
 export default function Page() {
   return (
-    <div className="min-h-screen bg-neutral-950 text-white flex flex-col">
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
       <Header />
       <main className="flex-grow">
         <TvPage />

@@ -78,7 +78,7 @@ export function Hero() {
                   src={slide.image_url}
                   alt={slide.title_regular || "Imagem de fundo"}
                   fill
-                  className="object-cover opacity-10"
+                  className="object-cover opacity-5"
                 />
               )}
                <div className="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-transparent" />
@@ -97,7 +97,7 @@ export function Hero() {
                       <Zap className="h-3.5 w-3.5" /> {slide.pre_title}
                     </div>
                   )}
-                  <h1 className="text-4xl font-black tracking-tight sm:text-5xl lg:text-6xl">
+                  <h1 className="text-4xl font-black tracking-tight sm:text-5xl lg:text-6xl text-foreground">
                     {slide.title_regular}{" "}
                     {slide.title_highlighted && (
                       <span className="text-primary">{slide.title_highlighted}</span>
@@ -110,12 +110,12 @@ export function Hero() {
                   )}
                   <div className="flex flex-wrap gap-3">
                     {slide.button_primary_text && slide.button_primary_link && (
-                      <Button asChild>
+                      <Button asChild size="lg">
                         <Link href={slide.button_primary_link}>{slide.button_primary_text} <ChevronRight className="h-4 w-4" /></Link>
                       </Button>
                     )}
                      {slide.button_secondary_text && slide.button_secondary_link && (
-                      <Button asChild variant="outline">
+                      <Button asChild variant="outline" size="lg">
                         <Link href={slide.button_secondary_link}>{slide.button_secondary_text}</Link>
                       </Button>
                     )}
