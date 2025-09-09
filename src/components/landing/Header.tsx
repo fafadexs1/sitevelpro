@@ -2,8 +2,10 @@
 "use client";
 
 import { useState } from "react";
-import { Wifi, ChevronRight, Menu, User } from "lucide-react";
+import { Wifi, ChevronRight, Menu, User, X, FileText, ArrowRight, Smartphone, Download, Gauge, MonitorSmartphone, WifiOff, CircleDollarSign, MessageCircle, Phone } from "lucide-react";
 import Link from "next/link";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
 
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -73,40 +75,71 @@ export function Header() {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="border-t border-border bg-background md:hidden">
-          <div className="mx-auto grid max-w-7xl gap-3 px-4 py-3 sm:px-6 lg:px-8">
-            {navItems.map((item) => (
-              <a
-                key={item.href}
-                id={`mobile-${item.id}`}
-                href={item.href}
-                onClick={() => setMobileOpen(false)}
-                className="rounded-lg px-3 py-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-              >
-                {item.label}
-              </a>
-            ))}
-             <Link
-              id="mobile-header-cta-cliente"
-              href="/cliente"
-              onClick={() => setMobileOpen(false)}
-              data-track-event="cta_click"
-              data-track-prop-button-id="area-cliente-mobile"
-              className="mt-1 inline-flex items-center justify-center gap-2 rounded-lg border border-border px-3 py-2"
-            >
-              <User className="h-4 w-4" /> Área do Cliente
-            </Link>
-            <a
-              id="mobile-header-cta-assine"
-              href="#planos"
-              onClick={() => setMobileOpen(false)}
-              data-track-event="cta_click"
-              data-track-prop-button-id="assine-ja-mobile"
-              className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-3 py-2 font-medium text-primary-foreground"
-            >
-              Aproveitar Oferta <ChevronRight className="h-4 w-4" />
-            </a>
-          </div>
+        <div className="fixed inset-0 z-50 bg-background md:hidden" onClick={() => setMobileOpen(false)}>
+            <div className="absolute top-0 right-0 bottom-0 flex w-full max-w-sm flex-col bg-card border-l border-border" onClick={(e) => e.stopPropagation()}>
+                <div className="flex items-center justify-between p-4 border-b border-border">
+                    <div className="flex items-center gap-2 font-semibold text-card-foreground">
+                        <FileText className="h-5 w-5 text-primary"/>
+                        2ª via da conta
+                    </div>
+                    <button onClick={() => setMobileOpen(false)} className="p-1 text-muted-foreground"><X className="h-5 w-5"/></button>
+                </div>
+                <div className="p-4 space-y-6 overflow-y-auto">
+                    {/* CPF/CNPJ */}
+                    <div className="relative">
+                        <Input placeholder="CPF ou CNPJ" className="pr-12 h-12 text-base"/>
+                        <Button size="icon" className="absolute right-1 top-1 h-10 w-10 rounded-full">
+                            <ArrowRight className="h-5 w-5"/>
+                        </Button>
+                    </div>
+
+                    {/* App Actions */}
+                    <div>
+                        <p className="flex items-center gap-2 text-sm font-medium text-muted-foreground"><MonitorSmartphone className="h-4 w-4"/>Precisou? Use o app da Velpro</p>
+                        <div className="grid grid-cols-2 gap-3 mt-2">
+                           <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-border p-4 bg-background hover:bg-accent cursor-pointer">
+                             <Download className="h-6 w-6 text-primary"/>
+                             <span className="text-sm text-center">Faça download</span>
+                           </div>
+                           <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-border p-4 bg-background hover:bg-accent cursor-pointer">
+                             <Gauge className="h-6 w-6 text-primary"/>
+                             <span className="text-sm text-center">Mais Velocidade</span>
+                           </div>
+                        </div>
+                    </div>
+                     {/* Quick Actions */}
+                    <div>
+                        <p className="flex items-center gap-2 text-sm font-medium text-muted-foreground"><Wifi className="h-4 w-4"/>Resolva rápido</p>
+                        <div className="grid grid-cols-2 gap-3 mt-2">
+                           <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-border p-4 bg-background hover:bg-accent cursor-pointer">
+                             <User className="h-6 w-6 text-primary"/>
+                             <span className="text-sm text-center">Desbloquear serviço</span>
+                           </div>
+                           <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-border p-4 bg-background hover:bg-accent cursor-pointer">
+                             <CircleDollarSign className="h-6 w-6 text-primary"/>
+                             <span className="text-sm text-center">Negociar dívidas</span>
+                           </div>
+                        </div>
+                    </div>
+
+                    {/* Separator */}
+                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <div className="flex-grow border-t border-border"></div>
+                        <span>OU</span>
+                        <div className="flex-grow border-t border-border"></div>
+                     </div>
+
+                    {/* Contact */}
+                     <div className="space-y-3">
+                         <a href="https://wa.me/5500000000000" className="w-full inline-flex items-center justify-center gap-2 rounded-full border-2 border-primary bg-transparent p-3 text-sm font-bold text-primary transition-colors hover:bg-primary/10">
+                            <MessageCircle className="h-5 w-5"/> CONVERSAR NO WHATSAPP
+                         </a>
+                         <a href="tel:+5508003810404" className="w-full inline-flex items-center justify-center gap-2 p-3 text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
+                            <Phone className="h-4 w-4"/> Ligar para 0800 381 0404
+                         </a>
+                     </div>
+                </div>
+            </div>
         </div>
       )}
     </header>
