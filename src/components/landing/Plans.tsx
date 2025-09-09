@@ -328,7 +328,7 @@ export function Plans() {
             >
             <CarouselContent className="-ml-4">
               {currentPlans.map((p, i) => (
-                <CarouselItem key={`${planType}-carousel-${i}`} className="basis-4/5 md:basis-1/3 lg:basis-1/3 pl-4 pt-6">
+                <CarouselItem key={`${planType}-carousel-${i}`} className="basis-4/5 md:basis-1/3 lg:basis-1/4 pl-4 pt-6">
                     <div className="p-1 h-full">
                       <PlanCard plan={p} index={i}/>
                     </div>
