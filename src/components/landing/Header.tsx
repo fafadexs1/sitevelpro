@@ -2,11 +2,28 @@
 "use client";
 
 import { useState } from "react";
-import { Wifi, ChevronRight, Menu, User, X, FileText, ArrowRight, Smartphone, Download, Gauge, MonitorSmartphone, CircleDollarSign, MessageCircle, Phone } from "lucide-react";
+import { Wifi, ChevronRight, Menu, User, X, FileText, ArrowRight, Smartphone, Download, Gauge, MonitorSmartphone, CircleDollarSign, MessageCircle, Phone, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "../ui/sheet";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
+import { cn } from "@/lib/utils";
+
+
+const NavMenu = ({ title, children }: { title: string, children: React.ReactNode }) => (
+    <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+                {title}
+                <ChevronDown className="relative top-[1px] ml-1 h-3 w-3 transition duration-200 group-data-[state=open]:rotate-180" />
+            </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-56" align="start">
+            {children}
+        </DropdownMenuContent>
+    </DropdownMenu>
+);
 
 export function Header() {
   const navItems = [
@@ -33,12 +50,23 @@ export function Header() {
           </div>
         </a>
 
-        <nav className="hidden items-center gap-6 md:flex">
-          {navItems.map((item) => (
-            <a key={item.href} id={item.id} href={item.href} className="text-sm text-muted-foreground transition-colors hover:text-foreground">
-              {item.label}
-            </a>
-          ))}
+        <nav className="hidden items-center gap-1 md:flex">
+             <NavMenu title="Planos e Serviços">
+                <DropdownMenuItem asChild><Link href="#planos">Planos de Internet</Link></DropdownMenuItem>
+                <DropdownMenuItem asChild><Link href="#tv">Pacotes de TV</Link></DropdownMenuItem>
+                <DropdownMenuItem asChild><Link href="#vantagens">Vantagens</Link></DropdownMenuItem>
+                <DropdownMenuItem asChild><Link href="#cobertura">Consultar Cobertura</Link></DropdownMenuItem>
+            </NavMenu>
+             <NavMenu title="Empresa">
+                <DropdownMenuItem asChild><Link href="#ceo">Sobre a Velpro</Link></DropdownMenuItem>
+                <DropdownMenuItem asChild><Link href="/politica-de-privacidade">Política de Privacidade</Link></DropdownMenuItem>
+                <DropdownMenuItem asChild><Link href="/termos-de-uso">Termos de Uso</Link></DropdownMenuItem>
+             </NavMenu>
+             <NavMenu title="Ajuda">
+                <DropdownMenuItem asChild><Link href="#faq">Perguntas Frequentes</Link></DropdownMenuItem>
+                <DropdownMenuItem asChild><Link href="#contato">Fale Conosco</Link></DropdownMenuItem>
+                <DropdownMenuItem asChild><Link href="/status">Status da Rede</Link></DropdownMenuItem>
+            </NavMenu>
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">
@@ -58,7 +86,7 @@ export function Header() {
             data-track-prop-button-id="assine-ja-header"
             className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-lg shadow-primary/20 transition-colors hover:bg-primary/90"
           >
-            Aproveitar oferta <ChevronRight className="h-4 w-4" />
+            Assinar Agora <ChevronRight className="h-4 w-4" />
           </a>
         </div>
         
@@ -135,3 +163,5 @@ export function Header() {
     </header>
   );
 }
+
+    
