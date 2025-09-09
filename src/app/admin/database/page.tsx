@@ -76,6 +76,14 @@ create table if not exists tv_package_channels (
     constraint unique_package_channel unique (package_id, channel_id)
 );
 
+-- Cria a tabela de cidades para rotas dinâmicas
+create table if not exists cities (
+    id uuid default gen_random_uuid() primary key,
+    name text not null,
+    slug text not null unique,
+    created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
 -- Cria a tabela de configurações de SEO
 create table if not exists seo_settings (
   id int primary key default 1,

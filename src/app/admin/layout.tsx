@@ -23,7 +23,8 @@ import {
   Clapperboard,
   Globe,
   Megaphone,
-  BarChart2
+  BarChart2,
+  Map,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -224,6 +225,7 @@ function AdminDashboard({
     { href: "/admin/tv-channels", label: "Canais de TV", icon: Clapperboard },
     { href: "/admin/tv-packages", label: "Pacotes de TV", icon: Tv },
     { href: "/admin/seo", label: "SEO", icon: Globe },
+    { href: "/admin/cities", label: "Cidades", icon: Map },
     { href: "/admin/statistics", label: "Estatísticas", icon: BarChart2 },
     { href: "/admin/google-ads", label: "Google Ads", icon: Megaphone },
     { href: "/admin/database", label: "Banco de Dados", icon: Database },
