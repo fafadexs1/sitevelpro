@@ -21,15 +21,21 @@ function DesktopView() {
     }, []);
 
     if (!isMounted) {
-        return <div className="relative w-full aspect-square max-w-lg mx-auto" />; // Render nothing on server
+        return <div className="relative w-full aspect-square max-w-xl mx-auto" />; // Render nothing on server
     }
 
+    // Increased radius and sizes for a larger, more impactful animation
+    const radius = 150;
+    const centerIconSize = 128; // w-32, h-32
+    const deviceIconSize = 56; // w-14, h-14
+    const deviceIconOffset = deviceIconSize / 2;
+
     return (
-        <div className="relative w-full aspect-square max-w-lg mx-auto">
+        <div className="relative w-full aspect-square max-w-xl mx-auto">
             <div className="absolute inset-0 grid place-items-center">
-                <div className="w-24 h-24 rounded-full bg-primary/20 flex flex-col items-center justify-center text-center p-2 border border-primary/30">
-                    <Router className="w-7 h-7 text-primary"/>
-                    <p className="text-xs mt-1 text-primary">Seu Wi-Fi</p>
+                <div className="w-32 h-32 rounded-full bg-primary/20 flex flex-col items-center justify-center text-center p-2 border border-primary/30">
+                    <Router className="w-10 h-10 text-primary"/>
+                    <p className="text-sm mt-1 text-primary">Seu Wi-Fi</p>
                 </div>
             </div>
             {devices.map((_, i) => (
@@ -48,33 +54,33 @@ function DesktopView() {
                     className="absolute w-full h-full"
                     style={{ transform: `rotate(${i * (360 / devices.length)}deg)` }}
                 >
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1 h-24 bg-gradient-to-b from-primary/5 to-primary/50 rounded-full" />
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1 h-40 bg-gradient-to-b from-primary/5 to-primary/50 rounded-full" />
                 </motion.div>
             ))}
             <div className="absolute w-full h-full top-0 left-0">
                 {devices.map(({ icon: Icon }, i) => (
                     <motion.div
                         key={i}
-                        className="absolute w-12 h-12 bg-neutral-900 border border-white/10 rounded-full grid place-items-center"
+                        className="absolute w-14 h-14 bg-neutral-900 border border-white/10 rounded-full grid place-items-center"
                         style={{
-                            top: `calc(50% - 24px + ${90 * Math.sin(i * 2 * Math.PI / devices.length)}px)`,
-                            left: `calc(50% - 24px + ${90 * Math.cos(i * 2 * Math.PI / devices.length)}px)`,
+                            top: `calc(50% - ${deviceIconOffset}px + ${radius * Math.sin(i * 2 * Math.PI / devices.length)}px)`,
+                            left: `calc(50% - ${deviceIconOffset}px + ${radius * Math.cos(i * 2 * Math.PI / devices.length)}px)`,
                         }}
                         initial={{ opacity: 0, scale: 0.5 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.5 + i * 0.1, type: "spring" }}
                     >
-                        <Icon className="w-5 h-5 text-white/70" />
+                        <Icon className="w-6 h-6 text-white/70" />
                     </motion.div>
                 ))}
             </div>
-            <svg className="absolute w-full h-full opacity-20" viewBox="0 0 300 300" style={{top: '50%', left: '50%', transform: 'translate(-50%, -50%)', maxWidth: '300px'}}>
+            <svg className="absolute w-full h-full opacity-20" viewBox="0 0 400 400" style={{top: '50%', left: '50%', transform: 'translate(-50%, -50%)', maxWidth: '400px'}}>
                 {devices.map((_, i) => (
                     <motion.line 
                         key={`inner-line-${i}`}
-                        x1="150" y1="150" 
-                        x2={150 + 75 * Math.cos(i * 2 * Math.PI / devices.length)} 
-                        y2={150 + 75 * Math.sin(i * 2 * Math.PI / devices.length)}
+                        x1="200" y1="200" 
+                        x2={200 + radius * Math.cos(i * 2 * Math.PI / devices.length)} 
+                        y2={200 + radius * Math.sin(i * 2 * Math.PI / devices.length)}
                         stroke="white" strokeWidth="0.5"
                         initial={{ pathLength: 0 }}
                         animate={{ pathLength: 1 }}
@@ -84,10 +90,10 @@ function DesktopView() {
                 {devices.map((_, i) => (
                         <motion.line 
                         key={`outer-line-${i}`}
-                        x1={150 + 75 * Math.cos(i * 2 * Math.PI / devices.length)} 
-                        y1={150 + 75 * Math.sin(i * 2 * Math.PI / devices.length)}
-                        x2={150 + 75 * Math.cos((i + 1) * 2 * Math.PI / devices.length)}
-                        y2={150 + 75 * Math.sin((i + 1) * 2 * Math.PI / devices.length)}
+                        x1={200 + radius * Math.cos(i * 2 * Math.PI / devices.length)} 
+                        y1={200 + radius * Math.sin(i * 2 * Math.PI / devices.length)}
+                        x2={200 + radius * Math.cos((i + 1) * 2 * Math.PI / devices.length)}
+                        y2={200 + radius * Math.sin((i + 1) * 2 * Math.PI / devices.length)}
                         stroke="white" strokeWidth="0.5"
                         initial={{ pathLength: 0 }}
                         animate={{ pathLength: 1 }}
