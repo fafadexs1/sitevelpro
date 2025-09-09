@@ -313,7 +313,7 @@ const PlanForm = ({
                 name="price"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Preço Promocional (R$)</FormLabel>
+                    <FormLabel>Preço Final (R$)</FormLabel>
                     <FormControl>
                       <Input id="plan-price" type="number" step="0.01" placeholder="Ex: 99.90" {...field} onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)} />
                     </FormControl>
@@ -326,7 +326,7 @@ const PlanForm = ({
                 name="original_price"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Preço Original <span className="text-white/50">(Opcional)</span></FormLabel>
+                    <FormLabel>Preço Antigo (riscado) <span className="text-white/50">(Opcional)</span></FormLabel>
                     <FormControl>
                       <Input id="plan-original-price" type="number" step="0.01" placeholder="Ex: 119.90" {...field} value={field.value ?? ''} onChange={(e) => field.onChange(parseFloat(e.target.value) || null)}/>
                     </FormControl>

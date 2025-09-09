@@ -129,16 +129,16 @@ export function Plans() {
             </div>
           </div>
           <div className="mb-4 flex items-baseline gap-2">
-            {plan.original_price && (
-                <span className="text-xl font-bold text-white/50 line-through">
-                    {formatPrice(plan.original_price)}
-                </span>
-            )}
              <div className="flex items-baseline gap-1">
               <span className="text-sm font-bold">R$</span>
               <span className="text-4xl font-black">{formatPriceAsNumber(plan.price)}</span>
               <span className="text-white/70">/mês</span>
             </div>
+            {plan.original_price && (
+                <span className="text-xl font-bold text-white/50 line-through">
+                    {formatPrice(plan.original_price)}
+                </span>
+            )}
           </div>
           
           {plan.has_tv && plan.featured_channel_ids && <ChannelLogos channelIds={plan.featured_channel_ids} />}
