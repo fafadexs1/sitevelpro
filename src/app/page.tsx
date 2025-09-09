@@ -10,7 +10,6 @@ import { Testimonials } from "@/components/landing/Testimonials";
 import { Faq } from "@/components/landing/Faq";
 import { Contact } from "@/components/landing/Contact";
 import { Footer } from "@/components/landing/Footer";
-import { Chatbot } from "@/components/landing/Chatbot";
 
 export default function Home() {
   return (
@@ -29,7 +28,6 @@ export default function Home() {
         <Contact />
       </main>
       <Footer />
-      <Chatbot />
     </div>
   );
 }
