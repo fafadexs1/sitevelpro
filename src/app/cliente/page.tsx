@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useMemo, useState } from "react";
@@ -39,7 +40,7 @@ function useMockApi() {
       id: "C-001",
       alias: "Residencial • Centro",
       address: "Rua da Fibra, 1000 — Centro",
-      currentPlan: { name: "300 Mega + TV Max", price: 99.9, benefits: ["Wi‑Fi 6 incluso", "Streaming 4K", "Suporte 24/7"], tvPack: { name: "TV Max", channels: 120 } },
+      currentPlan: { name: "300 Mega + TV Max", price: 99.9, benefits: ["Wi‑Fi 6 incluso", "Streaming 4K", "Suporte qualificado"], tvPack: { name: "TV Max", channels: 120 } },
       usage: { month: "Setembro/2025", downloaded: 820, uploaded: 140, cap: 2048 },
       invoices: [
         { id: "2025-08", due: "2025-09-10", amount: 99.9, status: "unpaid", pix: "00020126...ABCD" },
@@ -136,7 +137,7 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
       <div className="mx-auto grid max-w-6xl items-center gap-12 px-6 pb-20 md:grid-cols-2">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs text-primary">
-            <Zap className="h-3.5 w-3.5" /> Internet + TV com suporte 24/7
+            <Zap className="h-3.5 w-3.5" /> Internet + TV com suporte qualificado
           </div>
           <h1 className="mt-4 text-4xl font-black tracking-tight md:text-5xl">
             Bem-vindo à sua <span className="bg-gradient-to-r from-green-300 to-primary bg-clip-text text-transparent">central</span>

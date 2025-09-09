@@ -191,7 +191,7 @@ export function Plans() {
         <div className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4 md:mb-12">
           <div className="max-w-xl">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Escolha seu plano</h2>
-            <p className="mt-2 text-white/70">Sem fidelidade, sem pegadinha. Instalação rápida e suporte humano 24/7.</p>
+            <p className="mt-2 text-white/70">Sem fidelidade, sem pegadinha. Instalação rápida e suporte que resolve.</p>
           </div>
           <div className="flex shrink-0 rounded-xl border border-white/10 p-1 text-sm">
             {(

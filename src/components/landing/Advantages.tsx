@@ -1,6 +1,6 @@
 
 "use client"
-import { ShieldCheck, Gauge, Zap, Rocket, Wifi } from "lucide-react";
+import { ShieldCheck, Gauge, Zap, Rocket, Wifi, Phone } from "lucide-react";
 import {
   Carousel,
   CarouselContent,
@@ -19,7 +19,7 @@ export function Advantages() {
     { icon: <Zap className="h-5 w-5 text-primary" />, title: "Wi‑Fi 6", desc: "Mais alcance, mais dispositivos e menos interferência." },
     { icon: <Rocket className="h-5 w-5 text-primary" />, title: "Instalação express", desc: "Agendamento rápido e instalação sem complicação." },
     { icon: <Wifi className="h-5 w-5 text-primary" />, title: "Cobertura inteligente", desc: "Mesh opcional para casas e empresas maiores." },
-    { icon: <ShieldCheck className="h-5 w-5 text-primary" />, title: "Suporte 24/7", desc: "Gente de verdade atendendo quando você precisa." },
+    { icon: <Phone className="h-5 w-5 text-primary" />, title: "Suporte que resolve", desc: "Gente de verdade atendendo quando você precisa." },
   ];
 
   if (isMobile === undefined) {

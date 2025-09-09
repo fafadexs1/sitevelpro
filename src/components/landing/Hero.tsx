@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { motion } from "framer-motion";
@@ -26,7 +25,7 @@ export function Hero() {
             para tudo que importa
           </h1>
           <p className="max-w-xl text-lg text-white/70">
-            Planos estáveis, latência baixíssima e suporte humano 24/7.
+            Planos estáveis, latência baixíssima e suporte que resolve de verdade.
             Conecte-se com a Velpro e sinta a diferença.
           </p>
           <div className="flex flex-wrap gap-3">
