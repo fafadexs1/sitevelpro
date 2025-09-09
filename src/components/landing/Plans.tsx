@@ -113,7 +113,7 @@ export function Plans() {
                     <p className="text-white/60 line-through">De R$ {plan.original_price.toFixed(2).replace('.', ',')}</p>
                 )}
                 <p className="text-xl font-bold">
-                    Por <span className="text-3xl font-black">R$ {plan.price.toFixed(2).replace('.', ',')}</span>/mês
+                    Por <span className="text-4xl font-black">R$ {plan.price.toFixed(2).replace('.', ',')}</span>/mês
                 </p>
             </div>
           
