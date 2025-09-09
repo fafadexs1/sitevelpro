@@ -169,8 +169,8 @@ export function Plans() {
             <div className="text-center">
                 <p className="text-sm text-neutral-600 flex items-center justify-center gap-1.5"><Wifi size={14}/> INTERNET</p>
                 <div className="mt-2">
-                    <span className="text-5xl font-extrabold tracking-tight text-neutral-900">{plan.speed.replace(/\D/g, '')}</span>
-                    <span className="text-3xl font-bold text-neutral-900">MEGA</span>
+                    <span className="text-4xl md:text-5xl font-extrabold tracking-tight text-neutral-900">{plan.speed.replace(/\D/g, '')}</span>
+                    <span className="text-2xl md:text-3xl font-bold text-neutral-900">MEGA</span>
                 </div>
                 <div className="inline-block h-1 w-12 bg-[#03bf03] rounded-full mt-2"/>
             </div>
@@ -205,8 +205,12 @@ export function Plans() {
               {firstMonthPriceBRL ? (
                 <>
                     <div className="mb-2">
-                        <p className="text-lg font-bold text-yellow-600 flex items-center justify-center gap-1"><Star className="w-4 h-4 text-yellow-500 fill-yellow-500"/> 1º MÊS POR</p>
-                        <p className="font-bold text-3xl text-neutral-900">R$ {firstMonthPriceBRL}</p>
+                        <p className="text-md md:text-lg font-bold text-yellow-600 flex items-center justify-center gap-1"><Star className="w-4 h-4 text-yellow-500 fill-yellow-500"/> 1º MÊS POR</p>
+                        <div className="flex items-baseline justify-center gap-1 whitespace-nowrap">
+                            <span className="font-bold text-3xl md:text-4xl">R$</span>
+                            <span className="font-bold text-3xl md:text-4xl">{firstMonthPriceBRL.split(',')[0]}</span>
+                            <span className="font-bold text-xl md:text-2xl">,{firstMonthPriceBRL.split(',')[1]}</span>
+                        </div>
                     </div>
                      <div className="flex items-baseline justify-center gap-1 whitespace-nowrap text-sm text-neutral-500">
                         <span>Após,</span>
