@@ -179,14 +179,14 @@ function SlideForm({
                     <FormLabel>Imagem de Fundo (1920x1080px)</FormLabel>
                     <FormControl>
                     <div className="relative flex items-center justify-center w-full">
-                        <label htmlFor="dropzone-file-hero" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 border-gray-300 hover:border-primary hover:bg-gray-100">
-                            <div className="flex flex-col items-center justify-center pt-5 pb-6"><Upload className="w-8 h-8 mb-3 text-gray-500"/><p className="mb-2 text-sm text-gray-500"><span className="font-semibold">Clique para enviar</span> ou arraste</p></div>
+                        <label htmlFor="dropzone-file-hero" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-secondary border-border hover:border-primary hover:bg-accent">
+                            <div className="flex flex-col items-center justify-center pt-5 pb-6"><Upload className="w-8 h-8 mb-3 text-muted-foreground"/><p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Clique para enviar</span> ou arraste</p></div>
                             <Input id="dropzone-file-hero" type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={(e) => field.onChange(e.target.files ? e.target.files[0] : null)}/>
                         </label>
                     </div> 
                     </FormControl>
-                    {field.value?.name && <p className="text-sm text-gray-600 mt-2">Novo: {field.value.name}</p>}
-                    {slide?.image_url && !field.value?.name && <div className="mt-2"><p className="text-sm">Atual:</p><Image src={slide.image_url} alt="Preview" width={120} height={67} className="rounded-md border border-gray-200"/></div>}
+                    {field.value?.name && <p className="text-sm text-muted-foreground mt-2">Novo: {field.value.name}</p>}
+                    {slide?.image_url && !field.value?.name && <div className="mt-2"><p className="text-sm">Atual:</p><Image src={slide.image_url} alt="Preview" width={120} height={67} className="rounded-md border border-border"/></div>}
                     <FormMessage />
                 </FormItem>
             )}/>
@@ -265,8 +265,8 @@ export default function HeroSlidesPage() {
     <>
       <header className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Slides do Herói</h1>
-          <p className="text-gray-500">Gerencie os slides que aparecem no topo da página inicial.</p>
+          <h1 className="text-3xl font-bold text-foreground">Slides do Herói</h1>
+          <p className="text-muted-foreground">Gerencie os slides que aparecem no topo da página inicial.</p>
         </div>
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
           <DialogTrigger asChild>
@@ -274,7 +274,7 @@ export default function HeroSlidesPage() {
               <PlusCircle className="mr-2 h-4 w-4" /> Adicionar Slide
             </Button>
           </DialogTrigger>
-          <DialogContent className="bg-white text-gray-900 sm:max-w-2xl">
+          <DialogContent className="bg-background text-foreground sm:max-w-2xl">
             <SlideForm mode={editingSlide ? "edit" : "add"} slide={editingSlide} onSave={handleSave} onOpenChange={setIsModalOpen} />
           </DialogContent>
         </Dialog>
@@ -293,7 +293,7 @@ export default function HeroSlidesPage() {
           ) : (
              <Table>
                 <TableHeader>
-                    <TableRow className="hover:bg-transparent">
+                    <TableRow>
                         <TableHead className="w-12"></TableHead>
                         <TableHead className="w-24">Status</TableHead>
                         <TableHead>Título</TableHead>
@@ -302,20 +302,20 @@ export default function HeroSlidesPage() {
                 </TableHeader>
                 <TableBody>
                 {slides.length === 0 ? (
-                    <TableRow><TableCell colSpan={4} className="text-center text-gray-500 h-24">Nenhum slide cadastrado.</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground h-24">Nenhum slide cadastrado.</TableCell></TableRow>
                 ) : (
                     slides.map((slide) => (
                     <TableRow key={slide.id}>
-                        <TableCell><GripVertical className="h-5 w-5 text-gray-400"/></TableCell>
-                        <TableCell className="text-gray-800">{slide.is_active ? "Ativo" : "Inativo"}</TableCell>
-                        <TableCell className="font-medium text-gray-800">{slide.title_regular}</TableCell>
+                        <TableCell><GripVertical className="h-5 w-5 text-muted-foreground"/></TableCell>
+                        <TableCell className="text-foreground">{slide.is_active ? "Ativo" : "Inativo"}</TableCell>
+                        <TableCell className="font-medium text-foreground">{slide.title_regular}</TableCell>
                         <TableCell className="text-right">
                         <Button variant="ghost" size="sm" className="mr-2" onClick={() => { setEditingSlide(slide); setIsModalOpen(true);}}>
                             <Edit className="h-4 w-4" />
                         </Button>
                         <AlertDialog>
                             <AlertDialogTrigger asChild><Button variant="destructive" size="sm"><Trash2 className="h-4 w-4" /></Button></AlertDialogTrigger>
-                            <AlertDialogContent className="bg-white text-gray-900">
+                            <AlertDialogContent className="bg-background text-foreground">
                             <AlertDialogHeader><AlertDialogTitle>Tem certeza?</AlertDialogTitle><AlertDialogDescription>Essa ação não pode ser desfeita.</AlertDialogDescription></AlertDialogHeader>
                             <AlertDialogFooter>
                                 <AlertDialogCancel>Cancelar</AlertDialogCancel>

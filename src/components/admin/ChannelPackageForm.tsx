@@ -204,7 +204,7 @@ export function ChannelPackageForm({
                         render={({ field }) => (
                             <FormItem
                             key={channel.id}
-                            className="flex flex-row items-center gap-2 space-y-0 rounded-lg border p-3 bg-gray-50 border-gray-200"
+                            className="flex flex-row items-center gap-2 space-y-0 rounded-lg border p-3 bg-secondary border-border"
                             >
                             <FormControl>
                                 <Checkbox
@@ -224,7 +224,7 @@ export function ChannelPackageForm({
                             {channel.logo_url && (
                                 <Image src={channel.logo_url} alt={channel.name} width={24} height={24} className="rounded-sm"/>
                             )}
-                            <FormLabel className="font-normal text-sm cursor-pointer text-gray-800">
+                            <FormLabel className="font-normal text-sm cursor-pointer text-foreground">
                                 {channel.name}
                             </FormLabel>
                             </FormItem>

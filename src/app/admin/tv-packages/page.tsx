@@ -95,8 +95,8 @@ export default function TvPackagesPage() {
       <>
         <header className="mb-8 flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Pacotes de TV</h1>
-            <p className="text-gray-500">Crie e gerencie os pacotes de canais.</p>
+            <h1 className="text-3xl font-bold text-foreground">Pacotes de TV</h1>
+            <p className="text-muted-foreground">Crie e gerencie os pacotes de canais.</p>
           </div>
            <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
             <DialogTrigger asChild>
@@ -105,7 +105,7 @@ export default function TvPackagesPage() {
                     Novo Pacote
                 </Button>
             </DialogTrigger>
-            <DialogContent className="bg-white text-gray-900 sm:max-w-2xl">
+            <DialogContent className="bg-background text-foreground sm:max-w-2xl">
                  <ChannelPackageForm 
                     pkg={editingPackage}
                     onPackageSaved={handleSave}
@@ -119,13 +119,13 @@ export default function TvPackagesPage() {
           {packages.map((pkg) => (
             <Card key={pkg.id} className="flex flex-col">
               <CardHeader>
-                <CardTitle className="flex items-center justify-between text-gray-800">
+                <CardTitle className="flex items-center justify-between text-foreground">
                   {pkg.name}
-                  <Tv className="w-5 h-5 text-gray-400"/>
+                  <Tv className="w-5 h-5 text-muted-foreground"/>
                 </CardTitle>
               </CardHeader>
               <CardContent className="flex-grow">
-                <p className="mb-2 text-sm text-gray-600">ID: {pkg.id}</p>
+                <p className="mb-2 text-sm text-muted-foreground">ID: {pkg.id}</p>
               </CardContent>
               <CardFooter className="flex justify-end p-4 border-t">
                 <Button id={`edit-package-${pkg.id}`} variant="ghost" size="sm" className="mr-2" onClick={() => { setEditingPackage(pkg); setIsModalOpen(true);}}>
@@ -135,10 +135,10 @@ export default function TvPackagesPage() {
                     <AlertDialogTrigger asChild>
                         <Button id={`delete-package-trigger-${pkg.id}`} variant="destructive" size="sm"><Trash2 className="w-4 h-4" /></Button>
                     </AlertDialogTrigger>
-                    <AlertDialogContent className="bg-white text-gray-900">
+                    <AlertDialogContent className="bg-background text-foreground">
                         <AlertDialogHeader>
                             <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
-                            <p className="text-sm text-gray-600">
+                            <p className="text-sm text-muted-foreground">
                                 Essa ação não pode ser desfeita. Isso irá apagar o pacote e todas as suas associações com canais.
                             </p>
                         </AlertDialogHeader>
@@ -153,7 +153,7 @@ export default function TvPackagesPage() {
               </CardFooter>
             </Card>
           ))}
-           {packages.length === 0 && <p className="text-gray-500 col-span-full">Nenhum pacote de TV encontrado.</p>}
+           {packages.length === 0 && <p className="text-muted-foreground col-span-full">Nenhum pacote de TV encontrado.</p>}
         </div>
       </>
     );
