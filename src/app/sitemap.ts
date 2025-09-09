@@ -37,7 +37,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Busca todas as regras de SEO ativas
   const { data: rules } = await supabase
     .from('dynamic_seo_rules')
-    .select('slug_pattern')
+    .select('slug_pattern, allow_indexing')
     .eq('allow_indexing', true);
 
   if (rules) {
