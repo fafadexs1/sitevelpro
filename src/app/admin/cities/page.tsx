@@ -168,7 +168,7 @@ function CityForm({
               <FormControl>
                 <Input id="city-slug" placeholder="ex: valparaiso-de-goias" {...field} />
               </FormControl>
-              <p className="text-xs text-white/50">Usado na URL, como em /internet-em/valparaiso-de-goias</p>
+              <p className="text-xs text-gray-500">Usado na URL, como em /internet-em/valparaiso-de-goias</p>
               <FormMessage />
             </FormItem>
           )}
@@ -236,8 +236,8 @@ export default function CitiesPage() {
     <>
       <header className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Gerenciar Cidades</h1>
-          <p className="text-white/60">Adicione as cidades onde a Velpro atua.</p>
+          <h1 className="text-3xl font-bold text-gray-900">Gerenciar Cidades</h1>
+          <p className="text-gray-500">Adicione as cidades onde a Velpro atua.</p>
         </div>
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
           <DialogTrigger asChild>
@@ -246,13 +246,13 @@ export default function CitiesPage() {
               Adicionar Cidade
             </Button>
           </DialogTrigger>
-          <DialogContent className="border-white/10 bg-neutral-950 text-white sm:max-w-md">
+          <DialogContent className="bg-white text-gray-900 sm:max-w-md">
             <CityForm mode={editingCity ? "edit" : "add"} city={editingCity} onSave={handleSave} onOpenChange={setIsModalOpen} />
           </DialogContent>
         </Dialog>
       </header>
 
-      <Card className="border-white/10 bg-neutral-950">
+      <Card>
         <CardHeader>
           <CardTitle>Cidades Cadastradas</CardTitle>
           <CardDescription>
@@ -267,7 +267,7 @@ export default function CitiesPage() {
           ) : (
              <Table>
                 <TableHeader>
-                    <TableRow className="border-white/10 hover:bg-transparent">
+                    <TableRow className="hover:bg-transparent">
                         <TableHead>Nome</TableHead>
                         <TableHead>Slug (para URL)</TableHead>
                         <TableHead className="text-right">Ações</TableHead>
@@ -276,16 +276,16 @@ export default function CitiesPage() {
                 <TableBody>
                 {cities.length === 0 ? (
                     <TableRow>
-                        <TableCell colSpan={3} className="text-center text-white/60 h-24">
+                        <TableCell colSpan={3} className="text-center text-gray-500 h-24">
                             Nenhuma cidade cadastrada.
                         </TableCell>
                     </TableRow>
                 ) : (
                     cities.map((city) => (
-                    <TableRow key={city.id} className="border-white/10">
-                        <TableCell className="font-medium">{city.name}</TableCell>
+                    <TableRow key={city.id}>
+                        <TableCell className="font-medium text-gray-800">{city.name}</TableCell>
                         <TableCell>
-                            <div className="flex items-center gap-1 font-mono text-xs text-white/70">
+                            <div className="flex items-center gap-1 font-mono text-xs text-gray-600">
                                 <LinkIcon className="w-3 h-3"/>
                                 <span>{city.slug}</span>
                             </div>
@@ -298,7 +298,7 @@ export default function CitiesPage() {
                             <AlertDialogTrigger asChild>
                             <Button id={`delete-city-trigger-${city.id}`} variant="destructive" size="sm"><Trash2 className="h-4 w-4" /></Button>
                             </AlertDialogTrigger>
-                            <AlertDialogContent className="bg-neutral-950 border-white/10 text-white">
+                            <AlertDialogContent className="bg-white text-gray-900">
                             <AlertDialogHeader>
                                 <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
                                 <AlertDialogDescription>
@@ -322,7 +322,7 @@ export default function CitiesPage() {
           )}
         </CardContent>
          <CardFooter>
-            <p className="text-xs text-white/50">
+            <p className="text-xs text-gray-500">
                O 'slug' é a parte da URL que identifica a cidade. Ex: /internet-em/<b>valparaiso-de-goias</b>
             </p>
          </CardFooter>

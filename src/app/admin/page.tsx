@@ -327,7 +327,7 @@ const PlanForm = ({
                 name="original_price"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Preço Antigo (riscado) <span className="text-white/50">(Opcional)</span></FormLabel>
+                    <FormLabel>Preço Antigo (riscado) <span className="text-gray-500">(Opcional)</span></FormLabel>
                     <FormControl>
                       <Input id="plan-original-price" type="number" step="0.01" placeholder="Ex: 119.90" {...field} value={field.value ?? ''} onChange={(e) => field.onChange(parseFloat(e.target.value) || null)}/>
                     </FormControl>
@@ -355,7 +355,7 @@ const PlanForm = ({
               <div className="mt-2 space-y-3">
                 {fields.map((field, index) => (
                   <div key={field.id} className="flex items-center gap-2">
-                    <GripVertical className="h-5 w-5 text-white/40 flex-shrink-0" />
+                    <GripVertical className="h-5 w-5 text-gray-400 flex-shrink-0" />
                     <FormField
                       control={form.control}
                       name={`features.${index}.icon`}
@@ -399,7 +399,7 @@ const PlanForm = ({
               </Button>
             </div>
             
-            <div className="!mt-6 space-y-4 border-t border-white/10 pt-4">
+            <div className="!mt-6 space-y-4 border-t border-gray-200 pt-4">
                <div className="flex items-center justify-between">
                 <FormField
                   control={form.control}
@@ -438,10 +438,10 @@ const PlanForm = ({
                                 <FormItem>
                                 <div className="mb-4">
                                     <FormLabel className="text-base">Canais em Destaque</FormLabel>
-                                    <p className="text-sm text-white/60">Selecione até 5 canais para destacar neste plano.</p>
+                                    <p className="text-sm text-gray-500">Selecione até 5 canais para destacar neste plano.</p>
                                 </div>
                                 <div className="relative mb-3">
-                                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/60" />
+                                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                                   <Input
                                     id="plan-channel-search"
                                     placeholder="Buscar canal..."
@@ -466,7 +466,7 @@ const PlanForm = ({
                                                 return (
                                                 <FormItem
                                                     key={channel.id}
-                                                    className={`flex flex-row items-center gap-2 space-y-0 rounded-lg border p-3 transition-colors ${limitReached ? 'opacity-50' : 'cursor-pointer'} bg-neutral-900 border-white/10`}
+                                                    className={`flex flex-row items-center gap-2 space-y-0 rounded-lg border p-3 transition-colors ${limitReached ? 'opacity-50' : 'cursor-pointer'} bg-gray-50 border-gray-200`}
                                                 >
                                                     <FormControl>
                                                     <Checkbox
@@ -492,7 +492,7 @@ const PlanForm = ({
                                             }}
                                             />
                                         ))}
-                                        {filteredChannels.length === 0 && <p className="text-center text-sm text-white/60 py-4">Nenhum canal encontrado.</p>}
+                                        {filteredChannels.length === 0 && <p className="text-center text-sm text-gray-500 py-4">Nenhum canal encontrado.</p>}
                                         </div>
                                     </ScrollArea>
                                 )}
@@ -505,32 +505,32 @@ const PlanForm = ({
               )}
             </div>
             
-            <div className="!mt-6 space-y-4 border-t border-white/10 pt-4">
+            <div className="!mt-6 space-y-4 border-t border-gray-200 pt-4">
                 <h3 className="font-semibold flex items-center gap-2"><FileText className="w-4 h-4 text-primary" /> Condições do Plano</h3>
                 <FormField
                     control={form.control}
                     name="conditions"
                     render={({ field }) => (
                         <FormItem>
-                        <FormLabel>Texto de Condições <span className="text-white/50">(Opcional)</span></FormLabel>
+                        <FormLabel>Texto de Condições <span className="text-gray-500">(Opcional)</span></FormLabel>
                         <FormControl>
                             <Textarea id="plan-conditions" rows={5} placeholder="Descreva as condições, regras da promoção, etc." {...field} value={field.value ?? ''} />
                         </FormControl>
-                        <p className="text-xs text-white/60">Este texto será exibido quando o cliente clicar em "Conferir condições".</p>
+                        <p className="text-xs text-gray-500">Este texto será exibido quando o cliente clicar em "Conferir condições".</p>
                         <FormMessage />
                         </FormItem>
                     )}
                 />
             </div>
 
-            <div className="!mt-6 space-y-4 border-t border-white/10 pt-4">
+            <div className="!mt-6 space-y-4 border-t border-gray-200 pt-4">
                 <h3 className="font-semibold flex items-center gap-2"><MessageSquare className="w-4 h-4 text-primary" /> Contato via WhatsApp</h3>
                 <FormField
                     control={form.control}
                     name="whatsapp_number"
                     render={({ field }) => (
                         <FormItem>
-                        <FormLabel>Número do WhatsApp <span className="text-white/50">(Opcional)</span></FormLabel>
+                        <FormLabel>Número do WhatsApp <span className="text-gray-500">(Opcional)</span></FormLabel>
                         <FormControl>
                             <Input id="plan-whatsapp-number" placeholder="5561999998888" {...field} value={field.value ?? ''} />
                         </FormControl>
@@ -543,11 +543,11 @@ const PlanForm = ({
                     name="whatsapp_message"
                     render={({ field }) => (
                         <FormItem>
-                        <FormLabel>Mensagem Padrão <span className="text-white/50">(Opcional)</span></FormLabel>
+                        <FormLabel>Mensagem Padrão <span className="text-gray-500">(Opcional)</span></FormLabel>
                         <FormControl>
                             <Textarea id="plan-whatsapp-message" {...field} value={field.value ?? ''} />
                         </FormControl>
-                        <p className="text-xs text-white/60">Use {'{{VELOCIDADE}}'} para inserir a velocidade do plano na mensagem.</p>
+                        <p className="text-xs text-gray-500">Use {'{{VELOCIDADE}}'} para inserir a velocidade do plano na mensagem.</p>
                         <FormMessage />
                         </FormItem>
                     )}
@@ -580,7 +580,7 @@ function PlansTable({
 }) {
 
   if (!plans || plans.length === 0) {
-    return <div className="p-8 text-center text-white/60">Nenhum plano deste tipo encontrado.</div>;
+    return <div className="p-8 text-center text-gray-500">Nenhum plano deste tipo encontrado.</div>;
   }
 
   const formatPrice = (value: number | null | undefined): string => {
@@ -591,7 +591,7 @@ function PlansTable({
   return (
     <Table>
       <TableHeader>
-        <TableRow className="border-white/10 hover:bg-transparent">
+        <TableRow className="hover:bg-transparent">
           <TableHead className="w-[150px]">Velocidade</TableHead>
           <TableHead>Preço</TableHead>
           <TableHead className="text-center">Destaque</TableHead>
@@ -600,13 +600,13 @@ function PlansTable({
       </TableHeader>
       <TableBody>
         {plans.map((plan) => (
-          <TableRow key={plan.id} className="border-white/10 text-white">
-            <TableCell className="font-medium">{plan.speed} MEGA</TableCell>
+          <TableRow key={plan.id}>
+            <TableCell className="font-medium text-gray-800">{plan.speed} MEGA</TableCell>
             <TableCell>
               <div className="flex items-center gap-2">
-                <span>{formatPrice(plan.price)}</span>
+                <span className="text-gray-800">{formatPrice(plan.price)}</span>
                 {plan.original_price && (
-                  <span className="text-xs text-white/50 line-through">
+                  <span className="text-xs text-gray-500 line-through">
                     {formatPrice(plan.original_price)}
                   </span>
                 )}
@@ -625,7 +625,7 @@ function PlansTable({
                 <AlertDialogTrigger asChild>
                   <Button id={`delete-plan-trigger-${plan.id}`} variant="destructive" size="sm"><Trash2 className="h-4 w-4" /></Button>
                 </AlertDialogTrigger>
-                <AlertDialogContent className="bg-neutral-950 border-white/10 text-white">
+                <AlertDialogContent className="bg-white text-gray-900">
                   <AlertDialogHeader>
                     <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
                     <AlertDialogDescription>
@@ -701,8 +701,8 @@ export default function PlansPage() {
     <>
       <header className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Gerenciar Planos</h1>
-          <p className="text-white/60">Adicione, edite ou remova os planos exibidos no site.</p>
+          <h1 className="text-3xl font-bold text-gray-900">Gerenciar Planos</h1>
+          <p className="text-gray-500">Adicione, edite ou remova os planos exibidos no site.</p>
         </div>
         <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
           <DialogTrigger asChild>
@@ -711,14 +711,14 @@ export default function PlansPage() {
               Adicionar Plano
             </Button>
           </DialogTrigger>
-          <DialogContent className="border-white/10 bg-neutral-950 text-white sm:max-w-xl">
+          <DialogContent className="bg-white text-gray-900 sm:max-w-xl">
             <PlanForm mode="add" onPlanAdded={handlePlanAdded} onOpenChange={setIsAddModalOpen} />
           </DialogContent>
         </Dialog>
       </header>
 
       <Dialog open={!!editingPlan} onOpenChange={(isOpen) => !isOpen && setEditingPlan(null)}>
-        <DialogContent className="border-white/10 bg-neutral-950 text-white sm:max-w-xl">
+        <DialogContent className="bg-white text-gray-900 sm:max-w-xl">
           {editingPlan && (
             <PlanForm
               mode="edit"
@@ -731,16 +731,16 @@ export default function PlansPage() {
       </Dialog>
 
 
-      <Card className="border-white/10 bg-neutral-950">
+      <Card>
         <CardHeader>
-          <div className="flex items-center border-b border-white/10">
+          <div className="flex items-center border-b border-gray-200">
             <button
               id="tab-residencial"
               onClick={() => setActiveTab("residencial")}
               className={`flex items-center gap-2 px-4 py-2 text-sm transition-colors ${
                 activeTab === "residencial"
                   ? "border-b-2 border-primary text-primary"
-                  : "text-white/60 hover:text-white"
+                  : "text-gray-500 hover:text-gray-700"
               }`}
             >
               <Package className="h-4 w-4" /> Planos Residenciais
@@ -751,7 +751,7 @@ export default function PlansPage() {
               className={`flex items-center gap-2 px-4 py-2 text-sm transition-colors ${
                 activeTab === "empresarial"
                   ? "border-b-2 border-primary text-primary"
-                  : "text-white/60 hover:text-white"
+                  : "text-gray-500 hover:text-gray-700"
               }`}
             >
               <Building className="h-4 w-4" /> Planos Empresariais

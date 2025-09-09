@@ -275,21 +275,21 @@ WITH CHECK (bucket_id = 'hero-slides');
         <>
             <header className="mb-8 flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold">Banco de Dados</h1>
-                    <p className="text-white/60">Gerencie a estrutura do seu banco de dados.</p>
+                    <h1 className="text-3xl font-bold text-gray-900">Banco de Dados</h1>
+                    <p className="text-gray-500">Gerencie a estrutura do seu banco de dados.</p>
                 </div>
             </header>
 
-            <Card className="bg-neutral-950 border-white/10">
+            <Card>
                 <CardHeader>
                     <CardTitle>Script de Configuração (setup.sql)</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    <p className="text-sm text-white/70">
+                    <p className="text-sm text-gray-600">
                         O script abaixo contém todos os comandos SQL necessários para configurar ou atualizar as tabelas do seu banco de dados Supabase.
                     </p>
                     <div className="relative">
-                        <pre className="bg-neutral-900 border border-white/10 rounded-lg p-4 text-xs overflow-x-auto max-h-96">
+                        <pre className="bg-gray-100 border border-gray-200 rounded-lg p-4 text-xs overflow-x-auto max-h-96 text-gray-800">
                             <code>{setupSqlContent}</code>
                         </pre>
                         <Button
@@ -307,7 +307,7 @@ WITH CHECK (bucket_id = 'hero-slides');
                                 Abrir Editor SQL do Supabase
                             </Link>
                         </Button>
-                        <p className="text-sm text-white/70 self-center">
+                        <p className="text-sm text-gray-600 self-center">
                             Copie o script e cole no editor de SQL para executar.
                         </p>
                     </div>

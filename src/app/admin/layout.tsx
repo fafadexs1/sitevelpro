@@ -106,28 +106,28 @@ function AdminLogin({ onLogin }: { onLogin: (user: SupabaseUser) => void }) {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-neutral-950 p-4">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4">
       <Link href="/" className="mb-8 flex w-fit items-center gap-3">
-        <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-primary to-green-400 text-neutral-950 shadow-lg shadow-primary/20">
+        <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-primary to-green-400 text-white shadow-lg shadow-primary/20">
           <Wifi className="h-5 w-5" />
         </div>
         <div>
-          <p className="text-lg font-semibold leading-none">Velpro Telecom</p>
-          <p className="text-xs text-white/60">Painel Administrativo</p>
+          <p className="text-lg font-semibold leading-none text-gray-900">Velpro Telecom</p>
+          <p className="text-xs text-gray-500">Painel Administrativo</p>
         </div>
       </Link>
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-sm rounded-2xl border border-white/10 bg-neutral-900/60 p-6 shadow-2xl"
+        className="w-full max-w-sm rounded-2xl border border-gray-200 bg-white p-6 shadow-xl shadow-gray-200/50"
       >
         <div className="mb-6 text-center">
-          <div className="mx-auto mb-3 grid h-14 w-14 place-items-center rounded-2xl bg-primary/20">
+          <div className="mx-auto mb-3 grid h-14 w-14 place-items-center rounded-2xl bg-primary/10">
             {isSignUp ? <UserPlus className="h-6 w-6 text-primary" /> : <LogIn className="h-6 w-6 text-primary" />}
           </div>
-          <h2 className="text-xl font-semibold">{isSignUp ? "Criar Conta de Admin" : "Acesso Restrito"}</h2>
-          <p className="text-sm text-white/60">{isSignUp ? "Crie o primeiro usuário administrador" : "Entre com suas credenciais"}</p>
+          <h2 className="text-xl font-semibold text-gray-900">{isSignUp ? "Criar Conta de Admin" : "Acesso Restrito"}</h2>
+          <p className="text-sm text-gray-500">{isSignUp ? "Crie o primeiro usuário administrador" : "Entre com suas credenciais"}</p>
         </div>
 
         <Form {...form}>
@@ -137,10 +137,10 @@ function AdminLogin({ onLogin }: { onLogin: (user: SupabaseUser) => void }) {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>E-mail</FormLabel>
+                  <FormLabel className="text-gray-700">E-mail</FormLabel>
                   <FormControl>
                     <div className="relative">
-                      <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/60" />
+                      <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                       <Input
                         id="email-input"
                         placeholder="admin@velpro.com"
@@ -159,10 +159,10 @@ function AdminLogin({ onLogin }: { onLogin: (user: SupabaseUser) => void }) {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Senha</FormLabel>
+                  <FormLabel className="text-gray-700">Senha</FormLabel>
                   <FormControl>
                     <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/60" />
+                      <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                       <Input
                         id="password-input"
                         type={show ? "text" : "password"}
@@ -175,7 +175,7 @@ function AdminLogin({ onLogin }: { onLogin: (user: SupabaseUser) => void }) {
                         type="button"
                         aria-label="toggle"
                         onClick={() => setShow((v) => !v)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-white/60 hover:text-white"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-800"
                       >
                         {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
@@ -234,16 +234,16 @@ function AdminDashboard({
   ];
 
   return (
-    <div className="flex min-h-screen bg-neutral-900 text-white">
+    <div className="flex min-h-screen bg-gray-100 text-gray-800">
       {/* Sidebar */}
-      <aside className="sticky top-0 hidden h-screen w-64 flex-col border-r border-white/10 bg-neutral-950 p-4 md:flex">
+      <aside className="sticky top-0 hidden h-screen w-64 flex-col border-r border-gray-200 bg-white p-4 md:flex">
         <div className="mb-8 flex w-fit items-center gap-3">
-          <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-primary to-green-400 text-neutral-950 shadow-lg shadow-primary/20">
+          <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-primary to-green-400 text-white shadow-lg shadow-primary/20">
             <Wifi className="h-5 w-5" />
           </div>
           <div>
-            <p className="text-lg font-semibold leading-none">Velpro</p>
-            <p className="text-xs text-white/60">Admin</p>
+            <p className="text-lg font-semibold leading-none text-gray-900">Velpro</p>
+            <p className="text-xs text-gray-500">Admin</p>
           </div>
         </div>
 
@@ -257,7 +257,7 @@ function AdminDashboard({
               className={`justify-start gap-2 ${
                 pathname === item.href
                   ? "bg-primary/10 text-primary"
-                  : "text-white/70 hover:bg-white/5 hover:text-white"
+                  : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
               }`}
             >
               <Link href={item.href}>
@@ -267,16 +267,16 @@ function AdminDashboard({
           ))}
         </nav>
 
-        <div className="border-t border-white/10 pt-4">
-          <div className="mb-2 px-3 text-xs text-white/60">
+        <div className="border-t border-gray-200 pt-4">
+          <div className="mb-2 px-3 text-xs text-gray-500">
             <p>Logado como:</p>
-            <p className="truncate font-medium text-white">{user.email}</p>
+            <p className="truncate font-medium text-gray-800">{user.email}</p>
           </div>
           <Button
             id="logout-button"
             variant="ghost"
             onClick={handleLogout}
-            className="w-full justify-start gap-2 text-white/70 hover:bg-white/5 hover:text-white"
+            className="w-full justify-start gap-2 text-gray-600 hover:bg-gray-100 hover:text-gray-900"
           >
             <LogOut className="h-4 w-4" /> Sair
           </Button>
@@ -337,7 +337,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-neutral-950">
+      <div className="flex min-h-screen items-center justify-center bg-gray-100">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
