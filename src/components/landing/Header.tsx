@@ -6,7 +6,7 @@ import { Wifi, ChevronRight, Menu, User, X, FileText, ArrowRight, Smartphone, Do
 import Link from "next/link";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
-import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "../ui/sheet";
 
 export function Header() {
   const navItems = [
@@ -70,12 +70,12 @@ export function Header() {
                     </Button>
                 </SheetTrigger>
                 <SheetContent side="right" className="w-full max-w-sm bg-card p-0 flex flex-col">
-                     <div className="flex items-center justify-between p-4 border-b border-border">
-                        <div className="flex items-center gap-2 font-semibold text-card-foreground">
-                            <FileText className="h-5 w-5 text-primary"/>
+                     <SheetHeader className="p-4 border-b border-border text-left">
+                        <SheetTitle className="flex items-center gap-2 font-semibold text-card-foreground">
+                           <FileText className="h-5 w-5 text-primary"/>
                             2ª via da conta
-                        </div>
-                    </div>
+                        </SheetTitle>
+                    </SheetHeader>
                     <div className="p-4 space-y-6 overflow-y-auto">
                         <div className="relative">
                             <Input placeholder="CPF ou CNPJ" className="pr-12 h-12 text-base"/>
