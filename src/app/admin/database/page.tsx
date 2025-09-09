@@ -48,6 +48,7 @@ create table if not exists plans (
   featured_channel_ids uuid[],
   whatsapp_number text,
   whatsapp_message text,
+  conditions text,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 

@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Gauge, Check, ChevronRight, Loader2, Wifi, Upload, Download, Tv, Smartphone, ShieldCheck, Zap, Rocket, Home, MessageSquare, Globe } from "lucide-react";
+import { Gauge, Check, ChevronRight, Loader2, Wifi, Upload, Download, Tv, Smartphone, ShieldCheck, Zap, Rocket, Home, MessageSquare, Globe, FileText, X } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import Link from 'next/link';
 import {
@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { ChannelLogos } from "./ChannelLogos";
 import { createClient } from "@/utils/supabase/client";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 
 type Plan = {
   id: string;
@@ -30,6 +31,7 @@ type Plan = {
   featured_channel_ids: string[] | null;
   whatsapp_number: string | null;
   whatsapp_message: string | null;
+  conditions: string | null;
 };
 
 // Mapeamento de nomes de ícones para componentes de ícone
@@ -153,34 +155,53 @@ export function Plans() {
             })}
           </ul>
         </div>
-        <Popover>
-            <PopoverTrigger asChild>
-                <Button id={`plan-cta-assinar-${slug}`} className="mt-auto w-full"
-                    data-track-event="cta_click"
-                    data-track-prop-button-id={`assinar-plano-${slug}`}
-                    data-track-prop-plan-name={planName}
-                    data-track-prop-plan-price={plan.price}
-                >
-                    Assinar <ChevronRight className="h-4 w-4" />
-                </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-56 p-2 bg-neutral-900 border-white/10 text-white">
-                <div className="grid gap-2">
-                    <Button variant="ghost" className="justify-start" asChild>
-                        <Link href="/assinar">
-                            <Globe className="mr-2 h-4 w-4"/>
-                            Continuar pelo site
-                        </Link>
+        
+        <div className="flex flex-col gap-2 mt-auto">
+             <Popover>
+                <PopoverTrigger asChild>
+                    <Button id={`plan-cta-assinar-${slug}`}
+                        data-track-event="cta_click"
+                        data-track-prop-button-id={`assinar-plano-${slug}`}
+                        data-track-prop-plan-name={planName}
+                        data-track-prop-plan-price={plan.price}
+                    >
+                        Assinar <ChevronRight className="h-4 w-4" />
                     </Button>
-                     <Button variant="ghost" className="justify-start" asChild>
-                        <Link href={whatsappUrl} target="_blank">
-                            <MessageSquare className="mr-2 h-4 w-4"/>
-                            Falar no WhatsApp
-                        </Link>
-                    </Button>
-                </div>
-            </PopoverContent>
-        </Popover>
+                </PopoverTrigger>
+                <PopoverContent className="w-56 p-2 bg-neutral-900 border-white/10 text-white">
+                    <div className="grid gap-2">
+                        <Button variant="ghost" className="justify-start" asChild>
+                            <Link href="/assinar">
+                                <Globe className="mr-2 h-4 w-4"/>
+                                Continuar pelo site
+                            </Link>
+                        </Button>
+                        <Button variant="ghost" className="justify-start" asChild>
+                            <Link href={whatsappUrl} target="_blank">
+                                <MessageSquare className="mr-2 h-4 w-4"/>
+                                Falar no WhatsApp
+                            </Link>
+                        </Button>
+                    </div>
+                </PopoverContent>
+            </Popover>
+
+            {plan.conditions && (
+                 <Sheet>
+                    <SheetTrigger asChild>
+                         <Button variant="link" className="text-xs text-white/60">Conferir condições</Button>
+                    </SheetTrigger>
+                    <SheetContent className="bg-neutral-950 border-white/10 text-white">
+                        <SheetHeader>
+                            <SheetTitle className="flex items-center gap-2 text-primary"><FileText /> Condições do Plano {plan.speed} MEGA</SheetTitle>
+                        </SheetHeader>
+                        <div className="py-4 prose prose-sm prose-invert prose-p:text-white/80">
+                           <p>{plan.conditions}</p>
+                        </div>
+                    </SheetContent>
+                </Sheet>
+            )}
+        </div>
       </motion.div>
     )
   };
