@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { Wifi, ChevronRight, Menu, User, X, FileText, ArrowRight, Smartphone, Download, Gauge, MonitorSmartphone, CircleDollarSign, MessageCircle, Phone, ChevronDown } from "lucide-react";
+import { Wifi, ChevronRight, Menu, User, X, FileText, ArrowRight, Smartphone, Download, Gauge, MonitorSmartphone, CircleDollarSign, MessageCircle, Phone, ChevronDown, Tv, Package, Shield, Building, Info, LifeBuoy, GanttChartSquare } from "lucide-react";
 import Link from "next/link";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -14,31 +14,31 @@ import { cn } from "@/lib/utils";
 const NavMenu = ({ title, children }: { title: string, children: React.ReactNode }) => (
     <DropdownMenu>
         <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+            <Button variant="ghost" className="group text-sm text-muted-foreground transition-colors hover:text-foreground">
                 {title}
                 <ChevronDown className="relative top-[1px] ml-1 h-3 w-3 transition duration-200 group-data-[state=open]:rotate-180" />
             </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-56" align="start">
+        <DropdownMenuContent className="w-60" align="start">
             {children}
         </DropdownMenuContent>
     </DropdownMenu>
 );
 
-export function Header() {
-  const navItems = [
-    { href: "#planos", label: "Planos", id: "nav-planos" },
-    { href: "#vantagens", label: "Vantagens", id: "nav-vantagens" },
-    { href: "#tv", label: "TV", id: "nav-tv" },
-    { href: "#ceo", label: "A Velpro", id: "nav-ceo" },
-    { href: "#faq", label: "FAQ", id: "nav-faq" },
-    { href: "#contato", label: "Contato", id: "nav-contato" },
-  ];
+const NavMenuItem = ({ href, children, icon: Icon }: { href: string, children: React.ReactNode, icon: React.ElementType }) => (
+     <DropdownMenuItem asChild className="cursor-pointer">
+        <Link href={href} className="flex items-center gap-2">
+            <Icon className="h-4 w-4 text-muted-foreground" />
+            <span>{children}</span>
+        </Link>
+    </DropdownMenuItem>
+)
 
+export function Header() {
   return (
     <header className="sticky top-0 z-40 border-b border-border/40 bg-background/60 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
-        <a id="nav-logo" href="#home" className="group flex items-center gap-3">
+        <a id="nav-logo" href="/" className="group flex items-center gap-3">
           <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-primary to-green-400 text-white shadow-lg shadow-primary/20">
             <Wifi className="h-5 w-5" />
           </div>
@@ -52,20 +52,20 @@ export function Header() {
 
         <nav className="hidden items-center gap-1 md:flex">
              <NavMenu title="Planos e Serviços">
-                <DropdownMenuItem asChild><Link href="#planos">Planos de Internet</Link></DropdownMenuItem>
-                <DropdownMenuItem asChild><Link href="#tv">Pacotes de TV</Link></DropdownMenuItem>
-                <DropdownMenuItem asChild><Link href="#vantagens">Vantagens</Link></DropdownMenuItem>
-                <DropdownMenuItem asChild><Link href="#cobertura">Consultar Cobertura</Link></DropdownMenuItem>
+                <NavMenuItem href="#planos" icon={Package}>Planos de Internet</NavMenuItem>
+                <NavMenuItem href="/tv" icon={Tv}>Pacotes de TV</NavMenuItem>
+                <NavMenuItem href="#vantagens" icon={Sparkle}>Vantagens</NavMenuItem>
+                <NavMenuItem href="#cobertura" icon={MapPin}>Consultar Cobertura</NavMenuItem>
             </NavMenu>
              <NavMenu title="Empresa">
-                <DropdownMenuItem asChild><Link href="#ceo">Sobre a Velpro</Link></DropdownMenuItem>
-                <DropdownMenuItem asChild><Link href="/politica-de-privacidade">Política de Privacidade</Link></DropdownMenuItem>
-                <DropdownMenuItem asChild><Link href="/termos-de-uso">Termos de Uso</Link></DropdownMenuItem>
+                <NavMenuItem href="#ceo" icon={Building}>Sobre a Velpro</NavMenuItem>
+                <NavMenuItem href="/politica-de-privacidade" icon={Shield}>Política de Privacidade</NavMenuItem>
+                <NavMenuItem href="/termos-de-uso" icon={FileText}>Termos de Uso</NavMenuItem>
              </NavMenu>
              <NavMenu title="Ajuda">
-                <DropdownMenuItem asChild><Link href="#faq">Perguntas Frequentes</Link></DropdownMenuItem>
-                <DropdownMenuItem asChild><Link href="#contato">Fale Conosco</Link></DropdownMenuItem>
-                <DropdownMenuItem asChild><Link href="/status">Status da Rede</Link></DropdownMenuItem>
+                <NavMenuItem href="#faq" icon={Info}>Perguntas Frequentes</NavMenuItem>
+                <NavMenuItem href="#contato" icon={LifeBuoy}>Fale Conosco</NavMenuItem>
+                <NavMenuItem href="/status" icon={GanttChartSquare}>Status da Rede</NavMenuItem>
             </NavMenu>
         </nav>
 
@@ -98,8 +98,8 @@ export function Header() {
                     </Button>
                 </SheetTrigger>
                 <SheetContent side="right" className="w-full max-w-sm bg-card p-0 flex flex-col">
-                     <SheetHeader className="p-4 border-b border-border text-left">
-                        <SheetTitle className="flex items-center gap-2 font-semibold text-card-foreground">
+                    <SheetHeader className="p-4 border-b border-border text-left">
+                         <SheetTitle className="flex items-center gap-2 font-semibold text-card-foreground">
                            <FileText className="h-5 w-5 text-primary"/>
                             2ª via da conta
                         </SheetTitle>
@@ -164,4 +164,42 @@ export function Header() {
   );
 }
 
-    
+// Dummy icon for sparkle
+const Sparkle = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    {...props}
+  >
+    <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" />
+    <path d="M5 5L6 8" />
+    <path d="M18 6L19 9" />
+    <path d="M18 18L19 15" />
+    <path d="M5 19L6 16" />
+  </svg>
+);
+
+const MapPin = (props: React.SVGProps<SVGSVGElement>) => (
+     <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        {...props}
+    >
+        <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+        <circle cx="12" cy="10" r="3" />
+    </svg>
+)
