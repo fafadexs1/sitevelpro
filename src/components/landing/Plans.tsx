@@ -19,6 +19,7 @@ import { createClient } from "@/utils/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
+import { ChannelLogos } from "./ChannelLogos";
 
 type Plan = {
   id: string;
@@ -172,7 +173,11 @@ export function Plans() {
                 <div className="inline-block h-1 w-12 bg-[#03bf03] rounded-full mt-2"/>
             </div>
 
-          <ul className="my-6 space-y-3 text-sm flex flex-col items-center">
+            {plan.has_tv && plan.featured_channel_ids && (
+              <ChannelLogos channelIds={plan.featured_channel_ids} />
+            )}
+
+          <ul className="my-6 space-y-3 flex flex-col items-center">
             {(plan.features ?? []).map((feature, i) => {
               const { Icon, text } = getFeatureIcon(feature);
               return (
