@@ -30,7 +30,7 @@ export default function TermsOfServicePage() {
       icon: <Zap className="h-6 w-6 text-primary" />,
       title: "3. Velocidade e Disponibilidade",
       content:
-        "A Velpro se compromete a entregar a velocidade de conexão contratada, mas adverte que fatores externos, como a qualidade do equipamento do usuário ou congestionamento em sites de terceiros, podem afetar a performance. A disponibilidade do serviço é garantida em 99.8%, salvo manutenções programadas ou eventos de força maior.",
+        "A Velpro se compromete a entregar a velocidade de conexão contratada, mas adverte que fatores externos, como a qualidade do equipamento do usuário ou congestionamento em sites de terceiros, podem afectar a performance. A disponibilidade do serviço é garantida em 99.8%, salvo manutenções programadas ou eventos de força maior.",
     },
     {
       icon: <Shield className="h-6 w-6 text-primary" />,
@@ -42,7 +42,7 @@ export default function TermsOfServicePage() {
       icon: <Ban className="h-6 w-6 text-primary" />,
       title: "5. Cancelamento e Suspensão",
       content:
-        "O serviço pode ser cancelado a qualquer momento, sem multa, desde que não haja débitos pendentes. A Velpro se reserva o direito de suspender ou cancelar o serviço em caso de violação destes termos ou por falta de pagamento.",
+        "O serviço pode ser cancelado a qualquer momento. Em caso de cancelamento dentro do período de fidelidade (12 meses), será cobrada multa proporcional referente aos custos da instalação. A Velpro se reserva o direito de suspender o serviço por violação destes termos ou por falta de pagamento.",
     },
     {
       icon: <Scale className="h-6 w-6 text-primary" />,
