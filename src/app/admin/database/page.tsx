@@ -63,6 +63,7 @@ create table if not exists plans (
   speed text not null,
   price numeric(10, 2) not null,
   original_price numeric(10, 2),
+  first_month_price numeric(10, 2),
   features text[],
   highlight boolean default false,
   has_tv boolean default false,

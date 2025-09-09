@@ -4,7 +4,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Wifi, Upload, Download, Tv, Smartphone, Check, Loader2, PlusCircle, Gauge, X } from "lucide-react";
+import { Wifi, Upload, Download, Tv, Smartphone, Check, Loader2, PlusCircle, Gauge, X, Star } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import Link from 'next/link';
 import {
@@ -29,6 +29,7 @@ type Plan = {
   download_speed: string | null;
   price: number;
   original_price: number | null;
+  first_month_price: number | null;
   features: string[] | null;
   highlight: boolean;
   has_tv: boolean;
@@ -146,6 +147,7 @@ export function Plans() {
     const slug = `${plan.type}-${plan.speed.replace(/\s+/g, '-').toLowerCase()}`;
     const planName = `${plan.speed} MEGA`;
     const priceBRL = formatBRL(plan.price);
+    const firstMonthPriceBRL = plan.first_month_price ? formatBRL(plan.first_month_price) : null;
 
     return (
       <motion.div
@@ -197,6 +199,13 @@ export function Plans() {
                 <PlanDetailsModal plan={plan}>
                      <Button variant="link" className="text-sm text-[#03bf03] h-auto py-1 mb-2 flex items-center gap-1">Mais detalhes <PlusCircle size={14}/></Button>
                 </PlanDetailsModal>
+            )}
+
+            {firstMonthPriceBRL && (
+                 <div className="mb-2">
+                    <p className="text-lg font-bold text-yellow-600 flex items-center justify-center gap-1"><Star className="w-4 h-4 text-yellow-500 fill-yellow-500"/> 1º MÊS POR</p>
+                    <p className="font-bold text-3xl text-neutral-900">R$ {firstMonthPriceBRL}</p>
+                </div>
             )}
             
             <div className="text-neutral-900 mb-4">

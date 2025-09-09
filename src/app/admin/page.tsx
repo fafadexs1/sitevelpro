@@ -19,6 +19,7 @@ import {
   MessageSquare,
   FileText,
   Gauge,
+  Star,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -87,6 +88,7 @@ type Plan = {
   download_speed: string | null;
   price: number;
   original_price: number | null;
+  first_month_price: number | null;
   features: string[] | null;
   highlight: boolean;
   has_tv: boolean;
@@ -116,6 +118,7 @@ const planSchema = z.object({
   upload_speed: z.string().optional().nullable(),
   price: z.coerce.number().min(0, "Preço deve ser positivo"),
   original_price: z.coerce.number().optional().nullable(),
+  first_month_price: z.coerce.number().optional().nullable(),
   features: z.array(z.object({
     icon: z.string().min(1, "Ícone obrigatório"),
     text: z.string().min(1, "Texto obrigatório"),
@@ -137,6 +140,7 @@ const defaultPlanValues = {
   upload_speed: "",
   price: 0,
   original_price: null,
+  first_month_price: null,
   features: [{ icon: "check", text: "" }],
   highlight: false,
   has_tv: false,
@@ -194,6 +198,7 @@ const PlanForm = ({
             ...plan,
             price: plan.price ?? 0,
             original_price: plan.original_price ?? undefined,
+            first_month_price: plan.first_month_price ?? undefined,
             features: fromDbToForm(plan.features),
             featured_channel_ids: plan.featured_channel_ids ?? [],
             whatsapp_number: plan.whatsapp_number ?? '',
@@ -242,6 +247,7 @@ const PlanForm = ({
       ...data,
       features: fromFormToDb(data.features),
       original_price: data.original_price || null,
+      first_month_price: data.first_month_price || null,
       featured_channel_ids: data.has_tv ? data.featured_channel_ids : [],
       whatsapp_number: data.whatsapp_number || null,
       whatsapp_message: data.whatsapp_message || null,
@@ -349,6 +355,24 @@ const PlanForm = ({
                 )}
               />
             </div>
+
+             <FormField
+                control={form.control}
+                name="first_month_price"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-2">
+                        <Star className="w-4 h-4 text-yellow-500"/>
+                        Preço no 1º Mês <span className="text-muted-foreground">(Opcional)</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input id="plan-first-month-price" type="number" step="0.01" placeholder="Ex: 49.90" {...field} value={field.value ?? ''} onChange={(e) => field.onChange(parseFloat(e.target.value) || null)}/>
+                    </FormControl>
+                     <p className="text-xs text-muted-foreground">Use para ofertas de adesão.</p>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             
              <div>
               <FormLabel>Características</FormLabel>
