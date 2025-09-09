@@ -111,7 +111,10 @@ export function Plans() {
           </div>
         )}
         <div className="flex-grow pt-4">
-            <h3 className="text-4xl font-black tracking-tighter">{plan.speed} <span className="text-3xl font-bold text-white/70">MEGA</span></h3>
+            <h3 className="text-4xl font-black tracking-tighter flex items-center gap-2">
+              <Gauge className="w-8 h-8 text-primary"/>
+              {plan.speed} <span className="text-3xl font-bold text-white/70">MEGA</span>
+            </h3>
             
             <div className="mt-3 mb-4 space-y-1">
                 {plan.original_price && (
