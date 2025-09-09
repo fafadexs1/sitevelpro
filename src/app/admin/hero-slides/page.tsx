@@ -58,6 +58,7 @@ import {
 import { createClient } from "@/utils/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
+import { Slider } from "@/components/ui/slider";
 
 // ==================================
 // Tipagem e Schema
@@ -69,6 +70,7 @@ type HeroSlide = {
   title_highlighted?: string;
   subtitle?: string;
   image_url?: string;
+  image_opacity?: number;
   button_primary_text?: string;
   button_primary_link?: string;
   button_secondary_text?: string;
@@ -84,6 +86,7 @@ const slideSchema = z.object({
   title_regular: z.string().min(1, "O título é obrigatório."),
   title_highlighted: z.string().optional(),
   subtitle: z.string().optional(),
+  image_opacity: z.number().min(0).max(100).default(30),
   button_primary_text: z.string().optional(),
   button_primary_link: z.string().optional(),
   button_secondary_text: z.string().optional(),
@@ -120,8 +123,10 @@ function SlideForm({
 
   const form = useForm<SlideFormData>({
     resolver: zodResolver(slideSchema),
-    defaultValues: slide ? { ...slide } : { is_active: true, sort_order: 0 },
+    defaultValues: slide ? { ...slide, image_opacity: slide.image_opacity ?? 30 } : { is_active: true, sort_order: 0, image_opacity: 30 },
   });
+
+  const opacityValue = form.watch("image_opacity");
 
   const onSubmit = async (data: SlideFormData) => {
     setIsSubmitting(true);
@@ -141,7 +146,7 @@ function SlideForm({
         imageUrl = urlData.publicUrl;
     }
 
-    const slideData = { ...data, image_url: imageUrl };
+    const slideData = { ...data, image_url: imageUrl, image_opacity: data.image_opacity };
     delete (slideData as Partial<typeof slideData>).image_file; // Remove o campo do arquivo
     
     let error;
@@ -190,6 +195,23 @@ function SlideForm({
                     <FormMessage />
                 </FormItem>
             )}/>
+             <FormField
+                control={form.control}
+                name="image_opacity"
+                render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Opacidade da Imagem de Fundo ({opacityValue}%)</FormLabel>
+                        <FormControl>
+                            <Slider
+                                defaultValue={[field.value]}
+                                onValueChange={(value) => field.onChange(value[0])}
+                                max={100}
+                                step={1}
+                            />
+                        </FormControl>
+                    </FormItem>
+                )}
+            />
              <div className="grid grid-cols-2 gap-4">
                 <FormField control={form.control} name="button_primary_text" render={({ field }) => (<FormItem><FormLabel>Botão Primário (Texto)</FormLabel><FormControl><Input placeholder="Conhecer planos" {...field} /></FormControl></FormItem>)} />
                 <FormField control={form.control} name="button_primary_link" render={({ field }) => (<FormItem><FormLabel>Botão Primário (Link)</FormLabel><FormControl><Input placeholder="#planos" {...field} /></FormControl></FormItem>)} />

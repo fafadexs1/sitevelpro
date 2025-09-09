@@ -23,6 +23,7 @@ type HeroSlide = {
   title_highlighted?: string | null;
   subtitle?: string | null;
   image_url?: string | null;
+  image_opacity?: number | null;
   button_primary_text?: string | null;
   button_primary_link?: string | null;
   button_secondary_text?: string | null;
@@ -78,7 +79,8 @@ export function Hero() {
                   src={slide.image_url}
                   alt={slide.title_regular || "Imagem de fundo"}
                   fill
-                  className="object-cover opacity-30"
+                  className="object-cover"
+                  style={{ opacity: (slide.image_opacity ?? 30) / 100 }}
                 />
               )}
                <div className="absolute inset-0 bg-gradient-to-r from-black via-black/70 to-transparent" />
