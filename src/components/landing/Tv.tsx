@@ -82,7 +82,7 @@ export function TvSection() {
                       type: "spring",
                       stiffness: 100,
                     }}
-                    className="flex aspect-video items-center justify-center rounded-lg border border-border bg-card p-2 sm:p-4"
+                    className="flex aspect-video items-center justify-center rounded-lg border border-border bg-neutral-800 p-2 sm:p-4"
                   >
                     <Image
                       src={channel.logo_url}
