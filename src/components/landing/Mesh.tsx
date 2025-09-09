@@ -21,14 +21,64 @@ function DesktopView() {
     }, []);
 
     if (!isMounted) {
-        return <div className="relative w-full aspect-square max-w-xl mx-auto" />; // Render nothing on server
+        return <div className="relative w-full aspect-square max-w-xl mx-auto" />; 
     }
 
-    // Increased radius and sizes for a larger, more impactful animation
     const radius = 150;
-    const centerIconSize = 128; // w-32, h-32
-    const deviceIconSize = 56; // w-14, h-14
+    const deviceIconSize = 56;
     const deviceIconOffset = deviceIconSize / 2;
+
+    const renderLines = (isAnimated = false) => {
+        const lineProps = isAnimated
+            ? {
+                stroke: "hsl(var(--primary))",
+                strokeWidth: 1.5,
+                initial: { pathLength: 0, pathOffset: 1 },
+                animate: { pathLength: 1, pathOffset: 0 },
+                transition: { 
+                    pathLength: { delay: 0.5, duration: 0.8, ease: "easeInOut" },
+                    pathOffset: { delay: 0.5, duration: 0.8, ease: "easeInOut" },
+                    repeat: Infinity, 
+                    repeatDelay: 2, 
+                    repeatType: "loop" 
+                }
+            }
+            : {
+                stroke: "hsl(var(--foreground))",
+                strokeWidth: 0.5,
+                initial: { pathLength: 0 },
+                animate: { pathLength: 1 },
+                transition: { duration: 1, delay: 0.2, ease: "easeInOut" }
+            };
+
+        return (
+            <>
+                 {/* Inner lines */}
+                {devices.map((_, i) => (
+                    <motion.line
+                        key={`inner-line-${i}-${isAnimated}`}
+                        x1="200" y1="200"
+                        x2={200 + radius * Math.cos(i * 2 * Math.PI / devices.length)}
+                        y2={200 + radius * Math.sin(i * 2 * Math.PI / devices.length)}
+                        {...lineProps}
+                        transition={isAnimated ? { ...lineProps.transition, delay: i * 0.2 } : { ...lineProps.transition, delay: i * 0.1 }}
+                    />
+                ))}
+                 {/* Outer lines */}
+                {devices.map((_, i) => (
+                    <motion.line
+                        key={`outer-line-${i}-${isAnimated}`}
+                        x1={200 + radius * Math.cos(i * 2 * Math.PI / devices.length)}
+                        y1={200 + radius * Math.sin(i * 2 * Math.PI / devices.length)}
+                        x2={200 + radius * Math.cos((i + 1) * 2 * Math.PI / devices.length)}
+                        y2={200 + radius * Math.sin((i + 1) * 2 * Math.PI / devices.length)}
+                        {...lineProps}
+                         transition={isAnimated ? { ...lineProps.transition, delay: 0.5 + i * 0.2 } : { ...lineProps.transition, delay: 0.5 + i * 0.1 }}
+                    />
+                ))}
+            </>
+        );
+    }
 
     return (
         <div className="relative w-full aspect-square max-w-xl mx-auto">
@@ -38,26 +88,15 @@ function DesktopView() {
                     <p className="text-sm mt-1 text-primary">Seu Wi-Fi</p>
                 </div>
             </div>
-            {devices.map((_, i) => (
-                <motion.div
-                    key={i}
-                    initial={{ opacity: 0, scale: 0.5 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{
-                        duration: 0.5,
-                        delay: i * 0.2,
-                        repeat: Infinity,
-                        repeatType: 'reverse',
-                        repeatDelay: 2,
-                        ease: "easeInOut"
-                    }}
-                    className="absolute w-full h-full"
-                    style={{ transform: `rotate(${i * (360 / devices.length)}deg)` }}
-                >
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1 h-40 bg-gradient-to-b from-primary/5 to-primary/50 rounded-full" />
-                </motion.div>
-            ))}
-            <div className="absolute w-full h-full top-0 left-0">
+           
+            <svg className="absolute w-full h-full opacity-30" viewBox="0 0 400 400" style={{top: '50%', left: '50%', transform: 'translate(-50%, -50%)', maxWidth: '400px'}}>
+                {renderLines(false)}
+            </svg>
+             <svg className="absolute w-full h-full" viewBox="0 0 400 400" style={{top: '50%', left: '50%', transform: 'translate(-50%, -50%)', maxWidth: '400px'}}>
+                {renderLines(true)}
+            </svg>
+
+             <div className="absolute w-full h-full top-0 left-0">
                 {devices.map(({ icon: Icon }, i) => (
                     <motion.div
                         key={i}
@@ -74,33 +113,6 @@ function DesktopView() {
                     </motion.div>
                 ))}
             </div>
-            <svg className="absolute w-full h-full opacity-20" viewBox="0 0 400 400" style={{top: '50%', left: '50%', transform: 'translate(-50%, -50%)', maxWidth: '400px'}}>
-                {devices.map((_, i) => (
-                    <motion.line 
-                        key={`inner-line-${i}`}
-                        x1="200" y1="200" 
-                        x2={200 + radius * Math.cos(i * 2 * Math.PI / devices.length)} 
-                        y2={200 + radius * Math.sin(i * 2 * Math.PI / devices.length)}
-                        stroke="hsl(var(--foreground))" strokeWidth="0.5"
-                        initial={{ pathLength: 0 }}
-                        animate={{ pathLength: 1 }}
-                        transition={{ duration: 1, delay: i * 0.1, ease: "easeInOut" }}
-                    />
-                ))}
-                {devices.map((_, i) => (
-                        <motion.line 
-                        key={`outer-line-${i}`}
-                        x1={200 + radius * Math.cos(i * 2 * Math.PI / devices.length)} 
-                        y1={200 + radius * Math.sin(i * 2 * Math.PI / devices.length)}
-                        x2={200 + radius * Math.cos((i + 1) * 2 * Math.PI / devices.length)}
-                        y2={200 + radius * Math.sin((i + 1) * 2 * Math.PI / devices.length)}
-                        stroke="hsl(var(--foreground))" strokeWidth="0.5"
-                        initial={{ pathLength: 0 }}
-                        animate={{ pathLength: 1 }}
-                        transition={{ duration: 0.8, delay: 0.5 + i * 0.1, ease: "easeInOut" }}
-                    />
-                ))}
-            </svg>
         </div>
     );
 }
