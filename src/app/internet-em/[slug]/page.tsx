@@ -1,4 +1,3 @@
-
 import { Header } from "@/components/landing/Header";
 import { Hero } from "@/components/landing/Hero";
 import { Plans } from "@/components/landing/Plans";
