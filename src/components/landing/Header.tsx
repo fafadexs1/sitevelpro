@@ -115,6 +115,11 @@ export function Header() {
                             <div className="flex-grow border-t border-border"></div>
                          </div>
                          <div className="space-y-3">
+                            <Button variant="outline" className="w-full" asChild>
+                                <Link href="/cliente">
+                                    <User className="mr-2 h-4 w-4"/> Área do Cliente
+                                </Link>
+                            </Button>
                              <a href="https://wa.me/5500000000000" className="w-full inline-flex items-center justify-center gap-2 rounded-full border-2 border-primary bg-transparent p-3 text-sm font-bold text-primary transition-colors hover:bg-primary/10">
                                 <MessageCircle className="h-5 w-5"/> CONVERSAR NO WHATSAPP
                              </a>
