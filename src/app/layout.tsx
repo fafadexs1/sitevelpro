@@ -51,6 +51,7 @@ async function getSeoSettings() {
 
     console.log('[LOG] Configurações de SEO encontradas:', { 
       site_title: data.site_title, 
+      site_description: data.site_description,
       og_image_url: data.og_image_url,
       favicon_url: data.favicon_url,
       updated_at: data.updated_at 
