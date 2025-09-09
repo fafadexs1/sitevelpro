@@ -53,14 +53,14 @@ export function ChannelLogos({ channelIds }: { channelIds: string[] }) {
 
   return (
     <div className="my-4">
-      <p className="text-sm text-center text-white/70 mb-2">
+      <p className="text-sm text-center text-neutral-600 mb-2">
         Canais em destaque:
       </p>
       <div className="flex items-center justify-center -space-x-3">
         {channels.map((logo) => (
           <div
             key={logo.name}
-            className="w-10 h-10 rounded-full bg-white shadow-md overflow-hidden border-2 border-neutral-800 transition-transform hover:scale-110 hover:-translate-y-1"
+            className="w-10 h-10 rounded-full bg-white shadow-md overflow-hidden border-2 border-neutral-200 transition-transform hover:scale-110 hover:-translate-y-1"
             title={logo.name}
           >
             <Image
