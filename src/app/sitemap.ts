@@ -1,12 +1,12 @@
 import { createClient } from '@/utils/supabase/server';
-import { MetadataRoute } from 'next'
- 
+import { MetadataRoute } from 'next';
+
 async function getSiteUrl(): Promise<string> {
-    let siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
-    if (siteUrl) {
-        return siteUrl.endsWith('/') ? siteUrl.slice(0, -1) : siteUrl;
-    }
-    return 'http://localhost:3000';
+  let siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+  if (siteUrl) {
+    return siteUrl.endsWith('/') ? siteUrl.slice(0, -1) : siteUrl;
+  }
+  return 'http://localhost:3000';
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -30,57 +30,58 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // 2. Rotas Dinâmicas (Cidades)
   const cityRoutes: MetadataRoute.Sitemap = [];
-  const { data: cities, error: citiesError } = await supabase.from('cities').select('slug');
+  try {
+    const { data: cities, error: citiesError } = await supabase.from('cities').select('slug');
+    if (citiesError) throw citiesError;
 
-  if (citiesError) {
-    console.error("Sitemap: Erro ao buscar cidades", citiesError.message);
-  }
+    const { data: cityRules, error: cityRulesError } = await supabase
+      .from('dynamic_seo_rules')
+      .select('slug_pattern')
+      .eq('allow_indexing', true)
+      .like('slug_pattern', '%{cidade}%');
+    if (cityRulesError) throw cityRulesError;
 
-  // Busca regras que usam a variável {cidade} e estão ativas
-  const { data: cityRules, error: cityRulesError } = await supabase
-    .from('dynamic_seo_rules')
-    .select('slug_pattern')
-    .eq('allow_indexing', true)
-    .like('slug_pattern', '%{cidade}%');
-
-  if (cityRulesError) {
-    console.error("Sitemap: Erro ao buscar regras de SEO para cidades", cityRulesError.message);
-  }
-
-  if (cities && cityRules) {
-    for (const rule of cityRules) {
+    if (cities && cityRules) {
+      for (const rule of cityRules) {
         for (const city of cities) {
-            const url = rule.slug_pattern.replace('{cidade}', city.slug);
-            cityRoutes.push({
-                url: `${siteUrl}${url}`,
-                lastModified: new Date(),
-                changeFrequency: 'weekly',
-                priority: 0.7,
-            });
+          const url = `${siteUrl}${rule.slug_pattern.replace('{cidade}', city.slug)}`;
+          cityRoutes.push({
+            url: url,
+            lastModified: new Date(),
+            changeFrequency: 'weekly',
+            priority: 0.7,
+          });
         }
+      }
     }
+  } catch (error) {
+    console.error("Sitemap: Erro ao buscar rotas de cidades:", error);
   }
 
 
   // 3. Rotas de SEO cadastradas manualmente que NÃO são de cidades
   const manualSeoRoutes: MetadataRoute.Sitemap = [];
-  const { data: rules, error: rulesError } = await supabase
-    .from('dynamic_seo_rules')
-    .select('slug_pattern')
-    .eq('allow_indexing', true)
-    .not('slug_pattern', 'like', '%{cidade}%');
+  try {
+    const { data: manualRules, error: manualRulesError } = await supabase
+        .from('dynamic_seo_rules')
+        .select('slug_pattern')
+        .eq('allow_indexing', true)
+        .not('slug_pattern', 'like', '%{cidade}%');
 
-  if (rulesError) {
-      console.error("Sitemap: Erro ao buscar regras de SEO manuais", rulesError.message);
-  } else if (rules) {
-      for (const rule of rules) {
-        manualSeoRoutes.push({
-            url: `${siteUrl}${rule.slug_pattern}`,
-            lastModified: new Date(),
-            changeFrequency: 'weekly',
-            priority: 0.6,
-        })
-      }
+    if (manualRulesError) throw manualRulesError;
+
+    if (manualRules) {
+        for (const rule of manualRules) {
+            manualSeoRoutes.push({
+                url: `${siteUrl}${rule.slug_pattern}`,
+                lastModified: new Date(),
+                changeFrequency: 'weekly',
+                priority: 0.6,
+            });
+        }
+    }
+  } catch (error) {
+     console.error("Sitemap: Erro ao buscar regras de SEO manuais:", error);
   }
   
   return [
