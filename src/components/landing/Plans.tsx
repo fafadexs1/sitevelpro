@@ -1,9 +1,10 @@
 
+
 "use client";
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Wifi, Upload, Download, Tv, Smartphone, Check, Loader2, PlusCircle } from "lucide-react";
+import { Wifi, Upload, Download, Tv, Smartphone, Check, Loader2, PlusCircle, Gauge, X } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import Link from 'next/link';
 import {
@@ -15,7 +16,7 @@ import {
 } from "@/components/ui/carousel";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/utils/supabase/client";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 
@@ -23,6 +24,8 @@ type Plan = {
   id: string;
   type: 'residencial' | 'empresarial';
   speed: string;
+  upload_speed: string | null;
+  download_speed: string | null;
   price: number;
   original_price: number | null;
   features: string[] | null;
@@ -42,6 +45,72 @@ const ICONS: { [key: string]: React.ElementType } = {
   download: Download,
   tv: Tv,
   smartphone: Smartphone,
+};
+
+const PlanDetailsModal = ({ plan, children }: { plan: Plan, children: React.ReactNode }) => {
+    const slug = `${plan.type}-${plan.speed.replace(/\s+/g, '-').toLowerCase()}`;
+    const planName = `${plan.speed} MEGA`;
+    
+    return (
+        <Dialog>
+            <DialogTrigger asChild>{children}</DialogTrigger>
+            <DialogContent className="max-w-2xl w-full bg-white text-neutral-800 p-0">
+                <DialogHeader className="p-6">
+                    <p className="text-sm text-neutral-500">INTERNET FIBRA</p>
+                    <DialogTitle className="text-3xl font-extrabold text-neutral-900">{planName}</DialogTitle>
+                </DialogHeader>
+
+                <div className="px-6 pb-28">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+                        {plan.features?.map(feat => {
+                            const { Icon, text } = getFeatureIcon(feat);
+                            return <div key={text} className="flex items-center gap-2 text-neutral-600"><Icon className="text-green-600"/>{text}</div>
+                        })}
+                        {plan.download_speed && <div className="flex items-center gap-2 text-neutral-600"><Download className="text-green-600"/> Download {plan.download_speed}</div>}
+                        {plan.upload_speed && <div className="flex items-center gap-2 text-neutral-600"><Upload className="text-green-600"/> Upload {plan.upload_speed}</div>}
+                    </div>
+
+                    {plan.conditions && (
+                        <div className="mt-6 pt-6 border-t">
+                            <h4 className="font-semibold text-neutral-800">Velocidade da oferta</h4>
+                            <p className="text-xs text-neutral-500 mt-1">{plan.conditions}</p>
+                        </div>
+                    )}
+                </div>
+
+                <div className="absolute bottom-0 left-0 right-0 p-6 bg-neutral-50 border-t flex items-center justify-between">
+                    <div>
+                        <span className="text-neutral-900 font-bold text-3xl">R${plan.price.toFixed(2).split('.')[0]}</span>
+                        <span className="text-neutral-900 font-bold text-xl">,{plan.price.toFixed(2).split('.')[1]}</span>
+                        <span className="text-neutral-500">/mês</span>
+                    </div>
+                     <Button id={`plan-modal-cta-assinar-${slug}`}
+                        asChild
+                        size="lg"
+                        className="bg-[#03bf03] hover:bg-[#03bf03]/90 text-white font-bold"
+                        data-track-event="cta_click"
+                        data-track-prop-button-id={`assinar-modal-plano-${slug}`}
+                        data-track-prop-plan-name={planName}
+                        data-track-prop-plan-price={plan.price}
+                    >
+                        <Link href="/assinar">Aproveitar oferta</Link>
+                    </Button>
+                </div>
+            </DialogContent>
+        </Dialog>
+    )
+}
+
+const getFeatureIcon = (feature: string) => {
+    const parts = feature.split(':');
+    const iconName = parts.length > 1 ? parts[0].trim().toLowerCase() : 'check';
+    const IconComponent = ICONS[iconName] || Check;
+    const text = parts.length > 1 ? parts.slice(1).join(':').trim() : feature;
+    
+    return {
+        Icon: IconComponent,
+        text: text,
+    };
 };
 
 export function Plans() {
@@ -67,38 +136,12 @@ export function Plans() {
 
   const currentPlans = allPlans.filter(p => p.type === planType);
 
-  const getFeatureIcon = (feature: string) => {
-    const parts = feature.split(':');
-    const iconName = parts.length > 1 ? parts[0].trim().toLowerCase() : 'check';
-    const IconComponent = ICONS[iconName] || Check;
-    const text = parts.length > 1 ? parts.slice(1).join(':').trim() : feature;
-    
-    return {
-      Icon: <IconComponent className="h-4 w-4 text-muted-foreground" />,
-      text: text,
-    };
-  };
-  
-   const ProductIcons = ({ plan }: { plan: Plan }) => (
-    <div className="mt-4">
-        <p className="text-xs text-muted-foreground mb-2">Produtos inclusos</p>
-        <div className="flex items-center gap-2">
-            {plan.featured_channel_ids?.map(id => (
-                 <div key={id} className="w-10 h-10 rounded-md bg-green-500 text-white grid place-items-center">
-                    <p>{id.substring(0,1)}</p>
-                 </div>
-            ))}
-            {/* Mock icons as per image */}
-            <div className="w-10 h-10 rounded-md bg-green-500 text-white grid place-items-center">S</div>
-            <div className="w-10 h-10 rounded-md bg-blue-600 text-white grid place-items-center">B</div>
-        </div>
-    </div>
-  );
-
 
   const PlanCard = ({ plan, index }: { plan: Plan, index: number }) => {
     const slug = `${plan.type}-${plan.speed.replace(/\s+/g, '-').toLowerCase()}`;
     const planName = `${plan.speed} MEGA`;
+    const priceInt = plan.price.toFixed(2).split('.')[0];
+    const priceDec = plan.price.toFixed(2).split('.')[1];
 
     return (
       <motion.div
@@ -107,22 +150,23 @@ export function Plans() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: index * 0.05 }}
         className={cn(
-            "relative flex h-full flex-col rounded-2xl bg-card p-6 shadow-lg",
-            plan.highlight ? "border-blue-600 border-2" : "border"
+            "relative flex h-full flex-col rounded-2xl p-6 shadow-lg text-neutral-800 bg-card",
+            plan.highlight ? "border-[#03bf03] border-2" : "border"
         )}
       >
         {plan.highlight && (
-          <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10 w-fit whitespace-nowrap rounded-full bg-blue-600 px-4 py-1.5 text-xs font-bold text-white shadow-lg">
+          <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10 w-fit whitespace-nowrap rounded-full bg-[#03bf03] px-4 py-1.5 text-xs font-bold text-white shadow-lg">
             MELHOR OFERTA
           </div>
         )}
         <div className="flex-grow pt-4">
             <div className="text-center">
-                <p className="text-sm text-muted-foreground flex items-center justify-center gap-1.5"><Wifi size={14}/> INTERNET</p>
-                <h3 className="text-3xl font-extrabold tracking-tight text-card-foreground mt-2">
-                    {plan.speed.replace(/ /g, '')}MEGA
-                </h3>
-                <div className="inline-block h-1 w-12 bg-primary rounded-full mt-2"/>
+                <p className="text-sm text-neutral-600 flex items-center justify-center gap-1.5"><Wifi size={14}/> INTERNET</p>
+                <div className="mt-2">
+                    <span className="text-5xl font-extrabold tracking-tight text-neutral-900">{plan.speed.replace(/\D/g, '')}</span>
+                    <span className="text-3xl font-bold text-neutral-900">MEGA</span>
+                </div>
+                <div className="inline-block h-1 w-12 bg-[#03bf03] rounded-full mt-2"/>
             </div>
 
           <ul className="my-6 space-y-3 text-sm">
@@ -130,38 +174,35 @@ export function Plans() {
               const { Icon, text } = getFeatureIcon(feature);
               return (
                 <li key={i} className="flex items-center gap-3">
-                  {Icon}
-                  <span className="text-card-foreground/90">{text}</span>
+                  <Icon className="h-4 w-4 text-neutral-500" />
+                  <span className="text-neutral-700">{text}</span>
                 </li>
               );
             })}
+             {plan.download_speed && <li className="flex items-center gap-3"><Download className="h-4 w-4 text-neutral-500"/> <span className="text-neutral-700">Download {plan.download_speed}</span></li>}
+             {plan.upload_speed && <li className="flex items-center gap-3"><Upload className="h-4 w-4 text-neutral-500"/> <span className="text-neutral-700">Upload {plan.upload_speed}</span></li>}
           </ul>
-            
-          {/* <ProductIcons plan={plan} /> */}
-
         </div>
         
         <div className="flex flex-col gap-2 mt-auto text-center">
             {plan.conditions && (
-                 <Sheet>
-                    <SheetTrigger asChild>
-                         <Button variant="link" className="text-sm text-primary h-auto py-1 mb-2 flex items-center gap-1">Mais detalhes <PlusCircle size={14}/></Button>
-                    </SheetTrigger>
-                    <SheetContent className="bg-card border-border text-card-foreground">
-                        <SheetHeader>
-                            <SheetTitle className="flex items-center gap-2 text-primary">Condições do Plano {plan.speed} MEGA</SheetTitle>
-                        </SheetHeader>
-                        <div className="py-4 prose prose-sm prose-p:text-card-foreground/80">
-                           <p>{plan.conditions}</p>
-                        </div>
-                    </SheetContent>
-                </Sheet>
+                <PlanDetailsModal plan={plan}>
+                     <Button variant="link" className="text-sm text-[#03bf03] h-auto py-1 mb-2 flex items-center gap-1">Mais detalhes <PlusCircle size={14}/></Button>
+                </PlanDetailsModal>
             )}
-
-            <div className="text-card-foreground mb-4">
-                <span className="font-bold text-4xl">R$ {plan.price.toFixed(2).split('.')[0]}</span>
-                <span className="font-bold text-2xl">,{plan.price.toFixed(2).split('.')[1]}</span>
-                <span className="text-muted-foreground text-xl">/mês</span>
+            
+            <div className="text-neutral-900 mb-4">
+                 {plan.original_price && (
+                    <span className="text-sm text-neutral-500 line-through mr-2">De R$ {plan.original_price.toFixed(2)}</span>
+                 )}
+                 <div className="flex items-baseline justify-center gap-1">
+                    <span className="text-lg">Por</span>
+                    <span className="font-bold text-5xl">R$ {priceInt}</span>
+                    <div className="flex flex-col items-start -translate-y-1">
+                        <span className="font-bold text-2xl">,{priceDec}</span>
+                        <span className="text-neutral-500 text-sm -mt-2">/mês</span>
+                    </div>
+                 </div>
             </div>
 
             <Button id={`plan-cta-assinar-${slug}`}
@@ -171,7 +212,7 @@ export function Plans() {
                     data-track-prop-button-id={`assinar-plano-${slug}`}
                     data-track-prop-plan-name={planName}
                     data-track-prop-plan-price={plan.price}
-                    className="w-full font-bold"
+                    className="w-full font-bold bg-[#03bf03] hover:bg-[#03bf03]/90 text-white"
             >
                 <Link href="/assinar">Aproveitar oferta</Link>
             </Button>
@@ -199,7 +240,7 @@ export function Plans() {
                 key={opt.k}
                 onClick={() => setPlanType(opt.k)}
                 className={`rounded-lg px-3 py-2 transition-colors ${
-                  planType === opt.k ? "bg-primary text-primary-foreground" : "text-card-foreground hover:bg-black/5"
+                  planType === opt.k ? "bg-[#03bf03] text-white" : "text-card-foreground hover:bg-black/5"
                 }`}
               >
                 {opt.label}

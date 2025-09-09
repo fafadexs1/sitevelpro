@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
@@ -17,6 +18,7 @@ import {
   Search,
   MessageSquare,
   FileText,
+  Gauge,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -81,6 +83,8 @@ type Plan = {
   id: string;
   type: "residencial" | "empresarial";
   speed: string;
+  upload_speed: string | null;
+  download_speed: string | null;
   price: number;
   original_price: number | null;
   features: string[] | null;
@@ -108,6 +112,8 @@ const planSchema = z.object({
     required_error: "Tipo é obrigatório",
   }),
   speed: z.string().min(1, "Velocidade é obrigatória"),
+  download_speed: z.string().optional().nullable(),
+  upload_speed: z.string().optional().nullable(),
   price: z.coerce.number().min(0, "Preço deve ser positivo"),
   original_price: z.coerce.number().optional().nullable(),
   features: z.array(z.object({
@@ -127,6 +133,8 @@ type PlanFormData = z.infer<typeof planSchema>;
 const defaultPlanValues = {
   type: "residencial",
   speed: "",
+  download_speed: "",
+  upload_speed: "",
   price: 0,
   original_price: null,
   features: [{ icon: "check", text: "" }],
@@ -300,27 +308,20 @@ const PlanForm = ({
               name="speed"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Velocidade (Apenas números)</FormLabel>
-                  <FormControl><Input id="plan-speed" placeholder="Ex: 500" {...field} /></FormControl>
+                  <FormLabel>Velocidade (Texto de Exibição)</FormLabel>
+                  <FormControl><Input id="plan-speed" placeholder="Ex: 500 MEGA" {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+            
+             <div className="grid grid-cols-2 gap-4">
+               <FormField control={form.control} name="download_speed" render={({ field }) => ( <FormItem> <FormLabel>Velocidade de Download</FormLabel> <FormControl><Input id="plan-download-speed" placeholder="Ex: 700Mbps" {...field} value={field.value ?? ''} /></FormControl> <FormMessage /> </FormItem> )}/>
+               <FormField control={form.control} name="upload_speed" render={({ field }) => ( <FormItem> <FormLabel>Velocidade de Upload</FormLabel> <FormControl><Input id="plan-upload-speed" placeholder="Ex: 350Mbps" {...field} value={field.value ?? ''} /></FormControl> <FormMessage /> </FormItem> )}/>
+            </div>
+
 
             <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="price"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Preço Final (R$)</FormLabel>
-                    <FormControl>
-                      <Input id="plan-price" type="number" step="0.01" placeholder="Ex: 99.90" {...field} onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
               <FormField
                 control={form.control}
                 name="original_price"
@@ -329,6 +330,19 @@ const PlanForm = ({
                     <FormLabel>Preço Antigo (riscado) <span className="text-white/50">(Opcional)</span></FormLabel>
                     <FormControl>
                       <Input id="plan-original-price" type="number" step="0.01" placeholder="Ex: 119.90" {...field} value={field.value ?? ''} onChange={(e) => field.onChange(parseFloat(e.target.value) || null)}/>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="price"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Preço Final (R$)</FormLabel>
+                    <FormControl>
+                      <Input id="plan-price" type="number" step="0.01" placeholder="Ex: 99.90" {...field} onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
