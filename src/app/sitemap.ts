@@ -28,35 +28,39 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: route === '/' ? 1 : 0.8,
   }));
 
-  // 2. Rotas Dinâmicas de Cidades
+  // 2. Rotas Dinâmicas (Cidades)
   const cityRoutes: MetadataRoute.Sitemap = [];
   const { data: cities, error: citiesError } = await supabase.from('cities').select('slug');
 
   if (citiesError) {
     console.error("Sitemap: Erro ao buscar cidades", citiesError.message);
-  } else if (cities) {
-    const { data: cityRules, error: cityRulesError } = await supabase
-        .from('dynamic_seo_rules')
-        .select('slug_pattern')
-        .eq('allow_indexing', true)
-        .like('slug_pattern', '%{cidade}%');
+  }
 
-    if (cityRulesError) {
-        console.error("Sitemap: Erro ao buscar regras de SEO para cidades", cityRulesError.message);
-    } else if (cityRules) {
-        for (const rule of cityRules) {
-            for (const city of cities) {
-                const url = rule.slug_pattern.replace('{cidade}', city.slug);
-                cityRoutes.push({
-                    url: `${siteUrl}${url}`,
-                    lastModified: new Date(),
-                    changeFrequency: 'weekly',
-                    priority: 0.7,
-                });
-            }
+  // Busca regras que usam a variável {cidade} e estão ativas
+  const { data: cityRules, error: cityRulesError } = await supabase
+    .from('dynamic_seo_rules')
+    .select('slug_pattern')
+    .eq('allow_indexing', true)
+    .like('slug_pattern', '%{cidade}%');
+
+  if (cityRulesError) {
+    console.error("Sitemap: Erro ao buscar regras de SEO para cidades", cityRulesError.message);
+  }
+
+  if (cities && cityRules) {
+    for (const rule of cityRules) {
+        for (const city of cities) {
+            const url = rule.slug_pattern.replace('{cidade}', city.slug);
+            cityRoutes.push({
+                url: `${siteUrl}${url}`,
+                lastModified: new Date(),
+                changeFrequency: 'weekly',
+                priority: 0.7,
+            });
         }
     }
   }
+
 
   // 3. Rotas de SEO cadastradas manualmente que NÃO são de cidades
   const manualSeoRoutes: MetadataRoute.Sitemap = [];
