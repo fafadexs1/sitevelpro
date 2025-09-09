@@ -13,11 +13,11 @@
     --popover: 240 10% 3.9%;
     --popover-foreground: 0 0% 98%;
  
-    --primary: 12.8 96.3% 54.9%;
+    --primary: 120 96.9% 38%;
     --primary-foreground: 0 0% 100%;
  
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 240 4% 96%;
+    --secondary-foreground: 240 10% 3.9%;
  
     --muted: 240 3.7% 15.9%;
     --muted-foreground: 240 5% 64.9%;
@@ -28,9 +28,9 @@
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 240 3.7% 15.9%;
+    --border: 240 4% 86%;
     --input: 240 3.7% 15.9%;
-    --ring: 12.8 96.3% 54.9%;
+    --ring: 120 96.9% 38%;
  
     --radius: 0.5rem;
   }
@@ -45,7 +45,7 @@
     --popover: 240 10% 3.9%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 12.8 96.3% 54.9%;
+    --primary: 120 96.9% 38%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 240 4% 96%; /* Cinza claro para o fundo da seção */
@@ -62,7 +62,7 @@
 
     --border: 240 4% 86%; /* Bordas mais claras para os cards */
     --input: 240 3.7% 15.9%;
-    --ring: 12.8 96.3% 54.9%;
+    --ring: 120 96.9% 38%;
   }
 }
 
