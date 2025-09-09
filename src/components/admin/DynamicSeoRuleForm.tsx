@@ -131,7 +131,7 @@ export function DynamicSeoRuleForm({ rule, onRuleSaved, onOpenChange }: DynamicS
                     <FormControl>
                         <Input placeholder="/internet-em-{cidade}" {...field} />
                     </FormControl>
-                     <p className="text-xs text-white/50">Use variáveis (ex: {'{cidade}'}) para gerar múltiplas páginas ou insira um caminho estático (ex: /promo-x).</p>
+                     <p className="text-xs text-gray-500">Use variáveis (ex: {'{cidade}'}) para gerar múltiplas páginas ou insira um caminho estático (ex: /promo-x).</p>
                     <FormMessage />
                     </FormItem>
                 )}
@@ -174,13 +174,13 @@ export function DynamicSeoRuleForm({ rule, onRuleSaved, onOpenChange }: DynamicS
                     <FormControl>
                         <Input placeholder="https://seu-site.com/cobertura/{cidade}" {...field} />
                     </FormControl>
-                     <p className="text-xs text-white/50">Ajuda a evitar conteúdo duplicado. Deixe em branco se não aplicável.</p>
+                     <p className="text-xs text-gray-500">Ajuda a evitar conteúdo duplicado. Deixe em branco se não aplicável.</p>
                     <FormMessage />
                     </FormItem>
                 )}
             />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-white/10">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-gray-200">
                  <FormField
                     control={form.control}
                     name="schema_type"
@@ -210,9 +210,9 @@ export function DynamicSeoRuleForm({ rule, onRuleSaved, onOpenChange }: DynamicS
                     control={form.control}
                     name="allow_indexing"
                     render={({ field }) => (
-                        <FormItem className="flex flex-col rounded-lg border border-white/10 p-3">
+                        <FormItem className="flex flex-col rounded-lg border p-3">
                             <FormLabel className="text-sm">Permitir Indexação</FormLabel>
-                             <p className="text-xs text-white/60 mb-2">Permite que o Google veja esta página.</p>
+                             <p className="text-xs text-gray-600 mb-2">Permite que o Google veja esta página.</p>
                             <FormControl className="m-0">
                                 <Switch
                                     checked={field.value}

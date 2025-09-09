@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
@@ -213,11 +212,11 @@ function AddChannelForm({
                 <FormLabel>Logo do Canal</FormLabel>
                 <FormControl>
                   <div className="relative flex items-center justify-center w-full">
-                      <label htmlFor="dropzone-file-add" className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg bg-neutral-900 border-white/20 ${isSubmitting ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:border-primary hover:bg-neutral-800'}`}>
+                      <label htmlFor="dropzone-file-add" className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg bg-gray-50 border-gray-300 ${isSubmitting ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:border-primary hover:bg-gray-100'}`}>
                           <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                              <Upload className="w-8 h-8 mb-3 text-white/50"/>
-                              <p className="mb-2 text-sm text-white/50"><span className="font-semibold">Clique para enviar</span> ou arraste</p>
-                              <p className="text-xs text-white/50">SVG, PNG, JPG or WEBP (MAX. 5MB)</p>
+                              <Upload className="w-8 h-8 mb-3 text-gray-500"/>
+                              <p className="mb-2 text-sm text-gray-500"><span className="font-semibold">Clique para enviar</span> ou arraste</p>
+                              <p className="text-xs text-gray-500">SVG, PNG, JPG or WEBP (MAX. 5MB)</p>
                           </div>
                           <Input 
                               id="dropzone-file-add" 
@@ -229,7 +228,7 @@ function AddChannelForm({
                       </label>
                   </div> 
                 </FormControl>
-                 {field.value && <p className="text-sm text-white/70 mt-2">Arquivo selecionado: {field.value.name}</p>}
+                 {field.value && <p className="text-sm text-gray-600 mt-2">Arquivo selecionado: {field.value.name}</p>}
                 <FormMessage />
               </FormItem>
             )}
@@ -380,16 +379,16 @@ function EditChannelForm({
               <FormItem>
                 <FormLabel>Substituir Logo (Opcional)</FormLabel>
                  <div className="flex items-center gap-4">
-                    <Image src={channel.logo_url} alt={channel.name} width={40} height={40} className="rounded-md bg-white/10 p-1 object-contain"/>
-                    <p className="text-xs text-white/60">Logo atual. Envie um novo arquivo abaixo para substituir.</p>
+                    <Image src={channel.logo_url} alt={channel.name} width={40} height={40} className="rounded-md bg-gray-100 p-1 object-contain"/>
+                    <p className="text-xs text-gray-600">Logo atual. Envie um novo arquivo abaixo para substituir.</p>
                  </div>
                 <FormControl>
                   <div className="relative flex items-center justify-center w-full mt-2">
-                      <label htmlFor={`dropzone-file-edit-${channel.id}`} className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg bg-neutral-900 border-white/20 ${isSubmitting ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:border-primary hover:bg-neutral-800'}`}>
+                      <label htmlFor={`dropzone-file-edit-${channel.id}`} className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg bg-gray-50 border-gray-300 ${isSubmitting ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:border-primary hover:bg-gray-100'}`}>
                           <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                              <Upload className="w-8 h-8 mb-3 text-white/50"/>
-                              <p className="mb-2 text-sm text-white/50"><span className="font-semibold">Clique para enviar</span> ou arraste</p>
-                              <p className="text-xs text-white/50">SVG, PNG, JPG or WEBP (MAX. 5MB)</p>
+                              <Upload className="w-8 h-8 mb-3 text-gray-500"/>
+                              <p className="mb-2 text-sm text-gray-500"><span className="font-semibold">Clique para enviar</span> ou arraste</p>
+                              <p className="text-xs text-gray-500">SVG, PNG, JPG or WEBP (MAX. 5MB)</p>
                           </div>
                           <Input 
                               id={`dropzone-file-edit-${channel.id}`}
@@ -401,7 +400,7 @@ function EditChannelForm({
                       </label>
                   </div> 
                 </FormControl>
-                 {field.value && <p className="text-sm text-white/70 mt-2">Novo arquivo: {field.value.name}</p>}
+                 {field.value && <p className="text-sm text-gray-600 mt-2">Novo arquivo: {field.value.name}</p>}
                 <FormMessage />
               </FormItem>
             )}
@@ -509,8 +508,8 @@ export default function TvChannelsPage() {
         <>
             <header className="mb-8 flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold">Canais de TV</h1>
-                    <p className="text-white/60">Gerencie os canais e marque até 10 como destaque para a página inicial.</p>
+                    <h1 className="text-3xl font-bold text-gray-900">Canais de TV</h1>
+                    <p className="text-gray-500">Gerencie os canais e marque até 10 como destaque para a página inicial.</p>
                 </div>
                 <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
                     <DialogTrigger asChild>
@@ -519,7 +518,7 @@ export default function TvChannelsPage() {
                             Adicionar Canal
                         </Button>
                     </DialogTrigger>
-                    <DialogContent className="border-white/10 bg-neutral-950 text-white sm:max-w-md">
+                    <DialogContent className="bg-white text-gray-900 sm:max-w-md">
                         <AddChannelForm 
                             onChannelAdded={getChannels}
                             onOpenChange={setIsAddModalOpen}
@@ -529,7 +528,7 @@ export default function TvChannelsPage() {
             </header>
             
             <Dialog open={!!editingChannel} onOpenChange={(isOpen) => !isOpen && setEditingChannel(null)}>
-                <DialogContent className="border-white/10 bg-neutral-950 text-white sm:max-w-md">
+                <DialogContent className="bg-white text-gray-900 sm:max-w-md">
                     {editingChannel && (
                         <EditChannelForm
                             channel={editingChannel}
@@ -543,11 +542,11 @@ export default function TvChannelsPage() {
                 </DialogContent>
             </Dialog>
 
-            <Card className="border-white/10 bg-neutral-950">
+            <Card>
                 <CardContent className="p-0">
                     <Table>
                         <TableHeader>
-                            <TableRow className="border-white/10 hover:bg-transparent">
+                            <TableRow className="hover:bg-transparent">
                                 <TableHead className="w-16 text-center">Destaque</TableHead>
                                 <TableHead className="w-20">Logo</TableHead>
                                 <TableHead>Nome</TableHead>
@@ -557,7 +556,7 @@ export default function TvChannelsPage() {
                         </TableHeader>
                         <TableBody>
                             {channels.map((channel) => (
-                                <TableRow key={channel.id} className="border-white/10">
+                                <TableRow key={channel.id}>
                                      <TableCell className="text-center">
                                         <Button
                                             id={`feature-channel-button-${channel.id}`}
@@ -566,20 +565,20 @@ export default function TvChannelsPage() {
                                             onClick={() => handleToggleFeatured(channel)}
                                             className="mx-auto"
                                         >
-                                            <Star className={`h-5 w-5 transition-colors ${channel.is_featured ? 'text-yellow-400 fill-yellow-400' : 'text-white/50 hover:text-yellow-400'}`}/>
+                                            <Star className={`h-5 w-5 transition-colors ${channel.is_featured ? 'text-yellow-400 fill-yellow-400' : 'text-gray-400 hover:text-yellow-400'}`}/>
                                         </Button>
                                     </TableCell>
                                     <TableCell>
                                         {channel.logo_url ? (
-                                            <Image src={channel.logo_url} alt={channel.name} width={40} height={40} className="rounded-md bg-white/10 p-1 object-contain"/>
+                                            <Image src={channel.logo_url} alt={channel.name} width={40} height={40} className="rounded-md bg-gray-100 p-1 object-contain"/>
                                         ) : (
-                                            <div className="w-10 h-10 rounded-md bg-white/10 flex items-center justify-center">
-                                                <Clapperboard className="h-5 w-5 text-white/50"/>
+                                            <div className="w-10 h-10 rounded-md bg-gray-100 flex items-center justify-center">
+                                                <Clapperboard className="h-5 w-5 text-gray-400"/>
                                             </div>
                                         )}
                                     </TableCell>
-                                    <TableCell className="font-medium">{channel.name}</TableCell>
-                                    <TableCell className="text-white/70 text-xs max-w-sm truncate">{channel.description || 'N/A'}</TableCell>
+                                    <TableCell className="font-medium text-gray-800">{channel.name}</TableCell>
+                                    <TableCell className="text-gray-600 text-xs max-w-sm truncate">{channel.description || 'N/A'}</TableCell>
                                     <TableCell className="text-right">
                                         <Button id={`edit-channel-button-${channel.id}`} variant="ghost" size="sm" className="mr-2" onClick={() => setEditingChannel(channel)}>
                                             <Edit className="w-4 h-4 mr-1"/> Editar
@@ -588,7 +587,7 @@ export default function TvChannelsPage() {
                                             <AlertDialogTrigger asChild>
                                                 <Button id={`delete-channel-trigger-${channel.id}`} variant="destructive" size="sm"><Trash2 className="w-4 h-4" /></Button>
                                             </AlertDialogTrigger>
-                                            <AlertDialogContent className="bg-neutral-950 border-white/10 text-white">
+                                            <AlertDialogContent className="bg-white text-gray-900">
                                                 <AlertDialogHeader>
                                                     <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
                                                     <AlertDialogDescription>
@@ -608,7 +607,7 @@ export default function TvChannelsPage() {
                             ))}
                              {channels.length === 0 && (
                                 <TableRow>
-                                    <TableCell colSpan={5} className="text-center text-white/60 py-8">Nenhum canal encontrado.</TableCell>
+                                    <TableCell colSpan={5} className="text-center text-gray-500 py-8">Nenhum canal encontrado.</TableCell>
                                 </TableRow>
                             )}
                         </TableBody>

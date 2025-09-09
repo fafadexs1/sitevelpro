@@ -273,14 +273,14 @@ function TagsManager() {
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
-                <p className="text-sm text-white/70 max-w-2xl">
+                <p className="text-sm text-gray-600 max-w-2xl">
                     Adicione scripts como Google Analytics, Meta Pixel, etc. As tags ativas serão injetadas automaticamente nas páginas do seu site, no local que você definir.
                 </p>
                 <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
                   <DialogTrigger asChild>
                     <Button id="new-tag-button" onClick={() => { setEditingTag(null); }}><PlusCircle className="mr-2 h-4 w-4" /> Nova Tag</Button>
                   </DialogTrigger>
-                  <DialogContent className="border-white/10 bg-neutral-950 text-white sm:max-w-2xl">
+                  <DialogContent className="bg-white text-gray-900 sm:max-w-2xl">
                       <TagForm onSave={handleSave} onOpenChange={setIsModalOpen} tag={editingTag} />
                   </DialogContent>
                 </Dialog>
@@ -289,15 +289,15 @@ function TagsManager() {
             {loading ? (
                 <div className="flex items-center justify-center p-8"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
             ) : tags.length === 0 ? (
-                <div className="flex flex-col items-center justify-center text-center py-16 px-4 rounded-xl border-2 border-dashed border-white/10 bg-neutral-900/50">
-                    <Tag className="w-12 h-12 text-white/30 mb-4"/>
-                    <h3 className="text-lg font-semibold">Nenhuma tag criada ainda</h3>
-                    <p className="text-sm text-white/60 max-w-sm mx-auto">Clique em "Nova Tag" para adicionar seu primeiro script de rastreamento e começar a coletar dados.</p>
+                <div className="flex flex-col items-center justify-center text-center py-16 px-4 rounded-xl border-2 border-dashed border-gray-200 bg-gray-50">
+                    <Tag className="w-12 h-12 text-gray-400 mb-4"/>
+                    <h3 className="text-lg font-semibold text-gray-800">Nenhuma tag criada ainda</h3>
+                    <p className="text-sm text-gray-500 max-w-sm mx-auto">Clique em "Nova Tag" para adicionar seu primeiro script de rastreamento e começar a coletar dados.</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {tags.map((tag) => (
-                        <Card key={tag.id} className="border-white/10 bg-neutral-900/60 flex flex-col">
+                        <Card key={tag.id} className="flex flex-col">
                             <CardHeader className="flex-row items-center justify-between">
                                 <CardTitle className="flex items-center gap-2 text-lg">
                                     <Tag className="w-5 h-5 text-primary"/>
@@ -307,11 +307,11 @@ function TagsManager() {
                             </CardHeader>
                             <CardContent className="flex-grow space-y-3">
                                  <Badge variant="secondary" className="font-mono text-xs">{tag.placement}</Badge>
-                                 <p className="text-xs text-white/60 line-clamp-2 font-mono bg-neutral-950 p-2 rounded-md border border-white/10">
+                                 <p className="text-xs text-gray-600 line-clamp-2 font-mono bg-gray-100 p-2 rounded-md border border-gray-200">
                                     {tag.script_content}
                                  </p>
                             </CardContent>
-                            <CardFooter className="flex justify-end gap-2 border-t border-white/10 pt-4">
+                            <CardFooter className="flex justify-end gap-2 border-t pt-4">
                                 <Button id={`edit-tag-${tag.id}`} variant="ghost" size="sm" onClick={() => { setEditingTag(tag); setIsModalOpen(true); }}>
                                     <Edit className="h-4 w-4 mr-2" /> Editar
                                 </Button>
@@ -319,7 +319,7 @@ function TagsManager() {
                                     <AlertDialogTrigger asChild>
                                         <Button id={`delete-tag-trigger-${tag.id}`} variant="destructive" size="sm"><Trash2 className="h-4 w-4" /></Button>
                                     </AlertDialogTrigger>
-                                    <AlertDialogContent className="bg-neutral-950 border-white/10 text-white">
+                                    <AlertDialogContent className="bg-white text-gray-900">
                                         <AlertDialogHeader><AlertDialogTitle>Tem certeza?</AlertDialogTitle><AlertDialogDescription>Essa ação não pode ser desfeita. Isso irá apagar permanentemente a tag.</AlertDialogDescription></AlertDialogHeader>
                                         <AlertDialogFooter>
                                             <AlertDialogCancel id={`delete-tag-cancel-${tag.id}`}>Cancelar</AlertDialogCancel>
@@ -391,7 +391,7 @@ function ConversionMappingManager() {
 
     return (
         <div className="space-y-8">
-            <Card className="border-white/10 bg-neutral-900/60">
+            <Card>
                 <CardHeader>
                     <CardTitle>Conversões Padrão</CardTitle>
                     <CardDescription>Ative ou desative o rastreamento para eventos comuns do site.</CardDescription>
@@ -419,10 +419,10 @@ function ConversionMappingManager() {
                             }
                             
                             return (
-                                <div key={stdEvent.name} className="flex items-center justify-between rounded-lg border border-white/10 p-4">
+                                <div key={stdEvent.name} className="flex items-center justify-between rounded-lg border border-gray-200 p-4">
                                     <div>
-                                        <p className="font-medium">{stdEvent.name}</p>
-                                        <p className="text-xs text-white/60 font-mono">{stdEvent.selector}</p>
+                                        <p className="font-medium text-gray-800">{stdEvent.name}</p>
+                                        <p className="text-xs text-gray-500 font-mono">{stdEvent.selector}</p>
                                     </div>
                                     <Switch id={`toggle-std-event-${stdEvent.name.replace(/\s/g, '')}`} checked={isActive} onCheckedChange={handleToggleStandard} />
                                 </div>
@@ -432,7 +432,7 @@ function ConversionMappingManager() {
                 </CardContent>
             </Card>
 
-            <Card className="border-white/10 bg-neutral-900/60">
+            <Card>
                 <CardHeader>
                     <CardTitle>Eventos Customizados</CardTitle>
                     <CardDescription>Crie eventos de conversão para ações específicas, como cliques em botões.</CardDescription>
@@ -443,18 +443,18 @@ function ConversionMappingManager() {
                             <DialogTrigger asChild>
                                 <Button id="new-custom-event" onClick={() => { setEditingEvent(null); }}><PlusCircle className="mr-2 h-4 w-4" /> Novo Evento Customizado</Button>
                             </DialogTrigger>
-                             <DialogContent className="border-white/10 bg-neutral-950 text-white sm:max-w-2xl">
+                             <DialogContent className="bg-white text-gray-900 sm:max-w-2xl">
                                 <EventForm onSave={handleSave} onOpenChange={setIsModalOpen} event={editingEvent} />
                             </DialogContent>
                         </Dialog>
                      </div>
                       {loading ? <div className="flex justify-center p-8"><Loader2 className="h-6 w-6 animate-spin" /></div> :
-                        customEvents.length === 0 ? <p className="text-sm text-white/70 text-center py-8">Nenhum evento customizado criado.</p> :
+                        customEvents.length === 0 ? <p className="text-sm text-gray-500 text-center py-8">Nenhum evento customizado criado.</p> :
                         customEvents.map(event => (
-                            <div key={event.id} className="flex items-center justify-between rounded-lg border border-white/10 p-4">
+                            <div key={event.id} className="flex items-center justify-between rounded-lg border border-gray-200 p-4">
                                <div>
-                                   <p className="font-medium">{event.name}</p>
-                                   <p className="text-xs text-white/60 font-mono">Seletor: {event.selector}</p>
+                                   <p className="font-medium text-gray-800">{event.name}</p>
+                                   <p className="text-xs text-gray-500 font-mono">Seletor: {event.selector}</p>
                                </div>
                                <div className="flex items-center gap-4">
                                    <Switch id={`toggle-custom-event-${event.id}`} checked={event.is_active} onCheckedChange={() => handleToggleActive(event)} />
@@ -463,7 +463,7 @@ function ConversionMappingManager() {
                                         <AlertDialogTrigger asChild>
                                             <Button id={`delete-event-trigger-${event.id}`} variant="destructive" size="sm"><Trash2 className="h-4 w-4" /></Button>
                                         </AlertDialogTrigger>
-                                        <AlertDialogContent className="bg-neutral-950 border-white/10 text-white">
+                                        <AlertDialogContent className="bg-white text-gray-900">
                                             <AlertDialogHeader><AlertDialogTitle>Tem certeza?</AlertDialogTitle><AlertDialogDescription>Isso irá apagar permanentemente o evento de conversão.</AlertDialogDescription></AlertDialogHeader>
                                             <AlertDialogFooter>
                                                 <AlertDialogCancel id={`delete-event-cancel-${event.id}`}>Cancelar</AlertDialogCancel>
@@ -489,8 +489,8 @@ export function GoogleAdsManager() {
         <>
             <header className="mb-8 flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold">Rastreamento e Conversões</h1>
-                    <p className="text-white/60">Adicione scripts de marketing e meça os resultados de suas campanhas.</p>
+                    <h1 className="text-3xl font-bold text-gray-900">Rastreamento e Conversões</h1>
+                    <p className="text-gray-500">Adicione scripts de marketing e meça os resultados de suas campanhas.</p>
                 </div>
             </header>
             

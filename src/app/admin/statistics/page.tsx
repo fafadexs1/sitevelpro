@@ -175,56 +175,56 @@ export default function StatisticsPage() {
         <>
             <header className="mb-8 flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold flex items-center gap-2"><BarChart className="text-primary"/> Estatísticas do Site</h1>
-                    <p className="text-white/60">Análise de tráfego e comportamento dos visitantes nos últimos 30 dias.</p>
+                    <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2"><BarChart className="text-primary"/> Estatísticas do Site</h1>
+                    <p className="text-gray-500">Análise de tráfego e comportamento dos visitantes nos últimos 30 dias.</p>
                 </div>
             </header>
 
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-                <Card className="border-white/10 bg-neutral-900/60">
+                <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Total de Visitas</CardTitle>
-                        <Eye className="h-4 w-4 text-white/50" />
+                        <Eye className="h-4 w-4 text-gray-500" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-3xl font-bold">{totalVisits}</div>
-                        <p className="text-xs text-white/60">Soma de todos os page views.</p>
+                        <p className="text-xs text-gray-500">Soma de todos os page views.</p>
                     </CardContent>
                 </Card>
-                <Card className="border-white/10 bg-neutral-900/60">
+                <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Visitantes Únicos</CardTitle>
-                        <Users className="h-4 w-4 text-white/50" />
+                        <Users className="h-4 w-4 text-gray-500" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-3xl font-bold">{uniqueVisitors}</div>
-                         <p className="text-xs text-white/60">Número de navegadores distintos.</p>
+                         <p className="text-xs text-gray-500">Número de navegadores distintos.</p>
                     </CardContent>
                 </Card>
-                <Card className="border-white/10 bg-neutral-900/60">
+                <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Novos Visitantes</CardTitle>
-                        <UserPlus className="h-4 w-4 text-white/50" />
+                        <UserPlus className="h-4 w-4 text-gray-500" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-3xl font-bold">{newVisitors}</div>
-                        <p className="text-xs text-white/60">Visitantes que acessaram pela primeira vez.</p>
+                        <p className="text-xs text-gray-500">Visitantes que acessaram pela primeira vez.</p>
                     </CardContent>
                 </Card>
-                 <Card className="border-white/10 bg-neutral-900/60">
+                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Taxa de Retorno</CardTitle>
-                        <Repeat className="h-4 w-4 text-white/50" />
+                        <Repeat className="h-4 w-4 text-gray-500" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-3xl font-bold">{returnRate}%</div>
-                        <p className="text-xs text-white/60">Percentual de visitantes que retornaram.</p>
+                        <p className="text-xs text-gray-500">Percentual de visitantes que retornaram.</p>
                     </CardContent>
                 </Card>
             </div>
 
             <div className="mt-8">
-                <Card className="border-white/10 bg-neutral-900/60">
+                <Card>
                     <CardHeader>
                         <CardTitle>Visão Geral das Visitas (Últimos 30 Dias)</CardTitle>
                         <CardDescription>
@@ -238,7 +238,7 @@ export default function StatisticsPage() {
                                 margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
                                 accessibilityLayer
                             >
-                                <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.1)" />
+                                <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="rgba(0, 0, 0, 0.05)" />
                                 <XAxis 
                                     dataKey="date" 
                                     tickLine={false} 
@@ -259,21 +259,21 @@ export default function StatisticsPage() {
             </div>
 
             <div className="grid gap-8 md:grid-cols-2 mt-8">
-                <Card className="border-white/10 bg-neutral-900/60">
+                <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2"><File className="text-primary"/>Páginas Mais Visitadas</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <Table>
                             <TableHeader>
-                                <TableRow className="border-white/10 hover:bg-transparent">
+                                <TableRow className="hover:bg-transparent">
                                     <TableHead>Página</TableHead>
                                     <TableHead className="text-right">Visitas</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {topPages.map(page => (
-                                    <TableRow key={page.pathname} className="border-white/10">
+                                    <TableRow key={page.pathname}>
                                         <TableCell className="font-mono text-sm">{page.pathname}</TableCell>
                                         <TableCell className="text-right font-medium">{page.visit_count}</TableCell>
                                     </TableRow>
@@ -282,14 +282,14 @@ export default function StatisticsPage() {
                         </Table>
                     </CardContent>
                 </Card>
-                 <Card className="border-white/10 bg-neutral-900/60">
+                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2"><Users className="text-primary"/>Visitantes Recorrentes</CardTitle>
                     </CardHeader>
                     <CardContent>
                          <Table>
                             <TableHeader>
-                                <TableRow className="border-white/10 hover:bg-transparent">
+                                <TableRow className="hover:bg-transparent">
                                     <TableHead>ID do Visitante</TableHead>
                                     <TableHead className="text-center">Visitas</TableHead>
                                     <TableHead className="text-right">Última Visita</TableHead>
@@ -297,7 +297,7 @@ export default function StatisticsPage() {
                             </TableHeader>
                             <TableBody>
                                 {recurringVisitors.map(visitor => (
-                                     <TableRow key={visitor.visitor_id} className="border-white/10">
+                                     <TableRow key={visitor.visitor_id}>
                                         <TableCell className="font-mono text-xs truncate max-w-24" title={visitor.visitor_id}>{visitor.visitor_id.split('-')[0]}...</TableCell>
                                         <TableCell className="text-center font-medium">{visitor.visit_count}</TableCell>
                                         <TableCell className="text-right text-xs">{format(new Date(visitor.last_visit), "PPp", { locale: ptBR })}</TableCell>
@@ -310,16 +310,16 @@ export default function StatisticsPage() {
             </div>
             
             <div className="grid gap-8 md:grid-cols-2 mt-8">
-                 <Card className="border-white/10 bg-neutral-900/60">
+                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2"><MousePointerClick className="text-primary"/>Cliques nos Planos</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <Table>
-                            <TableHeader><TableRow className="border-white/10 hover:bg-transparent"><TableHead>Plano</TableHead><TableHead className="text-right">Cliques</TableHead></TableRow></TableHeader>
+                            <TableHeader><TableRow className="hover:bg-transparent"><TableHead>Plano</TableHead><TableHead className="text-right">Cliques</TableHead></TableRow></TableHeader>
                             <TableBody>
                                 {planClicks.map(click => (
-                                    <TableRow key={click.name} className="border-white/10">
+                                    <TableRow key={click.name}>
                                         <TableCell className="font-medium">{click.name}</TableCell>
                                         <TableCell className="text-right font-medium">{click.count}</TableCell>
                                     </TableRow>
@@ -328,16 +328,16 @@ export default function StatisticsPage() {
                         </Table>
                     </CardContent>
                 </Card>
-                 <Card className="border-white/10 bg-neutral-900/60">
+                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2"><MousePointerClick className="text-primary"/>Cliques em outros CTAs</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <Table>
-                            <TableHeader><TableRow className="border-white/10 hover:bg-transparent"><TableHead>Botão</TableHead><TableHead className="text-right">Cliques</TableHead></TableRow></TableHeader>
+                            <TableHeader><TableRow className="hover:bg-transparent"><TableHead>Botão</TableHead><TableHead className="text-right">Cliques</TableHead></TableRow></TableHeader>
                             <TableBody>
                                 {otherClicks.map(click => (
-                                     <TableRow key={click.name} className="border-white/10">
+                                     <TableRow key={click.name}>
                                         <TableCell className="font-medium">{click.name}</TableCell>
                                         <TableCell className="text-right font-medium">{click.count}</TableCell>
                                     </TableRow>
