@@ -4,7 +4,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Wifi, Upload, Download, Tv, Smartphone, Check, Loader2, PlusCircle, Gauge, X, Star } from "lucide-react";
+import { Wifi, Upload, Download, Tv, Smartphone, Check, Loader2, PlusCircle, Gauge, X, Star, ArrowRight } from "lucide-react";
 import Link from 'next/link';
 import {
   Carousel,
@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/carousel";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/utils/supabase/client";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose, DialogDescription } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { ChannelLogos } from "./ChannelLogos";
@@ -140,12 +140,13 @@ export function Plans() {
 
   const currentPlans = allPlans.filter(p => p.type === planType);
 
-
   const PlanCard = ({ plan, index }: { plan: Plan, index: number }) => {
     const slug = `${plan.type}-${plan.speed.replace(/\s+/g, '-').toLowerCase()}`;
     const planName = `${plan.speed} MEGA`;
     const priceBRL = formatBRL(plan.price);
     const firstMonthPriceBRL = plan.first_month_price ? formatBRL(plan.first_month_price) : null;
+    const whatsappMessage = plan.whatsapp_message?.replace('{{VELOCIDADE}}', plan.speed) || `Olá, gostaria de mais informações sobre o plano de ${plan.speed} MEGA.`;
+    const whatsappUrl = `https://wa.me/${plan.whatsapp_number}?text=${encodeURIComponent(whatsappMessage)}`;
 
     return (
       <motion.div
@@ -232,17 +233,57 @@ export function Plans() {
               )}
             </div>
 
-            <Button id={`plan-cta-assinar-${slug}`}
-                    asChild
-                    size="lg"
-                    data-track-event="cta_click"
-                    data-track-prop-button-id={`assinar-plano-${slug}`}
-                    data-track-prop-plan-name={planName}
-                    data-track-prop-plan-price={plan.price}
-                    className="w-full font-bold bg-[#03bf03] hover:bg-[#03bf03]/90 text-white"
-            >
-                <Link href="/assinar">Aproveitar oferta</Link>
-            </Button>
+            <Dialog>
+                <DialogTrigger asChild>
+                     <Button id={`plan-cta-saiba-mais-${slug}`}
+                        size="lg"
+                        data-track-event="cta_click"
+                        data-track-prop-button-id={`saiba-mais-plano-${slug}`}
+                        data-track-prop-plan-name={planName}
+                        className="w-full font-bold bg-[#03bf03] hover:bg-[#03bf03]/90 text-white"
+                     >
+                        Saiba mais
+                    </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md bg-white text-gray-800">
+                     <DialogHeader>
+                        <DialogTitle>Como você prefere continuar?</DialogTitle>
+                        <DialogDescription>
+                            Escolha a melhor forma de contratar o plano de {planName}.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="flex flex-col gap-3 pt-4">
+                         <Button
+                            asChild
+                            variant="default"
+                            size="lg"
+                            className="bg-[#03bf03] hover:bg-[#03bf03]/90 text-white font-bold"
+                            data-track-event="cta_click"
+                            data-track-prop-button-id={`continuar-site-plano-${slug}`}
+                            data-track-prop-plan-name={planName}
+                        >
+                            <Link href="/assinar">
+                                Continuar pelo site
+                                <ArrowRight className="ml-2 h-4 w-4"/>
+                            </Link>
+                        </Button>
+                        <Button
+                            asChild
+                            variant="outline"
+                            size="lg"
+                            className="border-green-600 text-green-600 hover:bg-green-50 hover:text-green-700"
+                            data-track-event="cta_click"
+                            data-track-prop-button-id={`whatsapp-plano-${slug}`}
+                            data-track-prop-plan-name={planName}
+                        >
+                            <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+                                Falar no WhatsApp
+                                <Smartphone className="ml-2 h-4 w-4"/>
+                            </a>
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
       </motion.div>
     )
@@ -287,7 +328,7 @@ export function Plans() {
             >
             <CarouselContent className="-ml-4">
               {currentPlans.map((p, i) => (
-                <CarouselItem key={`${planType}-carousel-${i}`} className="basis-4/5 md:basis-1/3 lg:basis-1/4 pl-4 pt-6">
+                <CarouselItem key={`${planType}-carousel-${i}`} className="basis-4/5 md:basis-1/3 lg:basis-1/3 pl-4 pt-6">
                     <div className="p-1 h-full">
                       <PlanCard plan={p} index={i}/>
                     </div>
