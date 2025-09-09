@@ -11,10 +11,11 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { cn } from "@/lib/utils";
 
 
-const NavMenu = ({ title, children }: { title: string, children: React.ReactNode }) => (
+const NavMenu = ({ title, icon: Icon, children }: { title: string, icon: React.ElementType, children: React.ReactNode }) => (
     <DropdownMenu>
         <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="group text-sm text-muted-foreground transition-colors hover:text-foreground">
+                <Icon className="mr-2 h-4 w-4" />
                 {title}
                 <ChevronDown className="relative top-[1px] ml-1 h-3 w-3 transition duration-200 group-data-[state=open]:rotate-180" />
             </Button>
@@ -51,20 +52,20 @@ export function Header() {
         </a>
 
         <nav className="hidden items-center gap-1 md:flex">
-             <NavMenu title="Planos e Serviços">
+             <NavMenu title="Planos e Serviços" icon={Package}>
                 <NavMenuItem href="#planos" icon={Package}>Planos de Internet</NavMenuItem>
                 <NavMenuItem href="/tv" icon={Tv}>Pacotes de TV</NavMenuItem>
                 <NavMenuItem href="#vantagens" icon={Sparkle}>Vantagens</NavMenuItem>
                 <NavMenuItem href="#cobertura" icon={MapPin}>Consultar Cobertura</NavMenuItem>
             </NavMenu>
-             <NavMenu title="Empresa">
+             <NavMenu title="Empresa" icon={Building}>
                 <NavMenuItem href="#ceo" icon={Building}>Sobre a Velpro</NavMenuItem>
                 <NavMenuItem href="/politica-de-privacidade" icon={Shield}>Política de Privacidade</NavMenuItem>
                 <NavMenuItem href="/termos-de-uso" icon={FileText}>Termos de Uso</NavMenuItem>
              </NavMenu>
-             <NavMenu title="Ajuda">
+             <NavMenu title="Ajuda" icon={LifeBuoy}>
                 <NavMenuItem href="#faq" icon={Info}>Perguntas Frequentes</NavMenuItem>
-                <NavMenuItem href="#contato" icon={LifeBuoy}>Fale Conosco</NavMenuItem>
+                <NavMenuItem href="#contato" icon={MessageCircle}>Fale Conosco</NavMenuItem>
                 <NavMenuItem href="/status" icon={GanttChartSquare}>Status da Rede</NavMenuItem>
             </NavMenu>
         </nav>
