@@ -33,14 +33,13 @@ function DesktopView() {
             ? {
                 stroke: "hsl(var(--primary))",
                 strokeWidth: 1.5,
-                initial: { pathLength: 0, pathOffset: 1 },
-                animate: { pathLength: 1, pathOffset: 0 },
+                initial: { pathLength: 0 },
+                animate: { pathLength: [0, 1, 0] },
                 transition: { 
-                    pathLength: { delay: 0.5, duration: 0.8, ease: "easeInOut" },
-                    pathOffset: { delay: 0.5, duration: 0.8, ease: "easeInOut" },
-                    repeat: Infinity, 
-                    repeatDelay: 2, 
-                    repeatType: "loop" 
+                    duration: 2,
+                    ease: "easeInOut",
+                    repeat: Infinity,
+                    repeatDelay: 1,
                 }
             }
             : {
@@ -61,7 +60,7 @@ function DesktopView() {
                         x2={200 + radius * Math.cos(i * 2 * Math.PI / devices.length)}
                         y2={200 + radius * Math.sin(i * 2 * Math.PI / devices.length)}
                         {...lineProps}
-                        transition={isAnimated ? { ...lineProps.transition, delay: i * 0.2 } : { ...lineProps.transition, delay: i * 0.1 }}
+                        transition={isAnimated ? { ...lineProps.transition, delay: i * 0.3 } : { ...lineProps.transition, delay: i * 0.1 }}
                     />
                 ))}
                  {/* Outer lines */}
@@ -73,7 +72,7 @@ function DesktopView() {
                         x2={200 + radius * Math.cos((i + 1) * 2 * Math.PI / devices.length)}
                         y2={200 + radius * Math.sin((i + 1) * 2 * Math.PI / devices.length)}
                         {...lineProps}
-                         transition={isAnimated ? { ...lineProps.transition, delay: 0.5 + i * 0.2 } : { ...lineProps.transition, delay: 0.5 + i * 0.1 }}
+                         transition={isAnimated ? { ...lineProps.transition, delay: 0.5 + i * 0.3 } : { ...lineProps.transition, delay: 0.5 + i * 0.1 }}
                     />
                 ))}
             </>
