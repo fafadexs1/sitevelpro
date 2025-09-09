@@ -113,10 +113,10 @@ export function Plans() {
                     <p className="text-white/60 line-through">De R$ {plan.original_price.toFixed(2).replace('.', ',')}</p>
                 )}
                  <div className="flex items-baseline gap-2">
-                    <p className="flex items-baseline">
+                    <div className="flex items-baseline">
                         <span className="text-xl font-bold mr-1">Por</span>
-                       <span className="text-4xl font-black">R$ {plan.price.toFixed(2).replace('.', ',')}</span>
-                    </p>
+                       <span className="text-3xl font-black">R$ {plan.price.toFixed(2).replace('.', ',')}</span>
+                    </div>
                     <span className="text-white/70">/mês</span>
                 </div>
             </div>
