@@ -34,32 +34,42 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // URLs Dinâmicas
   const dynamicRoutes: MetadataRoute.Sitemap = [];
   
-  // Busca regras que contenham a variável {cidade}
-  const { data: cityRules } = await supabase
+  // Busca todas as regras de SEO ativas
+  const { data: rules } = await supabase
     .from('dynamic_seo_rules')
     .select('slug_pattern')
-    .eq('allow_indexing', true)
-    .like('slug_pattern', '%{cidade}%');
+    .eq('allow_indexing', true);
 
-  // Se existirem regras de cidade, busca as cidades
-  if (cityRules && cityRules.length > 0) {
+  if (rules) {
+    // Busca todas as cidades uma única vez
     const { data: cities } = await supabase.from('cities').select('slug');
-    
-    if (cities) {
-      for (const rule of cityRules) {
+
+    for (const rule of rules) {
+      const pattern = rule.slug_pattern;
+      
+      // Se a regra contém a variável {cidade}
+      if (pattern.includes('{cidade}') && cities) {
         for (const city of cities) {
           dynamicRoutes.push({
-            url: `${siteUrl}${rule.slug_pattern.replace('{cidade}', city.slug)}`,
+            url: `${siteUrl}${pattern.replace('{cidade}', city.slug)}`,
             lastModified: new Date(),
             changeFrequency: 'weekly',
             priority: 0.7,
           });
         }
+      } 
+      // Se for uma regra sem variáveis (URL estática)
+      else if (!pattern.includes('{')) {
+         dynamicRoutes.push({
+            url: `${siteUrl}${pattern}`,
+            lastModified: new Date(),
+            changeFrequency: 'weekly',
+            priority: 0.7,
+          });
       }
+      // Adicione outras lógicas de variáveis aqui, como {plano}, etc.
     }
   }
-
-  // Você pode adicionar mais lógicas aqui para outras variáveis como {plano}, etc.
 
   return [
     ...staticRoutes,
