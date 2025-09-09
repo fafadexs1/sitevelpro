@@ -600,7 +600,7 @@ function PlansTable({
       </TableHeader>
       <TableBody>
         {plans.map((plan) => (
-          <TableRow key={plan.id} className="border-white/10">
+          <TableRow key={plan.id} className="border-white/10 text-white">
             <TableCell className="font-medium">{plan.speed} MEGA</TableCell>
             <TableCell>
               <div className="flex items-center gap-2">
