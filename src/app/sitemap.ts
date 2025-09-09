@@ -28,51 +28,42 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: route === '/' ? 1 : 0.8,
   }));
 
-  // 2. Rotas Dinâmicas (Cidades)
-  const cityRoutes: MetadataRoute.Sitemap = [];
+  const dynamicRoutes: MetadataRoute.Sitemap = [];
+
   try {
-    const { data: cities, error: citiesError } = await supabase.from('cities').select('slug');
-    if (citiesError) throw citiesError;
-
-    const { data: cityRules, error: cityRulesError } = await supabase
-      .from('dynamic_seo_rules')
-      .select('slug_pattern')
-      .eq('allow_indexing', true)
-      .like('slug_pattern', '%{cidade}%');
-    if (cityRulesError) throw cityRulesError;
-
-    if (cities && cityRules) {
-      for (const rule of cityRules) {
-        for (const city of cities) {
-          const url = `${siteUrl}${rule.slug_pattern.replace('{cidade}', city.slug)}`;
-          cityRoutes.push({
-            url: url,
-            lastModified: new Date(),
-            changeFrequency: 'weekly',
-            priority: 0.7,
-          });
-        }
-      }
-    }
-  } catch (error) {
-    console.error("Sitemap: Erro ao buscar rotas de cidades:", error);
-  }
-
-
-  // 3. Rotas de SEO cadastradas manualmente que NÃO são de cidades
-  const manualSeoRoutes: MetadataRoute.Sitemap = [];
-  try {
-    const { data: manualRules, error: manualRulesError } = await supabase
+    const { data: allRules, error: rulesError } = await supabase
         .from('dynamic_seo_rules')
         .select('slug_pattern')
-        .eq('allow_indexing', true)
-        .not('slug_pattern', 'like', '%{cidade}%');
+        .eq('allow_indexing', true);
 
-    if (manualRulesError) throw manualRulesError;
+    if (rulesError) throw rulesError;
 
-    if (manualRules) {
-        for (const rule of manualRules) {
-            manualSeoRoutes.push({
+    if (allRules) {
+        const rulesWithVariable = allRules.filter(rule => rule.slug_pattern.includes('{cidade}'));
+        const rulesWithoutVariable = allRules.filter(rule => !rule.slug_pattern.includes('{cidade}'));
+
+        // Processa regras que dependem da tabela de cidades
+        if (rulesWithVariable.length > 0) {
+            const { data: cities, error: citiesError } = await supabase.from('cities').select('slug');
+            if (citiesError) throw citiesError;
+
+            if (cities) {
+                for (const rule of rulesWithVariable) {
+                    for (const city of cities) {
+                        dynamicRoutes.push({
+                            url: `${siteUrl}${rule.slug_pattern.replace('{cidade}', city.slug)}`,
+                            lastModified: new Date(),
+                            changeFrequency: 'weekly',
+                            priority: 0.7,
+                        });
+                    }
+                }
+            }
+        }
+        
+        // Processa regras que são caminhos estáticos
+        for (const rule of rulesWithoutVariable) {
+             dynamicRoutes.push({
                 url: `${siteUrl}${rule.slug_pattern}`,
                 lastModified: new Date(),
                 changeFrequency: 'weekly',
@@ -81,12 +72,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         }
     }
   } catch (error) {
-     console.error("Sitemap: Erro ao buscar regras de SEO manuais:", error);
+     console.error("Sitemap: Erro ao processar regras de SEO dinâmicas:", error);
   }
   
   return [
     ...staticRoutes,
-    ...cityRoutes,
-    ...manualSeoRoutes,
+    ...dynamicRoutes,
   ];
 }
