@@ -112,9 +112,13 @@ export function Plans() {
                 {plan.original_price && (
                     <p className="text-white/60 line-through">De R$ {plan.original_price.toFixed(2).replace('.', ',')}</p>
                 )}
-                <p className="text-xl font-bold">
-                    Por <span className="text-4xl font-black">R$ {plan.price.toFixed(2).replace('.', ',')}</span>/mês
-                </p>
+                 <div className="flex items-baseline gap-2">
+                    <span className="text-xl font-bold">Por</span>
+                    <p className="font-bold">
+                       <span className="text-4xl font-black">R$ {plan.price.toFixed(2).replace('.', ',')}</span>
+                       <span className="text-white/70">/mês</span>
+                    </p>
+                </div>
             </div>
           
           {plan.has_tv && plan.featured_channel_ids && <ChannelLogos channelIds={plan.featured_channel_ids} />}
