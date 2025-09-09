@@ -5,7 +5,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Wifi, Upload, Download, Tv, Smartphone, Check, Loader2, PlusCircle, Gauge, X, Star } from "lucide-react";
-import { useIsMobile } from "@/hooks/use-mobile";
 import Link from 'next/link';
 import {
   Carousel,
@@ -121,7 +120,6 @@ const getFeatureIcon = (feature: string) => {
 
 export function Plans() {
   const [planType, setPlanType] = useState<"residencial" | "empresarial">("residencial");
-  const isMobile = useIsMobile();
   const [allPlans, setAllPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -282,26 +280,23 @@ export function Plans() {
             <div className="flex justify-center items-center min-h-[300px]">
                 <Loader2 className="h-8 w-8 animate-spin text-primary"/>
             </div>
-        ) : isMobile ? (
-          <Carousel opts={{ loop: false }} className="relative w-full">
+        ) : (
+           <Carousel 
+             opts={{ align: "start", loop: false }} 
+             className="relative w-full"
+            >
             <CarouselContent className="-ml-4">
               {currentPlans.map((p, i) => (
-                <CarouselItem key={`${planType}-carousel-${i}`} className="basis-4/5 pl-4 pt-6">
+                <CarouselItem key={`${planType}-carousel-${i}`} className="basis-4/5 md:basis-1/3 lg:basis-1/5 pl-4 pt-6">
                     <div className="p-1 h-full">
                       <PlanCard plan={p} index={i}/>
                     </div>
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-card/80 border-border hover:bg-accent"/>
-            <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-card/80 border-border hover:bg-accent" />
+            <CarouselPrevious className="absolute left-[-20px] top-1/2 -translate-y-1/2 z-10 bg-card/80 border-border hover:bg-accent hidden lg:flex"/>
+            <CarouselNext className="absolute right-[-20px] top-1/2 -translate-y-1/2 z-10 bg-card/80 border-border hover:bg-accent hidden lg:flex" />
           </Carousel>
-        ) : (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {currentPlans.map((p, i) => (
-              <PlanCard plan={p} index={i} key={`${planType}-grid-${i}`} />
-            ))}
-          </div>
         )}
       </div>
     </section>
