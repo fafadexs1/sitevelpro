@@ -86,14 +86,6 @@ export function Plans() {
   const PlanCard = ({ plan, index }: { plan: Plan, index: number }) => {
     const slug = `${plan.type}-${plan.speed.replace(/\s+/g, '-').toLowerCase()}`;
     const planName = `${plan.speed} MEGA`;
-    
-    const defaultWhatsappNumber = "5561999998888";
-    const defaultWhatsappMessage = `Olá, gostaria de saber mais sobre o plano de ${plan.speed} MEGA.`;
-
-    const whatsappNumber = plan.whatsapp_number || defaultWhatsappNumber;
-    const whatsappMessage = (plan.whatsapp_message || defaultWhatsappMessage).replace(/{{VELOCIDADE}}/g, plan.speed);
-    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`;
-
 
     return (
       <motion.div
@@ -141,28 +133,10 @@ export function Plans() {
         </div>
         
         <div className="flex flex-col gap-2 mt-auto">
-            <div className="grid grid-cols-2 gap-2">
-                <Button id={`plan-cta-assinar-${slug}`}
-                        asChild
-                        data-track-event="cta_click"
-                        data-track-prop-button-id={`assinar-plano-${slug}`}
-                        data-track-prop-plan-name={planName}
-                        data-track-prop-plan-price={plan.price}
-                >
-                    <Link href="/assinar">Assinar</Link>
-                </Button>
-                <Button id={`plan-cta-whatsapp-${slug}`} variant="outline" asChild>
-                    <Link href={whatsappUrl} target="_blank">
-                        <MessageSquare className="mr-2 h-4 w-4"/>
-                        WhatsApp
-                    </Link>
-                </Button>
-            </div>
-            
-            {plan.conditions && (
+             {plan.conditions && (
                  <Sheet>
                     <SheetTrigger asChild>
-                         <Button variant="link" className="text-xs text-white/60 h-auto py-1">Conferir condições</Button>
+                         <Button variant="link" className="text-xs text-white/60 h-auto py-1 mb-2">Conferir condições</Button>
                     </SheetTrigger>
                     <SheetContent className="bg-neutral-950 border-white/10 text-white">
                         <SheetHeader>
@@ -174,6 +148,16 @@ export function Plans() {
                     </SheetContent>
                 </Sheet>
             )}
+            <Button id={`plan-cta-assinar-${slug}`}
+                    asChild
+                    data-track-event="cta_click"
+                    data-track-prop-button-id={`assinar-plano-${slug}`}
+                    data-track-prop-plan-name={planName}
+                    data-track-prop-plan-price={plan.price}
+                    className="w-full"
+            >
+                <Link href="/assinar">Assinar Agora</Link>
+            </Button>
         </div>
       </motion.div>
     )
