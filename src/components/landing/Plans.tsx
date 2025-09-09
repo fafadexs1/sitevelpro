@@ -195,11 +195,11 @@ export function Plans() {
                  {plan.original_price && (
                     <span className="text-sm text-neutral-500 line-through mr-2">De R$ {plan.original_price.toFixed(2)}</span>
                  )}
-                 <div className="flex items-baseline justify-center gap-1">
-                    <span className="text-lg">Por</span>
-                    <span className="font-bold text-5xl">R$ {priceInt}</span>
-                    <div className="flex flex-col items-start -translate-y-1">
-                        <span className="font-bold text-2xl">,{priceDec}</span>
+                 <div className="flex items-baseline justify-center gap-1 whitespace-nowrap">
+                    <span className="text-md">Por</span>
+                    <span className="font-bold text-4xl">R$ {priceInt}</span>
+                    <div className="flex flex-col items-start">
+                        <span className="font-bold text-xl">,{priceDec}</span>
                         <span className="text-neutral-500 text-sm -mt-2">/mês</span>
                     </div>
                  </div>
