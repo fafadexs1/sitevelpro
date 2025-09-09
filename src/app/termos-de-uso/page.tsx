@@ -42,7 +42,7 @@ export default function TermsOfServicePage() {
       icon: <Ban className="h-6 w-6 text-primary" />,
       title: "5. Cancelamento e Suspensão",
       content:
-        "O serviço pode ser cancelado a qualquer momento. Em caso de cancelamento dentro do período de fidelidade (12 meses), será cobrada multa proporcional referente aos custos da instalação. A Velpro se reserva o direito de suspender o serviço por violação destes termos ou por falta de pagamento.",
+        "O serviço pode ser cancelado a qualquer momento. Em caso de cancelamento dentro do período de fidelidade (12 meses), será cobrada multa proporcional referente aos custos da instalação e também pelos meses restantes. A Velpro se reserva o direito de suspender o serviço por violação destes termos ou por falta de pagamento.",
     },
     {
       icon: <Scale className="h-6 w-6 text-primary" />,
