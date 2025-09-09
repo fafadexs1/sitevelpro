@@ -200,25 +200,34 @@ export function Plans() {
                      <Button variant="link" className="text-sm text-[#03bf03] h-auto py-1 mb-2 flex items-center gap-1">Mais detalhes <PlusCircle size={14}/></Button>
                 </PlanDetailsModal>
             )}
-
-            {firstMonthPriceBRL && (
-                 <div className="mb-2">
-                    <p className="text-lg font-bold text-yellow-600 flex items-center justify-center gap-1"><Star className="w-4 h-4 text-yellow-500 fill-yellow-500"/> 1º MÊS POR</p>
-                    <p className="font-bold text-3xl text-neutral-900">R$ {firstMonthPriceBRL}</p>
-                </div>
-            )}
             
             <div className="text-neutral-900 mb-4">
-              {plan.original_price && (
-                <span className="text-sm text-neutral-500 line-through mr-2">
-                  De R$ {formatBRL(plan.original_price)}
-                </span>
+              {firstMonthPriceBRL ? (
+                <>
+                    <div className="mb-2">
+                        <p className="text-lg font-bold text-yellow-600 flex items-center justify-center gap-1"><Star className="w-4 h-4 text-yellow-500 fill-yellow-500"/> 1º MÊS POR</p>
+                        <p className="font-bold text-3xl text-neutral-900">R$ {firstMonthPriceBRL}</p>
+                    </div>
+                     <div className="flex items-baseline justify-center gap-1 whitespace-nowrap text-sm text-neutral-500">
+                        <span>Após,</span>
+                        <span className="font-medium">R$ {priceBRL}</span>
+                        <span>/mês</span>
+                    </div>
+                </>
+              ) : (
+                <>
+                    {plan.original_price && (
+                        <span className="text-sm text-neutral-500 line-through mr-2">
+                        De R$ {formatBRL(plan.original_price)}
+                        </span>
+                    )}
+                    <div className="flex items-baseline justify-center gap-2 whitespace-nowrap">
+                        <span className="text-md font-medium">Por</span>
+                        <span className="font-bold text-4xl">R$ {priceBRL}</span>
+                        <span className="text-neutral-500 text-sm">/mês</span>
+                    </div>
+                </>
               )}
-              <div className="flex items-baseline justify-center gap-2 whitespace-nowrap">
-                <span className="text-md font-medium">Por</span>
-                <span className="font-bold text-4xl">R$ {priceBRL}</span>
-                <span className="text-neutral-500 text-sm">/mês</span>
-              </div>
             </div>
 
             <Button id={`plan-cta-assinar-${slug}`}
