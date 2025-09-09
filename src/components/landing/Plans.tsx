@@ -47,6 +47,9 @@ const ICONS: { [key: string]: React.ElementType } = {
   smartphone: Smartphone,
 };
 
+const formatBRL = (value: number) =>
+  value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
 const PlanDetailsModal = ({ plan, children }: { plan: Plan, children: React.ReactNode }) => {
     const slug = `${plan.type}-${plan.speed.replace(/\s+/g, '-').toLowerCase()}`;
     const planName = `${plan.speed} MEGA`;
@@ -80,9 +83,10 @@ const PlanDetailsModal = ({ plan, children }: { plan: Plan, children: React.Reac
 
                 <div className="absolute bottom-0 left-0 right-0 p-6 bg-neutral-50 border-t flex items-center justify-between">
                     <div>
-                        <span className="text-neutral-900 font-bold text-3xl">R${plan.price.toFixed(2).split('.')[0]}</span>
-                        <span className="text-neutral-900 font-bold text-xl">,{plan.price.toFixed(2).split('.')[1]}</span>
-                        <span className="text-neutral-500">/mês</span>
+                      <span className="text-neutral-900 font-bold text-3xl">
+                        R$ {formatBRL(plan.price)}
+                      </span>
+                      <span className="text-neutral-500 ml-2">/mês</span>
                     </div>
                      <Button id={`plan-modal-cta-assinar-${slug}`}
                         asChild
@@ -140,8 +144,7 @@ export function Plans() {
   const PlanCard = ({ plan, index }: { plan: Plan, index: number }) => {
     const slug = `${plan.type}-${plan.speed.replace(/\s+/g, '-').toLowerCase()}`;
     const planName = `${plan.speed} MEGA`;
-    const priceInt = plan.price.toFixed(2).split('.')[0];
-    const priceDec = plan.price.toFixed(2).split('.')[1];
+    const priceBRL = formatBRL(plan.price);
 
     return (
       <motion.div
@@ -192,18 +195,16 @@ export function Plans() {
             )}
             
             <div className="text-neutral-900 mb-4">
-                 {plan.original_price && (
-                    <span className="text-sm text-neutral-500 line-through mr-2">De R$ {plan.original_price.toFixed(2)}</span>
-                 )}
-                 <div className="flex items-baseline justify-center gap-1 whitespace-nowrap">
-                    <span className="text-md font-medium">Por</span>
-                    <span className="font-bold text-4xl ml-1">R$</span>
-                    <span className="font-bold text-4xl">{priceInt}</span>
-                    <div className="flex flex-col">
-                        <span className="font-bold text-xl">,{priceDec}</span>
-                        <span className="text-neutral-500 text-sm -mt-1 -ml-1">/mês</span>
-                    </div>
-                 </div>
+              {plan.original_price && (
+                <span className="text-sm text-neutral-500 line-through mr-2">
+                  De R$ {formatBRL(plan.original_price)}
+                </span>
+              )}
+              <div className="flex items-baseline justify-center gap-2 whitespace-nowrap">
+                <span className="text-md font-medium">Por</span>
+                <span className="font-bold text-4xl">R$ {priceBRL}</span>
+                <span className="text-neutral-500 text-sm">/mês</span>
+              </div>
             </div>
 
             <Button id={`plan-cta-assinar-${slug}`}
