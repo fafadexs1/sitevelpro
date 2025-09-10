@@ -149,7 +149,7 @@ export function Header() {
                                     <User className="mr-2 h-4 w-4"/> Área do Cliente
                                 </Link>
                             </Button>
-                             <a href="https://wa.me/5500000000000" className="w-full inline-flex items-center justify-center gap-2 rounded-full border-2 border-primary bg-transparent p-3 text-sm font-bold text-primary transition-colors hover:bg-primary/10">
+                             <a href="https://wa.me/5508003810404?text=Olá!%20Gostaria%20de%20saber%20mais%20sobre%20os%20planos." target="_blank" rel="noopener noreferrer" className="w-full inline-flex items-center justify-center gap-2 rounded-full border-2 border-primary bg-transparent p-3 text-sm font-bold text-primary transition-colors hover:bg-primary/10">
                                 <MessageCircle className="h-5 w-5"/> CONVERSAR NO WHATSAPP
                              </a>
                              <a href="tel:+5508003810404" className="w-full inline-flex items-center justify-center gap-2 p-3 text-sm font-medium text-muted-foreground transition-colors hover:text-primary">

@@ -6,22 +6,22 @@ export function Contact() {
     {
       icon: <Phone className="h-5 w-5 text-primary" />,
       title: "Telefone",
-      desc: "0800 000 000",
-      href: "tel:+5508000000000",
+      desc: "0800 381 0404",
+      href: "tel:+5508003810404",
       id: "contact-link-telefone",
     },
     {
       icon: <MessageCircle className="h-5 w-5 text-primary" />,
       title: "WhatsApp",
       desc: "Assine ou tire dúvidas pelo WhatsApp",
-      href: "https://wa.me/5500000000000",
+      href: "https://wa.me/5508003810404?text=Olá!%20Gostaria%20de%20saber%20mais%20sobre%20os%20planos.",
       id: "contact-link-whatsapp",
     },
     {
       icon: <MapPin className="h-5 w-5 text-primary" />,
       title: "Endereço",
-      desc: "Av. da Fibra, 1000 — Centro • Sua Cidade",
-      href: "#",
+      desc: "SQ 13 QUADRA 01 LOTE 11 SALA 101 CENTRO, Cidade Ocidental - GO",
+      href: "https://www.google.com/maps/search/?api=1&query=SQ+13+QUADRA+01+LOTE+11+SALA+101+CENTRO,+Cidade+Ocidental+-+GO",
       id: "contact-link-endereco",
     },
   ];
