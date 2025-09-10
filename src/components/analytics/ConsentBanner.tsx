@@ -73,9 +73,6 @@ export function ConsentBanner() {
           </p>
         </div>
         <div className="flex items-center gap-3 flex-shrink-0">
-          <Button variant="ghost" onClick={() => handleConsent("denied")}>
-            Recusar
-          </Button>
           <Button variant="default" onClick={() => handleConsent("granted")}>
             Aceitar Tudo
           </Button>
