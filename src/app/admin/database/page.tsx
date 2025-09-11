@@ -183,6 +183,26 @@ create table if not exists events (
     created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
+-- Cria a tabela de leads (CRM)
+create table if not exists leads (
+    id uuid default gen_random_uuid() primary key,
+    full_name text not null,
+    email text not null,
+    phone text not null,
+    cep text,
+    street text,
+    "number" text,
+    complement text,
+    neighborhood text,
+    city text,
+    state text,
+    latitude double precision,
+    longitude double precision,
+    status text default 'new' not null, -- new, contacted, qualified, disqualified
+    source text default 'signup_form',
+    created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
 
 -- Cria o bucket 'canais' se ele não existir
 -- As políticas RLS garantem que ele seja público

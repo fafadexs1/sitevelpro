@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import Link from "next/link";
 import { Wifi } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { createClient } from "@/utils/supabase/client";
 
 
 // =====================================================
@@ -228,22 +229,40 @@ const Step2 = ({ form }: { form: any }) => {
 
     return (
     <>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <FormField name="cep" render={({ field }) => (
-                <FormItem className="md:col-span-1">
-                <FormLabel>CEP</FormLabel>
-                <FormControl>
-                    <div className="relative">
-                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input id="signup-cep" placeholder="00000-000" {...field} disabled={dontKnowCep} className="pl-9 pr-24" />
-                    <Button id="signup-cep-lookup" type="button" onClick={handleCepLookup} disabled={loadingCep || dontKnowCep} className="absolute right-1 top-1/2 -translate-y-1/2 h-8 px-2 text-xs">
-                        {loadingCep ? <Loader2 className="h-3 w-3 animate-spin"/> : "Buscar"}
-                    </Button>
-                    </div>
-                </FormControl>
-                <FormMessage />
-                </FormItem>
-            )} />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
+            <div className="md:col-span-1 space-y-2">
+                <FormField name="cep" render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>CEP</FormLabel>
+                    <FormControl>
+                        <div className="relative">
+                        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input id="signup-cep" placeholder="00000-000" {...field} disabled={dontKnowCep} className="pl-9 pr-24" />
+                        <Button id="signup-cep-lookup" type="button" onClick={handleCepLookup} disabled={loadingCep || dontKnowCep} className="absolute right-1 top-1/2 -translate-y-1/2 h-8 px-2 text-xs">
+                            {loadingCep ? <Loader2 className="h-3 w-3 animate-spin"/> : "Buscar"}
+                        </Button>
+                        </div>
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )} />
+                <FormField
+                    control={form.control}
+                    name="dontKnowCep"
+                    render={({ field }) => (
+                    <FormItem className="flex flex-row items-center gap-x-2 space-y-0 pt-2">
+                        <FormControl>
+                        <Checkbox
+                            id="signup-no-cep"
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                        />
+                        </FormControl>
+                        <FormLabel className="cursor-pointer font-normal text-sm">Não sei meu CEP</FormLabel>
+                    </FormItem>
+                    )}
+                />
+            </div>
              <FormField name="street" render={({ field }) => (
                 <FormItem className="md:col-span-2">
                 <FormLabel>Rua</FormLabel>
@@ -253,24 +272,6 @@ const Step2 = ({ form }: { form: any }) => {
                 <FormMessage />
                 </FormItem>
             )} />
-        </div>
-        <div className="mt-2 mb-4">
-             <FormField
-                control={form.control}
-                name="dontKnowCep"
-                render={({ field }) => (
-                <FormItem className="flex flex-row items-center gap-x-2 space-y-0">
-                    <FormControl>
-                    <Checkbox
-                        id="signup-no-cep"
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                    />
-                    </FormControl>
-                    <FormLabel className="cursor-pointer font-normal text-sm">Não sei meu CEP</FormLabel>
-                </FormItem>
-                )}
-            />
         </div>
         <div className="grid md:grid-cols-3 gap-4">
             <FormField name="number" render={({ field }) => (
@@ -417,6 +418,7 @@ export default function SignupPage() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const { toast } = useToast();
 
   const totalSteps = 3;
   const currentValidationSchema = stepSchemas[currentStep - 1];
@@ -427,22 +429,33 @@ export default function SignupPage() {
     defaultValues: formData
   });
 
-  const goNext = (data: any) => {
+  const goNext = async (data: any) => {
     const newFormData = { ...formData, ...data };
     setFormData(newFormData);
 
     if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
-      // Reset form with new data to carry over values
       methods.reset(newFormData);
     } else {
-      // Final submission logic
       setIsSubmitting(true);
-      console.log("Final data:", newFormData);
-      setTimeout(() => {
-        setIsSubmitting(false);
+      const supabase = createClient();
+      const { fullName, ...rest } = newFormData;
+
+      const { error } = await supabase.from("leads").insert({
+        ...rest,
+        full_name: fullName,
+      });
+
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Erro ao Enviar",
+          description: "Não foi possível enviar sua solicitação. Tente novamente.",
+        });
+      } else {
         setIsSuccess(true);
-      }, 1500);
+      }
+      setIsSubmitting(false);
     }
   };
 
@@ -459,7 +472,7 @@ export default function SignupPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-secondary text-foreground selection:bg-primary/20 flex flex-col">
+    <div className="min-h-screen bg-secondary text-foreground flex flex-col">
        <header className="py-4 px-6 border-b border-border bg-background">
         <Link href="/" className="flex items-center gap-3 w-fit">
           <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-primary to-green-400 text-white shadow-lg shadow-primary/20">
@@ -509,5 +522,3 @@ export default function SignupPage() {
     </div>
   );
 }
-
-
