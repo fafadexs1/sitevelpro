@@ -26,7 +26,9 @@ export async function loginWithApi(cpfcnpj: string, senha: string):Promise<{ suc
             throw new Error('A URL da API externa não está configurada no painel de administração.');
         }
 
-        const externalApiUrl = apiUrlData.value;
+        const baseUrl = apiUrlData.value.endsWith('/') ? apiUrlData.value.slice(0, -1) : apiUrlData.value;
+        const externalApiUrl = `${baseUrl}/api/central/contratos`;
+
         const formData = new FormData();
         formData.append('cpfcnpj', cpfcnpj);
         formData.append('senha', senha);
