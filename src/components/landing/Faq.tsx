@@ -5,7 +5,7 @@ export function Faq() {
   const faqs = [
     {
       q: "Tem fidelidade?",
-      a: "Não exigimos fidelidade. Você fica porque quer — pela qualidade e atendimento.",
+      a: "Todos os planos tem fidelidade, verificar o tempo de fidelidade na contratação ou contrato.",
     },
     {
       q: "Qual roteador vem incluso?",
