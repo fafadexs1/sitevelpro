@@ -65,7 +65,7 @@ const StepIndicator = ({ currentStep, totalSteps }: { currentStep: number; total
       <div
         key={i}
         className={`w-12 h-2 rounded-full transition-colors ${
-          i < currentStep ? "bg-primary" : "bg-white/10"
+          i < currentStep ? "bg-primary" : "bg-secondary"
         }`}
       />
     ))}
@@ -74,8 +74,8 @@ const StepIndicator = ({ currentStep, totalSteps }: { currentStep: number; total
 
 const FormHeader = ({ title, description }: { title: string; description: string }) => (
   <div className="text-center mb-8">
-    <h2 className="text-2xl font-bold">{title}</h2>
-    <p className="text-white/60">{description}</p>
+    <h2 className="text-2xl font-bold text-foreground">{title}</h2>
+    <p className="text-muted-foreground">{description}</p>
   </div>
 );
 
@@ -110,7 +110,7 @@ const Step1 = () => (
           <FormLabel>Nome Completo</FormLabel>
           <FormControl>
             <div className="relative">
-              <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/60" />
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input id="signup-fullname" placeholder="Seu nome" {...field} className="pl-9" />
             </div>
           </FormControl>
@@ -123,7 +123,7 @@ const Step1 = () => (
             <FormLabel>E-mail</FormLabel>
             <FormControl>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/60" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input id="signup-email" placeholder="seu@email.com" {...field} className="pl-9" />
               </div>
             </FormControl>
@@ -135,7 +135,7 @@ const Step1 = () => (
             <FormLabel>Telefone</FormLabel>
             <FormControl>
               <div className="relative">
-                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/60" />
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input id="signup-phone" placeholder="(00) 00000-0000" {...field} className="pl-9" />
               </div>
             </FormControl>
@@ -234,7 +234,7 @@ const Step2 = ({ form }: { form: any }) => {
                 <FormLabel>CEP</FormLabel>
                 <FormControl>
                     <div className="relative">
-                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/60" />
+                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input id="signup-cep" placeholder="00000-000" {...field} disabled={dontKnowCep} className="pl-9 pr-24" />
                     <Button id="signup-cep-lookup" type="button" onClick={handleCepLookup} disabled={loadingCep || dontKnowCep} className="absolute right-1 top-1/2 -translate-y-1/2 h-8 px-2 text-xs">
                         {loadingCep ? <Loader2 className="h-3 w-3 animate-spin"/> : "Buscar"}
@@ -282,7 +282,7 @@ const Step2 = ({ form }: { form: any }) => {
             )} />
             <FormField name="complement" render={({ field }) => (
                 <FormItem className="md:col-span-2">
-                <FormLabel>Complemento <span className="text-white/50">(opcional)</span></FormLabel>
+                <FormLabel>Complemento <span className="text-muted-foreground">(opcional)</span></FormLabel>
                 <FormControl><Input id="signup-complement" placeholder="Apto, bloco, etc." {...field} /></FormControl>
                 <FormMessage />
                 </FormItem>
@@ -329,21 +329,21 @@ const Step2 = ({ form }: { form: any }) => {
                 </FormItem>
             )} />
         </div>
-        <div className="mt-4 pt-4 border-t border-white/10">
+        <div className="mt-4 pt-4 border-t border-border">
             <FormLabel>Localização Precisa (Opcional)</FormLabel>
             <div className="flex items-center gap-4 mt-2">
                 <Button id="signup-geolocation" type="button" variant="outline" onClick={handleGeolocation} disabled={loadingLocation}>
                     {loadingLocation ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <LocateFixed className="h-4 w-4 mr-2" />}
                     Usar minha localização
                 </Button>
-                <div className="text-xs text-white/60">
+                <div className="text-xs text-muted-foreground">
                     <p>Latitude: {form.getValues("latitude")?.toFixed(5) || "--"}</p>
                     <p>Longitude: {form.getValues("longitude")?.toFixed(5) || "--"}</p>
                 </div>
             </div>
             <FormField name="latitude" render={({ field }) => (<FormItem><FormControl><Input type="hidden" {...field} /></FormControl></FormItem>)} />
             <FormField name="longitude" render={({ field }) => (<FormItem><FormControl><Input type="hidden" {...field} /></FormControl></FormItem>)} />
-            <p className="text-xs text-white/50 mt-2">Ajuda a agilizar a verificação de viabilidade técnica.</p>
+            <p className="text-xs text-muted-foreground mt-2">Ajuda a agilizar a verificação de viabilidade técnica.</p>
         </div>
     </>
     );
@@ -351,19 +351,19 @@ const Step2 = ({ form }: { form: any }) => {
 
 const Step3 = ({ data }: { data: FormData }) => (
     <div>
-        <h3 className="text-lg font-semibold mb-4 border-b border-white/10 pb-2">Confirme seus dados</h3>
+        <h3 className="text-lg font-semibold mb-4 border-b border-border pb-2">Confirme seus dados</h3>
         <div className="space-y-4 text-sm">
             <div>
-                <p className="font-semibold text-white/80">Dados Pessoais</p>
-                <div className="p-4 rounded-xl bg-white/5 border border-white/10 mt-2 space-y-2">
+                <p className="font-semibold text-muted-foreground">Dados Pessoais</p>
+                <div className="p-4 rounded-xl bg-secondary border mt-2 space-y-2">
                     <p><strong>Nome:</strong> {data.fullName}</p>
                     <p><strong>Email:</strong> {data.email}</p>
                     <p><strong>Telefone:</strong> {data.phone}</p>
                 </div>
             </div>
             <div>
-                <p className="font-semibold text-white/80">Endereço de Instalação</p>
-                <div className="p-4 rounded-xl bg-white/5 border border-white/10 mt-2 space-y-2">
+                <p className="font-semibold text-muted-foreground">Endereço de Instalação</p>
+                <div className="p-4 rounded-xl bg-secondary border mt-2 space-y-2">
                     <p>{data.street}, {data.number} {data.complement && `- ${data.complement}`}</p>
                     <p>{data.neighborhood}, {data.city} - {data.state}</p>
                     {!data.dontKnowCep && <p><strong>CEP:</strong> {data.cep}</p>}
@@ -386,8 +386,8 @@ const SuccessScreen = () => (
         <div className="mx-auto w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mb-4">
             <Check className="w-8 h-8 text-primary" />
         </div>
-        <h2 className="text-3xl font-bold">Solicitação enviada!</h2>
-        <p className="text-white/70 mt-2 max-w-md mx-auto">
+        <h2 className="text-3xl font-bold text-foreground">Solicitação enviada!</h2>
+        <p className="text-muted-foreground mt-2 max-w-md mx-auto">
             Sua solicitação de assinatura foi enviada com sucesso. Em breve, nossa equipe entrará em contato para agendar a instalação.
         </p>
         <Button asChild className="mt-8" id="signup-success-back">
@@ -459,21 +459,21 @@ export default function SignupPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-white selection:bg-primary/30 selection:text-green-100 flex flex-col">
-       <header className="py-4 px-6 border-b border-white/5">
+    <div className="min-h-screen bg-secondary text-foreground selection:bg-primary/20 flex flex-col">
+       <header className="py-4 px-6 border-b border-border bg-background">
         <Link href="/" className="flex items-center gap-3 w-fit">
-          <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-primary to-green-400 text-neutral-950 shadow-lg shadow-primary/20">
+          <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-primary to-green-400 text-white shadow-lg shadow-primary/20">
             <Wifi className="h-5 w-5" />
           </div>
           <div>
-            <p className="text-lg font-semibold leading-none">Velpro Telecom</p>
-            <p className="text-xs text-white/60">Assinatura de Plano</p>
+            <p className="text-lg font-semibold leading-none text-foreground">Velpro Telecom</p>
+            <p className="text-xs text-muted-foreground">Assinatura de Plano</p>
           </div>
         </Link>
       </header>
 
       <main className="flex-grow flex items-center justify-center p-4">
-        <div className="w-full max-w-3xl mx-auto rounded-3xl border border-white/10 bg-neutral-900/60 p-6 md:p-8 shadow-2xl">
+        <div className="w-full max-w-3xl mx-auto rounded-3xl border border-border bg-card text-card-foreground p-6 md:p-8 shadow-xl">
           {isSuccess ? <SuccessScreen /> : (
             <>
             <FormProvider {...methods}>
@@ -501,7 +501,7 @@ export default function SignupPage() {
                 <FormNavigation currentStep={currentStep} totalSteps={totalSteps} goBack={goBack} isSubmitting={isSubmitting} />
               </form>
             </FormProvider>
-             <p className="text-center text-xs text-white/50 mt-6">Seus dados estão seguros conosco.</p>
+             <p className="text-center text-xs text-muted-foreground mt-6">Seus dados estão seguros conosco.</p>
              </>
           )}
         </div>
@@ -509,3 +509,4 @@ export default function SignupPage() {
     </div>
   );
 }
+
