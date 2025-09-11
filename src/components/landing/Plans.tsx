@@ -19,6 +19,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { ChannelLogos } from "./ChannelLogos";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type Plan = {
   id: string;
@@ -117,6 +118,31 @@ const getFeatureIcon = (feature: string) => {
         text: text,
     };
 };
+
+const PlanSkeleton = () => (
+    <div className="relative flex h-full flex-col rounded-2xl p-6 shadow-lg bg-card border">
+        <div className="flex-grow pt-4">
+            <div className="text-center">
+                <Skeleton className="h-4 w-24 mx-auto" />
+                <div className="mt-4">
+                    <Skeleton className="h-12 w-32 mx-auto" />
+                </div>
+                <Skeleton className="h-1 w-12 mx-auto mt-3" />
+            </div>
+            <div className="my-6 space-y-3 flex flex-col items-center">
+                <Skeleton className="h-4 w-40" />
+                <Skeleton className="h-4 w-36" />
+                <Skeleton className="h-4 w-44" />
+            </div>
+        </div>
+        <div className="flex flex-col gap-2 mt-auto text-center">
+            <Skeleton className="h-4 w-20 mx-auto mb-2" />
+            <Skeleton className="h-10 w-32 mx-auto mb-4" />
+            <Skeleton className="h-12 w-full" />
+        </div>
+    </div>
+);
+
 
 export function Plans() {
   const [planType, setPlanType] = useState<"residencial" | "empresarial">("residencial");
@@ -320,9 +346,17 @@ export function Plans() {
         </div>
         
         {loading ? (
-            <div className="flex justify-center items-center min-h-[300px]">
-                <Loader2 className="h-8 w-8 animate-spin text-primary"/>
-            </div>
+             <Carousel className="relative w-full">
+                <CarouselContent className="-ml-4">
+                    {[...Array(3)].map((_, i) => (
+                        <CarouselItem key={`skeleton-${i}`} className="basis-4/5 md:basis-1/3 pl-4 pt-6">
+                            <div className="p-1 h-full">
+                                <PlanSkeleton />
+                            </div>
+                        </CarouselItem>
+                    ))}
+                </CarouselContent>
+            </Carousel>
         ) : (
            <Carousel 
              opts={{ align: "start", loop: false }} 
