@@ -88,7 +88,7 @@ export function ContractProvider({ children, user }: { children: React.ReactNode
         
         return {
             id: String(c.contrato),
-            alias: `${c.planointernet.substring(0, 15)}... (${c.endereco_instalacao.bairro})`,
+            alias: `Contrato ${c.contrato} (${c.status.trim()})`,
             address: address,
             ...mockData,
         };
