@@ -216,14 +216,13 @@ export default async function RootLayout({
       <body className="font-body antialiased" suppressHydrationWarning>
         <TrackingNoScript tags={bodyStartNoScripts} />
         
+        {children}
+
+        <Toaster />
+        <ConsentBanner />
         <VisitTracker />
         <EventTracker />
         <ConversionTracker />
-
-        {children}
-        <Toaster />
-
-        <ConsentBanner />
         <TrackingScripts tags={bodyEndScripts} position="body_end" />
       </body>
     </html>
