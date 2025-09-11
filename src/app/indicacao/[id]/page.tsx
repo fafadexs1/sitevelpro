@@ -421,8 +421,7 @@ export default function ReferralSignupPage({ params }: { params: { id: string } 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const { toast } = useToast();
-  const referrerId = params.id;
-
+  
   const totalSteps = 3;
   const currentValidationSchema = stepSchemas[currentStep - 1];
 
@@ -435,6 +434,7 @@ export default function ReferralSignupPage({ params }: { params: { id: string } 
   const goNext = async (data: any) => {
     const newFormData = { ...formData, ...data };
     setFormData(newFormData);
+    const referrerId = params.id;
 
     if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
@@ -513,7 +513,7 @@ export default function ReferralSignupPage({ params }: { params: { id: string } 
             <div className="mb-6 border-b border-border pb-6">
                 <div className="flex items-center gap-3 text-lg font-semibold text-primary bg-primary/10 border border-primary/20 rounded-xl p-4">
                     <Gift className="w-6 h-6"/>
-                    <span>Você foi indicado! Preencha o formulário para continuar o seu cadastro.</span>
+                    <span>Você foi indicado! Preencha o formulário para continuar seu cadastro.</span>
                 </div>
             </div>
             <FormProvider {...methods}>
@@ -549,7 +549,3 @@ export default function ReferralSignupPage({ params }: { params: { id: string } 
     </div>
   );
 }
-
-    
-
-    
