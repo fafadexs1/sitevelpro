@@ -266,7 +266,7 @@ const Step2 = ({ form }: { form: any }) => {
           control={form.control}
           name="dontKnowCep"
           render={({ field }) => (
-          <FormItem className="flex flex-row items-center gap-x-2 space-y-0 -mt-2 mb-4">
+            <FormItem className="flex flex-row items-center gap-x-2 space-y-0 mt-2 mb-4">
               <FormControl>
               <Checkbox
                   id="signup-no-cep"
@@ -275,7 +275,7 @@ const Step2 = ({ form }: { form: any }) => {
               />
               </FormControl>
               <FormLabel className="cursor-pointer font-normal text-sm">Não sei meu CEP</FormLabel>
-          </FormItem>
+            </FormItem>
           )}
       />
         <div className="grid md:grid-cols-3 gap-4">
@@ -444,7 +444,7 @@ export default function SignupPage() {
     } else {
       setIsSubmitting(true);
       const supabase = createClient();
-      const { fullName, ...rest } = newFormData;
+      const { fullName, dontKnowCep, ...rest } = newFormData;
 
       const { error } = await supabase.from("leads").insert({
         ...rest,
