@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { loginWithApi } from "@/actions/authActions";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 
 const loginSchema = z.object({
   cpfcnpj: z.string().min(1, "CPF ou CNPJ é obrigatório."),
