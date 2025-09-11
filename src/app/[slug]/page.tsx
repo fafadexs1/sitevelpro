@@ -12,6 +12,61 @@ import { Faq } from "@/components/landing/Faq";
 import { Contact } from "@/components/landing/Contact";
 import { Footer } from "@/components/landing/Footer";
 import { createClient } from "@/utils/supabase/server";
+import type { Metadata } from 'next';
+
+// Gera metadados dinâmicos com base nas regras de SEO cadastradas
+export async function generateMetadata(
+  { params }: { params: { slug: string } }
+): Promise<Metadata> {
+  const supabase = createClient();
+  const path = `/${params.slug}`;
+
+  const { data: rules } = await supabase
+    .from('dynamic_seo_rules')
+    .select('slug_pattern, meta_title, meta_description, canonical_url')
+    .eq('allow_indexing', true);
+
+  if (!rules) return {};
+
+  let title: string | undefined;
+  let description: string | undefined;
+  let canonical: string | undefined;
+
+  for (const rule of rules) {
+    if (rule.slug_pattern.includes('{cidade}')) {
+      const regex = new RegExp('^' + rule.slug_pattern.replace('{cidade}', '([a-z0-9-]+)') + '$');
+      const match = path.match(regex);
+      if (match) {
+        const citySlug = match[1];
+        const { data: city } = await supabase
+          .from('cities')
+          .select('name')
+          .eq('slug', citySlug)
+          .single();
+        const cityName = city?.name ?? citySlug;
+        title = rule.meta_title.replace('{cidade}', cityName);
+        description = rule.meta_description?.replace('{cidade}', cityName);
+        canonical = rule.canonical_url
+          ? rule.canonical_url.replace('{cidade}', citySlug)
+          : undefined;
+        break;
+      }
+    } else if (rule.slug_pattern === path) {
+      title = rule.meta_title;
+      description = rule.meta_description ?? undefined;
+      canonical = rule.canonical_url ?? undefined;
+      break;
+    }
+  }
+
+  return {
+    title,
+    description,
+    alternates: canonical ? { canonical } : undefined,
+    openGraph: { title, description },
+    twitter: { title, description },
+  };
+}
 
 // Esta função informa ao Next.js quais páginas dinâmicas gerar no momento da compilação.
 // Ela busca os slugs de todas as regras dinâmicas que não são padrões (não contêm '{')
