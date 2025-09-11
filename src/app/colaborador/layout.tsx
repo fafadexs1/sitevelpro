@@ -188,9 +188,7 @@ function ColaboradorDashboard({
   };
 
   const navItems = [
-    { href: "/colaborador", label: "Leads", icon: Users },
-    // Adicionar mais itens aqui no futuro (ex: indicações)
-    // { href: "/colaborador/indicacoes", label: "Indicações", icon: Handshake },
+    { href: "/colaborador", label: "Leads e Indicações", icon: Users },
   ];
 
   return (

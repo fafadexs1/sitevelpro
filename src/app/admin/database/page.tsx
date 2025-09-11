@@ -203,6 +203,26 @@ create table if not exists leads (
     created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
+-- Cria a tabela de indicações
+create table if not exists referrals (
+    id uuid default gen_random_uuid() primary key,
+    referrer_customer_id text, -- ID ou nome/email do cliente que indicou
+    referred_name text not null,
+    referred_email text,
+    referred_phone text not null,
+    status text default 'pendente' not null, -- pendente, verificando, aprovado, rejeitado
+    created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Cria a tabela de configurações de indicações
+create table if not exists referral_settings (
+    id int primary key default 1,
+    reward_value numeric(10, 2) default 50.00,
+    reward_type text default 'discount', -- 'discount' or 'cash'
+    updated_at timestamp with time zone default timezone('utc'::text, now()) not null,
+    constraint single_row_check check (id = 1)
+);
+
 
 -- Cria o bucket 'canais' se ele não existir
 -- As políticas RLS garantem que ele seja público
