@@ -44,12 +44,14 @@ export async function loginWithApi(cpfcnpj: string, senha: string):Promise<{ suc
             throw new Error(`Erro na API externa: ${response.status} ${response.statusText}`);
         }
 
+        const responseText = await response.text();
         let data: ApiResponse;
+
         try {
-            data = await response.json();
+            data = JSON.parse(responseText);
         } catch (e) {
             console.error("Falha ao analisar JSON da API externa:", e);
-            throw new Error("A resposta da API de autenticação não é um JSON válido. Verifique a URL da API nas configurações.");
+            throw new Error(`A resposta da API de autenticação não é um JSON válido. Resposta recebida: ${responseText}`);
         }
 
 
