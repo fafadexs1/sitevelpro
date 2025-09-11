@@ -1,9 +1,9 @@
 
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useContract } from "@/components/cliente/ContractProvider";
-import { Pill, StatusBadge } from "@/components/cliente/ui-helpers";
+import { StatusBadge } from "@/components/cliente/ui-helpers";
 import { Copy, Loader2, Phone, Mail } from "lucide-react";
 import { AnimatePresence, motion } from 'framer-motion';
 import { useToast } from "@/hooks/use-toast";
@@ -26,6 +26,12 @@ export default function IndicarAmigoPage() {
   const { contract } = useContract();
   const { toast } = useToast();
   const [isSubmittingReferral, setIsSubmittingReferral] = useState(false);
+  const [siteUrl, setSiteUrl] = useState('');
+
+  useEffect(() => {
+    // Acessa a variável de ambiente apenas no lado do cliente
+    setSiteUrl(process.env.NEXT_PUBLIC_SITE_URL || '');
+  }, []);
   
   const referralForm = useForm<ReferralFormData>({
     resolver: zodResolver(referralSchema),
@@ -33,6 +39,8 @@ export default function IndicarAmigoPage() {
   });
 
   if (!contract) return null;
+
+  const referralLink = siteUrl ? `${siteUrl}/indicacao/${contract.id}` : `Carregando...`;
   
   async function handleReferralSubmit(data: ReferralFormData) {
     setIsSubmittingReferral(true);
@@ -69,8 +77,8 @@ export default function IndicarAmigoPage() {
                     <div className="mt-6">
                         <label className="text-sm font-medium">Seu link exclusivo de indicação:</label>
                         <div className="mt-2 flex items-center gap-2 rounded-xl border border-border bg-secondary p-2">
-                        <input readOnly value={`https://velpro.com.br/indicacao/${contract.id}`} className="flex-1 bg-transparent px-2 text-sm outline-none"/>
-                        <button onClick={() => { navigator.clipboard.writeText(`https://velpro.com.br/indicacao/${contract.id}`); toast({title: "Link copiado!"}); }} className="rounded-md bg-background px-3 py-1.5 text-sm font-medium hover:bg-accent">
+                        <input readOnly value={referralLink} className="flex-1 bg-transparent px-2 text-sm outline-none"/>
+                        <button onClick={() => { if(siteUrl) { navigator.clipboard.writeText(referralLink); toast({title: "Link copiado!"}); } }} className="rounded-md bg-background px-3 py-1.5 text-sm font-medium hover:bg-accent" disabled={!siteUrl}>
                             <Copy className="h-4 w-4"/>
                         </button>
                         </div>
@@ -132,3 +140,5 @@ export default function IndicarAmigoPage() {
     </AnimatePresence>
   );
 }
+
+    
