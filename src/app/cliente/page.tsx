@@ -18,7 +18,6 @@ import {
   Ticket
 } from "lucide-react";
 import { AnimatePresence, motion } from 'framer-motion';
-import { useToast } from "@/hooks/use-toast";
 import { useRouter } from 'next/navigation';
 
 export default function OverviewPage() {

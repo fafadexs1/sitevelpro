@@ -1,73 +1,42 @@
-
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Zap, Wifi, CreditCard, Receipt,
-  FileText, ArrowRight, Loader2, ChevronRight, CheckCircle2,
-  XCircle, QrCode, Copy, ShieldCheck, Settings, Headphones, Share2,
-  Ticket, Bell, Wallet, Tv, X
+  Settings, Share2,
+  Ticket, Bell, Wallet, Tv, X, Copy, QrCode, Receipt
 } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
-import { createClient } from "@/utils/supabase/client";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
-    ContractProvider,
     useContract
 } from "@/components/cliente/ContractProvider";
-import { Pill, ProgressBar, StatusBadge } from "./ui-helpers";
-
-
-// =====================================================
-// Shared UI
-// =====================================================
-function Pill({ children }: { children: React.ReactNode }) {
-  return <span className="rounded-full border border-border bg-secondary px-2.5 py-1 text-xs text-secondary-foreground">{children}</span>;
-}
-
-function ProgressBar({ value }: { value: number }) {
-  return (
-    <div className="h-2 w-full overflow-hidden rounded-full bg-secondary">
-      <div className="h-full rounded-full bg-gradient-to-r from-green-400 to-primary" style={{ width: `${Math.min(100, Math.max(0, value))}%` }} />
-    </div>
-  );
-}
+import { Wifi } from "lucide-react";
 
 // =====================================================
 // Dashboard with Multi-Contracts + Top Menu Tabs
 // =====================================================
 const TABS = [
-  { key: "overview", label: "Visão Geral" },
-  { key: "tickets", label: "Chamados Técnicos" },
-  { key: "invoices", label: "Faturas" },
-  { key: "traffic", label: "Tráfego" },
-  { key: "plans", label: "Planos" },
-  { key: "friends", label: "Indicar Amigo", icon: Share2 },
-  { key: "contract", label: "Contrato" },
+  { key: "overview", label: "Visão Geral", href: "/cliente"},
+  { key: "tickets", label: "Chamados", href: "/cliente/chamados" },
+  { key: "invoices", label: "Faturas", href: "/cliente/faturas" },
+  { key: "traffic", label: "Tráfego", href: "/cliente/trafego" },
+  { key: "plans", label: "Planos", href: "/cliente/planos" },
+  { key: "friends", label: "Indicar Amigo", icon: Share2, href: "/cliente/indicar-amigo" },
+  { key: "contract", label: "Contrato", href: "/cliente/contrato" },
 ] as const;
 
-export function Dashboard({onLogout}: {onLogout: () => void}) {
-  const { contracts } = useContract();
+export function Dashboard({onLogout, children}: {onLogout: () => void, children: React.ReactNode}) {
+  const { contracts, selectedContractId, setSelectedContractId, pixModal, setPixModal } = useContract();
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState<(typeof TABS)[number]["key"]>("overview");
-  const [selectedContractId, setSelectedContractId] = useState(contracts[0]?.id);
-  const contract = useMemo(() => contracts.find(c => c.id === selectedContractId)!, [contracts, selectedContractId]);
-  const [pixModal, setPixModal] = useState<{ open: boolean; code: string | null }>({ open: false, code: null });
+  const pathname = usePathname();
     
-  if (!contract) {
-      return <div>Carregando...</div>;
+  if (!contracts || contracts.length === 0) {
+      return <div className="flex min-h-screen items-center justify-center">Carregando dados do contrato...</div>;
   }
-
-  const unpaid = contract.invoices.find(i => i.status === "unpaid");
-
+  
+  const activeTab = TABS.find(t => t.href === pathname)?.key || 'overview';
 
   return (
     <div className="min-h-screen bg-secondary text-foreground">
@@ -85,7 +54,7 @@ export function Dashboard({onLogout}: {onLogout: () => void}) {
           </Link>
           <div className="flex flex-1 items-center justify-end gap-3 text-sm">
             {/* Contract selector */}
-            <select id="contract-selector" value={selectedContractId} onChange={(e) => setSelectedContractId(e.target.value)} className="max-w-[150px] truncate rounded-lg border border-border bg-card px-2 py-1.5 outline-none sm:max-w-xs">
+            <select id="contract-selector" value={selectedContractId || ''} onChange={(e) => setSelectedContractId(e.target.value)} className="max-w-[150px] truncate rounded-lg border border-border bg-card px-2 py-1.5 outline-none sm:max-w-xs">
               {contracts.map(c => (
                 <option key={c.id} value={c.id}>{c.alias}</option>
               ))}
@@ -105,23 +74,23 @@ export function Dashboard({onLogout}: {onLogout: () => void}) {
         <div className="mx-auto max-w-7xl overflow-x-auto px-4">
           <nav className="flex gap-2 border-t border-border py-2">
             {TABS.map(t => (
-              <button
+              <Link
                 key={t.key}
                 id={`tab-${t.key}`}
-                onClick={() => setActiveTab(t.key)}
+                href={t.href}
                 className={`flex-shrink-0 whitespace-nowrap rounded-lg px-3 py-1.5 text-sm transition-colors flex items-center gap-1.5 ${activeTab === t.key ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"}`}
               >
                 {t.icon && <t.icon className="h-4 w-4" />}
                 {t.label}
-              </button>
+              </Link>
             ))}
           </nav>
         </div>
       </div>
 
-      <div className="mx-auto max-w-7xl px-4 py-8">
-        
-      </div>
+      <main className="mx-auto max-w-7xl px-4 py-8">
+        {children}
+      </main>
 
       {/* PIX Modal */}
       <AnimatePresence>
