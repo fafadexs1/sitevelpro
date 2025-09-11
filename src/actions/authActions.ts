@@ -38,10 +38,17 @@ export async function loginWithApi(cpfcnpj: string, senha: string):Promise<{ suc
         });
 
         if (!response.ok) {
-            throw new Error(`Erro na API externa: ${response.statusText}`);
+            throw new Error(`Erro na API externa: ${response.status} ${response.statusText}`);
         }
 
-        const data: ApiResponse = await response.json();
+        let data: ApiResponse;
+        try {
+            data = await response.json();
+        } catch (e) {
+            console.error("Falha ao analisar JSON da API externa:", e);
+            throw new Error("A resposta da API de autenticação não é um JSON válido. Verifique a URL da API nas configurações.");
+        }
+
 
         if (!data.auth) {
             return { success: false, error: data.message || 'CPF/CNPJ ou senha inválidos.' };
@@ -75,7 +82,6 @@ export async function loginWithApi(cpfcnpj: string, senha: string):Promise<{ suc
 
             // O login é feito no lado do cliente com signInWithPassword
             // Aqui, nós apenas confirmamos que os dados estão corretos e atualizados.
-            // Para fazer o login efetivo, o lado do cliente usará o Supabase JS.
             // Vamos simular o sign-in aqui para garantir que o usuário existe no Auth.
             const { error: signInError } = await supabase.auth.signInWithPassword({
                 email: email,
