@@ -35,6 +35,9 @@ export async function loginWithApi(cpfcnpj: string, senha: string):Promise<{ suc
         const response = await fetch(externalApiUrl, {
             method: 'POST',
             body: formData,
+            headers: {
+                'Accept': 'application/json',
+            }
         });
 
         if (!response.ok) {
