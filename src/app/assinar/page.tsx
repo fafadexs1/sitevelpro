@@ -254,24 +254,24 @@ const Step2 = ({ form }: { form: any }) => {
                 </FormItem>
             )} />
         </div>
-        <FormField
-            control={form.control}
-            name="dontKnowCep"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-start gap-x-2 space-y-0 -mt-2">
-                <FormControl>
-                  <Checkbox
-                    id="signup-no-cep"
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                </FormControl>
-                <div className="space-y-1 leading-none">
-                  <FormLabel className="cursor-pointer">Não sei meu CEP</FormLabel>
-                </div>
-              </FormItem>
-            )}
-        />
+        <div className="mt-2 mb-4">
+             <FormField
+                control={form.control}
+                name="dontKnowCep"
+                render={({ field }) => (
+                <FormItem className="flex flex-row items-center gap-x-2 space-y-0">
+                    <FormControl>
+                    <Checkbox
+                        id="signup-no-cep"
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                    />
+                    </FormControl>
+                    <FormLabel className="cursor-pointer font-normal text-sm">Não sei meu CEP</FormLabel>
+                </FormItem>
+                )}
+            />
+        </div>
         <div className="grid md:grid-cols-3 gap-4">
             <FormField name="number" render={({ field }) => (
                 <FormItem>
@@ -509,4 +509,5 @@ export default function SignupPage() {
     </div>
   );
 }
+
 
