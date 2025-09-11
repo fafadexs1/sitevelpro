@@ -12,6 +12,7 @@ import { Faq } from "@/components/landing/Faq";
 import { Contact } from "@/components/landing/Contact";
 import { Footer } from "@/components/landing/Footer";
 import { createClient } from "@/utils/supabase/server";
+import { createBrowserClient } from "@supabase/ssr";
 import type { Metadata } from 'next';
 
 // Gera metadados dinâmicos com base nas regras de SEO cadastradas
@@ -73,7 +74,11 @@ export async function generateMetadata(
 // e também processa as que são padrões (contêm '{cidade}')
 export async function generateStaticParams() {
   try {
-    const supabase = createClient();
+    // Para generateStaticParams, precisamos de um cliente que não dependa de cookies.
+    const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
     const { data: rules, error: rulesError } = await supabase.from('dynamic_seo_rules').select('slug_pattern').eq('allow_indexing', true);
     if (rulesError) throw rulesError;
 
