@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -7,8 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { createClient } from '@/utils/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Users, Handshake, Mail, Phone, Calendar } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { Loader2, Users, Handshake, Mail, Phone, Calendar, MapPin } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 // Tipagem dos dados
@@ -126,11 +124,69 @@ function ReferralsTable() {
 
 // Componente para a Tabela de Leads
 function LeadsTable() {
+    const [leads, setLeads] = useState<Lead[]>([]);
+    const [loading, setLoading] = useState(true);
+    const { toast } = useToast();
+
+    useEffect(() => {
+        const fetchLeads = async () => {
+            setLoading(true);
+            const supabase = createClient();
+            const { data, error } = await supabase.from('leads').select('*').order('created_at', { ascending: false });
+            if (error) {
+                toast({ variant: 'destructive', title: 'Erro', description: 'Não foi possível carregar os leads.' });
+            } else {
+                setLeads(data);
+            }
+            setLoading(false);
+        };
+        fetchLeads();
+    }, [toast]);
+
+
+    if (loading) {
+        return <div className="flex justify-center py-16"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
+    }
+
     return (
-        <div className="text-center py-16 text-muted-foreground">
-            A tabela de leads aparecerá aqui.
-        </div>
-    )
+        <Table>
+            <TableHeader>
+                <TableRow>
+                    <TableHead>Nome</TableHead>
+                    <TableHead>Contato</TableHead>
+                    <TableHead>Localização</TableHead>
+                    <TableHead className="text-right">Data do Registro</TableHead>
+                </TableRow>
+            </TableHeader>
+            <TableBody>
+                {leads.length === 0 ? (
+                    <TableRow>
+                        <TableCell colSpan={4} className="text-center h-24 text-muted-foreground">Nenhum lead encontrado.</TableCell>
+                    </TableRow>
+                ) : (
+                    leads.map((lead) => (
+                        <TableRow key={lead.id}>
+                            <TableCell className="font-medium text-foreground">{lead.full_name}</TableCell>
+                            <TableCell>
+                                <div className="flex flex-col gap-1 text-xs">
+                                    <span className="flex items-center gap-1.5"><Mail size={12}/> {lead.email}</span>
+                                    <span className="flex items-center gap-1.5"><Phone size={12}/> {lead.phone}</span>
+                                </div>
+                            </TableCell>
+                             <TableCell>
+                                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                    <MapPin size={12}/> {lead.city}, {lead.state}
+                                </div>
+                            </TableCell>
+                            <TableCell className="text-right text-xs text-muted-foreground">
+                                {new Date(lead.created_at).toLocaleString('pt-BR')}
+                            </TableCell>
+                        </TableRow>
+                    ))
+                )}
+            </TableBody>
+        </Table>
+    );
 }
 
 export default function ColaboradorPage() {
