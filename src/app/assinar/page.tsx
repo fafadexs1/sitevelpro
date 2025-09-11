@@ -206,6 +206,11 @@ const Step2 = ({ form }: { form: any }) => {
     };
     
     const handleGeolocation = () => {
+        if (window.location.protocol !== 'https:') {
+            toast({ variant: "destructive", title: "Conexão não segura", description: "A geolocalização só pode ser usada em uma conexão HTTPS." });
+            return;
+        }
+        
         if (!navigator.geolocation) {
             toast({ variant: "destructive", title: "Erro", description: "Geolocalização não é suportada por este navegador."});
             return;
@@ -220,10 +225,18 @@ const Step2 = ({ form }: { form: any }) => {
                 setLoadingLocation(false);
             },
             (error) => {
-                toast({ variant: "destructive", title: "Erro de Localização", description: error.message });
+                let errorMessage = "Ocorreu um erro ao obter a localização.";
+                if (error.code === error.PERMISSION_DENIED) {
+                    errorMessage = "Permissão de localização negada. Por favor, habilite nas configurações do seu navegador.";
+                } else if (error.code === error.POSITION_UNAVAILABLE) {
+                    errorMessage = "Informação de localização não está disponível.";
+                } else if (error.code === error.TIMEOUT) {
+                    errorMessage = "A requisição de localização expirou.";
+                }
+                toast({ variant: "destructive", title: "Erro de Localização", description: errorMessage });
                 setLoadingLocation(false);
             },
-            { enableHighAccuracy: true }
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
         );
     };
 
@@ -254,9 +267,7 @@ const Step2 = ({ form }: { form: any }) => {
             <FormField name="street" render={({ field }) => (
               <FormItem>
                 <FormLabel>Rua</FormLabel>
-                <FormControl>
-                  <Input id="signup-street" placeholder="Sua rua" {...field} />
-                </FormControl>
+                <FormControl><Input id="signup-street" placeholder="Sua rua" {...field} /></FormControl>
                 <FormMessage />
               </FormItem>
             )} />
@@ -444,7 +455,7 @@ export default function SignupPage() {
     } else {
       setIsSubmitting(true);
       const supabase = createClient();
-      const { fullName, dontKnowCep, ...rest } = newFormData;
+      const { fullName, ...rest } = newFormData;
 
       const { error } = await supabase.from("leads").insert({
         ...rest,
