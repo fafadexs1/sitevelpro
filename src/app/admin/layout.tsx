@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -26,6 +25,7 @@ import {
   BarChart2,
   Map,
   Play,
+  Settings,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -231,6 +231,7 @@ function AdminDashboard({
     { href: "/admin/statistics", label: "Estatísticas", icon: BarChart2 },
     { href: "/admin/google-ads", label: "Google Ads", icon: Megaphone },
     { href: "/admin/database", label: "Banco de Dados", icon: Database },
+    { href: "/admin/settings", label: "Configurações", icon: Settings },
   ];
 
   return (

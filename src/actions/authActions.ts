@@ -13,13 +13,26 @@ type ApiResponse = {
 
 export async function loginWithApi(cpfcnpj: string, senha: string):Promise<{ success: boolean; error: string | null; }> {
     try {
+        const supabase = createClient();
+        
+        // 1. Busca a URL da API do banco de dados
+        const { data: apiUrlData, error: apiUrlError } = await supabase
+            .from('system_settings')
+            .select('value')
+            .eq('key', 'external_api_url')
+            .single();
+
+        if (apiUrlError || !apiUrlData?.value) {
+            throw new Error('A URL da API externa não está configurada no painel de administração.');
+        }
+
+        const externalApiUrl = apiUrlData.value;
         const formData = new FormData();
         formData.append('cpfcnpj', cpfcnpj);
         formData.append('senha', senha);
         
         // Chamada à API externa
-        // ATENÇÃO: Substituir 'localhost:8000' pelo endereço real da sua API em produção.
-        const response = await fetch('http://localhost:8000/api/central/contratos', {
+        const response = await fetch(externalApiUrl, {
             method: 'POST',
             body: formData,
         });
@@ -34,13 +47,11 @@ export async function loginWithApi(cpfcnpj: string, senha: string):Promise<{ suc
             return { success: false, error: data.message || 'CPF/CNPJ ou senha inválidos.' };
         }
 
-        const supabase = createClient();
-
         // Limpa o CPF/CNPJ para usar como e-mail/identificador
         const cleanCpfCnpj = cpfcnpj.replace(/\D/g, '');
         const email = `${cleanCpfCnpj}@velpro.com.br`;
 
-        // 1. Verifica se já existe um cliente com este CPF/CNPJ
+        // 2. Verifica se já existe um cliente com este CPF/CNPJ
         const { data: existingClient, error: clientError } = await supabase
             .from('clientes')
             .select('id, user_id')

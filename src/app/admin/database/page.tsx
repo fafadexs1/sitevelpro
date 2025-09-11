@@ -141,6 +141,14 @@ create table if not exists seo_settings (
   constraint single_row_check check (id = 1)
 );
 
+-- Cria a tabela de configurações do Sistema
+create table if not exists system_settings (
+    key text primary key,
+    value text,
+    updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+
 -- Cria a tabela de regras dinâmicas de SEO
 create table if not exists dynamic_seo_rules (
     id uuid default gen_random_uuid() primary key,
