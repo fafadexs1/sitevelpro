@@ -124,13 +124,25 @@ export function ContractProvider({ children, user }: { children: React.ReactNode
                 .eq('user_id', user.id)
                 .single();
             
-            if (dbError || !data) {
-                setError("Não foi possível carregar os dados do cliente.");
-                console.error(dbError);
+            if (dbError) {
+                if (dbError.code === 'PGRST116') { // No rows found
+                     setError("Nenhum contrato encontrado para este usuário.");
+                } else {
+                    setError("Não foi possível carregar os dados do cliente.");
+                    console.error("Error fetching client data:", dbError);
+                }
                 setLoading(false);
+                setContracts([]);
                 return;
             }
             
+            if (!data || !data.contratos) {
+                setContracts([]);
+                setSelectedContractId(null);
+                setLoading(false);
+                return;
+            }
+
             const contratosAPI = data.contratos as ContratoAPI[];
             const transformedContracts = contratosAPI.map(transformApiToContract);
             

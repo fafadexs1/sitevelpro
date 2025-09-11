@@ -13,6 +13,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useContract } from "@/components/cliente/ContractProvider";
 import { Wifi } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
+import { Button } from "@/components/ui/button";
 
 // =====================================================
 // Dashboard with Multi-Contracts + Top Menu Tabs
