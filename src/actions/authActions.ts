@@ -118,27 +118,52 @@ export async function loginWithApi(cpfcnpj: string, senha: string):Promise<{ suc
                 email: email,
                 password: senha,
                 options: {
+                    data: {
+                        is_client: true,
+                    },
                     email_confirm: true, // Auto-confirma o email
                 }
             });
-
-            if (signUpError || !newUser.user) {
-                throw new Error(`Erro ao criar novo usuário: ${signUpError?.message}`);
-            }
-
-            const { error: insertError } = await supabase
-                .from('clientes')
-                .insert({
-                    user_id: newUser.user.id,
-                    cpf_cnpj: cleanCpfCnpj,
-                    contratos: data.contratos,
-                    selected_contract_id: String(data.contratos[0]?.contrato)
-                });
             
-            if (insertError) {
-                // Se falhar, deleta o usuário criado no Auth para evitar inconsistência
-                await supabase.auth.admin.deleteUser(newUser.user.id);
-                throw new Error(`Erro ao inserir novo cliente: ${insertError.message}`);
+            if (signUpError && signUpError.message.includes('User already registered')) {
+                // Caso especial: o usuário existe no Auth, mas não na tabela 'clientes'.
+                // Isso pode acontecer se a inserção na tabela 'clientes' falhou em uma tentativa anterior.
+                // Nesse caso, não precisamos criar o usuário, apenas prosseguir para inserir na tabela.
+                const { data: existingUser, error: getUserError } = await supabase.auth.admin.getUserByEmail(email);
+                if (getUserError || !existingUser.user) {
+                     throw new Error(`Erro ao recuperar usuário existente: ${getUserError?.message}`);
+                }
+                 const { error: insertError } = await supabase
+                    .from('clientes')
+                    .insert({
+                        user_id: existingUser.user.id,
+                        cpf_cnpj: cleanCpfCnpj,
+                        contratos: data.contratos,
+                        selected_contract_id: String(data.contratos[0]?.contrato)
+                    });
+
+                if (insertError) {
+                    throw new Error(`Erro ao inserir cliente pré-existente: ${insertError.message}`);
+                }
+                 await supabase.auth.signInWithPassword({ email: email, password: senha });
+
+            } else if (signUpError || !newUser.user) {
+                throw new Error(`Erro ao criar novo usuário: ${signUpError?.message}`);
+            } else {
+                const { error: insertError } = await supabase
+                    .from('clientes')
+                    .insert({
+                        user_id: newUser.user.id,
+                        cpf_cnpj: cleanCpfCnpj,
+                        contratos: data.contratos,
+                        selected_contract_id: String(data.contratos[0]?.contrato)
+                    });
+                
+                if (insertError) {
+                    // Se falhar, deleta o usuário criado no Auth para evitar inconsistência
+                    await supabase.auth.admin.deleteUser(newUser.user.id);
+                    throw new Error(`Erro ao inserir novo cliente: ${insertError.message}`);
+                }
             }
         }
 
