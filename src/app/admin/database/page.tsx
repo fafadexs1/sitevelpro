@@ -35,6 +35,26 @@ returns table (
     ) as request;
 $$ language sql;
 
+-- Cria a tabela de clientes para a área do cliente
+create table if not exists clientes (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references auth.users(id) on delete cascade not null,
+  cpf_cnpj text not null unique,
+  contratos jsonb,
+  selected_contract_id text,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+-- Define políticas de acesso para a tabela de clientes
+-- Garante que o usuário só possa ver e alterar seus próprios dados.
+drop policy if exists "Enable read access for authenticated users" on public.clientes;
+create policy "Enable read access for authenticated users" on public.clientes
+  for select using (auth.uid() = user_id);
+
+drop policy if exists "Enable update for users based on user_id" on public.clientes;
+create policy "Enable update for users based on user_id" on public.clientes
+  for update using (auth.uid() = user_id);
+
+
 -- Cria a tabela de slides do herói
 create table if not exists hero_slides (
   id uuid default gen_random_uuid() primary key,

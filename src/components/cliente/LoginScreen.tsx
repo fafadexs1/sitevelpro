@@ -7,6 +7,22 @@ import {
   LogIn, User, Lock, Eye, EyeOff, ArrowRight, Loader2, Wifi, Zap,
 } from "lucide-react";
 import Link from "next/link";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
+import { loginWithApi } from "@/actions/authActions";
+import { useRouter } from "next/navigation";
+
+const loginSchema = z.object({
+  cpfcnpj: z.string().min(1, "CPF ou CNPJ é obrigatório."),
+  password: z.string().min(1, "Senha é obrigatória."),
+});
+
+type LoginFormData = z.infer<typeof loginSchema>;
+
 
 function LightningBG() {
   return (
@@ -27,14 +43,33 @@ function LightningBG() {
   );
 }
 
-export function LoginScreen({ onLogin }: { onLogin: () => void }) {
+export function LoginScreen({ onLoginSuccess }: { onLoginSuccess: () => void }) {
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+  const router = useRouter();
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  const form = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { cpfcnpj: "", password: "" },
+  });
+
+  async function handleSubmit(data: LoginFormData) {
     setLoading(true);
-    setTimeout(() => { setLoading(false); onLogin(); }, 900);
+    const result = await loginWithApi(data.cpfcnpj, data.password);
+    
+    if (result.success) {
+      toast({ title: "Sucesso!", description: "Login realizado com sucesso." });
+      onLoginSuccess();
+      router.refresh();
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Erro de Login",
+        description: result.error,
+      });
+    }
+    setLoading(false);
   }
 
   return (
@@ -63,7 +98,7 @@ export function LoginScreen({ onLogin }: { onLogin: () => void }) {
           <p className="mt-3 max-w-xl text-muted-foreground">Emita 2ª via, copie PIX, acompanhe faturas e suporte em tempo real. Tudo em um lugar só.</p>
         </motion.div>
 
-        <motion.form onSubmit={handleSubmit} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.1 }} className="relative rounded-3xl border border-border bg-card p-6 shadow-2xl">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.1 }} className="relative rounded-3xl border border-border bg-card p-6 shadow-2xl">
           <div className="mb-6 text-center">
             <div className="mx-auto mb-3 grid h-14 w-14 place-items-center rounded-2xl bg-primary/10">
               <LogIn className="h-6 w-6 text-primary" />
@@ -71,32 +106,56 @@ export function LoginScreen({ onLogin }: { onLogin: () => void }) {
             <h2 className="text-xl font-semibold">Entrar</h2>
             <p className="text-sm text-muted-foreground">Acesse com seu CPF/CNPJ e senha</p>
           </div>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="cpfcnpj"
+                    render={({ field }) => (
+                    <FormItem>
+                        <FormControl>
+                        <div className="relative">
+                            <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                            <Input id="login-document" placeholder="CPF ou CNPJ" {...field} className="pl-9" />
+                        </div>
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                 />
+                 <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                    <FormItem>
+                        <FormControl>
+                         <div className="relative">
+                            <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                            <Input id="login-password" type={show ? "text" : "password"} placeholder="••••••••" {...field} className="pl-9" />
+                            <button id="login-toggle-password" type="button" aria-label="toggle" onClick={() => setShow((v) => !v)} className="text-muted-foreground hover:text-foreground absolute right-3 top-1/2 -translate-y-1/2">
+                               {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </button>
+                        </div>
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                 />
 
-          <label className="mb-3 block text-sm text-card-foreground">CPF ou CNPJ</label>
-          <div className="mb-5 flex items-center gap-2 rounded-xl border border-border bg-background px-4 py-3">
-            <User className="h-4 w-4 text-muted-foreground" />
-            <input required id="login-document" placeholder="000.000.000-00" className="w-full bg-transparent outline-none placeholder:text-muted-foreground" />
-          </div>
+                <div className="mb-6 flex items-center justify-between text-xs text-muted-foreground">
+                  <label className="inline-flex items-center gap-2"><input id="login-remember" type="checkbox" className="h-3.5 w-3.5 rounded border-border bg-transparent" /> Lembrar</label>
+                  <a id="login-forgot-password" className="hover:text-foreground" href="#">Esqueci a senha</a>
+                </div>
 
-          <label className="mb-3 mt-4 block text-sm text-card-foreground">Senha</label>
-          <div className="mb-3 flex items-center gap-2 rounded-xl border border-border bg-background px-4 py-3">
-            <Lock className="h-4 w-4 text-muted-foreground" />
-            <input required id="login-password" type={show ? "text" : "password"} placeholder="••••••••" className="w-full bg-transparent outline-none placeholder:text-muted-foreground" />
-            <button id="login-toggle-password" type="button" aria-label="toggle" onClick={() => setShow((v) => !v)} className="text-muted-foreground hover:text-foreground">
-              {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-            </button>
-          </div>
-          <div className="mb-6 flex items-center justify-between text-xs text-muted-foreground">
-            <label className="inline-flex items-center gap-2"><input id="login-remember" type="checkbox" className="h-3.5 w-3.5 rounded border-border bg-transparent" /> Lembrar</label>
-            <a id="login-forgot-password" className="hover:text-foreground" href="#">Esqueci a senha</a>
-          </div>
-
-          <button id="login-submit" disabled={loading} className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2 font-medium text-primary-foreground hover:bg-primary/90">
-            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />} Acessar minha conta
-          </button>
+                <Button id="login-submit" disabled={loading} type="submit" className="w-full">
+                    {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Acessar minha conta"}
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </form>
+            </Form>
 
           <p className="mt-4 text-center text-xs text-muted-foreground">Ao continuar, você concorda com os Termos e a Política de Privacidade.</p>
-        </motion.form>
+        </motion.div>
       </div>
     </div>
   );

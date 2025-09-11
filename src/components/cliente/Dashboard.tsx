@@ -1,18 +1,18 @@
+
 "use client";
 
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Settings, Share2,
-  Ticket, Bell, Wallet, Tv, X, Copy, QrCode, Receipt
+  Ticket, Bell, Wallet, Tv, X, Copy, QrCode, Receipt, LogOut
 } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
-import { usePathname } from "next/navigation";
-import {
-    useContract
-} from "@/components/cliente/ContractProvider";
+import { usePathname, useRouter } from "next/navigation";
+import { useContract } from "@/components/cliente/ContractProvider";
 import { Wifi } from "lucide-react";
+import { createClient } from "@/utils/supabase/client";
 
 // =====================================================
 // Dashboard with Multi-Contracts + Top Menu Tabs
@@ -27,13 +27,26 @@ const TABS = [
   { key: "contract", label: "Contrato", href: "/cliente/contrato" },
 ] as const;
 
-export function Dashboard({onLogout, children}: {onLogout: () => void, children: React.ReactNode}) {
-  const { contracts, selectedContractId, setSelectedContractId, pixModal, setPixModal } = useContract();
+export function Dashboard({ children }: { children: React.ReactNode }) {
+  const { contracts, selectedContractId, setSelectedContractId, contract, pixModal, setPixModal } = useContract();
   const { toast } = useToast();
   const pathname = usePathname();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.refresh(); // Força o layout a reavaliar o estado de login
+  };
     
-  if (!contracts || contracts.length === 0) {
-      return <div className="flex min-h-screen items-center justify-center">Carregando dados do contrato...</div>;
+  if (!contract || !contracts || contracts.length === 0) {
+      return <div className="flex min-h-screen items-center justify-center text-center p-4">
+          <div>
+            <p className="font-semibold">Nenhum contrato encontrado.</p>
+            <p className="text-sm text-muted-foreground">Não foi possível carregar os dados dos seus contratos. Por favor, tente novamente mais tarde.</p>
+            <Button onClick={handleLogout} variant="outline" className="mt-4">Sair</Button>
+          </div>
+      </div>;
   }
   
   const activeTab = TABS.find(t => t.href === pathname)?.key || 'overview';
@@ -67,7 +80,10 @@ export function Dashboard({onLogout, children}: {onLogout: () => void, children:
                 <span className="text-card-foreground">Olá, Você</span>
               </div>
             </div>
-             <button id="dashboard-logout" onClick={onLogout} className="text-muted-foreground hover:text-foreground">Sair</button>
+             <Button id="dashboard-logout" onClick={handleLogout} variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+                <LogOut className="h-4 w-4 mr-1"/>
+                Sair
+            </Button>
           </div>
         </div>
         {/* Top horizontal menu */}
