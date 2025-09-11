@@ -229,50 +229,55 @@ const Step2 = ({ form }: { form: any }) => {
 
     return (
     <>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
-            <div className="md:col-span-1 space-y-2">
-                <FormField name="cep" render={({ field }) => (
-                    <FormItem>
-                    <FormLabel>CEP</FormLabel>
-                    <FormControl>
-                        <div className="relative">
-                        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input id="signup-cep" placeholder="00000-000" {...field} disabled={dontKnowCep} className="pl-9 pr-24" />
-                        <Button id="signup-cep-lookup" type="button" onClick={handleCepLookup} disabled={loadingCep || dontKnowCep} className="absolute right-1 top-1/2 -translate-y-1/2 h-8 px-2 text-xs">
-                            {loadingCep ? <Loader2 className="h-3 w-3 animate-spin"/> : "Buscar"}
-                        </Button>
-                        </div>
-                    </FormControl>
-                    <FormMessage />
-                    </FormItem>
-                )} />
-                <FormField
-                    control={form.control}
-                    name="dontKnowCep"
-                    render={({ field }) => (
-                    <FormItem className="flex flex-row items-center gap-x-2 space-y-0 pt-2">
-                        <FormControl>
-                        <Checkbox
-                            id="signup-no-cep"
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                        />
-                        </FormControl>
-                        <FormLabel className="cursor-pointer font-normal text-sm">Não sei meu CEP</FormLabel>
-                    </FormItem>
-                    )}
-                />
-            </div>
-             <FormField name="street" render={({ field }) => (
-                <FormItem className="md:col-span-2">
-                <FormLabel>Rua</FormLabel>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
+        <div className="md:col-span-1">
+          <FormField
+            name="cep"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>CEP</FormLabel>
                 <FormControl>
-                    <Input id="signup-street" placeholder="Sua rua" {...field} />
+                  <div className="relative">
+                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input id="signup-cep" placeholder="00000-000" {...field} disabled={dontKnowCep} className="pl-9 pr-24" />
+                    <Button id="signup-cep-lookup" type="button" onClick={handleCepLookup} disabled={loadingCep || dontKnowCep} className="absolute right-1 top-1/2 -translate-y-1/2 h-8 px-2 text-xs">
+                      {loadingCep ? <Loader2 className="h-3 w-3 animate-spin" /> : "Buscar"}
+                    </Button>
+                  </div>
                 </FormControl>
                 <FormMessage />
-                </FormItem>
+              </FormItem>
+            )}
+          />
+        </div>
+        <div className="md:col-span-2">
+            <FormField name="street" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Rua</FormLabel>
+                <FormControl>
+                  <Input id="signup-street" placeholder="Sua rua" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
             )} />
         </div>
+      </div>
+      <FormField
+          control={form.control}
+          name="dontKnowCep"
+          render={({ field }) => (
+          <FormItem className="flex flex-row items-center gap-x-2 space-y-0 -mt-2 mb-4">
+              <FormControl>
+              <Checkbox
+                  id="signup-no-cep"
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+              />
+              </FormControl>
+              <FormLabel className="cursor-pointer font-normal text-sm">Não sei meu CEP</FormLabel>
+          </FormItem>
+          )}
+      />
         <div className="grid md:grid-cols-3 gap-4">
             <FormField name="number" render={({ field }) => (
                 <FormItem>
@@ -450,7 +455,7 @@ export default function SignupPage() {
         toast({
           variant: "destructive",
           title: "Erro ao Enviar",
-          description: "Não foi possível enviar sua solicitação. Tente novamente.",
+          description: `Não foi possível enviar sua solicitação: ${error.message}`,
         });
       } else {
         setIsSuccess(true);
@@ -472,8 +477,8 @@ export default function SignupPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-secondary text-foreground flex flex-col">
-       <header className="py-4 px-6 border-b border-border bg-background">
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
+       <header className="py-4 px-6 border-b border-border bg-card">
         <Link href="/" className="flex items-center gap-3 w-fit">
           <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-primary to-green-400 text-white shadow-lg shadow-primary/20">
             <Wifi className="h-5 w-5" />
