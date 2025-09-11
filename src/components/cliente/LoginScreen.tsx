@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState } from "react";
@@ -37,21 +38,21 @@ export function LoginScreen({ onLogin }: { onLogin: () => void }) {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground flex flex-col justify-center">
       <LightningBG />
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-8 px-6 py-10">
-        <Link href="/" className="flex items-center gap-3">
-          <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-primary to-green-400 text-foreground shadow-lg shadow-primary/20">
-            <Wifi className="h-5 w-5" />
-          </div>
-          <div>
-            <p className="text-lg font-semibold leading-none">Velpro Telecom</p>
-            <p className="text-xs text-muted-foreground">Área do Cliente</p>
-          </div>
-        </Link>
-      </div>
+        <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-8 px-6 py-10 absolute top-0 left-0 right-0">
+            <Link href="/" className="flex items-center gap-3">
+            <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-primary to-green-400 text-foreground shadow-lg shadow-primary/20">
+                <Wifi className="h-5 w-5" />
+            </div>
+            <div>
+                <p className="text-lg font-semibold leading-none">Velpro Telecom</p>
+                <p className="text-xs text-muted-foreground">Área do Cliente</p>
+            </div>
+            </Link>
+        </div>
 
-      <div className="mx-auto grid max-w-6xl items-center gap-12 px-6 pb-20 md:grid-cols-2">
+      <div className="mx-auto grid w-full max-w-6xl items-center gap-12 px-6 pb-20 md:grid-cols-2">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs text-primary">
             <Zap className="h-3.5 w-3.5" /> Internet + TV com suporte qualificado
