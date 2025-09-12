@@ -21,6 +21,8 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 export default function OverviewPage() {
   const { contract, setPixModal, loading } = useContract();
@@ -84,13 +86,15 @@ export default function OverviewPage() {
                 </div>
                 <div className="flex flex-wrap items-center justify-start gap-2 sm:justify-end">
                     {unpaid.pix && (
-                    <button id={`unpaid-alert-pix-${unpaid.id}`} onClick={() => setPixModal({ open: true, code: unpaid.pix! })} className="inline-flex items-center gap-2 rounded-lg border border-primary/40 bg-primary/10 px-3 py-1.5 text-sm">
+                    <Button id={`unpaid-alert-pix-${unpaid.id}`} onClick={() => setPixModal({ open: true, code: unpaid.pix! })} variant="outline" size="sm" className="border-primary/40 bg-primary/10 hover:bg-primary/20 gap-2">
                         <QrCode className="h-4 w-4" /> Copiar PIX
-                    </button>
+                    </Button>
                     )}
-                    <a id={`unpaid-alert-pdf-${unpaid.id}`} href={unpaid.link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-lg bg-foreground px-3 py-1.5 text-sm text-background">
-                    <Receipt className="h-4 w-4" /> 2ª via (PDF)
-                    </a>
+                    <Button asChild size="sm" className="gap-2 bg-foreground text-background hover:bg-foreground/80">
+                      <a id={`unpaid-alert-pdf-${unpaid.id}`} href={unpaid.link} target="_blank" rel="noopener noreferrer">
+                        <Receipt className="h-4 w-4" /> 2ª via (PDF)
+                      </a>
+                    </Button>
                 </div>
                 </div>
             </div>
@@ -142,25 +146,32 @@ export default function OverviewPage() {
                 <button id="overview-view-all-invoices" onClick={() => router.push('/cliente/faturas')} className="text-sm text-muted-foreground hover:text-foreground">Ver todas</button>
                 </div>
                 <div className="space-y-3">
-                {recentInvoices.map((f) => (
-                    <div key={f.id} className="flex flex-wrap items-center justify-between rounded-xl border border-border bg-secondary px-3 py-2 gap-2">
-                    <div>
-                        <div className="text-sm font-medium">Doc: {f.doc}</div>
-                        <div className="text-xs text-muted-foreground">Venc. {format(new Date(f.due), "dd/MM/yyyy", { locale: ptBR })} • R$ {f.amount.toFixed(2)}</div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        {f.status.toLowerCase() === "pago" ? (
-                        <span className="inline-flex items-center gap-1 rounded-md bg-green-500/15 px-2 py-1 text-xs text-green-600"><CheckCircle2 className="h-3.5 w-3.5" /> Paga</span>
-                        ) : (
-                        <span className="inline-flex items-center gap-1 rounded-md bg-red-500/15 px-2 py-1 text-xs text-red-600"><XCircle className="h-3.5 w-3.5" /> Em aberto</span>
-                        )}
-                        <a id={`overview-invoice-pdf-${f.id}`} href={f.link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs hover:bg-accent"><Receipt className="h-3.5 w-3.5" /> 2ª via</a>
-                        {f.status.toLowerCase() !== "paid" && f.pix && (
-                        <button id={`overview-invoice-pix-${f.id}`} onClick={() => setPixModal({ open: true, code: f.pix! })} className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs hover:bg-accent"><QrCode className="h-3.5 w-3.5" /> PIX</button>
-                        )}
-                    </div>
-                    </div>
-                ))}
+                {recentInvoices.map((f) => {
+                    const isPaid = f.status.toLowerCase() === "pago";
+                    return (
+                        <div key={f.id} className="flex flex-wrap items-center justify-between rounded-xl border border-border bg-secondary px-3 py-2 gap-2">
+                        <div>
+                            <div className="text-sm font-medium">Doc: {f.doc}</div>
+                            <div className="text-xs text-muted-foreground">Venc. {format(new Date(f.due), "dd/MM/yyyy", { locale: ptBR })} • R$ {f.amount.toFixed(2)}</div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            {isPaid ? (
+                            <span className="inline-flex items-center gap-1 rounded-md bg-green-500/15 px-2 py-1 text-xs text-green-600"><CheckCircle2 className="h-3.5 w-3.5" /> Paga</span>
+                            ) : (
+                            <span className="inline-flex items-center gap-1 rounded-md bg-red-500/15 px-2 py-1 text-xs text-red-600"><XCircle className="h-3.5 w-3.5" /> Em aberto</span>
+                            )}
+                            <Button asChild variant="outline" size="sm" className={cn("gap-1 text-xs h-7 px-2", isPaid && "cursor-not-allowed opacity-60")}>
+                              <a id={`overview-invoice-pdf-${f.id}`} href={isPaid ? undefined : f.link} target="_blank" rel="noopener noreferrer"><Receipt className="h-3.5 w-3.5" /> 2ª via</a>
+                            </Button>
+                            {!isPaid && f.pix && (
+                              <Button id={`overview-invoice-pix-${f.id}`} onClick={() => setPixModal({ open: true, code: f.pix! })} variant="outline" size="sm" className="gap-1 text-xs h-7 px-2">
+                                <QrCode className="h-3.5 w-3.5" /> PIX
+                              </Button>
+                            )}
+                        </div>
+                        </div>
+                    );
+                })}
                 </div>
             </div>
 

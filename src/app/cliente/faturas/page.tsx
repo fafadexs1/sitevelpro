@@ -17,6 +17,8 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { createClient } from '@/utils/supabase/client';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 type Invoice = {
   id: number;
@@ -134,8 +136,14 @@ export default function FaturasPage() {
                         <div className="text-xs text-muted-foreground">Venc. {format(new Date(f.dataVencimento), "dd/MM/yyyy", { locale: ptBR })} • R$ {f.valor.toFixed(2)}</div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <a id={`invoice-pdf-${f.id}`} href={f.link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs hover:bg-accent"><Receipt className="h-3.5 w-3.5" /> 2ª via</a>
-                          {f.codigoPix && (<button id={`invoice-pix-${f.id}`} onClick={() => setPixModal({ open: true, code: f.codigoPix })} className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs hover:bg-accent"><QrCode className="h-3.5 w-3.5" /> PIX</button>)}
+                          <Button asChild variant="outline" size="sm" className="gap-1 text-xs h-7 px-2">
+                            <a id={`invoice-pdf-${f.id}`} href={f.link} target="_blank" rel="noopener noreferrer"><Receipt className="h-3.5 w-3.5" /> 2ª via</a>
+                          </Button>
+                          {f.codigoPix && (
+                            <Button onClick={() => setPixModal({ open: true, code: f.codigoPix })} variant="outline" size="sm" className="gap-1 text-xs h-7 px-2">
+                                <QrCode className="h-3.5 w-3.5" /> PIX
+                            </Button>
+                          )}
                         </div>
                     </div>
                     ))}
@@ -176,7 +184,9 @@ export default function FaturasPage() {
                         ) : (
                         <span className="inline-flex items-center gap-1 rounded-md bg-red-500/15 px-2 py-1 text-xs text-red-600"><XCircle className="h-3.5 w-3.5" /> {f.status}</span>
                         )}
-                        <a id={`invoice-history-pdf-${f.id}`} href={f.link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs hover:bg-accent"><Receipt className="h-3.5 w-3.5" /> 2ª via</a>
+                        <Button asChild variant="outline" size="sm" className="gap-1 text-xs h-7 px-2" disabled={f.status.toLowerCase() !== 'pago'}>
+                          <a id={`invoice-history-pdf-${f.id}`} href={f.link} target="_blank" rel="noopener noreferrer"><Receipt className="h-3.5 w-3.5" /> 2ª via</a>
+                        </Button>
                     </div>
                     </div>
                 ))}
