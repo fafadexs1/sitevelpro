@@ -19,15 +19,21 @@ import {
 } from "lucide-react";
 import { AnimatePresence, motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 export default function OverviewPage() {
-  const { contract, setPixModal } = useContract();
+  const { contract, setPixModal, loading } = useContract();
   const router = useRouter();
+
+  if (loading && !contract) {
+    return null; // Don't show anything if there is no cached contract to display while loading
+  }
 
   if (!contract) return null;
 
-  const unpaid = contract.invoices.find(i => i.status === "unpaid");
-  const usagePct = Math.round(((contract.usage.downloaded + contract.usage.uploaded) / contract.usage.cap) * 100);
+  const unpaid = contract.invoices.find(i => i.status.toLowerCase() === "aberto");
+  const usagePct = contract.usage.cap > 0 ? Math.round(((contract.usage.downloaded + contract.usage.uploaded) / contract.usage.cap) * 100) : 0;
 
   return (
     <AnimatePresence mode="wait">
@@ -44,8 +50,8 @@ export default function OverviewPage() {
                 <div className="flex items-center gap-3">
                     <Wallet className="h-5 w-5 flex-shrink-0" />
                     <div>
-                    <p className="font-semibold">Fatura em aberto ({unpaid.id}) — {contract.alias}</p>
-                    <p className="text-sm opacity-80">Vencimento em {new Date(unpaid.due).toLocaleDateString("pt-BR")}. Valor R$ {unpaid.amount.toFixed(2)}</p>
+                    <p className="font-semibold">Fatura em aberto (Doc: {unpaid.doc}) — {contract.alias}</p>
+                    <p className="text-sm opacity-80">Vencimento em {format(new Date(unpaid.due), "dd/MM/yyyy", { locale: ptBR })}. Valor R$ {unpaid.amount.toFixed(2)}</p>
                     </div>
                 </div>
                 <div className="flex flex-wrap items-center justify-start gap-2 sm:justify-end">
@@ -54,7 +60,7 @@ export default function OverviewPage() {
                         <QrCode className="h-4 w-4" /> Copiar PIX
                     </button>
                     )}
-                    <a id={`unpaid-alert-pdf-${unpaid.id}`} href="#" className="inline-flex items-center gap-2 rounded-lg bg-foreground px-3 py-1.5 text-sm text-background">
+                    <a id={`unpaid-alert-pdf-${unpaid.id}`} href={unpaid.link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-lg bg-foreground px-3 py-1.5 text-sm text-background">
                     <Receipt className="h-4 w-4" /> 2ª via (PDF)
                     </a>
                 </div>
@@ -78,8 +84,8 @@ export default function OverviewPage() {
                 <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground"><Tv className="h-4 w-4 text-primary"/> {contract.currentPlan.tvPack.name} • {contract.currentPlan.tvPack.channels}+ canais</div>
                 </div>
                 <div className="rounded-2xl border border-border bg-card p-4">
-                <div className="mb-1 text-sm text-muted-foreground">Faturas pagas (3 últimos meses)</div>
-                <div className="text-2xl font-bold">{contract.invoices.filter(i=>i.status==='paid').length}</div>
+                <div className="mb-1 text-sm text-muted-foreground">Faturas pagas (últimos 12m)</div>
+                <div className="text-2xl font-bold">{contract.invoices.filter(i=>i.status.toLowerCase() ==='pago').length}</div>
                 </div>
                 <div className="rounded-2xl border border-border bg-card p-4">
                 <div className="mb-1 text-sm text-muted-foreground">Chamados abertos</div>
@@ -111,17 +117,17 @@ export default function OverviewPage() {
                 {contract.invoices.slice(0,3).map((f) => (
                     <div key={f.id} className="flex flex-wrap items-center justify-between rounded-xl border border-border bg-secondary px-3 py-2 gap-2">
                     <div>
-                        <div className="text-sm font-medium">{f.id}</div>
-                        <div className="text-xs text-muted-foreground">Venc. {new Date(f.due).toLocaleDateString("pt-BR")} • R$ {f.amount.toFixed(2)}</div>
+                        <div className="text-sm font-medium">Doc: {f.doc}</div>
+                        <div className="text-xs text-muted-foreground">Venc. {format(new Date(f.due), "dd/MM/yyyy", { locale: ptBR })} • R$ {f.amount.toFixed(2)}</div>
                     </div>
                     <div className="flex items-center gap-2">
-                        {f.status === "paid" ? (
+                        {f.status.toLowerCase() === "pago" ? (
                         <span className="inline-flex items-center gap-1 rounded-md bg-green-500/15 px-2 py-1 text-xs text-green-600"><CheckCircle2 className="h-3.5 w-3.5" /> Paga</span>
                         ) : (
                         <span className="inline-flex items-center gap-1 rounded-md bg-red-500/15 px-2 py-1 text-xs text-red-600"><XCircle className="h-3.5 w-3.5" /> Em aberto</span>
                         )}
-                        <a id={`overview-invoice-pdf-${f.id}`} href="#" className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs hover:bg-accent"><Receipt className="h-3.5 w-3.5" /> 2ª via</a>
-                        {f.status !== "paid" && f.pix && (
+                        <a id={`overview-invoice-pdf-${f.id}`} href={f.link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs hover:bg-accent"><Receipt className="h-3.5 w-3.5" /> 2ª via</a>
+                        {f.status.toLowerCase() !== "paid" && f.pix && (
                         <button id={`overview-invoice-pix-${f.id}`} onClick={() => setPixModal({ open: true, code: f.pix! })} className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs hover:bg-accent"><QrCode className="h-3.5 w-3.5" /> PIX</button>
                         )}
                     </div>
@@ -154,3 +160,5 @@ export default function OverviewPage() {
     </AnimatePresence>
   );
 }
+
+    

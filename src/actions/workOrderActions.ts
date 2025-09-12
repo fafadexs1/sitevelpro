@@ -10,10 +10,8 @@ type ApiResponse = {
 };
 
 export async function getWorkOrders(contractId: number): Promise<{ success: boolean; data: any[] | null; error: string | null; }> {
+    const supabase = createClient();
     try {
-        const supabase = createClient();
-        
-        // 1. Busca as configurações da API do banco de dados
         const { data: settingsData, error: settingsError } = await supabase
             .from('system_settings')
             .select('key, value')
@@ -34,7 +32,6 @@ export async function getWorkOrders(contractId: number): Promise<{ success: bool
 
         const externalApiUrl = `${baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl}/api/ura/ordemservico/list/`;
 
-        // 2. Faz a chamada para a API externa
         const response = await fetch(externalApiUrl, {
             method: 'POST',
             headers: {
@@ -56,7 +53,6 @@ export async function getWorkOrders(contractId: number): Promise<{ success: bool
         const data: ApiResponse = await response.json();
         const workOrders = data.ordens_servicos;
 
-        // 3. Salva o resultado na tabela work_orders
         if (workOrders) {
             const { error: upsertError } = await supabase
                 .from('work_orders')
@@ -67,16 +63,23 @@ export async function getWorkOrders(contractId: number): Promise<{ success: bool
                 }, { onConflict: 'contract_id' });
 
             if (upsertError) {
-                // Loga o erro, mas não impede que os dados sejam retornados ao cliente
                 console.error("Erro ao salvar O.S. no banco de dados:", upsertError.message);
             }
         }
 
-        // 4. Retorna a lista de ordens de serviço
         return { success: true, data: workOrders, error: null };
 
     } catch (e: any) {
         console.error("Erro na Server Action getWorkOrders:", e);
-        return { success: false, data: null, error: e.message || "Ocorreu um erro inesperado ao buscar as ordens de serviço." };
+        // Em caso de erro, tenta devolver o cache
+        const { data: cachedData } = await supabase
+            .from('work_orders')
+            .select('orders')
+            .eq('contract_id', String(contractId))
+            .single();
+            
+        return { success: false, data: cachedData?.orders || null, error: e.message || "Ocorreu um erro inesperado ao buscar as ordens de serviço." };
     }
 }
+
+    

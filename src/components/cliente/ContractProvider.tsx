@@ -5,11 +5,13 @@ import React, { createContext, useContext, useState, useEffect, useMemo, useCall
 import { createClient } from "@/utils/supabase/client";
 import type { User } from "@supabase/supabase-js";
 import { Loader2 } from "lucide-react";
+import { getInvoices } from "@/actions/invoiceActions";
+import { getWorkOrders } from "@/actions/workOrderActions";
+import { useToast } from "@/hooks/use-toast";
 
 // =====================================================
 // Data Types
 // =====================================================
-// Tipos espelhando a API externa
 type ContratoAPI = {
     contrato: number;
     razaosocial: string;
@@ -27,30 +29,27 @@ type ContratoAPI = {
     };
 };
 
-// Tipos para uso interno no front-end (mais limpos)
-export interface Invoice { id: string; due: string; amount: number; status: "paid" | "unpaid"; paidAt?: string; pix?: string }
-export interface FutureInvoice { id: string; due: string; amount: number }
+type ApiInvoice = { id: number; dataVencimento: string; valor: number; status: string; dataPagamento: string | null; codigoPix: string; link: string; numeroDocumento: number };
+type ApiWorkOrder = { id: number; ocorrencia: string; motivo: string; data_cadastro: string; hora_cadastro: string; status: string; };
+
+export interface Invoice { id: string; due: string; amount: number; status: "paid" | "unpaid" | "cancelled" | string; paidAt?: string | null; pix?: string; link: string, doc: number }
 export interface TicketItem { id: string; subject: string; createdAt: string; status: string }
-export interface Referral { id: string; name: string; date: string; status: 'Pendente' | 'Aprovado' | 'Rejeitado'; email: string; phone: string; }
 
 export interface Contract {
   id: string; // O número do contrato
   alias: string; // Nome amigável (ex: "Residencial Centro")
   address: string; // Endereço formatado
-  // Mock data por enquanto, será substituído por chamadas de API reais
   currentPlan: { name: string; price: number; benefits: string[]; tvPack: { name: string; channels: number } };
   usage: { month: string; downloaded: number; uploaded: number; cap: number };
   invoices: Invoice[];
-  futureInvoices: FutureInvoice[];
   openTickets: TicketItem[];
-  referrals: Referral[];
 }
 
 // =====================================================
 // Context
 // =====================================================
 interface ContractContextType {
-    contracts: Contract[];
+    contracts: Omit<Contract, 'invoices' | 'openTickets'>[];
     selectedContractId: string | null;
     setSelectedContractId: (id: string) => void;
     contract: Contract | undefined;
@@ -63,58 +62,28 @@ interface ContractContextType {
 const ContractContext = createContext<ContractContextType | undefined>(undefined);
 
 export function ContractProvider({ children, user }: { children: React.ReactNode, user: User | null }) {
-    const [contracts, setContracts] = useState<Contract[]>([]);
+    const { toast } = useToast();
+    const [contracts, setContracts] = useState<Omit<Contract, 'invoices' | 'openTickets'>[]>([]);
     const [selectedContractId, setSelectedContractId] = useState<string | null>(null);
-    const [loading, setLoading] = useState(true);
+    const [invoices, setInvoices] = useState<Invoice[]>([]);
+    const [openTickets, setOpenTickets] = useState<TicketItem[]>([]);
+    
+    const [loadingContracts, setLoadingContracts] = useState(true);
+    const [loadingDetails, setLoadingDetails] = useState(false);
+    
     const [error, setError] = useState<string | null>(null);
     const [pixModal, setPixModal] = useState<{ open: boolean; code: string | null }>({ open: false, code: null });
+    
+    const loading = loadingContracts || loadingDetails;
 
-    const transformApiToContract = (c: ContratoAPI): Contract => {
-        // Lógica de transformação aqui. Por enquanto, usa dados mockados para o que não vem da API.
-        const address = `${c.endereco_instalacao.logradouro}, ${c.endereco_instalacao.bairro}, ${c.endereco_instalacao.cidade}`;
-        
-        // Dados mockados para as partes que não vêm da API ainda
-        const mockData = {
-            currentPlan: { name: c.planointernet, price: c.planointernet_valor, benefits: ["Wi‑Fi 6 incluso", "Streaming 4K"], tvPack: { name: c.planotv || "N/A", channels: 80 } },
-            usage: { month: "Setembro/2025", downloaded: Math.floor(Math.random() * 1000), uploaded: Math.floor(Math.random() * 200), cap: 2048 },
-            invoices: [
-                 { id: `2025-08-${c.contrato}`, due: "2025-09-10", amount: c.planointernet_valor, status: "unpaid", pix: "00020126...ABCD" + c.contrato },
-                 { id: `2025-07-${c.contrato}`, due: "2025-08-10", amount: c.planointernet_valor, status: "paid", paidAt: "2025-08-05" },
-            ],
-            futureInvoices: [ { id: `2025-09-${c.contrato}`, due: "2025-10-10", amount: c.planointernet_valor } ],
-            openTickets: [],
-            referrals: [],
-        };
-        
-        return {
-            id: String(c.contrato),
-            alias: `Contrato ${c.contrato} (${c.status.trim()})`,
-            address: address,
-            ...mockData,
-        };
-    };
-
-    const handleSetSelectedId = useCallback(async (id: string) => {
-        setSelectedContractId(id);
-        const supabase = createClient();
-        if (user) {
-            const { error } = await supabase
-                .from('clientes')
-                .update({ selected_contract_id: id })
-                .eq('user_id', user.id);
-            if (error) {
-                console.error("Failed to save selected contract", error);
-            }
-        }
-    }, [user]);
-
+    // Função para buscar os contratos base
     useEffect(() => {
         const fetchContracts = async () => {
             if (!user) {
-                setLoading(false);
+                setLoadingContracts(false);
                 return;
             }
-            setLoading(true);
+            setLoadingContracts(true);
             setError(null);
             const supabase = createClient();
 
@@ -124,39 +93,93 @@ export function ContractProvider({ children, user }: { children: React.ReactNode
                 .eq('user_id', user.id)
                 .single();
             
-            if (dbError) {
-                if (dbError.code === 'PGRST116') { // No rows found
-                     setError("Nenhum contrato encontrado para este usuário.");
-                } else {
-                    setError("Não foi possível carregar os dados do cliente.");
-                    console.error("Error fetching client data:", dbError);
-                }
-                setLoading(false);
+            if (dbError || !data || !data.contratos) {
+                setError(dbError ? "Não foi possível carregar os dados do cliente." : "Nenhum contrato encontrado para este usuário.");
+                if(dbError) console.error("Error fetching client data:", dbError);
                 setContracts([]);
-                return;
-            }
-            
-            if (!data || !data.contratos) {
-                setContracts([]);
-                setSelectedContractId(null);
-                setLoading(false);
+                setLoadingContracts(false);
                 return;
             }
 
             const contratosAPI = data.contratos as ContratoAPI[];
-            const transformedContracts = contratosAPI.map(transformApiToContract);
+            const transformedContracts = contratosAPI.map((c: ContratoAPI) => ({
+                id: String(c.contrato),
+                alias: `Contrato ${c.contrato} (${c.status.trim()})`,
+                address: `${c.endereco_instalacao.logradouro}, ${c.endereco_instalacao.bairro}, ${c.endereco_instalacao.cidade}`,
+                currentPlan: { name: c.planointernet, price: c.planointernet_valor, benefits: ["Wi‑Fi 6 incluso", "Streaming 4K"], tvPack: { name: c.planotv || "N/A", channels: 80 } },
+                usage: { month: new Date().toLocaleString('pt-BR', { month: 'long', year: 'numeric'}), downloaded: Math.floor(Math.random() * 1000), uploaded: Math.floor(Math.random() * 200), cap: 2048 },
+            }));
             
             setContracts(transformedContracts);
             setSelectedContractId(data.selected_contract_id || String(contratosAPI[0]?.contrato) || null);
-            setLoading(false);
+            setLoadingContracts(false);
         };
 
         fetchContracts();
     }, [user]);
-
-    const contract = useMemo(() => contracts.find(c => c.id === selectedContractId), [contracts, selectedContractId]);
     
-    if (loading) {
+    // Função para buscar detalhes (faturas, chamados) do contrato selecionado
+    useEffect(() => {
+        const fetchContractDetails = async () => {
+            if (!selectedContractId) return;
+            setLoadingDetails(true);
+            const supabase = createClient();
+
+            // Stale-while-revalidate for invoices
+            const { data: cachedInvoices } = await supabase.from('invoices').select('invoices_data').eq('contract_id', selectedContractId).single();
+            if (cachedInvoices?.invoices_data) {
+                const apiInvoices = cachedInvoices.invoices_data as ApiInvoice[];
+                setInvoices(apiInvoices.map(f => ({ id: String(f.id), doc: f.numeroDocumento, due: f.dataVencimento, amount: f.valor, status: f.status, paidAt: f.dataPagamento, pix: f.codigoPix, link: f.link })));
+            }
+             getInvoices(parseInt(selectedContractId)).then(result => {
+                if (result.success && result.data) {
+                    setInvoices(result.data.map(f => ({ id: String(f.id), doc: f.numeroDocumento, due: f.dataVencimento, amount: f.valor, status: f.status, paidAt: f.dataPagamento, pix: f.codigoPix, link: f.link })));
+                } else if(!cachedInvoices) {
+                     toast({ variant: 'destructive', title: 'Erro ao buscar faturas', description: result.error });
+                }
+             });
+
+            // Stale-while-revalidate for work orders
+            const { data: cachedOrders } = await supabase.from('work_orders').select('orders').eq('contract_id', selectedContractId).single();
+            if (cachedOrders?.orders) {
+                const apiOrders = cachedOrders.orders as ApiWorkOrder[];
+                setOpenTickets(apiOrders.filter(o => o.status.toLowerCase() !== 'encerrada').map(o => ({ id: o.ocorrencia, subject: o.motivo, createdAt: `${new Date(o.data_cadastro).toLocaleDateString()} ${o.hora_cadastro}`, status: o.status })));
+            }
+             getWorkOrders(parseInt(selectedContractId)).then(result => {
+                if (result.success && result.data) {
+                    setOpenTickets(result.data.filter(o => o.status.toLowerCase() !== 'encerrada').map(o => ({ id: o.ocorrencia, subject: o.motivo, createdAt: `${new Date(o.data_cadastro).toLocaleDateString()} ${o.hora_cadastro}`, status: o.status })));
+                } else if(!cachedOrders) {
+                    toast({ variant: 'destructive', title: 'Erro ao buscar chamados', description: result.error });
+                }
+             });
+
+            setLoadingDetails(false);
+        };
+        fetchContractDetails();
+    }, [selectedContractId, toast]);
+
+    const handleSetSelectedId = useCallback(async (id: string) => {
+        setSelectedContractId(id);
+        const supabase = createClient();
+        if (user) {
+            await supabase.from('clientes').update({ selected_contract_id: id }).eq('user_id', user.id);
+        }
+    }, [user]);
+
+    const contract = useMemo(() => {
+        const baseContract = contracts.find(c => c.id === selectedContractId);
+        if (!baseContract) return undefined;
+        
+        const sortedInvoices = invoices.sort((a,b) => new Date(b.due).getTime() - new Date(a.due).getTime());
+
+        return {
+            ...baseContract,
+            invoices: sortedInvoices,
+            openTickets: openTickets,
+        }
+    }, [contracts, selectedContractId, invoices, openTickets]);
+    
+    if (loadingContracts) {
         return (
             <div className="flex min-h-screen items-center justify-center bg-secondary">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -178,3 +201,5 @@ export function useContract() {
     }
     return context;
 }
+
+    

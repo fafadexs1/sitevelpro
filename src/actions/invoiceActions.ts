@@ -9,9 +9,8 @@ type ApiResponse = {
 };
 
 export async function getInvoices(contractId: number): Promise<{ success: boolean; data: any[] | null; error: string | null; }> {
+    const supabase = createClient();
     try {
-        const supabase = createClient();
-        
         const { data: settingsData, error: settingsError } = await supabase
             .from('system_settings')
             .select('key, value')
@@ -71,6 +70,15 @@ export async function getInvoices(contractId: number): Promise<{ success: boolea
 
     } catch (e: any) {
         console.error("Erro na Server Action getInvoices:", e);
-        return { success: false, data: null, error: e.message || "Ocorreu um erro inesperado ao buscar as faturas." };
+        // Em caso de erro, tenta devolver o cache
+        const { data: cachedData } = await supabase
+            .from('invoices')
+            .select('invoices_data')
+            .eq('contract_id', String(contractId))
+            .single();
+
+        return { success: false, data: cachedData?.invoices_data || null, error: e.message || "Ocorreu um erro inesperado ao buscar as faturas." };
     }
 }
+
+    
