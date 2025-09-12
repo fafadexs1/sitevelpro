@@ -41,7 +41,6 @@ create table if not exists clientes (
   user_id uuid references auth.users(id) on delete cascade not null,
   cpf_cnpj text not null unique,
   contratos jsonb,
-  chamados jsonb,
   selected_contract_id text,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
@@ -54,6 +53,27 @@ create policy "Enable read access for authenticated users" on public.clientes
 drop policy if exists "Enable update for users based on user_id" on public.clientes;
 create policy "Enable update for users based on user_id" on public.clientes
   for update using (auth.uid() = user_id);
+
+
+-- Cria a tabela de Ordens de Serviço (Chamados)
+create table if not exists work_orders (
+  id uuid default gen_random_uuid() primary key,
+  contract_id text not null unique,
+  orders jsonb,
+  fetched_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  constraint fk_contract_id foreign key (contract_id) references clientes(selected_contract_id) on delete cascade
+);
+
+-- Define políticas de acesso para a tabela de Ordens de Serviço
+-- Usuários podem ler apenas as O.S. associadas aos seus contratos.
+drop policy if exists "Enable read access for own work orders" on public.work_orders;
+create policy "Enable read access for own work orders" on public.work_orders
+  for select using (
+    exists (
+      select 1 from clientes
+      where clientes.user_id = auth.uid() and clientes.selected_contract_id = work_orders.contract_id
+    )
+  );
 
 
 -- Cria a tabela de slides do herói

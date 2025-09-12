@@ -56,16 +56,19 @@ export async function getWorkOrders(contractId: number): Promise<{ success: bool
         const data: ApiResponse = await response.json();
         const workOrders = data.ordens_servicos;
 
-        // 3. Salva o resultado no banco de dados
+        // 3. Salva o resultado na tabela work_orders
         if (workOrders) {
-            const { error: updateError } = await supabase
-                .from('clientes')
-                .update({ chamados: workOrders })
-                .eq('selected_contract_id', String(contractId)); // Assume que o contrato selecionado é o correto
+            const { error: upsertError } = await supabase
+                .from('work_orders')
+                .upsert({ 
+                    contract_id: String(contractId), 
+                    orders: workOrders,
+                    fetched_at: new Date().toISOString()
+                }, { onConflict: 'contract_id' });
 
-            if (updateError) {
+            if (upsertError) {
                 // Loga o erro, mas não impede que os dados sejam retornados ao cliente
-                console.error("Erro ao salvar O.S. no banco de dados:", updateError.message);
+                console.error("Erro ao salvar O.S. no banco de dados:", upsertError.message);
             }
         }
 
