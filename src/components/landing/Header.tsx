@@ -71,15 +71,15 @@ export function Header() {
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">
-          <Link
-            id="header-cta-cliente"
-            href="/cliente"
+          <a
+            id="header-cta-ligue"
+            href="tel:08003810404"
             data-track-event="cta_click"
-            data-track-prop-button-id="area-cliente-header"
+            data-track-prop-button-id="ligue-agora-header"
             className="inline-flex items-center gap-2 rounded-xl border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
           >
-            <User className="h-4 w-4" /> Área do Cliente
-          </Link>
+            <Phone className="h-4 w-4" /> Ligue Agora
+          </a>
           <a
             id="header-cta-assine"
             href="#planos"
