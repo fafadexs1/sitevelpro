@@ -49,12 +49,18 @@ export function Header() {
   const [showAfterHoursDialog, setShowAfterHoursDialog] = useState(false);
 
   const handleCallClick = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
-    const currentHour = new Date().getHours();
-    if (currentHour >= 18) {
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+    
+    // Horário de funcionamento: 08:05 até 17:59
+    const isOutOfHours = currentHour < 8 || (currentHour === 8 && currentMinute < 5) || currentHour >= 18;
+
+    if (isOutOfHours) {
       e.preventDefault();
       setShowAfterHoursDialog(true);
     }
-    // Se for antes das 18h, o comportamento padrão do link (href="tel:...") prosseguirá.
+    // Se estiver no horário, o comportamento padrão do link (href="tel:...") prosseguirá.
   };
 
   return (
@@ -105,7 +111,7 @@ export function Header() {
           </a>
           <a
             id="header-cta-assine"
-            href="#planos"
+            href="/assinar"
             data-track-event="cta_click"
             data-track-prop-button-id="assine-ja-header"
             className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-lg shadow-primary/20 transition-colors hover:bg-primary/90"
@@ -191,7 +197,7 @@ export function Header() {
             <AlertDialogHeader>
                 <AlertDialogTitle>Horário de Atendimento</AlertDialogTitle>
                 <AlertDialogDescription>
-                    Nosso setor comercial funciona até às 18h. Mas não se preocupe, você ainda pode contratar nossos serviços!
+                    Nosso setor comercial funciona das 08:05 às 18:00. Mas não se preocupe, você ainda pode contratar nossos serviços!
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter className="flex-col sm:flex-row gap-2">
@@ -204,8 +210,8 @@ export function Header() {
                     </a>
                 </AlertDialogAction>
                 <AlertDialogAction asChild>
-                    <Link href="#planos">
-                        Ver planos no site
+                    <Link href="/assinar">
+                        Continuar pelo site
                     </Link>
                 </AlertDialogAction>
             </AlertDialogFooter>
