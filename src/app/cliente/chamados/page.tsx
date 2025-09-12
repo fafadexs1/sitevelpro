@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useContract } from "@/components/cliente/ContractProvider";
 import { Pill } from "@/components/cliente/ui-helpers";
 import { Ticket, Loader2, X, Calendar, User, Wrench, MapPin, Building } from "lucide-react";
@@ -19,6 +19,7 @@ import {
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { createClient } from '@/utils/supabase/client';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 
 type WorkOrder = {
@@ -59,6 +60,18 @@ export default function ChamadosPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<WorkOrder | null>(null);
+  const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
+
+  const availableYears = useMemo(() => {
+    if (workOrders.length === 0) return [new Date().getFullYear().toString()];
+    const years = [...new Set(workOrders.map(wo => new Date(wo.data_cadastro).getFullYear().toString()))];
+    return years.sort((a, b) => b.localeCompare(a));
+  }, [workOrders]);
+  
+  const filteredWorkOrders = useMemo(() => {
+    return workOrders.filter(wo => new Date(wo.data_cadastro).getFullYear().toString() === selectedYear);
+  }, [workOrders, selectedYear]);
+
 
   const fetchAndRevalidateWorkOrders = useCallback(async () => {
     if (!contract) return;
@@ -126,20 +139,29 @@ export default function ChamadosPage() {
         >
           <div className="grid gap-6 lg:grid-cols-3">
             <div className="lg:col-span-2 rounded-2xl border border-border bg-card p-6">
-              <div className="mb-4 flex items-center justify-between">
+              <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between">
                 <h3 className="text-lg font-semibold">Ordens de Serviço — {contract?.alias}</h3>
-                <a id="new-ticket-button" href="#" className="text-sm text-muted-foreground hover:text-foreground">Novo chamado</a>
+                 <Select value={selectedYear} onValueChange={setSelectedYear}>
+                    <SelectTrigger className="w-full sm:w-[120px] mt-2 sm:mt-0" id="year-filter">
+                        <SelectValue placeholder="Ano" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {availableYears.map(year => (
+                            <SelectItem key={year} value={year}>{year}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
               </div>
               <div className="space-y-3">
-                {error && workOrders.length === 0 ? (
+                {error && filteredWorkOrders.length === 0 ? (
                   <div className="rounded-xl border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
                     Não foi possível carregar as ordens de serviço. Tente novamente mais tarde.
                   </div>
-                ) : workOrders.length === 0 ? (
-                  <div className="text-sm text-muted-foreground text-center py-8">Nenhuma ordem de serviço encontrada para este contrato.</div>
+                ) : filteredWorkOrders.length === 0 ? (
+                  <div className="text-sm text-muted-foreground text-center py-8">Nenhuma ordem de serviço encontrada para {selectedYear}.</div>
                 ) : (
                    <div className="space-y-3">
-                    {workOrders.map((os) => (
+                    {filteredWorkOrders.map((os) => (
                        <button
                         key={os.id}
                         onClick={() => setSelectedOrder(os)}
@@ -160,6 +182,9 @@ export default function ChamadosPage() {
                 <li>Teste por cabo para medir velocidade real.</li>
                 <li>Tenha o horário das quedas e leds do modem.</li>
               </ul>
+               <Button variant="outline" className="w-full mt-4" asChild>
+                    <a id="new-ticket-button" href="#" className="w-full">Abrir Novo Chamado</a>
+               </Button>
             </div>
           </div>
         </motion.div>
@@ -205,3 +230,5 @@ export default function ChamadosPage() {
     </>
   );
 }
+
+    
