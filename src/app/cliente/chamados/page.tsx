@@ -63,24 +63,14 @@ export default function ChamadosPage() {
   const [selectedOrder, setSelectedOrder] = useState<WorkOrder | null>(null);
   const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
 
-  const availableYears = useMemo(() => {
-    if (workOrders.length === 0) return [new Date().getFullYear().toString()];
-    const years = [...new Set(workOrders.map(wo => new Date(wo.data_cadastro).getFullYear().toString()))];
-    return years.sort((a, b) => b.localeCompare(a));
-  }, [workOrders]);
-  
-  const filteredWorkOrders = useMemo(() => {
-    return workOrders.filter(wo => new Date(wo.data_cadastro).getFullYear().toString() === selectedYear);
-  }, [workOrders, selectedYear]);
-
-
-  const fetchAndRevalidateWorkOrders = useCallback(async () => {
+  const fetchAndRevalidateWorkOrders = useCallback(async (year: string) => {
     if (!contract) return;
 
-    // Stale-while-revalidate: Fase 1 - Buscar do cache (stale)
     setLoading(true);
     setError(null);
     const supabase = createClient();
+    
+    // Stale-while-revalidate: Fase 1 - Buscar do cache (stale)
     const { data: cachedData } = await supabase
         .from('work_orders')
         .select('orders')
@@ -88,12 +78,14 @@ export default function ChamadosPage() {
         .single();
     
     if (cachedData?.orders) {
-        setWorkOrders(cachedData.orders as WorkOrder[]);
+        const allOrders = cachedData.orders as WorkOrder[];
+        const yearOrders = allOrders.filter(wo => new Date(wo.data_cadastro).getFullYear().toString() === year);
+        setWorkOrders(yearOrders);
         setLoading(false); // Mostra dados cacheados rapidamente
     }
 
     // Stale-while-revalidate: Fase 2 - Revalidar com a API
-    const result = await getWorkOrders(parseInt(contract.id, 10));
+    const result = await getWorkOrders(parseInt(contract.id, 10), parseInt(year, 10));
 
     if (result.success && result.data) {
       setWorkOrders(result.data as WorkOrder[]);
@@ -115,9 +107,23 @@ export default function ChamadosPage() {
 
   useEffect(() => {
     if (contract) {
-      fetchAndRevalidateWorkOrders();
+      fetchAndRevalidateWorkOrders(selectedYear);
     }
-  }, [fetchAndRevalidateWorkOrders, contract]);
+  }, [fetchAndRevalidateWorkOrders, contract, selectedYear]);
+
+  const availableYears = useMemo(() => {
+    const currentYear = new Date().getFullYear();
+    const years = new Set([currentYear.toString()]);
+    if (workOrders.length > 0) {
+        workOrders.forEach(wo => years.add(new Date(wo.data_cadastro).getFullYear().toString()));
+    }
+    // Lógica para pegar anos do contrato, se necessário.
+    // Por enquanto, vamos adicionar os últimos 5 anos.
+    for(let i=1; i <= 5; i++) {
+        years.add((currentYear - i).toString());
+    }
+    return Array.from(years).sort((a, b) => b.localeCompare(a));
+  }, [workOrders]);
 
   if (loading && workOrders.length === 0) {
      return (
@@ -154,15 +160,15 @@ export default function ChamadosPage() {
                 </Select>
               </div>
               <div className="space-y-3">
-                {error && filteredWorkOrders.length === 0 ? (
+                {error && workOrders.length === 0 ? (
                   <div className="rounded-xl border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
                     Não foi possível carregar as ordens de serviço. Tente novamente mais tarde.
                   </div>
-                ) : filteredWorkOrders.length === 0 ? (
+                ) : workOrders.length === 0 ? (
                   <div className="text-sm text-muted-foreground text-center py-8">Nenhuma ordem de serviço encontrada para {selectedYear}.</div>
                 ) : (
                    <div className="space-y-3">
-                    {filteredWorkOrders.map((os) => (
+                    {workOrders.map((os) => (
                        <button
                         key={os.id}
                         onClick={() => setSelectedOrder(os)}

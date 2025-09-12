@@ -39,19 +39,14 @@ export default function FaturasPage() {
   const [error, setError] = useState<string | null>(null);
   const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
 
-  const availableYears = useMemo(() => {
-    if (invoices.length === 0) return [new Date().getFullYear().toString()];
-    const years = [...new Set(invoices.map(f => new Date(f.dataVencimento).getFullYear().toString()))];
-    return years.sort((a, b) => b.localeCompare(a));
-  }, [invoices]);
-
-  const fetchAndRevalidateInvoices = useCallback(async () => {
+  const fetchAndRevalidateInvoices = useCallback(async (year: string) => {
     if (!contract) return;
     
-    // Stale-while-revalidate: Fase 1 - Buscar do cache (stale)
     setLoading(true);
     setError(null);
     const supabase = createClient();
+
+    // Stale-while-revalidate: Fase 1 - Buscar do cache (stale)
     const { data: cachedData } = await supabase
         .from('invoices')
         .select('invoices_data')
@@ -59,12 +54,14 @@ export default function FaturasPage() {
         .single();
     
     if (cachedData?.invoices_data) {
-        setInvoices(cachedData.invoices_data as Invoice[]);
+        const allInvoices = cachedData.invoices_data as Invoice[];
+        const yearInvoices = allInvoices.filter(inv => new Date(inv.dataVencimento).getFullYear().toString() === year);
+        setInvoices(yearInvoices);
         setLoading(false); // Mostra dados cacheados rapidamente
     }
 
     // Stale-while-revalidate: Fase 2 - Revalidar com a API
-    const result = await getInvoices(parseInt(contract.id, 10));
+    const result = await getInvoices(parseInt(contract.id, 10), parseInt(year, 10));
     
     if (result.success && result.data) {
       setInvoices(result.data as Invoice[]);
@@ -88,16 +85,26 @@ export default function FaturasPage() {
 
   useEffect(() => {
     if (contract) {
-      fetchAndRevalidateInvoices();
+      fetchAndRevalidateInvoices(selectedYear);
     }
-  }, [fetchAndRevalidateInvoices, contract]);
+  }, [fetchAndRevalidateInvoices, contract, selectedYear]);
+
+  const availableYears = useMemo(() => {
+    const currentYear = new Date().getFullYear();
+    const years = new Set([currentYear.toString()]);
+    if (invoices.length > 0) {
+        invoices.forEach(f => years.add(new Date(f.dataVencimento).getFullYear().toString()));
+    }
+    // Lógica para pegar anos do contrato, se necessário.
+    // Por enquanto, vamos adicionar os últimos 5 anos.
+    for(let i=1; i <= 5; i++) {
+        years.add((currentYear - i).toString());
+    }
+    return Array.from(years).sort((a, b) => b.localeCompare(a));
+  }, [invoices]);
   
   const unpaidInvoices = invoices.filter(f => f.status.toLowerCase() === 'aberto');
-  const paidInvoices = useMemo(() => {
-    return invoices
-      .filter(f => f.status.toLowerCase() !== 'aberto' && f.status.toLowerCase() !== 'cancelado')
-      .filter(f => new Date(f.dataVencimento).getFullYear().toString() === selectedYear);
-  }, [invoices, selectedYear]);
+  const paidInvoices = invoices.filter(f => f.status.toLowerCase() !== 'aberto' && f.status.toLowerCase() !== 'cancelado');
   
   if (loading && invoices.length === 0) { // Só mostra o loading grande se não tiver nada pra mostrar
     return (
