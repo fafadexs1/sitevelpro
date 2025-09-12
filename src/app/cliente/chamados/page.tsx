@@ -20,6 +20,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { createClient } from '@/utils/supabase/client';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
 
 
 type WorkOrder = {
@@ -230,5 +231,3 @@ export default function ChamadosPage() {
     </>
   );
 }
-
-    
