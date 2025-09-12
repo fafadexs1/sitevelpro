@@ -34,6 +34,7 @@ export async function getWorkOrders(contractId: number): Promise<{ success: bool
 
         const externalApiUrl = `${baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl}/api/ura/ordemservico/list/`;
 
+        // 2. Faz a chamada para a API externa
         const response = await fetch(externalApiUrl, {
             method: 'POST',
             headers: {
@@ -53,9 +54,23 @@ export async function getWorkOrders(contractId: number): Promise<{ success: bool
         }
 
         const data: ApiResponse = await response.json();
+        const workOrders = data.ordens_servicos;
 
-        // Retorna diretamente a lista de ordens de serviço
-        return { success: true, data: data.ordens_servicos, error: null };
+        // 3. Salva o resultado no banco de dados
+        if (workOrders) {
+            const { error: updateError } = await supabase
+                .from('clientes')
+                .update({ chamados: workOrders })
+                .eq('selected_contract_id', String(contractId)); // Assume que o contrato selecionado é o correto
+
+            if (updateError) {
+                // Loga o erro, mas não impede que os dados sejam retornados ao cliente
+                console.error("Erro ao salvar O.S. no banco de dados:", updateError.message);
+            }
+        }
+
+        // 4. Retorna a lista de ordens de serviço
+        return { success: true, data: workOrders, error: null };
 
     } catch (e: any) {
         console.error("Erro na Server Action getWorkOrders:", e);
