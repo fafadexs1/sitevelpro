@@ -34,7 +34,8 @@ export function ConsentBanner() {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    // Se o cookie de consentimento já foi definido, não mostre o banner
+    // A verificação deve ocorrer apenas no cliente, após a montagem do componente.
+    // Se o cookie de consentimento NÃO for encontrado, mostre o banner.
     if (!getCookie("user_consent")) {
       setIsVisible(true);
     }
