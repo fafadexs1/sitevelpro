@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useContract } from "@/components/cliente/ContractProvider";
 import {
   CheckCircle2,
@@ -15,6 +15,8 @@ import { getInvoices } from '@/actions/invoiceActions';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
 
 type Invoice = {
   id: number;
@@ -33,6 +35,13 @@ export default function FaturasPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
+
+  const availableYears = useMemo(() => {
+    if (invoices.length === 0) return [new Date().getFullYear().toString()];
+    const years = [...new Set(invoices.map(f => new Date(f.dataVencimento).getFullYear().toString()))];
+    return years.sort((a, b) => b.localeCompare(a));
+  }, [invoices]);
   
   const fetchInvoices = useCallback(async () => {
     if (!contract) return;
@@ -61,7 +70,11 @@ export default function FaturasPage() {
   }, [fetchInvoices, contract]);
   
   const unpaidInvoices = invoices.filter(f => f.status.toLowerCase() === 'aberto');
-  const paidInvoices = invoices.filter(f => f.status.toLowerCase() !== 'aberto');
+  const paidInvoices = useMemo(() => {
+    return invoices
+      .filter(f => f.status.toLowerCase() !== 'aberto')
+      .filter(f => new Date(f.dataVencimento).getFullYear().toString() === selectedYear);
+  }, [invoices, selectedYear]);
   
   if (loading) {
     return (
@@ -111,7 +124,19 @@ export default function FaturasPage() {
 
             {/* Histórico */}
             <div className="lg:col-span-2 rounded-2xl border border-border bg-card p-6">
-                <div className="mb-3 text-lg font-semibold">Histórico de faturas</div>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3">
+                    <h3 className="text-lg font-semibold">Histórico de faturas</h3>
+                    <Select value={selectedYear} onValueChange={setSelectedYear}>
+                        <SelectTrigger className="w-full sm:w-[120px] mt-2 sm:mt-0" id="year-filter">
+                            <SelectValue placeholder="Ano" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {availableYears.map(year => (
+                                <SelectItem key={year} value={year}>{year}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
                  {error && !invoices.length ? (
                    <div className="rounded-xl border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
                     Não foi possível carregar o histórico de faturas.
@@ -134,8 +159,8 @@ export default function FaturasPage() {
                     </div>
                     </div>
                 ))}
-                 {invoices.length === 0 && !error && (
-                    <div className="text-sm text-muted-foreground text-center py-8">Nenhum histórico de faturas encontrado.</div>
+                 {paidInvoices.length === 0 && !error && (
+                    <div className="text-sm text-muted-foreground text-center py-8">Nenhum histórico de faturas encontrado para {selectedYear}.</div>
                  )}
                 </div>
                 )}
@@ -145,3 +170,4 @@ export default function FaturasPage() {
     </AnimatePresence>
   );
 }
+
