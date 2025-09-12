@@ -72,7 +72,7 @@ export default function FaturasPage() {
   const unpaidInvoices = invoices.filter(f => f.status.toLowerCase() === 'aberto');
   const paidInvoices = useMemo(() => {
     return invoices
-      .filter(f => f.status.toLowerCase() !== 'aberto')
+      .filter(f => f.status.toLowerCase() !== 'aberto' && f.status.toLowerCase() !== 'cancelado')
       .filter(f => new Date(f.dataVencimento).getFullYear().toString() === selectedYear);
   }, [invoices, selectedYear]);
   
@@ -170,4 +170,3 @@ export default function FaturasPage() {
     </AnimatePresence>
   );
 }
-
