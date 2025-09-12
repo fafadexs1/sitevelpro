@@ -34,6 +34,13 @@ export default function OverviewPage() {
 
   const unpaid = contract.invoices.find(i => i.status.toLowerCase() === "aberto");
   const usagePct = contract.usage.cap > 0 ? Math.round(((contract.usage.downloaded + contract.usage.uploaded) / contract.usage.cap) * 100) : 0;
+  
+  // Filtra faturas recentes: não canceladas, ordena e pega as últimas 3
+  const recentInvoices = contract.invoices
+    .filter(f => f.status.toLowerCase() !== 'cancelado')
+    .sort((a, b) => new Date(a.due).getTime() - new Date(b.due).getTime())
+    .slice(-3);
+
 
   return (
     <AnimatePresence mode="wait">
@@ -114,7 +121,7 @@ export default function OverviewPage() {
                 <button id="overview-view-all-invoices" onClick={() => router.push('/cliente/faturas')} className="text-sm text-muted-foreground hover:text-foreground">Ver todas</button>
                 </div>
                 <div className="space-y-3">
-                {contract.invoices.slice(0,3).map((f) => (
+                {recentInvoices.map((f) => (
                     <div key={f.id} className="flex flex-wrap items-center justify-between rounded-xl border border-border bg-secondary px-3 py-2 gap-2">
                     <div>
                         <div className="text-sm font-medium">Doc: {f.doc}</div>
