@@ -74,6 +74,25 @@ create policy "Enable read access for own work orders" on public.work_orders
     )
   );
 
+-- Cria a tabela de Faturas (Títulos)
+create table if not exists invoices (
+  id uuid default gen_random_uuid() primary key,
+  contract_id text not null unique,
+  invoices_data jsonb,
+  fetched_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Define políticas de acesso para a tabela de Faturas
+-- Usuários podem ler apenas as faturas associadas aos seus contratos.
+drop policy if exists "Enable read access for own invoices" on public.invoices;
+create policy "Enable read access for own invoices" on public.invoices
+  for select using (
+    exists (
+      select 1 from clientes
+      where clientes.user_id = auth.uid() and clientes.selected_contract_id = invoices.contract_id
+    )
+  );
+
 
 -- Cria a tabela de slides do herói
 create table if not exists hero_slides (
