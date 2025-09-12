@@ -15,11 +15,12 @@ import {
   Receipt,
   CheckCircle2,
   XCircle,
-  Ticket
+  Ticket,
+  AlertTriangle,
 } from "lucide-react";
 import { AnimatePresence, motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { format } from 'date-fns';
+import { format, isPast } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -28,42 +29,64 @@ export default function OverviewPage() {
   const { contract, setPixModal, loading } = useContract();
   const router = useRouter();
 
+  const getRecentInvoices = () => {
+    if (!contract) return [];
+    
+    const allInvoices = [...contract.invoices]
+        .filter(f => f.status.toLowerCase() !== 'cancelado')
+        .sort((a, b) => new Date(b.due).getTime() - new Date(a.due).getTime());
+
+    const paidInvoices = allInvoices.filter(f => f.status.toLowerCase() === 'pago');
+    const unpaidInvoices = allInvoices.filter(f => f.status.toLowerCase() === 'aberto').sort((a, b) => new Date(a.due).getTime() - new Date(b.due).getTime());
+
+    const lastPaid = paidInvoices.length > 0 ? paidInvoices[0] : null;
+    const nextUnpaid = unpaidInvoices.length > 0 ? unpaidInvoices[0] : null;
+    const afterNextUnpaid = unpaidInvoices.length > 1 ? unpaidInvoices[1] : null;
+
+    const recent = [lastPaid, nextUnpaid, afterNextUnpaid].filter(Boolean);
+    
+    const uniqueRecent = Array.from(new Set(recent.map(f => f!.id))).map(id => recent.find(f => f!.id === id));
+    
+    return uniqueRecent.slice(0, 3) as typeof contract.invoices;
+  };
+
+  const getBannerInfo = () => {
+    if (!contract) return { status: 'loading' };
+
+    const unpaid = contract.invoices
+        .filter(f => f.status.toLowerCase() === 'aberto')
+        .sort((a, b) => new Date(a.due).getTime() - new Date(b.due).getTime());
+
+    if (unpaid.length === 0) {
+        return { status: 'paid' };
+    }
+
+    const pastDueInvoices = unpaid.filter(f => isPast(new Date(f.due)));
+
+    if (pastDueInvoices.length > 0) {
+        return { 
+            status: 'past_due',
+            count: pastDueInvoices.length,
+            invoice: pastDueInvoices[0] // Mostra a mais antiga vencida
+        };
+    }
+
+    return { 
+        status: 'open',
+        invoice: unpaid[0] // Mostra a próxima a vencer
+    };
+  }
+
+  const bannerInfo = getBannerInfo();
+  const recentInvoices = getRecentInvoices();
+
   if (loading && !contract) {
     return null; // Don't show anything if there is no cached contract to display while loading
   }
 
   if (!contract) return null;
 
-  const unpaid = contract.invoices.find(i => i.status.toLowerCase() === "aberto");
   const usagePct = contract.usage.cap > 0 ? Math.round(((contract.usage.downloaded + contract.usage.uploaded) / contract.usage.cap) * 100) : 0;
-  
-  const getRecentInvoices = () => {
-    const allInvoices = [...contract.invoices]
-        .filter(f => f.status.toLowerCase() !== 'cancelado')
-        .sort((a, b) => new Date(a.due).getTime() - new Date(b.due).getTime());
-
-    const paidInvoices = allInvoices.filter(f => f.status.toLowerCase() === 'pago');
-    const unpaidInvoices = allInvoices.filter(f => f.status.toLowerCase() === 'aberto');
-
-    // 1. Get the last paid invoice
-    const lastPaid = paidInvoices.length > 0 ? paidInvoices[paidInvoices.length - 1] : null;
-
-    // 2. Get the next upcoming unpaid invoice
-    const nextUnpaid = unpaidInvoices.length > 0 ? unpaidInvoices[0] : null;
-    
-    // 3. Get the invoice after the next one
-    const afterNextUnpaid = unpaidInvoices.length > 1 ? unpaidInvoices[1] : null;
-
-    const recent = [lastPaid, nextUnpaid, afterNextUnpaid].filter(Boolean);
-    
-    // Remove duplicates if any (e.g., if logic somehow picks the same one)
-    const uniqueRecent = Array.from(new Set(recent.map(f => f!.id))).map(id => recent.find(f => f!.id === id));
-    
-    return uniqueRecent.slice(0, 3) as typeof contract.invoices;
-  };
-  
-  const recentInvoices = getRecentInvoices();
-
 
   return (
     <AnimatePresence mode="wait">
@@ -74,28 +97,66 @@ export default function OverviewPage() {
         exit={{ opacity: 0, y: -10 }}
         transition={{ duration: 0.2 }}
       >
-        {unpaid && (
+        {bannerInfo.status === 'past_due' && bannerInfo.invoice && (
+            <div className="mb-6 rounded-2xl border border-yellow-500/50 bg-yellow-500/10 p-4 text-yellow-600">
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                    <AlertTriangle className="h-5 w-5 flex-shrink-0" />
+                    <div>
+                    <p className="font-semibold">Você possui {bannerInfo.count} fatura(s) vencida(s)</p>
+                    <p className="text-sm opacity-80">A mais antiga venceu em {format(new Date(bannerInfo.invoice.due), "dd/MM/yyyy", { locale: ptBR })}. Valor R$ {bannerInfo.invoice.amount.toFixed(2)}</p>
+                    </div>
+                </div>
+                <div className="flex flex-wrap items-center justify-start gap-2 sm:justify-end">
+                    {bannerInfo.invoice.pix && (
+                    <Button id={`unpaid-alert-pix-${bannerInfo.invoice.id}`} onClick={() => setPixModal({ open: true, code: bannerInfo.invoice.pix! })} variant="outline" size="sm" className="border-yellow-500/40 bg-yellow-500/10 hover:bg-yellow-500/20 gap-2">
+                        <QrCode className="h-4 w-4" /> Copiar PIX
+                    </Button>
+                    )}
+                    <Button asChild size="sm" className="gap-2 bg-yellow-600 text-white hover:bg-yellow-700">
+                      <a id={`unpaid-alert-pdf-${bannerInfo.invoice.id}`} href={bannerInfo.invoice.link} target="_blank" rel="noopener noreferrer">
+                        <Receipt className="h-4 w-4" /> 2ª via (PDF)
+                      </a>
+                    </Button>
+                </div>
+                </div>
+            </div>
+        )}
+
+        {bannerInfo.status === 'open' && bannerInfo.invoice && (
             <div className="mb-6 rounded-2xl border border-primary/50 bg-primary/10 p-4 text-primary">
                 <div className="flex flex-wrap items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                     <Wallet className="h-5 w-5 flex-shrink-0" />
                     <div>
-                    <p className="font-semibold">Fatura em aberto (Doc: {unpaid.doc}) — {contract.alias}</p>
-                    <p className="text-sm opacity-80">Vencimento em {format(new Date(unpaid.due), "dd/MM/yyyy", { locale: ptBR })}. Valor R$ {unpaid.amount.toFixed(2)}</p>
+                    <p className="font-semibold">Próxima fatura (Doc: {bannerInfo.invoice.doc})</p>
+                    <p className="text-sm opacity-80">Vencimento em {format(new Date(bannerInfo.invoice.due), "dd/MM/yyyy", { locale: ptBR })}. Valor R$ {bannerInfo.invoice.amount.toFixed(2)}</p>
                     </div>
                 </div>
                 <div className="flex flex-wrap items-center justify-start gap-2 sm:justify-end">
-                    {unpaid.pix && (
-                    <Button id={`unpaid-alert-pix-${unpaid.id}`} onClick={() => setPixModal({ open: true, code: unpaid.pix! })} variant="outline" size="sm" className="border-primary/40 bg-primary/10 hover:bg-primary/20 gap-2">
+                    {bannerInfo.invoice.pix && (
+                    <Button id={`unpaid-alert-pix-${bannerInfo.invoice.id}`} onClick={() => setPixModal({ open: true, code: bannerInfo.invoice.pix! })} variant="outline" size="sm" className="border-primary/40 bg-primary/10 hover:bg-primary/20 gap-2">
                         <QrCode className="h-4 w-4" /> Copiar PIX
                     </Button>
                     )}
                     <Button asChild size="sm" className="gap-2 bg-foreground text-background hover:bg-foreground/80">
-                      <a id={`unpaid-alert-pdf-${unpaid.id}`} href={unpaid.link} target="_blank" rel="noopener noreferrer">
+                      <a id={`unpaid-alert-pdf-${bannerInfo.invoice.id}`} href={bannerInfo.invoice.link} target="_blank" rel="noopener noreferrer">
                         <Receipt className="h-4 w-4" /> 2ª via (PDF)
                       </a>
                     </Button>
                 </div>
+                </div>
+            </div>
+        )}
+        
+        {bannerInfo.status === 'paid' && (
+             <div className="mb-6 rounded-2xl border border-green-500/50 bg-green-500/10 p-4 text-green-600">
+                <div className="flex items-center gap-3">
+                    <CheckCircle2 className="h-5 w-5 flex-shrink-0" />
+                    <div>
+                        <p className="font-semibold">Tudo em dia!</p>
+                        <p className="text-sm opacity-80">Não há faturas pendentes para este contrato. Obrigado!</p>
+                    </div>
                 </div>
             </div>
         )}
@@ -160,8 +221,8 @@ export default function OverviewPage() {
                             ) : (
                             <span className="inline-flex items-center gap-1 rounded-md bg-red-500/15 px-2 py-1 text-xs text-red-600"><XCircle className="h-3.5 w-3.5" /> Em aberto</span>
                             )}
-                            <Button asChild variant="outline" size="sm" className={cn("gap-1 text-xs h-7 px-2", isPaid && "cursor-not-allowed opacity-60")}>
-                              <a id={`overview-invoice-pdf-${f.id}`} href={isPaid ? undefined : f.link} target="_blank" rel="noopener noreferrer"><Receipt className="h-3.5 w-3.5" /> 2ª via</a>
+                            <Button asChild variant="outline" size="sm" className="gap-1 text-xs h-7 px-2" disabled={!isPaid}>
+                               <a id={`overview-invoice-pdf-${f.id}`} href={f.link} target="_blank" rel="noopener noreferrer"><Receipt className="h-3.5 w-3.5" /> 2ª via</a>
                             </Button>
                             {!isPaid && f.pix && (
                               <Button id={`overview-invoice-pix-${f.id}`} onClick={() => setPixModal({ open: true, code: f.pix! })} variant="outline" size="sm" className="gap-1 text-xs h-7 px-2">
