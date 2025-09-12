@@ -8,6 +8,16 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "../ui/sheet";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
+import { 
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 
 
@@ -36,7 +46,19 @@ const NavMenuItem = ({ href, children, icon: Icon }: { href: string, children: R
 )
 
 export function Header() {
+  const [showAfterHoursDialog, setShowAfterHoursDialog] = useState(false);
+
+  const handleCallClick = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+    const currentHour = new Date().getHours();
+    if (currentHour >= 18) {
+      e.preventDefault();
+      setShowAfterHoursDialog(true);
+    }
+    // Se for antes das 18h, o comportamento padrão do link (href="tel:...") prosseguirá.
+  };
+
   return (
+    <>
     <header className="sticky top-0 z-40 border-b border-border/40 bg-background/60 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
         <a id="nav-logo" href="/" className="group flex items-center gap-3">
@@ -74,6 +96,7 @@ export function Header() {
           <a
             id="header-cta-ligue"
             href="tel:08003810404"
+            onClick={handleCallClick}
             data-track-event="cta_click"
             data-track-prop-button-id="ligue-agora-header"
             className="inline-flex items-center gap-2 rounded-xl border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
@@ -152,7 +175,7 @@ export function Header() {
                              <a href="https://wa.me/5508003810404?text=Olá!%20Gostaria%20de%20saber%20mais%20sobre%20os%20planos." target="_blank" rel="noopener noreferrer" className="w-full inline-flex items-center justify-center gap-2 rounded-full border-2 border-primary bg-transparent p-3 text-sm font-bold text-primary transition-colors hover:bg-primary/10">
                                 <MessageCircle className="h-5 w-5"/> CONVERSAR NO WHATSAPP
                              </a>
-                             <a href="tel:+5508003810404" className="w-full inline-flex items-center justify-center gap-2 p-3 text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
+                             <a href="tel:+5508003810404" onClick={(e: any) => handleCallClick(e)} className="w-full inline-flex items-center justify-center gap-2 p-3 text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
                                 <Phone className="h-4 w-4"/> Ligar para 0800 381 0404
                              </a>
                          </div>
@@ -162,5 +185,32 @@ export function Header() {
         </div>
       </div>
     </header>
+
+    <AlertDialog open={showAfterHoursDialog} onOpenChange={setShowAfterHoursDialog}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>Horário de Atendimento</AlertDialogTitle>
+                <AlertDialogDescription>
+                    Nosso setor comercial funciona até às 18h. Mas não se preocupe, você ainda pode contratar nossos serviços!
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+                <AlertDialogCancel asChild>
+                  <Button variant="outline">Fechar</Button>
+                </AlertDialogCancel>
+                <AlertDialogAction asChild>
+                    <a href="https://wa.me/5508003810404?text=Olá!%20Gostaria%20de%20saber%20mais%20sobre%20os%20planos." target="_blank" rel="noopener noreferrer">
+                        Continuar pelo WhatsApp
+                    </a>
+                </AlertDialogAction>
+                <AlertDialogAction asChild>
+                    <Link href="#planos">
+                        Ver planos no site
+                    </Link>
+                </AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }
