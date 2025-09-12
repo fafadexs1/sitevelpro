@@ -16,7 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-
+import { createClient } from '@/utils/supabase/client';
 
 type Invoice = {
   id: number;
@@ -42,32 +42,53 @@ export default function FaturasPage() {
     const years = [...new Set(invoices.map(f => new Date(f.dataVencimento).getFullYear().toString()))];
     return years.sort((a, b) => b.localeCompare(a));
   }, [invoices]);
-  
-  const fetchInvoices = useCallback(async () => {
-    if (!contract) return;
 
+  const fetchAndRevalidateInvoices = useCallback(async () => {
+    if (!contract) return;
+    
+    // Stale-while-revalidate: Fase 1 - Buscar do cache (stale)
     setLoading(true);
     setError(null);
-    const result = await getInvoices(parseInt(contract.id, 10));
+    const supabase = createClient();
+    const { data: cachedData } = await supabase
+        .from('invoices')
+        .select('invoices_data')
+        .eq('contract_id', String(contract.id))
+        .single();
+    
+    if (cachedData?.invoices_data) {
+        setInvoices(cachedData.invoices_data as Invoice[]);
+        setLoading(false); // Mostra dados cacheados rapidamente
+    }
 
+    // Stale-while-revalidate: Fase 2 - Revalidar com a API
+    const result = await getInvoices(parseInt(contract.id, 10));
+    
     if (result.success && result.data) {
       setInvoices(result.data as Invoice[]);
+      setError(null);
     } else {
-      setError(result.error);
+      // Se a API falhar mas tivermos dados do cache, mostramos um erro mas mantemos os dados antigos
+      if (!cachedData?.invoices_data) {
+          setError(result.error);
+      }
       toast({
         variant: 'destructive',
-        title: 'Erro ao buscar Faturas',
-        description: result.error,
+        title: 'Erro ao sincronizar faturas',
+        description: 'Não foi possível buscar os dados mais recentes. As informações exibidas podem estar desatualizadas.',
       });
     }
+
+    // Garante que o loading seja falso no final, mesmo que a busca no cache tenha falhado
     setLoading(false);
+
   }, [contract, toast]);
 
   useEffect(() => {
     if (contract) {
-      fetchInvoices();
+      fetchAndRevalidateInvoices();
     }
-  }, [fetchInvoices, contract]);
+  }, [fetchAndRevalidateInvoices, contract]);
   
   const unpaidInvoices = invoices.filter(f => f.status.toLowerCase() === 'aberto');
   const paidInvoices = useMemo(() => {
@@ -76,7 +97,7 @@ export default function FaturasPage() {
       .filter(f => new Date(f.dataVencimento).getFullYear().toString() === selectedYear);
   }, [invoices, selectedYear]);
   
-  if (loading) {
+  if (loading && invoices.length === 0) { // Só mostra o loading grande se não tiver nada pra mostrar
     return (
       <div className="flex items-center justify-center p-8">
         <Loader2 className="h-6 w-6 animate-spin text-primary" />
@@ -98,7 +119,7 @@ export default function FaturasPage() {
             {/* Em aberto */}
             <div className="rounded-2xl border border-border bg-card p-6">
                 <h3 className="mb-3 text-lg font-semibold">Faturas em aberto</h3>
-                {error ? (
+                {error && unpaidInvoices.length === 0 ? (
                    <div className="rounded-xl border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
                     {error}
                   </div>
@@ -137,7 +158,7 @@ export default function FaturasPage() {
                         </SelectContent>
                     </Select>
                 </div>
-                 {error && !invoices.length ? (
+                 {error && paidInvoices.length === 0 ? (
                    <div className="rounded-xl border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
                     Não foi possível carregar o histórico de faturas.
                   </div>
@@ -159,7 +180,7 @@ export default function FaturasPage() {
                     </div>
                     </div>
                 ))}
-                 {paidInvoices.length === 0 && !error && (
+                 {paidInvoices.length === 0 && !error && !loading && (
                     <div className="text-sm text-muted-foreground text-center py-8">Nenhum histórico de faturas encontrado para {selectedYear}.</div>
                  )}
                 </div>
