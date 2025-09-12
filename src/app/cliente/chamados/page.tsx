@@ -8,13 +8,20 @@ import { Ticket, Loader2 } from "lucide-react";
 import { AnimatePresence, motion } from 'framer-motion';
 import { getWorkOrders } from '@/actions/workOrderActions';
 import { useToast } from '@/hooks/use-toast';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
 
 type WorkOrder = {
   id: number;
-  ocorrencia: string; // Usaremos ocorrencia como ID principal de exibição
+  ocorrencia: string;
   motivo: string;
   status: string;
   data_cadastro: string;
+  conteudo?: string;
 };
 
 export default function ChamadosPage() {
@@ -32,7 +39,7 @@ export default function ChamadosPage() {
     const result = await getWorkOrders(parseInt(contract.id, 10));
 
     if (result.success && result.data) {
-      setWorkOrders(result.data);
+      setWorkOrders(result.data as WorkOrder[]);
     } else {
       setError(result.error);
       toast({
@@ -45,10 +52,19 @@ export default function ChamadosPage() {
   }, [contract, toast]);
 
   useEffect(() => {
-    fetchWorkOrders();
-  }, [fetchWorkOrders]);
+    if (contract) {
+      fetchWorkOrders();
+    }
+  }, [fetchWorkOrders, contract]);
 
-  if (!contract) return null;
+  if (!contract) {
+     return (
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        <p className="ml-2 text-muted-foreground">Carregando contrato...</p>
+      </div>
+    );
+  }
   
   return (
     <AnimatePresence mode="wait">
@@ -77,19 +93,28 @@ export default function ChamadosPage() {
               ) : workOrders.length === 0 ? (
                 <div className="text-sm text-muted-foreground text-center py-8">Nenhuma ordem de serviço encontrada para este contrato.</div>
               ) : (
-                workOrders.map((os) => (
-                  <div key={os.id} className="rounded-xl border border-border bg-secondary p-3">
-                    <div className="flex items-center justify-between text-sm">
-                      <div className="flex items-center gap-2"><Ticket className="h-4 w-4 text-primary" /> <b>{os.ocorrencia}</b> — {os.motivo}</div>
-                      <Pill>{os.status}</Pill>
-                    </div>
-                    <div className="mt-1 text-xs text-muted-foreground">Aberto em {new Date(os.data_cadastro).toLocaleDateString('pt-BR')}</div>
-                  </div>
-                ))
+                <Accordion type="single" collapsible className="w-full">
+                  {workOrders.map((os) => (
+                    <AccordionItem key={os.id} value={`item-${os.id}`} className="border-b-0">
+                       <div className="rounded-xl border border-border bg-secondary p-0">
+                         <AccordionTrigger className="flex w-full items-center justify-between text-sm p-3 hover:no-underline">
+                            <div className="flex items-center gap-2 text-left"><Ticket className="h-4 w-4 text-primary flex-shrink-0" /> <b>{os.ocorrencia}</b> — {os.motivo}</div>
+                            <Pill>{os.status}</Pill>
+                         </AccordionTrigger>
+                         <AccordionContent className="px-4 pb-3">
+                            <div className="mt-1 border-t border-border pt-3">
+                                <p className="text-xs text-muted-foreground mb-2">Aberto em {new Date(os.data_cadastro).toLocaleDateString('pt-BR')}</p>
+                                <p className="text-sm text-foreground/80 whitespace-pre-wrap">{os.conteudo || 'Sem detalhes adicionais.'}</p>
+                            </div>
+                         </AccordionContent>
+                       </div>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
               )}
             </div>
           </div>
-          <div className="rounded-2xl border border-border bg-card p-6">
+          <div className="rounded-2xl border border-border bg-card p-6 self-start">
             <div className="text-sm text-muted-foreground">Dicas rápidas</div>
             <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-muted-foreground">
               <li>Reinicie o roteador (30s) antes de abrir chamado.</li>
