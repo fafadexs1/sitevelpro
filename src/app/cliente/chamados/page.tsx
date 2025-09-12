@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -12,9 +11,10 @@ import { useToast } from '@/hooks/use-toast';
 
 type WorkOrder = {
   id: number;
-  assunto: string;
+  ocorrencia: string; // Usaremos ocorrencia como ID principal de exibição
+  motivo: string;
   status: string;
-  data_abertura: string;
+  data_cadastro: string;
 };
 
 export default function ChamadosPage() {
@@ -75,15 +75,15 @@ export default function ChamadosPage() {
                    Não foi possível carregar as ordens de serviço. Tente novamente mais tarde.
                 </div>
               ) : workOrders.length === 0 ? (
-                <div className="text-sm text-muted-foreground text-center py-8">Nenhuma ordem de serviço encontrada.</div>
+                <div className="text-sm text-muted-foreground text-center py-8">Nenhuma ordem de serviço encontrada para este contrato.</div>
               ) : (
                 workOrders.map((os) => (
                   <div key={os.id} className="rounded-xl border border-border bg-secondary p-3">
                     <div className="flex items-center justify-between text-sm">
-                      <div className="flex items-center gap-2"><Ticket className="h-4 w-4 text-primary" /> <b>{os.id}</b> — {os.assunto}</div>
+                      <div className="flex items-center gap-2"><Ticket className="h-4 w-4 text-primary" /> <b>{os.ocorrencia}</b> — {os.motivo}</div>
                       <Pill>{os.status}</Pill>
                     </div>
-                    <div className="mt-1 text-xs text-muted-foreground">Aberto em {new Date(os.data_abertura).toLocaleDateString('pt-BR')}</div>
+                    <div className="mt-1 text-xs text-muted-foreground">Aberto em {new Date(os.data_cadastro).toLocaleDateString('pt-BR')}</div>
                   </div>
                 ))
               )}

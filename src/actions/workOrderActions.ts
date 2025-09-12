@@ -3,11 +3,10 @@
 
 import { createClient } from '@/utils/supabase/server';
 
+// Ajustado para o formato da resposta da API de O.S.
 type ApiResponse = {
-    results: any[];
-    count: number;
-    next: string | null;
-    previous: string | null;
+    paginacao: object;
+    ordens_servicos: any[];
 };
 
 export async function getWorkOrders(contractId: number): Promise<{ success: boolean; data: any[] | null; error: string | null; }> {
@@ -55,7 +54,8 @@ export async function getWorkOrders(contractId: number): Promise<{ success: bool
 
         const data: ApiResponse = await response.json();
 
-        return { success: true, data: data.results, error: null };
+        // Retorna diretamente a lista de ordens de serviço
+        return { success: true, data: data.ordens_servicos, error: null };
 
     } catch (e: any) {
         console.error("Erro na Server Action getWorkOrders:", e);
