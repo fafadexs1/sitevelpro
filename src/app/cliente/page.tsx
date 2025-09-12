@@ -35,11 +35,32 @@ export default function OverviewPage() {
   const unpaid = contract.invoices.find(i => i.status.toLowerCase() === "aberto");
   const usagePct = contract.usage.cap > 0 ? Math.round(((contract.usage.downloaded + contract.usage.uploaded) / contract.usage.cap) * 100) : 0;
   
-  // Filtra faturas recentes: não canceladas, ordena e pega as últimas 3
-  const recentInvoices = contract.invoices
-    .filter(f => f.status.toLowerCase() !== 'cancelado')
-    .sort((a, b) => new Date(a.due).getTime() - new Date(b.due).getTime())
-    .slice(-3);
+  const getRecentInvoices = () => {
+    const allInvoices = [...contract.invoices]
+        .filter(f => f.status.toLowerCase() !== 'cancelado')
+        .sort((a, b) => new Date(a.due).getTime() - new Date(b.due).getTime());
+
+    const paidInvoices = allInvoices.filter(f => f.status.toLowerCase() === 'pago');
+    const unpaidInvoices = allInvoices.filter(f => f.status.toLowerCase() === 'aberto');
+
+    // 1. Get the last paid invoice
+    const lastPaid = paidInvoices.length > 0 ? paidInvoices[paidInvoices.length - 1] : null;
+
+    // 2. Get the next upcoming unpaid invoice
+    const nextUnpaid = unpaidInvoices.length > 0 ? unpaidInvoices[0] : null;
+    
+    // 3. Get the invoice after the next one
+    const afterNextUnpaid = unpaidInvoices.length > 1 ? unpaidInvoices[1] : null;
+
+    const recent = [lastPaid, nextUnpaid, afterNextUnpaid].filter(Boolean);
+    
+    // Remove duplicates if any (e.g., if logic somehow picks the same one)
+    const uniqueRecent = Array.from(new Set(recent.map(f => f!.id))).map(id => recent.find(f => f!.id === id));
+    
+    return uniqueRecent.slice(0, 3) as typeof contract.invoices;
+  };
+  
+  const recentInvoices = getRecentInvoices();
 
 
   return (
@@ -167,5 +188,4 @@ export default function OverviewPage() {
     </AnimatePresence>
   );
 }
-
     
