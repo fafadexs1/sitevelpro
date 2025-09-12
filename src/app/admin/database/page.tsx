@@ -60,8 +60,7 @@ create table if not exists work_orders (
   id uuid default gen_random_uuid() primary key,
   contract_id text not null unique,
   orders jsonb,
-  fetched_at timestamp with time zone default timezone('utc'::text, now()) not null,
-  constraint fk_contract_id foreign key (contract_id) references clientes(selected_contract_id) on delete cascade
+  fetched_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
 -- Define políticas de acesso para a tabela de Ordens de Serviço
