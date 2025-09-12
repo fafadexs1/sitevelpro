@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { createClient } from '@/utils/supabase/client';
 
 
 type WorkOrder = {
@@ -59,37 +60,56 @@ export default function ChamadosPage() {
   const [error, setError] = useState<string | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<WorkOrder | null>(null);
 
-  const fetchWorkOrders = useCallback(async () => {
+  const fetchAndRevalidateWorkOrders = useCallback(async () => {
     if (!contract) return;
 
+    // Stale-while-revalidate: Fase 1 - Buscar do cache (stale)
     setLoading(true);
     setError(null);
+    const supabase = createClient();
+    const { data: cachedData } = await supabase
+        .from('work_orders')
+        .select('orders')
+        .eq('contract_id', String(contract.id))
+        .single();
+    
+    if (cachedData?.orders) {
+        setWorkOrders(cachedData.orders as WorkOrder[]);
+        setLoading(false); // Mostra dados cacheados rapidamente
+    }
+
+    // Stale-while-revalidate: Fase 2 - Revalidar com a API
     const result = await getWorkOrders(parseInt(contract.id, 10));
 
     if (result.success && result.data) {
       setWorkOrders(result.data as WorkOrder[]);
+      setError(null);
     } else {
-      setError(result.error);
+       // Se a API falhar mas tivermos dados do cache, mostramos um erro mas mantemos os dados antigos
+      if (!cachedData?.orders) {
+          setError(result.error);
+      }
       toast({
         variant: 'destructive',
-        title: 'Erro ao buscar Ordens de Serviço',
-        description: result.error,
+        title: 'Erro ao sincronizar chamados',
+        description: 'Não foi possível buscar os dados mais recentes. As informações exibidas podem estar desatualizadas.',
       });
     }
+     // Garante que o loading seja falso no final, mesmo que a busca no cache tenha falhado
     setLoading(false);
   }, [contract, toast]);
 
   useEffect(() => {
     if (contract) {
-      fetchWorkOrders();
+      fetchAndRevalidateWorkOrders();
     }
-  }, [fetchWorkOrders, contract]);
+  }, [fetchAndRevalidateWorkOrders, contract]);
 
-  if (!contract) {
+  if (loading && workOrders.length === 0) {
      return (
       <div className="flex items-center justify-center p-8">
         <Loader2 className="h-6 w-6 animate-spin text-primary" />
-        <p className="ml-2 text-muted-foreground">Carregando contrato...</p>
+        <p className="ml-2 text-muted-foreground">Buscando chamados...</p>
       </div>
     );
   }
@@ -107,15 +127,11 @@ export default function ChamadosPage() {
           <div className="grid gap-6 lg:grid-cols-3">
             <div className="lg:col-span-2 rounded-2xl border border-border bg-card p-6">
               <div className="mb-4 flex items-center justify-between">
-                <h3 className="text-lg font-semibold">Ordens de Serviço — {contract.alias}</h3>
+                <h3 className="text-lg font-semibold">Ordens de Serviço — {contract?.alias}</h3>
                 <a id="new-ticket-button" href="#" className="text-sm text-muted-foreground hover:text-foreground">Novo chamado</a>
               </div>
               <div className="space-y-3">
-                {loading ? (
-                  <div className="flex items-center justify-center p-8">
-                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                  </div>
-                ) : error ? (
+                {error && workOrders.length === 0 ? (
                   <div className="rounded-xl border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
                     Não foi possível carregar as ordens de serviço. Tente novamente mais tarde.
                   </div>
