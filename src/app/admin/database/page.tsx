@@ -41,6 +41,7 @@ create table if not exists clientes (
   user_id uuid references auth.users(id) on delete cascade not null,
   cpf_cnpj text not null unique,
   contratos jsonb,
+  chamados jsonb,
   selected_contract_id text,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
