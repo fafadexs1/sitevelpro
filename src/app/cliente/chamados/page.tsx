@@ -1,10 +1,9 @@
-
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useContract } from "@/components/cliente/ContractProvider";
 import { Pill } from "@/components/cliente/ui-helpers";
-import { Ticket, Loader2, X, Calendar, Clock, User, Tool, MapPin, Building } from "lucide-react";
+import { Ticket, Loader2, X, Calendar, User, Wrench, MapPin, Building } from "lucide-react";
 import { AnimatePresence, motion } from 'framer-motion';
 import { getWorkOrders } from '@/actions/workOrderActions';
 import { useToast } from '@/hooks/use-toast';
@@ -173,7 +172,7 @@ export default function ChamadosPage() {
                         <DetailItem icon={Calendar} label="Finalização" value={selectedOrder.data_finalizacao ? `${format(new Date(selectedOrder.data_finalizacao), "dd/MM/yyyy", { locale: ptBR })} às ${selectedOrder.hora_finalizacao}` : 'Em aberto'} />
                         
                         <DetailItem icon={User} label="Técnico Responsável" value={selectedOrder.responsavel} />
-                        <DetailItem icon={Tool} label="Finalizado por" value={selectedOrder.usuario_finalizacao} />
+                        <DetailItem icon={Wrench} label="Finalizado por" value={selectedOrder.usuario_finalizacao} />
                         <DetailItem icon={Building} label="POP" value={selectedOrder.pop} />
                     </div>
                 </div>
