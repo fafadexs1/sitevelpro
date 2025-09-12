@@ -1,10 +1,11 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Loader2, Settings, Link as LinkIcon } from "lucide-react";
+import { Loader2, Settings, Link as LinkIcon, KeyRound, AppWindow } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -14,6 +15,8 @@ import { useToast } from "@/hooks/use-toast";
 
 const settingsSchema = z.object({
   external_api_url: z.string().url("Por favor, insira uma URL válida."),
+  external_api_app: z.string().optional(),
+  external_api_token: z.string().optional(),
 });
 
 type SettingsFormData = z.infer<typeof settingsSchema>;
@@ -28,6 +31,8 @@ export default function SettingsPage() {
     resolver: zodResolver(settingsSchema),
     defaultValues: {
       external_api_url: "",
+      external_api_app: "",
+      external_api_token: "",
     },
   });
 
@@ -37,7 +42,7 @@ export default function SettingsPage() {
       const { data, error } = await supabase
         .from('system_settings')
         .select('key, value')
-        .in('key', ['external_api_url']);
+        .in('key', ['external_api_url', 'external_api_app', 'external_api_token']);
       
       if (error) {
         toast({ variant: 'destructive', title: 'Erro ao buscar configurações', description: error.message });
@@ -45,6 +50,8 @@ export default function SettingsPage() {
         const settingsMap = new Map(data.map(item => [item.key, item.value]));
         form.reset({
           external_api_url: settingsMap.get('external_api_url') || '',
+          external_api_app: settingsMap.get('external_api_app') || '',
+          external_api_token: settingsMap.get('external_api_token') || '',
         });
       }
       setLoading(false);
@@ -90,21 +97,53 @@ export default function SettingsPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2"><LinkIcon className="h-5 w-5 text-primary"/>Integrações Externas</CardTitle>
                 <CardDescription>
-                  Configure os endpoints para serviços externos, como a API de autenticação de clientes.
+                  Configure os endpoints e credenciais para serviços externos.
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-6">
                 <FormField
                   control={form.control}
                   name="external_api_url"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>URL da API de Contratos</FormLabel>
+                      <FormLabel>URL Base da API</FormLabel>
                       <FormControl>
-                        <Input placeholder="https://api.seuprovedor.com.br/api/central/contratos" {...field} />
+                        <Input placeholder="https://api.seuprovedor.com.br" {...field} />
                       </FormControl>
                        <p className="text-xs text-muted-foreground">
-                        Esta é a URL que o sistema usará para autenticar clientes e buscar seus contratos.
+                        Esta é a URL que o sistema usará para autenticar clientes e buscar dados. Não inclua caminhos como `/api`.
+                      </p>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                 <FormField
+                  control={form.control}
+                  name="external_api_app"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2"><AppWindow size={14}/>App da API (O.S.)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Ex: Discordrotas" {...field} />
+                      </FormControl>
+                       <p className="text-xs text-muted-foreground">
+                        Nome do aplicativo para autenticação na API de Ordens de Serviço.
+                      </p>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                 <FormField
+                  control={form.control}
+                  name="external_api_token"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2"><KeyRound size={14}/>Token da API (O.S.)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Cole o token aqui" {...field} />
+                      </FormControl>
+                       <p className="text-xs text-muted-foreground">
+                        Token para autenticação na API de Ordens de Serviço.
                       </p>
                       <FormMessage />
                     </FormItem>

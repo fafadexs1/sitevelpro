@@ -145,8 +145,17 @@ create table if not exists seo_settings (
 create table if not exists system_settings (
     key text primary key,
     value text,
+    description text,
     updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
+
+-- Insere as configurações iniciais da API se não existirem
+INSERT INTO system_settings (key, value, description)
+VALUES 
+    ('external_api_url', '', 'URL base da API externa (ex: https://api.seuprovedor.com.br)'),
+    ('external_api_app', '', 'Nome do App para autenticação na API de O.S.'),
+    ('external_api_token', '', 'Token para autenticação na API de O.S.')
+ON CONFLICT (key) DO NOTHING;
 
 
 -- Cria a tabela de regras dinâmicas de SEO
