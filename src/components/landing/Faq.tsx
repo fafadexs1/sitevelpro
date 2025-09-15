@@ -9,7 +9,7 @@ export function Faq() {
     },
     {
       q: "Qual roteador vem incluso?",
-      a: "Fornecemos Wi‑Fi 6 com canais de 160 MHz e suporte a MU‑MIMO, ideal para muitas conexões simultâneas.",
+      a: "O modelo do roteador pode variar. Planos de alta performance geralmente incluem equipamentos com tecnologia Wi-Fi 6, mas o modelo exato dependerá do plano contratado e da viabilidade técnica.",
     },
     {
       q: "Em quanto tempo é a instalação?",
