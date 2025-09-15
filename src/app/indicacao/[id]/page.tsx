@@ -456,14 +456,13 @@ export default function ReferralSignupPage({ params }: { params: { id: string } 
     } else {
       setIsSubmitting(true);
       const supabase = createClient();
-      const { fullName, email, phone } = newFormData;
-      const { dontKnowCep, ...leadData } = newFormData;
-
+      const { fullName, email, phone, dontKnowCep, ...leadData } = newFormData;
 
       const { error: leadError } = await supabase.from("leads").insert({
         ...leadData,
         full_name: fullName,
       });
+
       if (leadError) {
         toast({
           variant: "destructive",

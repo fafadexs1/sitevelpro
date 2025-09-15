@@ -455,7 +455,7 @@ export default function SignupPage() {
     } else {
       setIsSubmitting(true);
       const supabase = createClient();
-      const { fullName, ...rest } = newFormData;
+      const { fullName, dontKnowCep, ...rest } = newFormData;
 
       const { error } = await supabase.from("leads").insert({
         ...rest,
