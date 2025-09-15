@@ -43,13 +43,6 @@ export function TvPage() {
     <>
       <div className="relative border-b border-border py-16 sm:py-24 overflow-hidden bg-secondary">
         <div className="absolute inset-0 -z-10">
-            <Image 
-                src="https://picsum.photos/1920/1080"
-                alt="Fundo de entretenimento"
-                data-ai-hint="entertainment background"
-                fill
-                className="object-cover opacity-5"
-            />
             <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
         </div>
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
