@@ -2,15 +2,18 @@
 import { Header } from "@/components/landing/Header";
 import { Hero } from "@/components/landing/Hero";
 import { Plans } from "@/components/landing/Plans";
-import { Coverage } from "@/components/landing/Coverage";
-import { Advantages } from "@/components/landing/Advantages";
-import { Mesh } from "@/components/landing/Mesh";
-import { TvSection } from "@/components/landing/Tv";
-import { Ceo } from "@/components/landing/Ceo";
-import { Testimonials } from "@/components/landing/Testimonials";
-import { Faq } from "@/components/landing/Faq";
-import { Contact } from "@/components/landing/Contact";
-import { Footer } from "@/components/landing/Footer";
+import dynamic from 'next/dynamic';
+
+const Coverage = dynamic(() => import('@/components/landing/Coverage').then(mod => mod.Coverage));
+const Advantages = dynamic(() => import('@/components/landing/Advantages').then(mod => mod.Advantages));
+const Mesh = dynamic(() => import('@/components/landing/Mesh').then(mod => mod.Mesh));
+const TvSection = dynamic(() => import('@/components/landing/Tv').then(mod => mod.TvSection));
+const Ceo = dynamic(() => import('@/components/landing/Ceo').then(mod => mod.Ceo));
+const Testimonials = dynamic(() => import('@/components/landing/Testimonials').then(mod => mod.Testimonials));
+const Faq = dynamic(() => import('@/components/landing/Faq').then(mod => mod.Faq));
+const Contact = dynamic(() => import('@/components/landing/Contact').then(mod => mod.Contact));
+const Footer = dynamic(() => import('@/components/landing/Footer').then(mod => mod.Footer));
+
 
 export default function Home() {
   return (

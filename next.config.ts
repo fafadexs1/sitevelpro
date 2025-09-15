@@ -37,8 +37,13 @@ const nextConfig: NextConfig = {
       }
     ],
   },
+  transpilePackages: ['embla-carousel-react', 'recharts'],
+  experimental: {
+    ppr: true, // Enable Partial Prerendering
+  },
+  // Desabilitar o prefetching globalmente
+  // O prefetch ainda ocorrerá no hover
+  prefetch: false,
 };
 
 export default nextConfig;
-
-    
