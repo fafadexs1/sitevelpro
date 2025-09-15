@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -18,7 +17,6 @@ export function Footer() {
         <div className="flex items-center gap-5">
           <Link href="/politica-de-privacidade" className="transition-colors hover:text-foreground">Privacidade</Link>
           <Link href="/termos-de-uso" className="transition-colors hover:text-foreground">Termos</Link>
-          <Link href="/status" className="transition-colors hover:text-foreground">Status da rede</Link>
         </div>
       </div>
     </footer>

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -94,7 +93,6 @@ export function Header() {
              <NavMenu title="Ajuda" icon={LifeBuoy}>
                 <NavMenuItem href="#faq" icon={Info}>Perguntas Frequentes</NavMenuItem>
                 <NavMenuItem href="#contato" icon={MessageCircle}>Fale Conosco</NavMenuItem>
-                <NavMenuItem href="/status" icon={GanttChartSquare}>Status da Rede</NavMenuItem>
             </NavMenu>
         </nav>
 
