@@ -119,7 +119,18 @@ export function Header() {
           </a>
         </div>
         
-        <div className="md:hidden">
+        <div className="flex items-center gap-2 md:hidden">
+            <a
+                id="mobile-cta-ligue"
+                href="tel:08003810404"
+                onClick={handleCallClick}
+                data-track-event="cta_click"
+                data-track-prop-button-id="ligue-agora-header-mobile"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-input bg-background text-sm font-medium text-foreground transition-colors hover:bg-accent"
+                aria-label="Ligar agora"
+            >
+                <Phone className="h-5 w-5" />
+            </a>
             <Sheet>
                 <SheetTrigger asChild>
                     <Button variant="outline" size="icon" id="mobile-menu-toggle" aria-label="Abrir menu">
