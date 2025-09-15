@@ -32,16 +32,7 @@ export function Ceo() {
         </div>
         <div className="relative">
           <div className="mx-auto max-w-sm rounded-3xl border border-border bg-card p-6 text-center shadow-2xl">
-            <div className="mx-auto mb-4 h-28 w-28 overflow-hidden rounded-2xl bg-gradient-to-br from-primary to-green-400 p-[3px]">
-              <Image
-                src="https://picsum.photos/200/200"
-                width={112}
-                height={112}
-                alt="Foto do CEO da Velpro"
-                data-ai-hint="ceo portrait"
-                className="h-full w-full rounded-[14px] object-cover"
-              />
-            </div>
+            
             <p className="text-lg font-semibold text-card-foreground">CEO da Velpro</p>
             <p className="mt-1 text-muted-foreground">
               “Excelência é detalhe repetido. A gente mede, melhora e entrega.”
