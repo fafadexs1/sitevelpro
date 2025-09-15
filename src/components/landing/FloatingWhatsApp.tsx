@@ -21,6 +21,7 @@ export function FloatingWhatsApp() {
 
     return (
         <Link 
+            id="floating-whatsapp-button"
             href="https://wa.me/5508003810404?text=Olá!%20Gostaria%20de%20saber%20mais%20sobre%20os%20planos."
             target="_blank"
             rel="noopener noreferrer"
@@ -28,7 +29,7 @@ export function FloatingWhatsApp() {
             data-track-event="cta_click"
             data-track-prop-button-id="floating-whatsapp"
         >
-            <div className="relative bg-background/80 backdrop-blur-sm p-3 rounded-2xl border border-border shadow-lg flex items-center gap-2 overflow-hidden h-12">
+            <div className="relative flex items-center justify-center sm:flex bg-background/80 backdrop-blur-sm p-3 rounded-2xl border border-border shadow-lg overflow-hidden h-12">
                  <AnimatePresence mode="wait">
                     <motion.div
                         key={index}
