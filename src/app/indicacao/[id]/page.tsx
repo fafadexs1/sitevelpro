@@ -461,6 +461,9 @@ export default function ReferralSignupPage({ params }: { params: { id: string } 
       const { error: leadError } = await supabase.from("leads").insert({
         ...leadData,
         full_name: fullName,
+        email: email,
+        phone: phone,
+        source: `referral_${referrerId}`,
       });
 
       if (leadError) {
