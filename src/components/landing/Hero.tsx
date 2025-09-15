@@ -71,7 +71,7 @@ export function Hero() {
       id="home"
     >
       <CarouselContent>
-        {slides.map((slide) => (
+        {slides.map((slide, index) => (
           <CarouselItem key={slide.id}>
             <div className="relative overflow-hidden border-b border-border bg-black text-white min-h-[600px] flex items-center">
               {slide.image_url && (
@@ -79,6 +79,7 @@ export function Hero() {
                   src={slide.image_url}
                   alt={slide.title_regular || "Imagem de fundo"}
                   fill
+                  priority={index === 0}
                   className="object-cover"
                   style={{ opacity: (slide.image_opacity ?? 30) / 100 }}
                 />
@@ -86,7 +87,7 @@ export function Hero() {
                <div className="absolute inset-0 bg-gradient-to-r from-black via-black/70 to-transparent" />
                <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
 
-              <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:px-8 lg:py-24 z-10">
+              <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:px-8 z-10">
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   whileInView={{ opacity: 1, x: 0 }}

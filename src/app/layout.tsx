@@ -194,7 +194,7 @@ export default async function RootLayout({
   }
 
   return (
-    <html lang="en" className={`${inter.variable}`} suppressHydrationWarning>
+    <html lang="pt-BR" className={`${inter.variable}`} suppressHydrationWarning>
       <head>
         {faviconUrl && <link rel="icon" href={faviconUrl} type="image/png" />}
         <Script id="google-consent-mode" strategy="beforeInteractive">
