@@ -67,7 +67,7 @@ const PlanDetailsModal = ({ plan, children }: { plan: Plan, children: React.Reac
                     <DialogTitle className="text-3xl font-extrabold text-neutral-900">{planName}</DialogTitle>
                 </DialogHeader>
 
-                <div className="px-6 pb-28">
+                <div className="px-6 pb-28 max-h-[60vh] overflow-y-auto">
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
                         {plan.features?.map(feat => {
                             const { Icon, text } = getFeatureIcon(feat);
