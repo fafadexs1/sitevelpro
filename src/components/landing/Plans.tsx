@@ -12,6 +12,8 @@ import {
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
+  CarouselDots,
+  CarouselApi,
 } from "@/components/ui/carousel";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/utils/supabase/client";
@@ -148,6 +150,7 @@ export function Plans() {
   const [planType, setPlanType] = useState<"residencial" | "empresarial">("residencial");
   const [allPlans, setAllPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
+  const [api, setApi] = useState<CarouselApi>()
 
   useEffect(() => {
     async function getPlans() {
@@ -359,8 +362,9 @@ export function Plans() {
             </Carousel>
         ) : (
            <Carousel 
-             opts={{ align: "start", loop: false }} 
+             opts={{ align: "start", loop: currentPlans.length > 2 }} 
              className="relative w-full"
+             setApi={setApi}
             >
             <CarouselContent className="-ml-4">
               {currentPlans.map((p, i) => (
@@ -371,8 +375,9 @@ export function Plans() {
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious className="absolute left-[-20px] top-1/2 -translate-y-1/2 z-10 bg-card/80 border-border hover:bg-accent hidden lg:flex"/>
-            <CarouselNext className="absolute right-[-20px] top-1/2 -translate-y-1/2 z-10 bg-card/80 border-border hover:bg-accent hidden lg:flex" />
+             <CarouselPrevious className="absolute left-[-20px] top-1/2 -translate-y-1/2 z-10 bg-card/80 border-border hover:bg-accent"/>
+            <CarouselNext className="absolute right-[-20px] top-1/2 -translate-y-1/2 z-10 bg-card/80 border-border hover:bg-accent" />
+            {api && <CarouselDots api={api} className="mt-10" />}
           </Carousel>
         )}
       </div>
