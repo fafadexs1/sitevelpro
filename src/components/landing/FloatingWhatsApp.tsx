@@ -28,7 +28,7 @@ export function FloatingWhatsApp() {
             data-track-event="cta_click"
             data-track-prop-button-id="floating-whatsapp"
         >
-            <div className="relative bg-background/80 backdrop-blur-sm p-3 rounded-2xl border border-border shadow-lg hidden sm:flex items-center gap-2 overflow-hidden h-12">
+            <div className="relative bg-background/80 backdrop-blur-sm p-3 rounded-2xl border border-border shadow-lg flex items-center gap-2 overflow-hidden h-12">
                  <AnimatePresence mode="wait">
                     <motion.div
                         key={index}
