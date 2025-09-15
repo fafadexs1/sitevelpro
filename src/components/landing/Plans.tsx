@@ -364,7 +364,7 @@ export function Plans() {
            <Carousel 
              opts={{ align: "start", loop: currentPlans.length > 2 }} 
              className="relative w-full"
-             setApi={setApi}
+             setApi={api}
             >
             <CarouselContent className="-ml-4">
               {currentPlans.map((p, i) => (
@@ -375,8 +375,8 @@ export function Plans() {
                 </CarouselItem>
               ))}
             </CarouselContent>
-             <CarouselPrevious className="absolute left-[-20px] top-1/2 -translate-y-1/2 z-10 bg-card/80 border-border hover:bg-accent"/>
-            <CarouselNext className="absolute right-[-20px] top-1/2 -translate-y-1/2 z-10 bg-card/80 border-border hover:bg-accent" />
+            <CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-card/80 border-border hover:bg-accent"/>
+            <CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-card/80 border-border hover:bg-accent" />
             {api && <CarouselDots api={api} className="mt-10" />}
           </Carousel>
         )}
