@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
@@ -8,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { Bar, BarChart as RechartsBarChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
-import { subDays, format, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
+import { subDays, format, startOfMonth, endOfMonth, eachDayOfInterval, eachHourOfInterval, startOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -30,7 +29,7 @@ type RecurringVisitor = {
     last_visit: string;
 }
 
-type DailyVisits = {
+type ChartDataPoint = {
     date: string;
     visits: number;
 };
@@ -61,7 +60,7 @@ export default function StatisticsPage() {
     const [newVisitors, setNewVisitors] = useState(0);
     const [topPages, setTopPages] = useState<PageVisit[]>([]);
     const [recurringVisitors, setRecurringVisitors] = useState<RecurringVisitor[]>([]);
-    const [dailyVisits, setDailyVisits] = useState<DailyVisits[]>([]);
+    const [dailyVisits, setDailyVisits] = useState<ChartDataPoint[]>([]);
     const [planClicks, setPlanClicks] = useState<CtaClick[]>([]);
     const [otherClicks, setOtherClicks] = useState<CtaClick[]>([]);
     const [activeFilter, setActiveFilter] = useState<FilterRange>('30d');
@@ -74,7 +73,7 @@ export default function StatisticsPage() {
         const now = new Date();
         switch (filter) {
             case 'today':
-                startDate = subDays(now, 1);
+                startDate = startOfDay(now);
                 break;
             case '7d':
                 startDate = subDays(now, 7);
@@ -123,21 +122,37 @@ export default function StatisticsPage() {
         const sortedPages = Object.entries(pageCounts).map(([pathname, visit_count]) => ({ pathname, visit_count })).sort((a, b) => b.visit_count - a.visit_count).slice(0, 5);
         setTopPages(sortedPages);
         
-        const intervalDays = eachDayOfInterval({ start: startDate, end: now });
-        const dailyCounts: Record<string, number> = {};
-        intervalDays.forEach(day => {
-            const dateStr = format(day, 'yyyy-MM-dd');
-            dailyCounts[dateStr] = 0;
-        });
+        // --- Process Chart Data ---
+        if (filter === 'today') {
+            const hourlyCounts: Record<string, number> = {};
+            const intervalHours = eachHourOfInterval({ start: startDate, end: now });
+            intervalHours.forEach(hour => {
+                const hourStr = format(hour, 'yyyy-MM-dd HH:00');
+                hourlyCounts[hourStr] = 0;
+            });
+            visits.forEach(visit => {
+                const hourStr = format(new Date(visit.created_at), 'yyyy-MM-dd HH:00');
+                if (hourlyCounts[hourStr] !== undefined) {
+                    hourlyCounts[hourStr]++;
+                }
+            });
+            setDailyVisits(Object.entries(hourlyCounts).map(([date, visits]) => ({ date, visits })));
+        } else {
+            const dailyCounts: Record<string, number> = {};
+            const intervalDays = eachDayOfInterval({ start: startDate, end: now });
+            intervalDays.forEach(day => {
+                const dateStr = format(day, 'yyyy-MM-dd');
+                dailyCounts[dateStr] = 0;
+            });
 
-         visits.forEach(visit => {
-            const date = format(new Date(visit.created_at), 'yyyy-MM-dd');
-            if (dailyCounts[date] !== undefined) {
-                dailyCounts[date]++;
-            }
-        });
-        const chartData = Object.entries(dailyCounts).map(([date, visits]) => ({ date, visits }));
-        setDailyVisits(chartData);
+            visits.forEach(visit => {
+                const date = format(new Date(visit.created_at), 'yyyy-MM-dd');
+                if (dailyCounts[date] !== undefined) {
+                    dailyCounts[date]++;
+                }
+            });
+            setDailyVisits(Object.entries(dailyCounts).map(([date, visits]) => ({ date, visits })));
+        }
 
         const visitorData: Record<string, { count: number; last_visit: string }> = {};
         visits.forEach(visit => {
@@ -192,7 +207,8 @@ export default function StatisticsPage() {
 
     const tickFormatter = (value: string) => {
         if (activeFilter === 'today') {
-            return format(new Date(value), "p", { locale: ptBR });
+            const date = new Date(value);
+            return format(date, "HH:00", { locale: ptBR });
         }
         return format(new Date(value), "d MMM", { locale: ptBR })
     };
