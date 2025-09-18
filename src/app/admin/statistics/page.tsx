@@ -2,15 +2,18 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/utils/supabase/client';
-import { BarChart, Users, Repeat, UserPlus, Loader2, File, Eye, MousePointerClick, CalendarDays } from 'lucide-react';
+import { BarChart, Users, Repeat, UserPlus, Loader2, File, Eye, MousePointerClick, CalendarDays, Calendar as CalendarIcon } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { Bar, BarChart as RechartsBarChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
-import { subDays, format, startOfMonth, endOfMonth, eachDayOfInterval, eachHourOfInterval, startOfDay } from 'date-fns';
+import { subDays, format, startOfMonth, endOfMonth, eachDayOfInterval, startOfDay, eachHourOfInterval, endOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from '@/lib/utils';
+import type { DateRange } from 'react-day-picker';
 
 type Visit = {
   visitor_id: string;
@@ -44,9 +47,9 @@ type CtaClick = {
     count: number;
 };
 
-type FilterRange = 'today' | '7d' | '30d' | 'month';
+type FilterRange = 'today' | '7d' | '30d' | 'month' | 'custom';
 
-const filterOptions: { label: string; value: FilterRange }[] = [
+const filterOptions: { label: string; value: Exclude<FilterRange, 'custom'> }[] = [
     { label: 'Hoje', value: 'today' },
     { label: 'Últimos 7 dias', value: '7d' },
     { label: 'Últimos 30 dias', value: '30d' },
@@ -64,32 +67,44 @@ export default function StatisticsPage() {
     const [planClicks, setPlanClicks] = useState<CtaClick[]>([]);
     const [otherClicks, setOtherClicks] = useState<CtaClick[]>([]);
     const [activeFilter, setActiveFilter] = useState<FilterRange>('30d');
+    const [dateRange, setDateRange] = useState<DateRange | undefined>({
+        from: subDays(new Date(), 29),
+        to: new Date(),
+    });
 
-    const fetchData = useCallback(async (filter: FilterRange) => {
+    const fetchData = useCallback(async () => {
         setLoading(true);
         const supabase = createClient();
         
         let startDate: Date;
-        const now = new Date();
-        switch (filter) {
-            case 'today':
-                startDate = startOfDay(now);
-                break;
-            case '7d':
-                startDate = subDays(now, 7);
-                break;
-            case 'month':
-                startDate = startOfMonth(now);
-                break;
-            case '30d':
-            default:
-                startDate = subDays(now, 30);
-        }
+        let endDate: Date = endOfDay(new Date());
 
+        if (activeFilter === 'custom' && dateRange?.from) {
+             startDate = startOfDay(dateRange.from);
+             endDate = dateRange.to ? endOfDay(dateRange.to) : endOfDay(dateRange.from);
+        } else {
+            switch (activeFilter) {
+                case 'today':
+                    startDate = startOfDay(new Date());
+                    break;
+                case '7d':
+                    startDate = startOfDay(subDays(new Date(), 6));
+                    break;
+                case 'month':
+                    startDate = startOfMonth(new Date());
+                    break;
+                case '30d':
+                default:
+                    startDate = startOfDay(subDays(new Date(), 29));
+            }
+        }
+        
         const { data: visits, error: visitsError } = await supabase
             .from('visits')
             .select('visitor_id, pathname, is_new_visitor, created_at')
-            .gte('created_at', startDate.toISOString());
+            .gte('created_at', startDate.toISOString())
+            .lte('created_at', endDate.toISOString());
+
 
         if (visitsError) {
             console.error("Error fetching visits:", visitsError);
@@ -101,7 +116,8 @@ export default function StatisticsPage() {
             .from('events')
             .select('name, properties')
             .eq('name', 'cta_click')
-            .gte('created_at', startDate.toISOString());
+            .gte('created_at', startDate.toISOString())
+            .lte('created_at', endDate.toISOString());
             
         if (eventsError) {
             console.error("Error fetching events:", eventsError);
@@ -123,9 +139,9 @@ export default function StatisticsPage() {
         setTopPages(sortedPages);
         
         // --- Process Chart Data ---
-        if (filter === 'today') {
+        if (activeFilter === 'today') {
             const hourlyCounts: Record<string, number> = {};
-            const intervalHours = eachHourOfInterval({ start: startDate, end: now });
+            const intervalHours = eachHourOfInterval({ start: startDate, end: endDate });
             intervalHours.forEach(hour => {
                 const hourStr = format(hour, 'yyyy-MM-dd HH:00');
                 hourlyCounts[hourStr] = 0;
@@ -139,7 +155,7 @@ export default function StatisticsPage() {
             setDailyVisits(Object.entries(hourlyCounts).map(([date, visits]) => ({ date, visits })));
         } else {
             const dailyCounts: Record<string, number> = {};
-            const intervalDays = eachDayOfInterval({ start: startDate, end: now });
+            const intervalDays = eachDayOfInterval({ start: startDate, end: endDate });
             intervalDays.forEach(day => {
                 const dateStr = format(day, 'yyyy-MM-dd');
                 dailyCounts[dateStr] = 0;
@@ -190,11 +206,33 @@ export default function StatisticsPage() {
         }
 
         setLoading(false);
-    }, []);
+    }, [activeFilter, dateRange]);
 
     useEffect(() => {
-        fetchData(activeFilter);
-    }, [fetchData, activeFilter]);
+        fetchData();
+    }, [fetchData]);
+    
+    useEffect(() => {
+        if (activeFilter !== 'custom') {
+            const now = new Date();
+            let fromDate;
+             switch (activeFilter) {
+                case 'today': fromDate = now; break;
+                case '7d': fromDate = subDays(now, 6); break;
+                case 'month': fromDate = startOfMonth(now); break;
+                case '30d': default: fromDate = subDays(now, 29); break;
+            }
+            setDateRange({ from: fromDate, to: now });
+        }
+    }, [activeFilter]);
+    
+    const handleDateRangeSelect = (range: DateRange | undefined) => {
+        setDateRange(range);
+        if (range?.from) {
+             setActiveFilter('custom');
+        }
+    }
+
 
     const returnRate = uniqueVisitors > 0 ? (((uniqueVisitors - newVisitors) / uniqueVisitors) * 100).toFixed(1) : 0;
 
@@ -220,18 +258,58 @@ export default function StatisticsPage() {
                     <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2"><BarChart className="text-primary"/> Estatísticas do Site</h1>
                     <p className="text-gray-500">Análise de tráfego e comportamento dos visitantes.</p>
                 </div>
-                 <div className="flex shrink-0 rounded-xl bg-card border p-1 text-sm mt-4 sm:mt-0">
-                    {filterOptions.map((opt) => (
-                    <button
-                        key={opt.value}
-                        onClick={() => setActiveFilter(opt.value)}
-                        className={cn(`rounded-lg px-3 py-1.5 transition-colors text-sm`, 
-                            activeFilter === opt.value ? "bg-primary text-primary-foreground" : "text-card-foreground hover:bg-black/5"
-                        )}
-                    >
-                        {opt.label}
-                    </button>
-                    ))}
+                 <div className="flex items-center gap-2 flex-wrap mt-4 sm:mt-0">
+                    <div className="flex shrink-0 rounded-xl bg-card border p-1 text-sm">
+                        {filterOptions.map((opt) => (
+                        <button
+                            key={opt.value}
+                            onClick={() => setActiveFilter(opt.value)}
+                            className={cn(`rounded-lg px-3 py-1.5 transition-colors text-sm`, 
+                                activeFilter === opt.value ? "bg-primary text-primary-foreground" : "text-card-foreground hover:bg-black/5"
+                            )}
+                        >
+                            {opt.label}
+                        </button>
+                        ))}
+                    </div>
+                     <Popover>
+                        <PopoverTrigger asChild>
+                            <Button
+                            id="date"
+                            variant={"outline"}
+                            className={cn(
+                                "w-full justify-start text-left font-normal sm:w-[260px]",
+                                !dateRange && "text-muted-foreground",
+                                activeFilter === 'custom' && "border-primary ring-1 ring-primary"
+                            )}
+                            >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {dateRange?.from ? (
+                                dateRange.to ? (
+                                <>
+                                    {format(dateRange.from, "LLL dd, y")} -{" "}
+                                    {format(dateRange.to, "LLL dd, y")}
+                                </>
+                                ) : (
+                                format(dateRange.from, "LLL dd, y")
+                                )
+                            ) : (
+                                <span>Selecione um período</span>
+                            )}
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="end">
+                            <Calendar
+                            initialFocus
+                            mode="range"
+                            defaultMonth={dateRange?.from}
+                            selected={dateRange}
+                            onSelect={handleDateRangeSelect}
+                            numberOfMonths={2}
+                            locale={ptBR}
+                            />
+                        </PopoverContent>
+                    </Popover>
                 </div>
             </header>
             
