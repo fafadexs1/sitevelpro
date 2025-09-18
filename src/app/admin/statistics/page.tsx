@@ -1,15 +1,17 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/utils/supabase/client';
-import { BarChart, Users, Repeat, UserPlus, Loader2, File, Eye, MousePointerClick } from 'lucide-react';
+import { BarChart, Users, Repeat, UserPlus, Loader2, File, Eye, MousePointerClick, CalendarDays } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { Bar, BarChart as RechartsBarChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
-import { subDays, format } from 'date-fns';
+import { subDays, format, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 type Visit = {
   visitor_id: string;
@@ -43,6 +45,15 @@ type CtaClick = {
     count: number;
 };
 
+type FilterRange = 'today' | '7d' | '30d' | 'month';
+
+const filterOptions: { label: string; value: FilterRange }[] = [
+    { label: 'Hoje', value: 'today' },
+    { label: 'Últimos 7 dias', value: '7d' },
+    { label: 'Últimos 30 dias', value: '30d' },
+    { label: 'Este Mês', value: 'month' },
+];
+
 export default function StatisticsPage() {
     const [loading, setLoading] = useState(true);
     const [totalVisits, setTotalVisits] = useState(0);
@@ -53,106 +64,122 @@ export default function StatisticsPage() {
     const [dailyVisits, setDailyVisits] = useState<DailyVisits[]>([]);
     const [planClicks, setPlanClicks] = useState<CtaClick[]>([]);
     const [otherClicks, setOtherClicks] = useState<CtaClick[]>([]);
+    const [activeFilter, setActiveFilter] = useState<FilterRange>('30d');
 
-    useEffect(() => {
-        async function fetchData() {
-            setLoading(true);
-            const supabase = createClient();
-            const thirtyDaysAgo = subDays(new Date(), 30).toISOString();
-
-            // Fetch visits
-            const { data: visits, error: visitsError } = await supabase
-                .from('visits')
-                .select('visitor_id, pathname, is_new_visitor, created_at')
-                .gte('created_at', thirtyDaysAgo);
-
-            if (visitsError) {
-                console.error("Error fetching visits:", visitsError);
-                setLoading(false);
-                return;
-            }
-            
-            // Fetch events
-            const { data: events, error: eventsError } = await supabase
-                .from('events')
-                .select('name, properties')
-                .eq('name', 'cta_click')
-                .gte('created_at', thirtyDaysAgo);
-                
-            if (eventsError) {
-                console.error("Error fetching events:", eventsError);
-            }
-
-
-            // --- Process Visits Data ---
-            setTotalVisits(visits.length);
-            const uniqueVisitorIds = new Set(visits.map(v => v.visitor_id));
-            setUniqueVisitors(uniqueVisitorIds.size);
-            const newVisitorCount = new Set(visits.filter(v => v.is_new_visitor).map(v => v.visitor_id)).size;
-            setNewVisitors(newVisitorCount);
-
-            const pageCounts = visits.reduce((acc, visit) => {
-                acc[visit.pathname] = (acc[visit.pathname] || 0) + 1;
-                return acc;
-            }, {} as Record<string, number>);
-            const sortedPages = Object.entries(pageCounts).map(([pathname, visit_count]) => ({ pathname, visit_count })).sort((a, b) => b.visit_count - a.visit_count).slice(0, 5);
-            setTopPages(sortedPages);
-            
-            const dailyCounts: Record<string, number> = {};
-            for (let i = 29; i >= 0; i--) {
-                const date = format(subDays(new Date(), i), 'yyyy-MM-dd');
-                dailyCounts[date] = 0;
-            }
-             visits.forEach(visit => {
-                const date = format(new Date(visit.created_at), 'yyyy-MM-dd');
-                if (dailyCounts[date] !== undefined) {
-                    dailyCounts[date]++;
-                }
-            });
-            const chartData = Object.entries(dailyCounts).map(([date, visits]) => ({ date, visits }));
-            setDailyVisits(chartData);
-
-            const visitorData: Record<string, { count: number; last_visit: string }> = {};
-            visits.forEach(visit => {
-                if (!visitorData[visit.visitor_id]) {
-                    visitorData[visit.visitor_id] = { count: 0, last_visit: '' };
-                }
-                visitorData[visit.visitor_id].count++;
-                if (new Date(visit.created_at) > new Date(visitorData[visit.visitor_id].last_visit || 0)) {
-                    visitorData[visit.visitor_id].last_visit = visit.created_at;
-                }
-            });
-            const recurring = Object.entries(visitorData).filter(([, data]) => data.count > 1).map(([visitor_id, data]) => ({ visitor_id, visit_count: data.count, last_visit: data.last_visit })).sort((a, b) => b.visit_count - a.visit_count).slice(0, 5);
-            setRecurringVisitors(recurring);
-            
-            // --- Process Events Data ---
-            if (events) {
-                const planClickCounts = events
-                    .filter(e => e.properties.plan_name)
-                    .reduce((acc, e) => {
-                        const planKey = `${e.properties.plan_name}`;
-                        acc[planKey] = (acc[planKey] || 0) + 1;
-                        return acc;
-                    }, {} as Record<string, number>);
-
-                const otherClickCounts = events
-                    .filter(e => e.properties.button_id)
-                    .reduce((acc, e) => {
-                        const buttonKey = e.properties.button_id;
-                        acc[buttonKey] = (acc[buttonKey] || 0) + 1;
-                        return acc;
-                    }, {} as Record<string, number>);
-
-                setPlanClicks(Object.entries(planClickCounts).map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count));
-                setOtherClicks(Object.entries(otherClickCounts).map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count));
-            }
-
-
-            setLoading(false);
+    const fetchData = useCallback(async (filter: FilterRange) => {
+        setLoading(true);
+        const supabase = createClient();
+        
+        let startDate: Date;
+        const now = new Date();
+        switch (filter) {
+            case 'today':
+                startDate = subDays(now, 1);
+                break;
+            case '7d':
+                startDate = subDays(now, 7);
+                break;
+            case 'month':
+                startDate = startOfMonth(now);
+                break;
+            case '30d':
+            default:
+                startDate = subDays(now, 30);
         }
 
-        fetchData();
+        const { data: visits, error: visitsError } = await supabase
+            .from('visits')
+            .select('visitor_id, pathname, is_new_visitor, created_at')
+            .gte('created_at', startDate.toISOString());
+
+        if (visitsError) {
+            console.error("Error fetching visits:", visitsError);
+            setLoading(false);
+            return;
+        }
+        
+        const { data: events, error: eventsError } = await supabase
+            .from('events')
+            .select('name, properties')
+            .eq('name', 'cta_click')
+            .gte('created_at', startDate.toISOString());
+            
+        if (eventsError) {
+            console.error("Error fetching events:", eventsError);
+        }
+
+
+        // --- Process Visits Data ---
+        setTotalVisits(visits.length);
+        const uniqueVisitorIds = new Set(visits.map(v => v.visitor_id));
+        setUniqueVisitors(uniqueVisitorIds.size);
+        const newVisitorCount = new Set(visits.filter(v => v.is_new_visitor).map(v => v.visitor_id)).size;
+        setNewVisitors(newVisitorCount);
+
+        const pageCounts = visits.reduce((acc, visit) => {
+            acc[visit.pathname] = (acc[visit.pathname] || 0) + 1;
+            return acc;
+        }, {} as Record<string, number>);
+        const sortedPages = Object.entries(pageCounts).map(([pathname, visit_count]) => ({ pathname, visit_count })).sort((a, b) => b.visit_count - a.visit_count).slice(0, 5);
+        setTopPages(sortedPages);
+        
+        const intervalDays = eachDayOfInterval({ start: startDate, end: now });
+        const dailyCounts: Record<string, number> = {};
+        intervalDays.forEach(day => {
+            const dateStr = format(day, 'yyyy-MM-dd');
+            dailyCounts[dateStr] = 0;
+        });
+
+         visits.forEach(visit => {
+            const date = format(new Date(visit.created_at), 'yyyy-MM-dd');
+            if (dailyCounts[date] !== undefined) {
+                dailyCounts[date]++;
+            }
+        });
+        const chartData = Object.entries(dailyCounts).map(([date, visits]) => ({ date, visits }));
+        setDailyVisits(chartData);
+
+        const visitorData: Record<string, { count: number; last_visit: string }> = {};
+        visits.forEach(visit => {
+            if (!visitorData[visit.visitor_id]) {
+                visitorData[visit.visitor_id] = { count: 0, last_visit: '' };
+            }
+            visitorData[visit.visitor_id].count++;
+            if (new Date(visit.created_at) > new Date(visitorData[visit.visitor_id].last_visit || 0)) {
+                visitorData[visit.visitor_id].last_visit = visit.created_at;
+            }
+        });
+        const recurring = Object.entries(visitorData).filter(([, data]) => data.count > 1).map(([visitor_id, data]) => ({ visitor_id, visit_count: data.count, last_visit: data.last_visit })).sort((a, b) => b.visit_count - a.visit_count).slice(0, 5);
+        setRecurringVisitors(recurring);
+        
+        // --- Process Events Data ---
+        if (events) {
+            const planClickCounts = events
+                .filter(e => e.properties.plan_name)
+                .reduce((acc, e) => {
+                    const planKey = `${e.properties.plan_name}`;
+                    acc[planKey] = (acc[planKey] || 0) + 1;
+                    return acc;
+                }, {} as Record<string, number>);
+
+            const otherClickCounts = events
+                .filter(e => e.properties.button_id)
+                .reduce((acc, e) => {
+                    const buttonKey = e.properties.button_id;
+                    acc[buttonKey] = (acc[buttonKey] || 0) + 1;
+                    return acc;
+                }, {} as Record<string, number>);
+
+            setPlanClicks(Object.entries(planClickCounts).map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count));
+            setOtherClicks(Object.entries(otherClickCounts).map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count));
+        }
+
+        setLoading(false);
     }, []);
+
+    useEffect(() => {
+        fetchData(activeFilter);
+    }, [fetchData, activeFilter]);
 
     const returnRate = uniqueVisitors > 0 ? (((uniqueVisitors - newVisitors) / uniqueVisitors) * 100).toFixed(1) : 0;
 
@@ -163,23 +190,43 @@ export default function StatisticsPage() {
         },
     };
 
-    if (loading) {
-        return (
-            <div className="flex min-h-[50vh] items-center justify-center">
-                <Loader2 className="h-10 w-10 animate-spin text-primary" />
-            </div>
-        );
-    }
+    const tickFormatter = (value: string) => {
+        if (activeFilter === 'today') {
+            return format(new Date(value), "p", { locale: ptBR });
+        }
+        return format(new Date(value), "d MMM", { locale: ptBR })
+    };
 
     return (
         <>
-            <header className="mb-8 flex items-center justify-between">
+            <header className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2"><BarChart className="text-primary"/> Estatísticas do Site</h1>
-                    <p className="text-gray-500">Análise de tráfego e comportamento dos visitantes nos últimos 30 dias.</p>
+                    <p className="text-gray-500">Análise de tráfego e comportamento dos visitantes.</p>
+                </div>
+                 <div className="flex shrink-0 rounded-xl bg-card border p-1 text-sm mt-4 sm:mt-0">
+                    {filterOptions.map((opt) => (
+                    <button
+                        key={opt.value}
+                        onClick={() => setActiveFilter(opt.value)}
+                        className={cn(`rounded-lg px-3 py-1.5 transition-colors text-sm`, 
+                            activeFilter === opt.value ? "bg-primary text-primary-foreground" : "text-card-foreground hover:bg-black/5"
+                        )}
+                    >
+                        {opt.label}
+                    </button>
+                    ))}
                 </div>
             </header>
+            
+            {loading && (
+                <div className="flex min-h-[50vh] items-center justify-center">
+                    <Loader2 className="h-10 w-10 animate-spin text-primary" />
+                </div>
+            )}
 
+            {!loading && (
+            <>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -226,9 +273,9 @@ export default function StatisticsPage() {
             <div className="mt-8">
                 <Card>
                     <CardHeader>
-                        <CardTitle>Visão Geral das Visitas (Últimos 30 Dias)</CardTitle>
+                        <CardTitle className="flex items-center gap-2"><CalendarDays className="h-5 w-5 text-primary" /> Visão Geral das Visitas</CardTitle>
                         <CardDescription>
-                            Um panorama diário do tráfego recebido pelo site.
+                            Um panorama diário do tráfego recebido pelo site no período selecionado.
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="h-80">
@@ -244,9 +291,9 @@ export default function StatisticsPage() {
                                     tickLine={false} 
                                     axisLine={false} 
                                     tickMargin={8} 
-                                    tickFormatter={(value) => format(new Date(value), "d MMM", { locale: ptBR })} 
+                                    tickFormatter={tickFormatter}
                                 />
-                                <YAxis tickLine={false} axisLine={false} tickMargin={8} />
+                                <YAxis tickLine={false} axisLine={false} tickMargin={8} allowDecimals={false} />
                                 <Tooltip
                                     cursor={false}
                                     content={<ChartTooltipContent indicator="dot" />}
@@ -278,6 +325,7 @@ export default function StatisticsPage() {
                                         <TableCell className="text-right font-medium">{page.visit_count}</TableCell>
                                     </TableRow>
                                 ))}
+                                {topPages.length === 0 && <TableRow><TableCell colSpan={2} className="h-24 text-center text-muted-foreground">Nenhuma visita registrada no período.</TableCell></TableRow>}
                             </TableBody>
                         </Table>
                     </CardContent>
@@ -303,6 +351,7 @@ export default function StatisticsPage() {
                                         <TableCell className="text-right text-xs">{format(new Date(visitor.last_visit), "PPp", { locale: ptBR })}</TableCell>
                                     </TableRow>
                                 ))}
+                                 {recurringVisitors.length === 0 && <TableRow><TableCell colSpan={3} className="h-24 text-center text-muted-foreground">Nenhum visitante recorrente no período.</TableCell></TableRow>}
                             </TableBody>
                         </Table>
                     </CardContent>
@@ -324,6 +373,7 @@ export default function StatisticsPage() {
                                         <TableCell className="text-right font-medium">{click.count}</TableCell>
                                     </TableRow>
                                 ))}
+                                {planClicks.length === 0 && <TableRow><TableCell colSpan={2} className="h-24 text-center text-muted-foreground">Nenhum clique em planos no período.</TableCell></TableRow>}
                             </TableBody>
                         </Table>
                     </CardContent>
@@ -342,12 +392,14 @@ export default function StatisticsPage() {
                                         <TableCell className="text-right font-medium">{click.count}</TableCell>
                                     </TableRow>
                                 ))}
+                                {otherClicks.length === 0 && <TableRow><TableCell colSpan={2} className="h-24 text-center text-muted-foreground">Nenhum clique em CTAs no período.</TableCell></TableRow>}
                             </TableBody>
                         </Table>
                     </CardContent>
                 </Card>
             </div>
-
+            </>
+            )}
         </>
     );
 }
