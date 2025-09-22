@@ -31,13 +31,14 @@ function getCookie(name: string): string | null {
 
 
 export function ConsentBanner() {
-  const [isVisible, setIsVisible] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
-    // A verificação deve ocorrer apenas no cliente, após a montagem do componente.
-    // Se o cookie de consentimento NÃO for encontrado, mostre o banner.
-    if (!getCookie("user_consent")) {
-      setIsVisible(true);
+    // A verificação deve ocorrer apenas no cliente.
+    // Se um cookie de consentimento JÁ EXISTE, esconda o banner.
+    // Por padrão (no SSR e na primeira renderização do cliente), o banner é visível.
+    if (getCookie("user_consent")) {
+      setIsVisible(false);
     }
   }, []);
 
