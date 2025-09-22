@@ -33,14 +33,14 @@ function getCookie(name: string): string | null {
 export function ConsentBanner() {
   const [isVisible, setIsVisible] = useState(true);
 
-  useEffect(() => {
-    // A verificação deve ocorrer apenas no cliente.
-    // Se um cookie de consentimento JÁ EXISTE, esconda o banner.
-    // Por padrão (no SSR e na primeira renderização do cliente), o banner é visível.
-    if (getCookie("user_consent")) {
-      setIsVisible(false);
-    }
-  }, []);
+  // useEffect(() => {
+  //   // A verificação deve ocorrer apenas no cliente.
+  //   // Se um cookie de consentimento JÁ EXISTE, esconda o banner.
+  //   // Por padrão (no SSR e na primeira renderização do cliente), o banner é visível.
+  //   if (getCookie("user_consent")) {
+  //     setIsVisible(false);
+  //   }
+  // }, []);
 
   const handleConsent = (consent: "granted" | "denied") => {
     const consentState = {
