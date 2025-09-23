@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -199,12 +199,8 @@ export default function SeoPage() {
     const siteTitle = form.watch('site_title');
     const siteDescription = form.watch('site_description');
 
-    // Fetchers
-    const fetchAllData = async () => {
+    const fetchSettings = useCallback(async () => {
         setLoadingSettings(true);
-        setLoadingRules(true);
-        setLoadingRedirects(true);
-        
         const { data: settingsData, error: settingsError } = await supabase.from('seo_settings').select('*').single();
         if (settingsError && settingsError.code !== 'PGRST116') {
             toast({ variant: 'destructive', title: 'Erro ao buscar configurações de SEO', description: settingsError.message });
@@ -213,15 +209,21 @@ export default function SeoPage() {
             form.reset({ site_title: settingsData.site_title, site_description: settingsData.site_description, allow_indexing: settingsData.allow_indexing });
         }
         setLoadingSettings(false);
+    }, [supabase, toast, form]);
 
+    const fetchRules = useCallback(async () => {
+        setLoadingRules(true);
         const { data: rulesData, error: rulesError } = await supabase.from('dynamic_seo_rules').select('*').order('name');
         if (rulesError) {
-            toast({ variant: 'destructive', title: 'Erro ao buscar regras dinâmicas de SEO', description: rulesError.message });
+            toast({ variant: 'destructive', title: 'Erro ao buscar regras de SEO', description: rulesError.message });
         } else {
             setRules(rulesData as DynamicSeoRule[]);
         }
         setLoadingRules(false);
+    }, [supabase, toast]);
 
+    const fetchRedirects = useCallback(async () => {
+        setLoadingRedirects(true);
         const { data: redirectsData, error: redirectsError } = await supabase.from('redirects').select('*').order('created_at', { ascending: false });
         if (redirectsError) {
             toast({ variant: 'destructive', title: 'Erro ao buscar redirecionamentos', description: redirectsError.message });
@@ -229,11 +231,14 @@ export default function SeoPage() {
             setRedirects(redirectsData as Redirect[]);
         }
         setLoadingRedirects(false);
-    };
+    }, [supabase, toast]);
+
 
     useEffect(() => {
-        fetchAllData();
-    }, []);
+        fetchSettings();
+        fetchRules();
+        fetchRedirects();
+    }, [fetchSettings, fetchRules, fetchRedirects]);
 
     // Handlers
     const onGeneralSubmit = async (data: SeoFormData) => {
@@ -292,7 +297,7 @@ export default function SeoPage() {
     const handleRuleSaved = () => {
         setIsRuleModalOpen(false);
         setEditingRule(null);
-        fetchAllData();
+        fetchRules();
     };
 
     const handleEditRule = (rule: DynamicSeoRule) => {
@@ -303,13 +308,13 @@ export default function SeoPage() {
     const handleDeleteRule = async (ruleId: string) => {
         const { error } = await supabase.from('dynamic_seo_rules').delete().eq('id', ruleId);
         if (error) { toast({ variant: 'destructive', title: 'Erro ao deletar regra', description: error.message }); }
-        else { toast({ title: 'Sucesso', description: 'Regra de SEO deletada.' }); fetchAllData(); }
+        else { toast({ title: 'Sucesso', description: 'Regra de SEO deletada.' }); fetchRules(); }
     };
     
     const handleRedirectSaved = () => {
         setIsRedirectModalOpen(false);
         setEditingRedirect(null);
-        fetchAllData();
+        fetchRedirects();
     };
 
     const handleEditRedirect = (redirect: Redirect) => {
@@ -320,7 +325,7 @@ export default function SeoPage() {
     const handleDeleteRedirect = async (redirectId: string) => {
         const { error } = await supabase.from('redirects').delete().eq('id', redirectId);
         if (error) { toast({ variant: 'destructive', title: 'Erro ao deletar redirecionamento', description: error.message }); }
-        else { toast({ title: 'Sucesso', description: 'Redirecionamento deletado.' }); fetchAllData(); }
+        else { toast({ title: 'Sucesso', description: 'Redirecionamento deletado.' }); fetchRedirects(); }
     };
     
     const handleRevalidate = async () => {

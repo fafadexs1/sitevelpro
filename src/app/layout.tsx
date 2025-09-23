@@ -1,5 +1,3 @@
-
-
 // app/layout.tsx
 import type { Metadata, ResolvingMetadata } from 'next';
 import './globals.css';
@@ -31,7 +29,6 @@ type TrackingTag = {
 
 // --- Data loaders (server) ---
 async function getSeoSettings() {
-  console.log('[LOG] Iniciando busca por configurações de SEO...');
   try {
     const supabase = createClient();
     const { data, error } = await supabase
@@ -40,30 +37,11 @@ async function getSeoSettings() {
       .single();
 
     if (error && error.code !== 'PGRST116') { // PGRST116: no rows found
-        console.error('[LOG] Erro ao buscar SEO settings do Supabase:', error);
+        console.error('Erro ao buscar SEO settings do Supabase:', error);
         return null;
     }
-
-    if (!data) {
-        console.warn('[LOG] Nenhuma configuração de SEO encontrada no banco de dados.');
-        return null;
-    }
-
-    console.log('[LOG] Configurações de SEO encontradas:', { 
-      site_title: data.site_title, 
-      site_description: data.site_description,
-      og_image_url: data.og_image_url,
-      favicon_url: data.favicon_url,
-      updated_at: data.updated_at 
-    });
-
-    return data as {
-      site_title?: string | null;
-      site_description?: string | null;
-      og_image_url?: string | null;
-      favicon_url?: string | null;
-      updated_at?: string | null;
-    } | null;
+    
+    return data;
   } catch(e) {
     console.error("[LOG] Exceção crítica na função getSeoSettings:", e);
     return null;
@@ -173,10 +151,8 @@ function TrackingScripts({
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  console.log('[LOG] Renderizando RootLayout...');
   const allTags = await getTrackingTags();
   const settings = await getSeoSettings();
-  console.log('[LOG] Configurações recebidas pelo RootLayout:', settings);
 
   const headScripts = allTags.filter(t => t.placement === 'head_start');
   const bodyStartNoScripts = allTags.filter(t => t.placement === 'body_start');
@@ -186,12 +162,6 @@ export default async function RootLayout({
   const faviconUrl = settings?.favicon_url 
     ? `${settings.favicon_url}?v=${new Date(settings.updated_at ?? Date.now()).getTime()}` 
     : null; // Se não houver favicon no DB, não renderiza nada.
-
-  if(faviconUrl) {
-    console.log(`[LOG] URL final do favicon a ser renderizada: ${faviconUrl}`);
-  } else {
-    console.warn(`[LOG] Nenhum favicon_url encontrado nas configurações. A tag de ícone não será renderizada.`);
-  }
 
   return (
     <html lang="pt-BR" className={`${inter.variable}`} suppressHydrationWarning>
