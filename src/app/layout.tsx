@@ -1,3 +1,4 @@
+
 // app/layout.tsx
 import type { Metadata, ResolvingMetadata } from 'next';
 import './globals.css';
@@ -29,23 +30,22 @@ type TrackingTag = {
 
 // --- Data loaders (server) ---
 async function getSeoSettings() {
-  try {
-    const supabase = createClient();
-    const { data, error } = await supabase
-      .from('seo_settings')
-      .select('site_title, site_description, og_image_url, favicon_url, updated_at')
-      .single();
+    try {
+        const supabase = createClient();
+        const { data, error } = await supabase
+            .from('seo_settings')
+            .select('site_title, site_description, og_image_url, favicon_url, updated_at, allow_indexing')
+            .single();
 
-    if (error && error.code !== 'PGRST116') { // PGRST116: no rows found
-        console.error('Erro ao buscar SEO settings do Supabase:', error);
+        if (error && error.code !== 'PGRST116') {
+            console.error('Erro ao buscar SEO settings do Supabase:', error);
+            return null;
+        }
+        return data;
+    } catch (e) {
+        console.error("[LOG] Exceção crítica na função getSeoSettings:", e);
         return null;
     }
-    
-    return data;
-  } catch(e) {
-    console.error("[LOG] Exceção crítica na função getSeoSettings:", e);
-    return null;
-  }
 }
 
 async function getTrackingTags(): Promise<TrackingTag[]> {
@@ -74,7 +74,8 @@ export async function generateMetadata(
   const title = settings?.site_title || 'Velpro Telecom';
   const description = settings?.site_description || 'Internet ultrarrápida para tudo que importa.';
   const ogImage = settings?.og_image_url || null;
-  
+  const allowIndexing = settings?.allow_indexing ?? true;
+
   return {
     title: {
       default: title,
@@ -91,6 +92,14 @@ export async function generateMetadata(
       title,
       description,
       images: ogImage ? [ogImage] : [],
+    },
+     robots: {
+      index: allowIndexing,
+      follow: allowIndexing,
+      googleBot: {
+        index: allowIndexing,
+        follow: allowIndexing,
+      },
     },
   };
 }
