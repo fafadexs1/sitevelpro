@@ -43,6 +43,7 @@ type SeoSettings = {
     og_image_url: string | null;
     favicon_url: string | null;
     allow_indexing: boolean;
+    updated_at: string;
 }
 
 export type DynamicSeoRule = {
@@ -347,8 +348,8 @@ export default function SeoPage() {
         <>
             <header className="mb-8 flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900">Configurações de SEO</h1>
-                    <p className="text-gray-500">Gerencie como seu site é visto por mecanismos de busca.</p>
+                    <h1 className="text-3xl font-bold text-foreground">Configurações de SEO</h1>
+                    <p className="text-muted-foreground">Gerencie como seu site é visto por mecanismos de busca.</p>
                 </div>
             </header>
 
@@ -372,18 +373,18 @@ export default function SeoPage() {
                                             <FormLabel>Favicon (.png, .ico, .svg)</FormLabel>
                                             <FormControl>
                                             <div className="relative flex items-center justify-center w-full">
-                                                <label htmlFor="dropzone-file-favicon" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 border-gray-300 hover:border-primary hover:bg-gray-100">
-                                                    <div className="flex flex-col items-center justify-center pt-5 pb-6"><Upload className="w-8 h-8 mb-3 text-gray-500"/><p className="mb-2 text-sm text-gray-500"><span className="font-semibold">Clique para enviar</span> ou arraste</p><p className="text-xs text-gray-500">PNG, ICO, SVG (MAX. 5MB)</p></div>
+                                                <label htmlFor="dropzone-file-favicon" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-secondary border-border hover:border-primary hover:bg-accent">
+                                                    <div className="flex flex-col items-center justify-center pt-5 pb-6"><Upload className="w-8 h-8 mb-3 text-muted-foreground"/><p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Clique para enviar</span> ou arraste</p><p className="text-xs text-muted-foreground">PNG, ICO, SVG (MAX. 5MB)</p></div>
                                                     <Input id="dropzone-file-favicon" type="file" className="hidden" accept={ACCEPTED_FAVICON_TYPES.join(',')} onChange={(e) => field.onChange(e.target.files ? e.target.files[0] : null)}/>
                                                 </label>
                                             </div> 
                                             </FormControl>
-                                            {field.value?.name && <p className="text-sm text-gray-600 mt-2">Novo arquivo: {field.value.name}</p>}
+                                            {field.value?.name && <p className="text-sm text-muted-foreground mt-2">Novo arquivo: {field.value.name}</p>}
                                             {settings?.favicon_url && !field.value?.name && (
                                                 <div className="mt-4">
-                                                    <p className="text-sm text-gray-700 mb-2">Favicon atual:</p>
-                                                    <Image src={settings.favicon_url} alt="Favicon" width={48} height={48} className="rounded-full border border-gray-200 p-1"/>
-                                                    <p className="text-xs text-gray-500 mt-2 break-all">URL: {settings.favicon_url}</p>
+                                                    <p className="text-sm text-foreground mb-2">Favicon atual:</p>
+                                                    <Image src={settings.favicon_url} alt="Favicon" width={48} height={48} className="rounded-full border border-border p-1"/>
+                                                    <p className="text-xs text-muted-foreground mt-2 break-all">URL: {settings.favicon_url}</p>
                                                 </div>
                                             )}
                                             <FormMessage />
@@ -394,14 +395,14 @@ export default function SeoPage() {
                                             <FormLabel>Imagem Open Graph (1200x630px)</FormLabel>
                                             <FormControl>
                                             <div className="relative flex items-center justify-center w-full">
-                                                <label htmlFor="dropzone-file-og" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 border-gray-300 hover:border-primary hover:bg-gray-100">
-                                                    <div className="flex flex-col items-center justify-center pt-5 pb-6"><Upload className="w-8 h-8 mb-3 text-gray-500"/><p className="mb-2 text-sm text-gray-500"><span className="font-semibold">Clique para enviar</span> ou arraste</p><p className="text-xs text-gray-500">PNG, JPG, WEBP (MAX. 5MB)</p></div>
+                                                <label htmlFor="dropzone-file-og" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-secondary border-border hover:border-primary hover:bg-accent">
+                                                    <div className="flex flex-col items-center justify-center pt-5 pb-6"><Upload className="w-8 h-8 mb-3 text-muted-foreground"/><p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Clique para enviar</span> ou arraste</p><p className="text-xs text-muted-foreground">PNG, JPG, WEBP (MAX. 5MB)</p></div>
                                                     <Input id="dropzone-file-og" type="file" className="hidden" accept={ACCEPTED_IMAGE_TYPES.join(',')} onChange={(e) => field.onChange(e.target.files ? e.target.files[0] : null)}/>
                                                 </label>
                                             </div> 
                                             </FormControl>
-                                            {field.value?.name && <p className="text-sm text-gray-600 mt-2">Novo arquivo: {field.value.name}</p>}
-                                            {settings?.og_image_url && !field.value?.name && (<div className="mt-4"><p className="text-sm text-gray-700 mb-2">Imagem atual:</p><Image src={settings.og_image_url} alt="Open Graph Image" width={240} height={126} className="rounded-md border border-gray-200"/></div>)}
+                                            {field.value?.name && <p className="text-sm text-muted-foreground mt-2">Novo arquivo: {field.value.name}</p>}
+                                            {settings?.og_image_url && !field.value?.name && (<div className="mt-4"><p className="text-sm text-foreground mb-2">Imagem atual:</p><Image src={settings.og_image_url} alt="Open Graph Image" width={240} height={126} className="rounded-md border border-border"/></div>)}
                                             <FormMessage />
                                         </FormItem>
                                     )}/>
@@ -421,12 +422,12 @@ export default function SeoPage() {
                                 <CardContent>
                                     <FormField control={form.control} name="allow_indexing" render={({ field }) => (
                                         <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                                            <div className="space-y-0.5"><FormLabel className="text-base">Permitir Indexação</FormLabel><p className="text-sm text-gray-600">Ative para permitir que seu site apareça nos resultados de busca.</p></div>
+                                            <div className="space-y-0.5"><FormLabel className="text-base">Permitir Indexação</FormLabel><p className="text-sm text-muted-foreground">Ative para permitir que seu site apareça nos resultados de busca.</p></div>
                                             <FormControl><Switch id="seo-allow-indexing" checked={field.value} onCheckedChange={field.onChange}/></FormControl>
                                         </FormItem>
                                     )}/>
                                 </CardContent>
-                                <CardFooter className="flex-col items-start gap-2 text-xs text-gray-500">
+                                <CardFooter className="flex-col items-start gap-2 text-xs text-muted-foreground">
                                     <p>A alteração será refletida no arquivo <Link href="/robots.txt" target="_blank" className="underline hover:text-primary">/robots.txt</Link>.</p>
                                     <p>Seu mapa do site está disponível em <Link href="/sitemap.xml" target="_blank" className="underline hover:text-primary">/sitemap.xml</Link>.</p>
                                 </CardFooter>
@@ -441,8 +442,8 @@ export default function SeoPage() {
                             {loadingRules ? <div className="flex justify-center items-center h-40"><Loader2 className="h-6 w-6 animate-spin"/></div> : (
                                 <Table><TableHeader><TableRow className="hover:bg-transparent"><TableHead>Nome</TableHead><TableHead>Padrão de Slug</TableHead><TableHead>Schema</TableHead><TableHead>Index</TableHead><TableHead className="text-right">Ações</TableHead></TableRow></TableHeader>
                                     <TableBody>
-                                        {rules.map((rule) => (<TableRow key={rule.id}><TableCell className="font-medium">{rule.name}</TableCell><TableCell className="font-mono text-xs text-gray-600">{rule.slug_pattern}</TableCell><TableCell><Badge variant="secondary">{rule.schema_type}</Badge></TableCell><TableCell>{rule.allow_indexing ? <Badge className="border-primary/30 bg-primary/20 text-primary">Sim</Badge> : <Badge variant="destructive">Não</Badge>}</TableCell><TableCell className="text-right"><Button id={`seo-edit-rule-${rule.id}`} variant="ghost" size="sm" className="mr-2" onClick={() => handleEditRule(rule)}><Edit className="h-4 w-4" /></Button><AlertDialog><AlertDialogTrigger asChild><Button id={`seo-delete-rule-trigger-${rule.id}`} variant="destructive" size="sm"><Trash2 className="h-4 w-4" /></Button></AlertDialogTrigger><AlertDialogContent className="bg-white text-gray-900"><AlertDialogHeader><AlertDialogTitle>Tem certeza?</AlertDialogTitle><AlertDialogDescription>Essa ação não pode ser desfeita. Isso irá apagar permanentemente a regra de SEO.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel id={`seo-delete-rule-cancel-${rule.id}`}>Cancelar</AlertDialogCancel><AlertDialogAction id={`seo-delete-rule-confirm-${rule.id}`} onClick={() => handleDeleteRule(rule.id)}>Continuar</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog></TableCell></TableRow>))}
-                                        {rules.length === 0 && <TableRow><TableCell colSpan={5} className="text-center text-gray-500 py-8">Nenhuma regra dinâmica encontrada.</TableCell></TableRow>}
+                                        {rules.map((rule) => (<TableRow key={rule.id}><TableCell className="font-medium">{rule.name}</TableCell><TableCell className="font-mono text-xs text-muted-foreground">{rule.slug_pattern}</TableCell><TableCell><Badge variant="secondary">{rule.schema_type}</Badge></TableCell><TableCell>{rule.allow_indexing ? <Badge className="border-primary/30 bg-primary/20 text-primary">Sim</Badge> : <Badge variant="destructive">Não</Badge>}</TableCell><TableCell className="text-right"><Button id={`seo-edit-rule-${rule.id}`} variant="ghost" size="sm" className="mr-2" onClick={() => handleEditRule(rule)}><Edit className="h-4 w-4" /></Button><AlertDialog><AlertDialogTrigger asChild><Button id={`seo-delete-rule-trigger-${rule.id}`} variant="destructive" size="sm"><Trash2 className="h-4 w-4" /></Button></AlertDialogTrigger><AlertDialogContent className="bg-background text-foreground"><AlertDialogHeader><AlertDialogTitle>Tem certeza?</AlertDialogTitle><AlertDialogDescription>Essa ação não pode ser desfeita. Isso irá apagar permanentemente a regra de SEO.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel id={`seo-delete-rule-cancel-${rule.id}`}>Cancelar</AlertDialogCancel><AlertDialogAction id={`seo-delete-rule-confirm-${rule.id}`} onClick={() => handleDeleteRule(rule.id)}>Continuar</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog></TableCell></TableRow>))}
+                                        {rules.length === 0 && <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">Nenhuma regra dinâmica encontrada.</TableCell></TableRow>}
                                     </TableBody>
                                 </Table>
                             )}
@@ -453,24 +454,24 @@ export default function SeoPage() {
                     <Card>
                         <CardHeader><CardTitle>Performance &amp; Indexação</CardTitle><CardDescription>Monitore e melhore a performance e o status de indexação do site.</CardDescription></CardHeader>
                         <CardContent className="space-y-4">
-                            <div><h4 className="font-semibold text-sm mb-2">Core Web Vitals</h4><div className="p-3 rounded-lg border border-gray-200 bg-gray-50 text-xs text-gray-600"><p>Dados de performance serão exibidos aqui após integração com a API do Google PageSpeed.</p><div className="flex justify-around mt-2"><span>LCP: --</span><span>INP: --</span><span>CLS: --</span></div></div></div>
-                            <div><h4 className="font-semibold text-sm mb-2">Status de Indexação</h4><div className="p-3 rounded-lg border border-gray-200 bg-gray-50 text-xs text-gray-600"><p className="mb-2">Verifique se suas páginas estão no Google. Requer integração com a API do Google Search Console.</p><Button variant="outline" size="sm" asChild id="seo-open-gsc"><a href="https://search.google.com/search-console" target="_blank" rel="noopener noreferrer" className="w-full">Abrir Search Console</a></Button></div></div>
-                            <div><h4 className="font-semibold text-sm mb-2">Revalidação de Cache (ISR)</h4><div className="space-y-2"><Input id="seo-revalidate-path" placeholder="/caminho/da/pagina" value={revalidationPath} onChange={(e) => setRevalidationPath(e.target.value)} /><Button id="seo-revalidate-button" onClick={handleRevalidate} disabled={isRevalidating} className="w-full">{isRevalidating ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <RefreshCw className="mr-2 h-4 w-4"/>}Forçar Revalidação</Button></div><p className="text-xs text-gray-500 mt-2">Use para limpar o cache de uma página específica após uma alteração.</p></div>
+                            <div><h4 className="font-semibold text-sm mb-2">Core Web Vitals</h4><div className="p-3 rounded-lg border border-border bg-secondary text-xs text-muted-foreground"><p>Dados de performance serão exibidos aqui após integração com a API do Google PageSpeed.</p><div className="flex justify-around mt-2"><span>LCP: --</span><span>INP: --</span><span>CLS: --</span></div></div></div>
+                            <div><h4 className="font-semibold text-sm mb-2">Status de Indexação</h4><div className="p-3 rounded-lg border border-border bg-secondary text-xs text-muted-foreground"><p className="mb-2">Verifique se suas páginas estão no Google. Requer integração com a API do Google Search Console.</p><Button variant="outline" size="sm" asChild id="seo-open-gsc"><a href="https://search.google.com/search-console" target="_blank" rel="noopener noreferrer" className="w-full">Abrir Search Console</a></Button></div></div>
+                            <div><h4 className="font-semibold text-sm mb-2">Revalidação de Cache (ISR)</h4><div className="space-y-2"><Input id="seo-revalidate-path" placeholder="/caminho/da/pagina" value={revalidationPath} onChange={(e) => setRevalidationPath(e.target.value)} /><Button id="seo-revalidate-button" onClick={handleRevalidate} disabled={isRevalidating} className="w-full">{isRevalidating ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <RefreshCw className="mr-2 h-4 w-4"/>}Forçar Revalidação</Button></div><p className="text-xs text-muted-foreground mt-2">Use para limpar o cache de uma página específica após uma alteração.</p></div>
                         </CardContent>
                     </Card>
                     <Card>
                         <CardHeader><CardTitle>Gestão Avançada</CardTitle><CardDescription>Ferramentas para controle técnico e otimização fina do SEO.</CardDescription></CardHeader>
                         <CardContent className="space-y-4">
-                            <div><h4 className="font-semibold text-sm mb-2">Preview de SERP</h4><div className="p-3 rounded-lg border border-gray-200 bg-gray-50"><div className="flex items-center gap-2"><div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center shrink-0"><Globe className="h-4 w-4 text-primary-foreground"/></div><div><p className="text-sm font-medium text-blue-600 truncate">{siteTitle || "Seu Título Aqui"}</p><p className="text-xs text-gray-600">https://velpro.com.br</p></div></div><p className="text-xs text-gray-600 mt-2 line-clamp-2">{siteDescription || "A descrição do seu site aparecerá aqui. Escreva algo conciso e atraente."}</p></div></div>
+                            <div><h4 className="font-semibold text-sm mb-2">Preview de SERP</h4><div className="p-3 rounded-lg border border-border bg-secondary"><div className="flex items-center gap-2"><div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center shrink-0"><Globe className="h-4 w-4 text-primary-foreground"/></div><div><p className="text-sm font-medium text-blue-600 truncate">{siteTitle || "Seu Título Aqui"}</p><p className="text-xs text-muted-foreground">https://velpro.com.br</p></div></div><p className="text-xs text-muted-foreground mt-2 line-clamp-2">{siteDescription || "A descrição do seu site aparecerá aqui. Escreva algo conciso e atraente."}</p></div></div>
                             <div><h4 className="font-semibold text-sm mb-2">Gerenciador de Redirecionamentos</h4><Button id="seo-manage-redirects" variant="outline" size="sm" className="w-full" onClick={() => { setEditingRedirect(null); setIsRedirectModalOpen(true); }}><Redo className="mr-2 h-4 w-4"/> Gerenciar Redirecionamentos</Button></div>
-                            <div><h4 className="font-semibold text-sm mb-2">Teste de Dados Estruturados</h4><div className="p-3 rounded-lg border border-gray-200 bg-gray-50 text-xs text-gray-600"><p className="mb-2">Use a ferramenta oficial do Google para validar o Schema Markup.</p><Button id="seo-rich-results-test" variant="outline" size="sm" asChild><a href="https://search.google.com/test/rich-results" target="_blank" rel="noopener noreferrer" className="w-full"><ExternalLink className="mr-2 h-4 w-4"/> Teste de Rich Results</a></Button></div></div>
+                            <div><h4 className="font-semibold text-sm mb-2">Teste de Dados Estruturados</h4><div className="p-3 rounded-lg border border-border bg-secondary text-xs text-muted-foreground"><p className="mb-2">Use a ferramenta oficial do Google para validar o Schema Markup.</p><Button id="seo-rich-results-test" variant="outline" size="sm" asChild><a href="https://search.google.com/test/rich-results" target="_blank" rel="noopener noreferrer" className="w-full"><ExternalLink className="mr-2 h-4 w-4"/> Teste de Rich Results</a></Button></div></div>
                         </CardContent>
                     </Card>
                 </div>
             </div>
-            <Dialog open={isRuleModalOpen} onOpenChange={setIsRuleModalOpen}><DialogContent className="bg-white text-gray-900 sm:max-w-2xl"><DynamicSeoRuleForm rule={editingRule} onRuleSaved={handleRuleSaved} onOpenChange={setIsRuleModalOpen}/></DialogContent></Dialog>
+            <Dialog open={isRuleModalOpen} onOpenChange={setIsRuleModalOpen}><DialogContent className="bg-background text-foreground sm:max-w-2xl"><DynamicSeoRuleForm rule={editingRule} onRuleSaved={handleRuleSaved} onOpenChange={setIsRuleModalOpen}/></DialogContent></Dialog>
             <Dialog open={isRedirectModalOpen} onOpenChange={setIsRedirectModalOpen}>
-                <DialogContent className="bg-white text-gray-900 sm:max-w-lg">
+                <DialogContent className="bg-background text-foreground sm:max-w-lg">
                     <DialogHeader><DialogTitle>Gerenciar Redirecionamentos</DialogTitle><DialogDescription>Crie e edite redirecionamentos 301 (permanente) ou 302 (temporário).</DialogDescription></DialogHeader>
                     {loadingRedirects ? <div className="flex justify-center items-center h-40"><Loader2 className="h-6 w-6 animate-spin"/></div> : (
                         <>
@@ -480,7 +481,7 @@ export default function SeoPage() {
                                         {redirects.map(r => (
                                             <TableRow key={r.id}>
                                                 <TableCell className="text-xs">
-                                                    <p className="font-mono text-gray-800">{r.source_path}</p>
+                                                    <p className="font-mono text-foreground">{r.source_path}</p>
                                                     <p className="font-mono text-primary/80">{'->'} {r.destination_path}</p>
                                                 </TableCell>
                                                 <TableCell><Badge variant={r.type === 'permanent' ? 'default' : 'secondary'}>{r.type === 'permanent' ? '301' : '302'}</Badge></TableCell>
@@ -488,7 +489,7 @@ export default function SeoPage() {
                                                     <Button id={`seo-edit-redirect-${r.id}`} variant="ghost" size="icon" className="h-7 w-7 mr-1" onClick={() => handleEditRedirect(r)}><Edit className="h-4 w-4"/></Button>
                                                     <AlertDialog>
                                                         <AlertDialogTrigger asChild><Button id={`seo-delete-redirect-trigger-${r.id}`} variant="destructive" size="icon" className="h-7 w-7"><Trash2 className="h-4 w-4"/></Button></AlertDialogTrigger>
-                                                        <AlertDialogContent className="bg-white text-gray-900">
+                                                        <AlertDialogContent className="bg-background text-foreground">
                                                             <AlertDialogHeader><AlertDialogTitle>Tem certeza?</AlertDialogTitle><AlertDialogDescription>Isso irá apagar o redirecionamento.</AlertDialogDescription></AlertDialogHeader>
                                                             <AlertDialogFooter><AlertDialogCancel id={`seo-delete-redirect-cancel-${r.id}`}>Cancelar</AlertDialogCancel><AlertDialogAction id={`seo-delete-redirect-confirm-${r.id}`} onClick={() => handleDeleteRedirect(r.id)}>Deletar</AlertDialogAction></AlertDialogFooter>
                                                         </AlertDialogContent>
@@ -496,7 +497,7 @@ export default function SeoPage() {
                                                 </TableCell>
                                             </TableRow>
                                         ))}
-                                        {redirects.length === 0 && <TableRow><TableCell colSpan={3} className="text-center text-sm text-gray-500 h-24">Nenhum redirecionamento criado.</TableCell></TableRow>}
+                                        {redirects.length === 0 && <TableRow><TableCell colSpan={3} className="text-center text-sm text-muted-foreground h-24">Nenhum redirecionamento criado.</TableCell></TableRow>}
                                     </TableBody>
                                 </Table>
                             </div>
