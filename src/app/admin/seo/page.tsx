@@ -198,6 +198,8 @@ export default function SeoPage() {
 
     const siteTitle = form.watch('site_title');
     const siteDescription = form.watch('site_description');
+    const allowIndexing = form.watch('allow_indexing');
+
 
     const fetchSettings = useCallback(async () => {
         setLoadingSettings(true);
@@ -407,7 +409,15 @@ export default function SeoPage() {
                             </Card>
 
                             <Card>
-                                <CardHeader><CardTitle>Visibilidade nos Buscadores</CardTitle><CardDescription>Controle se os mecanismos de busca podem indexar seu site.</CardDescription></CardHeader>
+                                <CardHeader className="flex flex-row items-center justify-between">
+                                    <div>
+                                        <CardTitle>Visibilidade nos Buscadores</CardTitle>
+                                        <CardDescription>Controle se os mecanismos de busca podem indexar seu site.</CardDescription>
+                                    </div>
+                                    <Badge variant={allowIndexing ? 'default' : 'destructive'}>
+                                        {allowIndexing ? 'Indexação Ativa' : 'Indexação Pausada'}
+                                    </Badge>
+                                </CardHeader>
                                 <CardContent>
                                     <FormField control={form.control} name="allow_indexing" render={({ field }) => (
                                         <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
