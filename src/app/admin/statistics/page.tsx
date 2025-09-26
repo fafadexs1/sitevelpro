@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
@@ -86,6 +87,7 @@ export default function StatisticsPage() {
             switch (activeFilter) {
                 case 'today':
                     startDate = startOfDay(new Date());
+                    endDate = endOfDay(new Date());
                     break;
                 case '7d':
                     startDate = startOfDay(subDays(new Date(), 6));
@@ -387,7 +389,7 @@ export default function StatisticsPage() {
                                     tickMargin={8} 
                                     tickFormatter={tickFormatter}
                                 />
-                                <YAxis tickLine={false} axisLine={false} tickMargin={8} allowDecimals={false} />
+                                <YAxis tickLine={false} axisLine={false} tickMargin={8} allowDecimals={false} domain={['auto', 'dataMax + 10']} />
                                 <Tooltip
                                     cursor={false}
                                     content={<ChartTooltipContent indicator="dot" />}
@@ -497,3 +499,5 @@ export default function StatisticsPage() {
         </>
     );
 }
+
+    
