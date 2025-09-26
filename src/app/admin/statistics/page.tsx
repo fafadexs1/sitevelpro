@@ -103,7 +103,7 @@ export default function StatisticsPage() {
         
         const { data: visits, error: visitsError } = await supabase
             .from('visits')
-            .select('visitor_id, pathname, is_new_visitor, created_at')
+            .select('visitor_id, pathname, is_new_visitor, created_at', { count: 'exact' })
             .gte('created_at', startDate.toISOString())
             .lte('created_at', endDate.toISOString());
 
