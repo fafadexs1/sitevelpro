@@ -1,6 +1,7 @@
 
 "use client";
 
+import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import imageData from "@/lib/placeholder-images.json";
@@ -23,51 +24,69 @@ const games = [
     }
 ];
 
-const GameCard = ({ game }: { game: typeof games[0] }) => (
-    <div className="group rounded-2xl overflow-hidden bg-card border border-border transition-all duration-300 hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-2">
-        <div className="relative aspect-[16/9] overflow-hidden">
-            <Image
-                src={game.image.src}
-                alt={`Gameplay de ${game.name}`}
-                fill
-                className="object-cover transition-transform duration-300 group-hover:scale-105"
-                data-ai-hint={game.image.aiHint}
-            />
-             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+const GameCard = ({ game }: { game: typeof games[0] }) => {
+    const cardRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const card = cardRef.current;
+        if (!card) return;
+
+        const observerOptions = {
+            root: null,
+            rootMargin: '-50% 0px -50% 0px',
+            threshold: 0
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-in-view');
+                } else {
+                    entry.target.classList.remove('is-in-view');
+                }
+            });
+        }, observerOptions);
+
+        observer.observe(card);
+
+        return () => {
+            if (card) {
+                observer.unobserve(card);
+            }
+        };
+    }, []);
+
+    return (
+        <div ref={cardRef} className="game-card-fx">
+            <div className="card-image-wrapper">
+                <Image
+                    src={game.image.src}
+                    alt={`Gameplay de ${game.name}`}
+                    width={500}
+                    height={400}
+                    data-ai-hint={game.image.aiHint}
+                />
+            </div>
+            <div className="card-content">
+                <h3>{game.name}</h3>
+                <p>{game.description}</p>
+            </div>
         </div>
-        <div className="p-5">
-            <h3 className="text-xl font-bold text-card-foreground">{game.name}</h3>
-            <p className="mt-2 text-sm text-muted-foreground">{game.description}</p>
-        </div>
-    </div>
-);
+    );
+};
 
 export function Games() {
   return (
-    <section className="border-t border-border bg-secondary py-16 sm:py-24">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-            Feita para <span className="text-primary">Gamers de Elite</span>
-          </h2>
-          <p className="mt-3 max-w-2xl mx-auto text-muted-foreground">
-            Rotas otimizadas, conexão turbo e estabilidade que redefine o que é possível nos seus jogos favoritos.
-          </p>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {games.map((game, index) => (
-             <motion.div
-                key={game.name}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.3 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-             >
-                <GameCard game={game} />
-            </motion.div>
-          ))}
-        </div>
+    <section className="games-showcase">
+      <div className="games-showcase-content">
+        <h2>Feita para <span className="highlight-text">Gamers de Elite</span></h2>
+        <p>Rotas otimizadas, conexão turbo e estabilidade que redefine o que é possível nos seus jogos favoritos.</p>
+      </div>
+
+      <div className="games-grid">
+        {games.map((game) => (
+          <GameCard key={game.name} game={game} />
+        ))}
       </div>
     </section>
   );
