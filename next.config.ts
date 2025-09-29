@@ -52,6 +52,12 @@ const nextConfig: NextConfig = {
         hostname: '4kwallpapers.com',
         port: '',
         pathname: '/**',
+      },
+       {
+        protocol: 'https',
+        hostname: 'velpro.net.br',
+        port: '',
+        pathname: '/**',
       }
     ],
   },
