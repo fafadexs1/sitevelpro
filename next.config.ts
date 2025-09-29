@@ -70,6 +70,18 @@ const nextConfig: NextConfig = {
         hostname: 'gamtelecom.com.br',
         port: '',
         pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 's3.glbimg.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.claro.com.br',
+        port: '',
+        pathname: '/**',
       }
     ],
   },

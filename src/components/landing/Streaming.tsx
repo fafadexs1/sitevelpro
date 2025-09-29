@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const streamingServices = [
   {
-    bgImage: "https://gamtelecom.com.br/wp-content/uploads/2024/06/03185304635068.jpg",
+    bgImage: "https://s3.glbimg.com/v1/AUTH_c7def7ff66fe4b13beac0810ffbf780f/secure/now-at-globo-share-d5539fc.jpg",
     logo: "https://velpro.net.br/wp-content/uploads/2025/06/48D087-1.png",
     logoAlt: "Globoplay",
     title: "Velpro + Globoplay, isso é entretenimento",
@@ -21,7 +21,7 @@ const streamingServices = [
     description: "Assista aos maiores lançamentos de Hollywood e clássicos do cinema com qualidade e exclusividade.",
   },
   {
-    bgImage: "https://velpro.net.br/wp-content/uploads/2025/06/GloboPlay-1.jpg",
+    bgImage: "https://www.claro.com.br/files/104379/1920x600/6eeab4eba7/img-banner-custom-brasileirao-2025-premiere-desk.jpg?sq=75",
     logo: "https://velpro.net.br/wp-content/uploads/2025/06/48D087.jpg",
     logoAlt: "Premiere",
     title: "Futebol ao vivo é com a Velpro + Premiere",
