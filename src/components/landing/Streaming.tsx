@@ -66,7 +66,7 @@ export function Streaming() {
                 </motion.div>
                 
                 {/* Logo Grid */}
-                <div className="mt-12 grid grid-cols-3 gap-4 sm:gap-6 max-w-md">
+                <div className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
                     {streamingServices.map((service) => (
                         <motion.div
                             key={service.logoAlt}
@@ -93,4 +93,3 @@ export function Streaming() {
     </div>
   );
 }
-
