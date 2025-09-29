@@ -40,6 +40,18 @@ const nextConfig: NextConfig = {
         hostname: 'cmsassets.rgpub.io',
         port: '',
         pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 't2.tudocdn.net',
+        port: '',
+        pathname: '/**',
+      },
+       {
+        protocol: 'https',
+        hostname: '4kwallpapers.com',
+        port: '',
+        pathname: '/**',
       }
     ],
   },
