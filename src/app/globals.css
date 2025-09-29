@@ -359,9 +359,10 @@
 }
 
 .headline .sub{
-    color:var(--muted);
-    font-size:clamp(15px, 1.6vw, 18px);
+    color:hsl(var(--muted-foreground));
+    font-size:clamp(16px, 1.7vw, 19px);
     line-height:1.7;
+    letter-spacing: 0.01em;
 }
 
 .headline .cta{
@@ -369,8 +370,8 @@
     align-items:center;
     gap:10px;
     width:max-content;
-    background:#0ea5e9; /* sky-500 */
-    color:#fff;
+    background:hsl(var(--primary));
+    color:hsl(var(--primary-foreground));
     border-radius:14px;
     padding:14px 18px;
     text-decoration:none;
