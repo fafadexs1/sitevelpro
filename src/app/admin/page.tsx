@@ -96,6 +96,7 @@ type Plan = {
   whatsapp_number: string | null;
   whatsapp_message: string | null;
   conditions: string | null;
+  sort_order: number;
 };
 
 type TvChannel = {
@@ -129,6 +130,7 @@ const planSchema = z.object({
   whatsapp_number: z.string().optional().nullable(),
   whatsapp_message: z.string().optional().nullable(),
   conditions: z.string().optional().nullable(),
+  sort_order: z.coerce.number().default(0),
 });
 
 type PlanFormData = z.infer<typeof planSchema>;
@@ -148,6 +150,7 @@ const defaultPlanValues = {
   whatsapp_number: "",
   whatsapp_message: "Olá, gostaria de saber mais sobre o plano de {{VELOCIDADE}} MEGA.",
   conditions: "",
+  sort_order: 0,
 };
 
 
@@ -206,6 +209,7 @@ const PlanForm = ({
             whatsapp_number: plan.whatsapp_number ?? '',
             whatsapp_message: plan.whatsapp_message ?? defaultPlanValues.whatsapp_message,
             conditions: plan.conditions ?? '',
+            sort_order: plan.sort_order ?? 0,
           }
         : defaultPlanValues,
   });
@@ -428,28 +432,43 @@ const PlanForm = ({
             </div>
             
             <div className="!mt-6 space-y-4 border-t border-border pt-4">
-               <div className="flex items-center justify-between">
-                <FormField
-                  control={form.control}
-                  name="highlight"
-                  render={({ field }) => (
-                    <FormItem className="flex items-center gap-x-2 space-y-0">
-                      <FormControl><Switch id="plan-highlight" checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-                      <FormLabel className="cursor-pointer">Destacar plano?</FormLabel>
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="has_tv"
-                  render={({ field }) => (
-                    <FormItem className="flex items-center gap-x-2 space-y-0">
-                      <FormControl><Switch id="plan-has-tv" checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-                      <FormLabel className="cursor-pointer">Inclui TV?</FormLabel>
-                    </FormItem>
-                  )}
-                />
-              </div>
+                <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                    control={form.control}
+                    name="sort_order"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Ordem de Exibição</FormLabel>
+                        <FormControl>
+                            <Input id="plan-sort-order" type="number" placeholder="0" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                    <div className="space-y-2">
+                        <FormField
+                        control={form.control}
+                        name="highlight"
+                        render={({ field }) => (
+                            <FormItem className="flex items-center gap-x-2 space-y-0 rounded-lg border p-3 h-[42px] mt-auto">
+                            <FormControl><Switch id="plan-highlight" checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                            <FormLabel className="cursor-pointer">Destacar plano?</FormLabel>
+                            </FormItem>
+                        )}
+                        />
+                         <FormField
+                        control={form.control}
+                        name="has_tv"
+                        render={({ field }) => (
+                            <FormItem className="flex items-center gap-x-2 space-y-0 rounded-lg border p-3 h-[42px] mt-auto">
+                            <FormControl><Switch id="plan-has-tv" checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                            <FormLabel className="cursor-pointer">Inclui TV?</FormLabel>
+                            </FormItem>
+                        )}
+                        />
+                    </div>
+                </div>
 
               {hasTv && (
                  <AnimatePresence>
@@ -620,6 +639,7 @@ function PlansTable({
     <Table>
       <TableHeader>
         <TableRow>
+          <TableHead className="w-[50px]">Ordem</TableHead>
           <TableHead className="w-[150px]">Velocidade</TableHead>
           <TableHead>Preço</TableHead>
           <TableHead className="text-center">Destaque</TableHead>
@@ -629,6 +649,7 @@ function PlansTable({
       <TableBody>
         {plans.map((plan) => (
           <TableRow key={plan.id}>
+            <TableCell className="font-mono text-xs text-muted-foreground">{plan.sort_order}</TableCell>
             <TableCell className="font-medium text-foreground">{plan.speed} MEGA</TableCell>
             <TableCell>
               <div className="flex items-center gap-2">
@@ -688,7 +709,7 @@ export default function PlansPage() {
   const getPlans = async () => {
     setLoading(true);
     const supabase = createClient();
-    const { data, error } = await supabase.from("plans").select("*").order("price", { ascending: true });
+    const { data, error } = await supabase.from("plans").select("*").order("sort_order", { ascending: true }).order("price", { ascending: true });
 
     if (error) {
       toast({ variant: 'destructive', title: 'Erro ao buscar planos', description: error.message });

@@ -132,6 +132,7 @@ create table if not exists plans (
   conditions text,
   upload_speed text,
   download_speed text,
+  sort_order integer default 0,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
