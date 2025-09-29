@@ -34,7 +34,7 @@ export function Streaming() {
 
   return (
     <div className="w-full overflow-hidden">
-        <section className="relative min-h-[70vh] w-full border-t border-border bg-background flex items-end">
+        <section className="relative min-h-[70vh] w-full border-t border-border bg-background pt-32 sm:pt-48 pb-16 sm:pb-24 flex items-end">
         {/* Background Image */}
         <AnimatePresence>
                 <motion.div
@@ -71,7 +71,7 @@ export function Streaming() {
                         <motion.div
                             key={service.logoAlt}
                             onMouseEnter={() => setSelectedService(service)}
-                            className={`relative aspect-video cursor-pointer rounded-lg border-2 transition-all duration-300 ease-out ${
+                            className={`relative cursor-pointer rounded-lg border-2 transition-all duration-300 ease-out h-24 sm:h-auto sm:aspect-video ${
                                 selectedService.logoAlt === service.logoAlt
                                 ? 'border-primary/80 scale-105 shadow-2xl shadow-primary/20'
                                 : 'border-transparent opacity-60 hover:opacity-100 hover:scale-105'
