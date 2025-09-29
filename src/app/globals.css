@@ -13,7 +13,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
  
-    --primary: 151 83% 47%;
+    --primary: 120 69% 46%;
     --primary-foreground: 0 0% 98%;
  
     --secondary: 240 4.8% 95.9%;
@@ -45,7 +45,7 @@
     --popover: 240 10% 3.9%;
     --popover-foreground: 0 0% 98%;
  
-    --primary: 151 83% 47%;
+    --primary: 120 69% 46%;
     --primary-foreground: 0 0% 98%;
  
     --secondary: 240 3.7% 15.9%;
@@ -98,7 +98,7 @@
 .games-showcase h2 {
   font-size: clamp(2.5rem, 5vw, 3.5rem);
   font-weight: 700;
-  color: var(--foreground);
+  color: hsl(var(--foreground));
   margin-bottom: 1rem;
 }
 
@@ -108,7 +108,7 @@
 }
 
 .games-showcase .games-showcase-content p {
-  color: var(--muted-foreground);
+  color: hsl(var(--muted-foreground));
   font-size: 1.125rem;
   max-width: 720px;
   margin: 0 auto 5rem;
