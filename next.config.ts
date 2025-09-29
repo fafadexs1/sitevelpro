@@ -82,7 +82,13 @@ const nextConfig: NextConfig = {
         hostname: 'www.claro.com.br',
         port: '',
         pathname: '/**',
-      }
+      },
+      {
+        protocol: 'https',
+        hostname: 'upload.wikimedia.org',
+        port: '',
+        pathname: '/**',
+      },
     ],
   },
   transpilePackages: ['embla-carousel-react', 'recharts'],

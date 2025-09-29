@@ -7,13 +7,27 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
-import { Button } from "../ui/button";
 
 type Channel = {
   id: string;
   name: string;
   logo_url: string;
 };
+
+const ChannelCard = ({ channel, delay }: { channel: Channel; delay: number }) => (
+  <article className="card" data-float style={{ "--delay": `${delay}s` } as React.CSSProperties}>
+    <span className="shine"></span>
+    <Image
+      className="logo"
+      alt={channel.name}
+      src={channel.logo_url}
+      width={140}
+      height={78}
+      unoptimized // SVGs from wikimedia are better without optimization
+    />
+  </article>
+);
+
 
 export function TvSection() {
   const [channels, setChannels] = useState<Channel[]>([]);
@@ -28,7 +42,7 @@ export function TvSection() {
         .select("id, name, logo_url")
         .eq("is_featured", true)
         .order("name")
-        .limit(10);
+        .limit(8); // Limit to 8 for the grid
 
       if (error) {
         console.error("Error fetching featured channels:", error);
@@ -42,63 +56,30 @@ export function TvSection() {
 
   return (
     <section id="tv" className="border-t border-border bg-secondary py-16 sm:py-24">
-      <div className="mx-auto grid max-w-7xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-            Uma nova dimensão de entretenimento na sua TV
-          </h2>
-          <p className="mt-4 text-muted-foreground">
-            Qualidade de imagem e som de cinema com uma grade de mais de 100
-            canais para toda a família. Filmes, séries, esportes e muito mais,
-            tudo em alta definição.
-          </p>
-          <Button asChild id="tv-cta-pacotes" className="mt-8">
-            <Link
-              href="/tv"
-              className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 font-medium text-primary-foreground shadow-lg shadow-primary/20 transition-colors hover:bg-primary/90"
-            >
-              Conhecer pacotes de TV <ChevronRight className="h-4 w-4" />
-            </Link>
-          </Button>
-        </div>
+       <div className="wrap">
+            <section className="headline">
+                <span className="mini">Mais de 100 canais</span>
+                <h2>Uma vitrine elegante dos canais<br/> que vão com a <strong>Velpro TV</strong></h2>
+                <p className="sub">Imagem e som em alta definição, com os principais canais de filmes, séries, esportes e variedades. Um layout limpo, rápido e preparado para conversão.</p>
+                <Link className="cta" href="/tv">Conhecer pacotes de TV →</Link>
+            </section>
 
-        <div className="relative">
-          {loading ? (
-            <div className="flex h-64 items-center justify-center">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-          ) : (
-            <>
-              <div className="grid grid-cols-3 gap-4 sm:grid-cols-4">
-                {channels.map((channel, i) => (
-                  <motion.div
-                    key={channel.id}
-                    title={channel.name}
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true, amount: 0.5 }}
-                    transition={{
-                      delay: i * 0.05,
-                      type: "spring",
-                      stiffness: 100,
-                    }}
-                    className="flex aspect-video items-center justify-center rounded-lg border border-border bg-neutral-800 p-2 sm:p-4"
-                  >
-                    <Image
-                      src={channel.logo_url}
-                      alt={channel.name}
-                      width={100}
-                      height={60}
-                      className="h-auto w-full object-contain"
-                    />
-                  </motion.div>
-                ))}
-              </div>
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-secondary via-secondary/50 to-transparent" />
-            </>
-          )}
+            <section className="channels">
+                {loading ? (
+                    <div className="grid">
+                        {[...Array(8)].map((_, i) => (
+                             <div key={i} className="card h-[110px] bg-card animate-pulse"/>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="grid">
+                        {channels.map((channel, i) => (
+                           <ChannelCard key={channel.id} channel={channel} delay={i * 0.4} />
+                        ))}
+                    </div>
+                )}
+            </section>
         </div>
-      </div>
     </section>
   );
 }

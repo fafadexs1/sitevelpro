@@ -16,6 +16,32 @@ type Channel = {
   logo_url: string;
 };
 
+const ChannelCard = ({ channel, delay }: { channel: Channel; delay: number }) => (
+   <motion.div
+      key={channel.id}
+      title={channel.name}
+      variants={{
+          hidden: { opacity: 0, y: 20 },
+          visible: { opacity: 1, y: 0 },
+      }}
+       style={{ "--delay": `${delay}s` } as React.CSSProperties}
+       className="flex flex-col items-center justify-start text-center"
+    >
+      <div className="card h-[110px] w-full max-w-[140px]" data-float>
+        <span className="shine"></span>
+         <Image
+            className="logo"
+            alt={channel.name}
+            src={channel.logo_url}
+            width={140}
+            height={78}
+            unoptimized // SVGs are better without optimization
+          />
+      </div>
+      <p className="mt-2 text-xs sm:text-sm text-muted-foreground">{channel.name}</p>
+    </motion.div>
+);
+
 export function TvPage() {
   const [channels, setChannels] = useState<Channel[]>([]);
   const [loading, setLoading] = useState(true);
@@ -80,38 +106,19 @@ export function TvPage() {
                 </div>
             ) : (
                 <motion.div 
-                    className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-4 sm:gap-6"
+                    className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-x-4 gap-y-8 sm:gap-6"
                     initial="hidden"
                     animate="visible"
                     variants={{
                         visible: {
                             transition: {
-                                staggerChildren: 0.03,
+                                staggerChildren: 0.02,
                             },
                         },
                     }}
                 >
-                    {channels.map((channel) => (
-                         <motion.div
-                            key={channel.id}
-                            title={channel.name}
-                            variants={{
-                                hidden: { opacity: 0, y: 20 },
-                                visible: { opacity: 1, y: 0 },
-                            }}
-                            className="flex flex-col items-center justify-center text-center gap-2"
-                        >
-                            <div className="w-24 h-24 sm:w-28 sm:h-28 flex items-center justify-center rounded-2xl border border-border bg-card p-3 transition-transform hover:scale-105 hover:bg-accent">
-                                <Image
-                                src={channel.logo_url}
-                                alt={channel.name}
-                                width={80}
-                                height={80}
-                                className="object-contain"
-                                />
-                            </div>
-                            <p className="text-xs sm:text-sm text-muted-foreground">{channel.name}</p>
-                        </motion.div>
+                    {channels.map((channel, i) => (
+                         <ChannelCard key={channel.id} channel={channel} delay={i * 0.1} />
                     ))}
                 </motion.div>
             )}
