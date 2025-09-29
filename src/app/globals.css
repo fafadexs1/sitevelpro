@@ -192,170 +192,43 @@
 }
 
 
-/* === VELPRO STREAMING SECTION ========== */
-
-@property --angle {
-  syntax: "<angle>";
-  initial-value: 0deg;
-  inherits: false;
+.streaming-background {
+  transition: background-image 0.7s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-@keyframes rotate-border {
-  to {
-    --angle: 360deg;
-  }
-}
-
-.velpro-streaming-section {
-  padding: 2.5rem 1rem;
-  overflow-x: hidden;
-}
-
-.streaming-cards-exact {
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 2rem;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
-  padding: 2rem 1rem 2rem 1rem;
-  margin: 0 -1rem;
-}
-
-.stream-card-exact {
-  position: relative;
-  min-width: 320px;
-  max-width: 340px;
-  height: 500px;
-  border-radius: 24px;
-  flex-shrink: 0;
-  scroll-snap-align: start;
-  z-index: 0;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-  transition: transform 0.4s ease, box-shadow 0.4s ease;
-  will-change: transform;
-}
-
-.card-inner {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  background-size: cover;
-  background-position: center;
-  border-radius: 24px;
-  overflow: hidden;
-}
-
-.stream-card-exact:hover {
-  transform: translateY(-15px) scale(1.03);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), 0 20px 40px rgba(0, 255, 153, 0.2);
-}
-
-.stream-card-exact::before {
+.streaming-background::after {
   content: '';
   position: absolute;
   inset: 0;
-  padding: 2px;
-  border-radius: 24px;
-  background: conic-gradient(from var(--angle, 0deg), transparent, #1BDD25, transparent 20%);
+  background: linear-gradient(to top, 
+    hsl(var(--background)) 0%, 
+    hsla(var(--background) / 0.8) 20%, 
+    hsla(var(--background) / 0) 50%
+  );
   z-index: 1;
-  animation: rotate-border 4s linear infinite;
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: destination-out;
-  mask-composite: exclude;
-  pointer-events: none;
-  opacity: 0.9;
 }
 
-.card-overlay {
+.streaming-background::before {
+  content: "";
   position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 1.5rem;
-  color: #fff;
-  border-radius: 22px 22px 0 0;
+  inset: 0;
+  background-image: linear-gradient(
+    90deg,
+    rgba(2, 0, 36, 0.2) 0%,
+    rgba(2, 0, 36, 0) 2px
+  ),
+  linear-gradient(
+    0deg,
+    rgba(2, 0, 36, 0.2) 0%,
+    rgba(2, 0, 36, 0) 2px
+  );
+  background-size: 100% 4px, 4px 100%;
+  opacity: 0.2;
+  animation: scanlines 50s linear infinite;
   z-index: 2;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 20%, rgba(0, 0, 0, 0.2) 80%);
-  backdrop-filter: blur(10px);
-  transform: translateY(20%);
-  transition: transform 0.4s ease-out;
-  will-change: transform;
 }
 
-.stream-card-exact:hover .card-overlay {
-  transform: translateY(0);
-}
-
-.logo-img {
-  max-width: 140px;
-  max-height: 28px;
-  margin-bottom: 1rem;
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-  object-fit: contain;
-  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.85));
-  border-radius: 10px;
-  opacity: 0.95;
-  transition: opacity 0.4s ease-out, transform 0.4s ease-out;
-}
-
-.card-overlay h3 {
-  margin: 0 0 0.5rem;
-  font-size: 1.15rem;
-  line-height: 1.4;
-  color: #1BDD25;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
-  opacity: 0.9;
-}
-
-.card-overlay p {
-  font-size: 0.95rem;
-  color: #e5fff5;
-  margin: 0;
-  line-height: 1.6;
-  opacity: 0.85;
-}
-
-/* Scrollbar real visível apenas se não for Android */
-.streaming-cards-exact::-webkit-scrollbar {
-  height: 8px;
-}
-
-.streaming-cards-exact::-webkit-scrollbar-thumb {
-  background-color: #1BDD25;
-  border-radius: 4px;
-}
-
-.streaming-cards-exact::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
-}
-
-/* Esconde scrollbar real no Android */
-.hide-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-
-.custom-scrollbar-mobile {
-  height: 6px;
-  width: 60%;
-  margin: 0 auto;
-  background-color: #1BDD25;
-  border-radius: 4px;
-  margin-top: 1rem;
-  display: none;
-}
-
-@media (max-width: 768px) {
-  .stream-card-exact {
-    height: 460px;
-    min-width: 280px;
-  }
-
-  .stream-card-exact:hover {
-    transform: translateY(-10px) scale(1.02);
-  }
+@keyframes scanlines {
+  0% { background-position: 0 0; }
+  100% { background-position: 100vw 0; }
 }

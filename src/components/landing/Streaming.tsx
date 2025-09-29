@@ -2,7 +2,8 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef } from "react";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const streamingServices = [
   {
@@ -29,51 +30,64 @@ const streamingServices = [
 ];
 
 export function Streaming() {
-    const scrollContainerRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
-        const customScrollbar = document.getElementById("custom-scrollbar-mobile");
-        const scrollContainer = scrollContainerRef.current;
-
-        if (customScrollbar && scrollContainer) {
-            if (isIOS) {
-                customScrollbar.style.display = "none";
-            } else {
-                customScrollbar.style.display = "block";
-                scrollContainer.style.scrollbarWidth = "none"; 
-                scrollContainer.style.setProperty("-ms-overflow-style", "none");
-                scrollContainer.classList.add("hide-scrollbar");
-            }
-        }
-  }, []);
+    const [selectedService, setSelectedService] = useState(streamingServices[0]);
 
   return (
-    <div className="velpro-streaming-section">
-      <div ref={scrollContainerRef} className="streaming-cards-exact">
-        {streamingServices.map((service, index) => (
-          <div className="stream-card-exact" key={index}>
-            <div
-              className="card-inner"
-              style={{ backgroundImage: `url('${service.bgImage}')` }}
-            >
-              <div className="card-overlay">
-                <Image
-                  src={service.logo}
-                  alt={service.logoAlt}
-                  width={140}
-                  height={28}
-                  className="logo-img"
-                />
-                <h3>{service.title}</h3>
-                <p>{service.description}</p>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+    <section className="relative min-h-[70vh] w-full overflow-hidden border-t border-border bg-background flex items-end">
+       {/* Background Image */}
+       <AnimatePresence>
+            <motion.div
+                key={selectedService.bgImage}
+                initial={{ opacity: 0, scale: 1.1 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                className="absolute inset-0 streaming-background"
+                style={{ backgroundImage: `url('${selectedService.bgImage}')`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+            />
+        </AnimatePresence>
 
-      <div id="custom-scrollbar-mobile" className="custom-scrollbar-mobile"></div>
-    </div>
+      <div className="relative z-10 w-full p-4 sm:p-8 lg:p-12 text-foreground">
+        <div className="mx-auto max-w-7xl">
+            {/* Content Display */}
+            <motion.div 
+                 key={selectedService.title}
+                 initial={{ opacity: 0, y: 20 }}
+                 animate={{ opacity: 1, y: 0 }}
+                 transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
+                 className="max-w-2xl"
+            >
+                <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-white drop-shadow-md">
+                    {selectedService.title}
+                </h2>
+                <p className="mt-4 text-lg text-white/80 drop-shadow-sm">
+                    {selectedService.description}
+                </p>
+            </motion.div>
+            
+            {/* Logo Grid */}
+            <div className="mt-12 grid grid-cols-3 gap-4 sm:gap-6 max-w-md">
+                {streamingServices.map((service) => (
+                    <motion.div
+                        key={service.logoAlt}
+                        onMouseEnter={() => setSelectedService(service)}
+                        className={`relative aspect-video cursor-pointer rounded-lg border-2 transition-all duration-300 ease-out ${
+                            selectedService.logoAlt === service.logoAlt
+                            ? 'border-primary/80 scale-105 shadow-2xl shadow-primary/20'
+                            : 'border-transparent opacity-60 hover:opacity-100 hover:scale-105'
+                        }`}
+                         whileHover={{ scale: 1.05 }}
+                    >
+                         <Image
+                            src={service.logo}
+                            alt={service.logoAlt}
+                            fill
+                            className="object-contain p-2 sm:p-4 bg-black/30 backdrop-blur-sm rounded-lg"
+                         />
+                    </motion.div>
+                ))}
+            </div>
+        </div>
+      </div>
+    </section>
   );
 }
