@@ -58,6 +58,12 @@ const nextConfig: NextConfig = {
         hostname: 'velpro.net.br',
         port: '',
         pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'i0.wp.com',
+        port: '',
+        pathname: '/**',
       }
     ],
   },

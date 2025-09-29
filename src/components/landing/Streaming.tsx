@@ -14,7 +14,7 @@ const streamingServices = [
     description: "A diversão no entretenimento, a informação do jornalismo e muita emoção nos esportes.",
   },
   {
-    bgImage: "https://velpro.net.br/wp-content/uploads/2025/06/GloboPlay-2.jpg",
+    bgImage: "https://i0.wp.com/cloud.estacaonerd.com/wp-content/uploads/2019/10/06213603/telecine.jpg?fit=1920%2C1080&ssl=1",
     logo: "https://velpro.net.br/wp-content/uploads/2025/06/48D087-2.png",
     logoAlt: "Telecine",
     title: "Tenha os maiores sucessos do cinema com a Velpro + Telecine",
