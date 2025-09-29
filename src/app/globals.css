@@ -368,6 +368,12 @@
     align-items:center;
 }
 
+@media (min-width: 1024px) {
+  .wrap {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 .headline{
     display:flex;
     flex-direction:column;
