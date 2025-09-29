@@ -4,6 +4,7 @@ import { Hero } from "@/components/landing/Hero";
 import { Plans } from "@/components/landing/Plans";
 import dynamic from 'next/dynamic';
 
+const CdnHighlight = dynamic(() => import('@/components/landing/CdnHighlight').then(mod => mod.CdnHighlight));
 const Coverage = dynamic(() => import('@/components/landing/Coverage').then(mod => mod.Coverage));
 const Advantages = dynamic(() => import('@/components/landing/Advantages').then(mod => mod.Advantages));
 const Games = dynamic(() => import('@/components/landing/Games').then(mod => mod.Games));
@@ -24,6 +25,7 @@ export default function Home() {
       <main>
         <Hero />
         <Plans />
+        <CdnHighlight />
         <Coverage />
         <Advantages />
         <Games />
