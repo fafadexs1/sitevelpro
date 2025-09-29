@@ -64,6 +64,12 @@ const nextConfig: NextConfig = {
         hostname: 'i0.wp.com',
         port: '',
         pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'gamtelecom.com.br',
+        port: '',
+        pathname: '/**',
       }
     ],
   },

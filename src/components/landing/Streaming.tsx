@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const streamingServices = [
   {
-    bgImage: "https://velpro.net.br/canais/streamings/GloboPlay.jpg",
+    bgImage: "https://gamtelecom.com.br/wp-content/uploads/2024/06/03185304635068.jpg",
     logo: "https://velpro.net.br/wp-content/uploads/2025/06/48D087-1.png",
     logoAlt: "Globoplay",
     title: "Velpro + Globoplay, isso é entretenimento",
