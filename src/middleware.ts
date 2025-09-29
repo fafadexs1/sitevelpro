@@ -1,8 +1,14 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { updateSession } from '@/utils/supabase/middleware'
-import { createClient } from '@/utils/supabase/server';
 
 export async function middleware(request: NextRequest) {
+  // Força HTTPS em produção
+  if (process.env.NODE_ENV === 'production' && request.headers.get('x-forwarded-proto') !== 'https') {
+    const newUrl = new URL(request.url);
+    newUrl.protocol = 'https:';
+    return NextResponse.redirect(newUrl.toString(), 301); // 301 para redirecionamento permanente
+  }
+
   // Primeiro, lida com a sessão do Supabase
   const { response, supabase } = await updateSession(request);
 
