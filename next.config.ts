@@ -34,6 +34,12 @@ const nextConfig: NextConfig = {
         hostname: 'bqxdyinyzfxqghyuzsbs.supabase.co',
         port: '',
         pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cmsassets.rgpub.io',
+        port: '',
+        pathname: '/**',
       }
     ],
   },
