@@ -1,0 +1,14 @@
+{
+  "valorant": {
+    "src": "https://picsum.photos/seed/valorant/800/450",
+    "aiHint": "gameplay screenshot"
+  },
+  "pubg": {
+    "src": "https://picsum.photos/seed/pubg/800/450",
+    "aiHint": "battle royale"
+  },
+  "cod": {
+    "src": "https://picsum.photos/seed/cod/800/450",
+    "aiHint": "first-person shooter"
+  }
+}

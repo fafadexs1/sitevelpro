@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic';
 
 const Coverage = dynamic(() => import('@/components/landing/Coverage').then(mod => mod.Coverage));
 const Advantages = dynamic(() => import('@/components/landing/Advantages').then(mod => mod.Advantages));
+const Games = dynamic(() => import('@/components/landing/Games').then(mod => mod.Games));
 const Mesh = dynamic(() => import('@/components/landing/Mesh').then(mod => mod.Mesh));
 const TvSection = dynamic(() => import('@/components/landing/Tv').then(mod => mod.TvSection));
 const Ceo = dynamic(() => import('@/components/landing/Ceo').then(mod => mod.Ceo));
@@ -24,6 +25,7 @@ export default function Home() {
         <Plans />
         <Coverage />
         <Advantages />
+        <Games />
         <Mesh />
         <TvSection />
         <Ceo />
