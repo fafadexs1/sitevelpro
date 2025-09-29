@@ -232,3 +232,18 @@
   0% { background-position: 0 0; }
   100% { background-position: 100vw 0; }
 }
+
+.text-white {
+  --tw-text-opacity: 1;
+  color: rgb(255 255 255 / var(--tw-text-opacity));
+}
+
+.drop-shadow-md {
+  filter: drop-shadow(0 4px 3px rgb(0 0 0 / 0.07)) drop-shadow(0 2px 2px rgb(0 0 0 / 0.06));
+}
+.text-white\/80 {
+  color: rgb(255 255 255 / 0.8);
+}
+.drop-shadow-sm {
+  filter: drop-shadow(0 1px 1px rgb(0 0 0 / 0.05));
+}
