@@ -11,7 +11,6 @@ import { Testimonials } from "@/components/landing/Testimonials";
 import { Faq } from "@/components/landing/Faq";
 import { Contact } from "@/components/landing/Contact";
 import { Footer } from "@/components/landing/Footer";
-import { createClient } from "@/utils/supabase/server";
 import { createBrowserClient } from "@supabase/ssr";
 import type { Metadata } from 'next';
 
@@ -19,7 +18,11 @@ import type { Metadata } from 'next';
 export async function generateMetadata(
   { params }: { params: { slug: string } }
 ): Promise<Metadata> {
-  const supabase = createClient();
+  // Para generateMetadata em rotas de build, precisamos de um cliente que não dependa de cookies.
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
   const path = `/${params.slug}`;
 
   const { data: rules } = await supabase
