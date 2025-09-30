@@ -124,14 +124,15 @@ export function ContractProvider({ children, user }: { children: React.ReactNode
             if (!selectedContractId) return;
             setLoadingDetails(true);
             const supabase = createClient();
+            const currentYear = new Date().getFullYear();
 
-            // Stale-while-revalidate for invoices
+            // Stale-while-revalidate for invoices of the current year
             const { data: cachedInvoices } = await supabase.from('invoices').select('invoices_data').eq('contract_id', selectedContractId).single();
             if (cachedInvoices?.invoices_data) {
-                const apiInvoices = cachedInvoices.invoices_data as ApiInvoice[];
+                const apiInvoices = (cachedInvoices.invoices_data as ApiInvoice[]).filter(inv => new Date(inv.dataVencimento).getFullYear() === currentYear);
                 setInvoices(apiInvoices.map(f => ({ id: String(f.id), doc: f.numeroDocumento, due: f.dataVencimento, amount: f.valor, status: f.status, paidAt: f.dataPagamento, pix: f.codigoPix, link: f.link })));
             }
-             getInvoices(parseInt(selectedContractId)).then(result => {
+             getInvoices(parseInt(selectedContractId, 10), currentYear).then(result => {
                 if (result.success && result.data) {
                     setInvoices(result.data.map(f => ({ id: String(f.id), doc: f.numeroDocumento, due: f.dataVencimento, amount: f.valor, status: f.status, paidAt: f.dataPagamento, pix: f.codigoPix, link: f.link })));
                 } else if(!cachedInvoices) {
@@ -139,15 +140,15 @@ export function ContractProvider({ children, user }: { children: React.ReactNode
                 }
              });
 
-            // Stale-while-revalidate for work orders
+            // Stale-while-revalidate for work orders of the current year
             const { data: cachedOrders } = await supabase.from('work_orders').select('orders').eq('contract_id', selectedContractId).single();
             if (cachedOrders?.orders) {
-                const apiOrders = cachedOrders.orders as ApiWorkOrder[];
-                setOpenTickets(apiOrders.filter(o => o.status.toLowerCase() !== 'encerrada').map(o => ({ id: o.ocorrencia, subject: o.motivo, createdAt: `${new Date(o.data_cadastro).toLocaleDateString()} ${o.hora_cadastro}`, status: o.status })));
+                const apiOrders = (cachedOrders.orders as ApiWorkOrder[]).filter(o => new Date(o.data_cadastro).getFullYear() === currentYear);
+                setOpenTickets(apiOrders.filter(o => o.status.toLowerCase() !== 'encerrada' && o.status.toLowerCase() !== 'encerrado').map(o => ({ id: String(o.ocorrencia), subject: o.motivo, createdAt: `${new Date(o.data_cadastro).toLocaleDateString()} ${o.hora_cadastro}`, status: o.status })));
             }
-             getWorkOrders(parseInt(selectedContractId)).then(result => {
+             getWorkOrders(parseInt(selectedContractId, 10), currentYear).then(result => {
                 if (result.success && result.data) {
-                    setOpenTickets(result.data.filter(o => o.status.toLowerCase() !== 'encerrada').map(o => ({ id: o.ocorrencia, subject: o.motivo, createdAt: `${new Date(o.data_cadastro).toLocaleDateString()} ${o.hora_cadastro}`, status: o.status })));
+                    setOpenTickets(result.data.filter(o => o.status.toLowerCase() !== 'encerrada' && o.status.toLowerCase() !== 'encerrado').map(o => ({ id: String(o.ocorrencia), subject: o.motivo, createdAt: `${new Date(o.data_cadastro).toLocaleDateString()} ${o.hora_cadastro}`, status: o.status })));
                 } else if(!cachedOrders) {
                     toast({ variant: 'destructive', title: 'Erro ao buscar chamados', description: result.error });
                 }
@@ -201,5 +202,3 @@ export function useContract() {
     }
     return context;
 }
-
-    
