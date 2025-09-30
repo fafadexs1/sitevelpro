@@ -70,7 +70,14 @@ export async function getWorkOrders(contractId: number, year: number): Promise<{
             }
             
             const existingOrders = (existingData?.orders as any[]) || [];
-            const otherYearsOrders = existingOrders.filter(wo => new Date(wo.data_cadastro).getFullYear() !== year);
+
+            // Remove ordens do ano que estamos atualizando e também remove duplicatas baseadas no ID
+            const newOrderIds = new Set(workOrders.map(wo => wo.id));
+            const otherYearsOrders = existingOrders.filter(wo => {
+                 const orderYear = new Date(wo.data_cadastro).getFullYear();
+                 return orderYear !== year && !newOrderIds.has(wo.id);
+            });
+            
             const updatedOrders = [...otherYearsOrders, ...workOrders];
 
             const { error: upsertError } = await supabase

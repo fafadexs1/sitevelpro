@@ -58,8 +58,6 @@ export async function getInvoices(contractId: number, year: number): Promise<{ s
         const invoices = data.titulos;
 
         if (invoices) {
-            // Em vez de fazer um upsert completo, seria melhor mesclar os dados anuais
-            // Por simplicidade, vamos substituir os dados do contrato por ano
             const { data: existingData, error: fetchError } = await supabase
                 .from('invoices')
                 .select('invoices_data')
@@ -71,10 +69,16 @@ export async function getInvoices(contractId: number, year: number): Promise<{ s
             }
 
             const existingInvoices = (existingData?.invoices_data as any[]) || [];
-            // Remove faturas do ano que estamos atualizando e adiciona as novas
-            const otherYearsInvoices = existingInvoices.filter(inv => new Date(inv.dataVencimento).getFullYear() !== year);
-            const updatedInvoices = [...otherYearsInvoices, ...invoices];
+            
+            // Remove faturas do ano que estamos atualizando e também remove duplicatas baseadas no ID
+            const newInvoiceIds = new Set(invoices.map(inv => inv.id));
+            const otherYearsInvoices = existingInvoices.filter(inv => {
+                const invoiceYear = new Date(inv.dataVencimento).getFullYear();
+                return invoiceYear !== year && !newInvoiceIds.has(inv.id);
+            });
 
+            // Une as faturas de outros anos com as novas faturas, garantindo que não haja duplicatas
+            const updatedInvoices = [...otherYearsInvoices, ...invoices];
 
             const { error: upsertError } = await supabase
                 .from('invoices')
