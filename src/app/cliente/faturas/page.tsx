@@ -13,12 +13,11 @@ import {
 import { AnimatePresence, motion } from 'framer-motion';
 import { getInvoices } from '@/actions/invoiceActions';
 import { useToast } from '@/hooks/use-toast';
-import { format } from 'date-fns';
+import { format, isPast } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { createClient } from '@/utils/supabase/client';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 
 type Invoice = {
   id: number;
@@ -103,8 +102,8 @@ export default function FaturasPage() {
     return Array.from(years).sort((a, b) => b.localeCompare(a));
   }, [invoices]);
   
-  const unpaidInvoices = invoices.filter(f => f.status.toLowerCase() === 'aberto');
-  const paidInvoices = invoices.filter(f => f.status.toLowerCase() !== 'aberto' && f.status.toLowerCase() !== 'cancelado');
+  const unpaidInvoices = invoices.filter(f => f.status.toLowerCase() === 'aberto' && new Date(f.dataVencimento).getFullYear().toString() === selectedYear);
+  const paidInvoices = invoices.filter(f => f.status.toLowerCase() !== 'aberto' && f.status.toLowerCase() !== 'cancelado' && new Date(f.dataVencimento).getFullYear().toString() === selectedYear);
   
   if (loading && invoices.length === 0) { // Só mostra o loading grande se não tiver nada pra mostrar
     return (

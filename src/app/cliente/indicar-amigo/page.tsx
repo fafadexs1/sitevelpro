@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useContract } from "@/components/cliente/ContractProvider";
 import { StatusBadge } from "@/components/cliente/ui-helpers";
 import { Copy, Loader2, Phone, Mail } from "lucide-react";
@@ -14,6 +14,7 @@ import * as z from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import type { Referral } from '@/components/cliente/ContractProvider';
 
 const referralSchema = z.object({
   referred_name: z.string().min(3, "Nome do amigo é obrigatório."),
@@ -27,11 +28,42 @@ export default function IndicarAmigoPage() {
   const { toast } = useToast();
   const [isSubmittingReferral, setIsSubmittingReferral] = useState(false);
   const [siteUrl, setSiteUrl] = useState('');
+  const [referrals, setReferrals] = useState<Referral[]>([]);
+  const [loadingReferrals, setLoadingReferrals] = useState(true);
 
   useEffect(() => {
     // Acessa a variável de ambiente apenas no lado do cliente
     setSiteUrl(process.env.NEXT_PUBLIC_SITE_URL || '');
   }, []);
+  
+  const fetchReferrals = useCallback(async () => {
+    if (!contract?.id) return;
+    setLoadingReferrals(true);
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from('referrals')
+      .select('*')
+      .eq('referrer_customer_id', contract.id)
+      .order('created_at', { ascending: false });
+      
+    if (error) {
+      toast({ variant: 'destructive', title: 'Erro', description: 'Não foi possível carregar suas indicações.' });
+    } else {
+      setReferrals(data.map(r => ({
+        id: r.id,
+        name: r.referred_name,
+        phone: r.referred_phone,
+        email: r.referred_email,
+        date: r.created_at,
+        status: r.status,
+      })));
+    }
+    setLoadingReferrals(false);
+  }, [contract?.id, toast]);
+
+  useEffect(() => {
+    fetchReferrals();
+  }, [fetchReferrals]);
   
   const referralForm = useForm<ReferralFormData>({
     resolver: zodResolver(referralSchema),
@@ -55,7 +87,7 @@ export default function IndicarAmigoPage() {
     } else {
         toast({ title: 'Sucesso!', description: 'Sua indicação foi enviada! Agradecemos a confiança.' });
         referralForm.reset();
-        // Here you would ideally refetch the referrals list
+        fetchReferrals();
     }
     setIsSubmittingReferral(false);
   }
@@ -112,12 +144,16 @@ export default function IndicarAmigoPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {!contract.referrals || contract.referrals.length === 0 ? (
+                      {loadingReferrals ? (
+                        <TableRow>
+                          <TableCell colSpan={4} className="text-center h-24 text-muted-foreground"><Loader2 className="inline-block animate-spin"/></TableCell>
+                        </TableRow>
+                      ) : !referrals || referrals.length === 0 ? (
                         <TableRow>
                           <TableCell colSpan={4} className="text-center h-24 text-muted-foreground">Você ainda não fez nenhuma indicação.</TableCell>
                         </TableRow>
                       ) : (
-                        contract.referrals.map((ref) => (
+                        referrals.map((ref) => (
                           <TableRow key={ref.id}>
                             <TableCell className="font-medium">{ref.name}</TableCell>
                             <TableCell>

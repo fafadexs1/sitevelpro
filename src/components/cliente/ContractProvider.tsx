@@ -5,9 +5,6 @@ import React, { createContext, useContext, useState, useEffect, useMemo, useCall
 import { createClient } from "@/utils/supabase/client";
 import type { User } from "@supabase/supabase-js";
 import { Loader2 } from "lucide-react";
-import { getInvoices } from "@/actions/invoiceActions";
-import { getWorkOrders } from "@/actions/workOrderActions";
-import { useToast } from "@/hooks/use-toast";
 
 // =====================================================
 // Data Types
@@ -29,11 +26,9 @@ type ContratoAPI = {
     };
 };
 
-type ApiInvoice = { id: number; dataVencimento: string; valor: number; status: string; dataPagamento: string | null; codigoPix: string; link: string; numeroDocumento: number };
-type ApiWorkOrder = { id: number; ocorrencia: string; motivo: string; data_cadastro: string; hora_cadastro: string; status: string; };
-
 export interface Invoice { id: string; due: string; amount: number; status: "paid" | "unpaid" | "cancelled" | string; paidAt?: string | null; pix?: string; link: string, doc: number }
 export interface TicketItem { id: string; subject: string; createdAt: string; status: string }
+export interface Referral { id: string; name: string; phone: string | null; email: string | null; date: string; status: 'pendente' | 'verificando' | 'aprovado' | 'rejeitado' }
 
 export interface Contract {
   id: string; // O número do contrato
@@ -43,16 +38,17 @@ export interface Contract {
   usage: { month: string; downloaded: number; uploaded: number; cap: number };
   invoices: Invoice[];
   openTickets: TicketItem[];
+  referrals: Referral[];
 }
 
 // =====================================================
 // Context
 // =====================================================
 interface ContractContextType {
-    contracts: Omit<Contract, 'invoices' | 'openTickets'>[];
+    contracts: Omit<Contract, 'invoices' | 'openTickets' | 'referrals'>[];
     selectedContractId: string | null;
     setSelectedContractId: (id: string) => void;
-    contract: Contract | undefined;
+    contract: Omit<Contract, 'invoices' | 'openTickets' | 'referrals'> | undefined;
     loading: boolean;
     error: string | null;
     pixModal: { open: boolean, code: string | null };
@@ -62,28 +58,20 @@ interface ContractContextType {
 const ContractContext = createContext<ContractContextType | undefined>(undefined);
 
 export function ContractProvider({ children, user }: { children: React.ReactNode, user: User | null }) {
-    const { toast } = useToast();
-    const [contracts, setContracts] = useState<Omit<Contract, 'invoices' | 'openTickets'>[]>([]);
+    const [contracts, setContracts] = useState<Omit<Contract, 'invoices' | 'openTickets' | 'referrals'>[]>([]);
     const [selectedContractId, setSelectedContractId] = useState<string | null>(null);
-    const [invoices, setInvoices] = useState<Invoice[]>([]);
-    const [openTickets, setOpenTickets] = useState<TicketItem[]>([]);
-    
-    const [loadingContracts, setLoadingContracts] = useState(true);
-    const [loadingDetails, setLoadingDetails] = useState(false);
-    
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [pixModal, setPixModal] = useState<{ open: boolean; code: string | null }>({ open: false, code: null });
     
-    const loading = loadingContracts || loadingDetails;
-
     // Função para buscar os contratos base
     useEffect(() => {
         const fetchContracts = async () => {
             if (!user) {
-                setLoadingContracts(false);
+                setLoading(false);
                 return;
             }
-            setLoadingContracts(true);
+            setLoading(true);
             setError(null);
             const supabase = createClient();
 
@@ -97,7 +85,7 @@ export function ContractProvider({ children, user }: { children: React.ReactNode
                 setError(dbError ? "Não foi possível carregar os dados do cliente." : "Nenhum contrato encontrado para este usuário.");
                 if(dbError) console.error("Error fetching client data:", dbError);
                 setContracts([]);
-                setLoadingContracts(false);
+                setLoading(false);
                 return;
             }
 
@@ -112,52 +100,11 @@ export function ContractProvider({ children, user }: { children: React.ReactNode
             
             setContracts(transformedContracts);
             setSelectedContractId(data.selected_contract_id || String(contratosAPI[0]?.contrato) || null);
-            setLoadingContracts(false);
+            setLoading(false);
         };
 
         fetchContracts();
     }, [user]);
-    
-    // Função para buscar detalhes (faturas, chamados) do contrato selecionado
-    useEffect(() => {
-        const fetchContractDetails = async () => {
-            if (!selectedContractId) return;
-            setLoadingDetails(true);
-            const supabase = createClient();
-            const currentYear = new Date().getFullYear();
-
-            // Stale-while-revalidate for invoices of the current year
-            const { data: cachedInvoices } = await supabase.from('invoices').select('invoices_data').eq('contract_id', selectedContractId).single();
-            if (cachedInvoices?.invoices_data) {
-                const apiInvoices = (cachedInvoices.invoices_data as ApiInvoice[]).filter(inv => new Date(inv.dataVencimento).getFullYear() === currentYear);
-                setInvoices(apiInvoices.map(f => ({ id: String(f.id), doc: f.numeroDocumento, due: f.dataVencimento, amount: f.valor, status: f.status, paidAt: f.dataPagamento, pix: f.codigoPix, link: f.link })));
-            }
-             getInvoices(parseInt(selectedContractId, 10), currentYear).then(result => {
-                if (result.success && result.data) {
-                    setInvoices(result.data.map(f => ({ id: String(f.id), doc: f.numeroDocumento, due: f.dataVencimento, amount: f.valor, status: f.status, paidAt: f.dataPagamento, pix: f.codigoPix, link: f.link })));
-                } else if(!cachedInvoices) {
-                     toast({ variant: 'destructive', title: 'Erro ao buscar faturas', description: result.error });
-                }
-             });
-
-            // Stale-while-revalidate for work orders of the current year
-            const { data: cachedOrders } = await supabase.from('work_orders').select('orders').eq('contract_id', selectedContractId).single();
-            if (cachedOrders?.orders) {
-                const apiOrders = (cachedOrders.orders as ApiWorkOrder[]).filter(o => new Date(o.data_cadastro).getFullYear() === currentYear);
-                setOpenTickets(apiOrders.filter(o => o.status.toLowerCase() !== 'encerrada' && o.status.toLowerCase() !== 'encerrado').map(o => ({ id: String(o.ocorrencia), subject: o.motivo, createdAt: `${new Date(o.data_cadastro).toLocaleDateString()} ${o.hora_cadastro}`, status: o.status })));
-            }
-             getWorkOrders(parseInt(selectedContractId, 10), currentYear).then(result => {
-                if (result.success && result.data) {
-                    setOpenTickets(result.data.filter(o => o.status.toLowerCase() !== 'encerrada' && o.status.toLowerCase() !== 'encerrado').map(o => ({ id: String(o.ocorrencia), subject: o.motivo, createdAt: `${new Date(o.data_cadastro).toLocaleDateString()} ${o.hora_cadastro}`, status: o.status })));
-                } else if(!cachedOrders) {
-                    toast({ variant: 'destructive', title: 'Erro ao buscar chamados', description: result.error });
-                }
-             });
-
-            setLoadingDetails(false);
-        };
-        fetchContractDetails();
-    }, [selectedContractId, toast]);
 
     const handleSetSelectedId = useCallback(async (id: string) => {
         setSelectedContractId(id);
@@ -168,19 +115,10 @@ export function ContractProvider({ children, user }: { children: React.ReactNode
     }, [user]);
 
     const contract = useMemo(() => {
-        const baseContract = contracts.find(c => c.id === selectedContractId);
-        if (!baseContract) return undefined;
-        
-        const sortedInvoices = invoices.sort((a,b) => new Date(b.due).getTime() - new Date(a.due).getTime());
-
-        return {
-            ...baseContract,
-            invoices: sortedInvoices,
-            openTickets: openTickets,
-        }
-    }, [contracts, selectedContractId, invoices, openTickets]);
+        return contracts.find(c => c.id === selectedContractId);
+    }, [contracts, selectedContractId]);
     
-    if (loadingContracts) {
+    if (loading) {
         return (
             <div className="flex min-h-screen items-center justify-center bg-secondary">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />

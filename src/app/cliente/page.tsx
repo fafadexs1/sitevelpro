@@ -1,7 +1,7 @@
 
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useContract } from "@/components/cliente/ContractProvider";
 import { Pill, ProgressBar } from "@/components/cliente/ui-helpers";
 import {
@@ -17,22 +17,52 @@ import {
   XCircle,
   Ticket,
   AlertTriangle,
+  Loader2
 } from "lucide-react";
 import { AnimatePresence, motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { format, isPast } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { createClient } from '@/utils/supabase/client';
+import type { Invoice, TicketItem } from '@/components/cliente/ContractProvider';
+
 
 export default function OverviewPage() {
   const { contract, setPixModal, loading } = useContract();
   const router = useRouter();
+  
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [openTickets, setOpenTickets] = useState<TicketItem[]>([]);
+  const [detailsLoading, setDetailsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDetails = async () => {
+        if (!contract) return;
+        setDetailsLoading(true);
+        const supabase = createClient();
+        
+        const { data: invoiceData } = await supabase.from('invoices').select('invoices_data').eq('contract_id', contract.id).single();
+        if (invoiceData?.invoices_data) {
+            setInvoices(invoiceData.invoices_data as Invoice[]);
+        }
+        
+        const { data: ticketData } = await supabase.from('work_orders').select('orders').eq('contract_id', contract.id).single();
+         if (ticketData?.orders) {
+            const allTickets: any[] = ticketData.orders;
+            setOpenTickets(allTickets.filter(o => o.status.toLowerCase() !== 'encerrada' && o.status.toLowerCase() !== 'encerrado').map(o => ({ id: String(o.ocorrencia), subject: o.motivo, createdAt: `${new Date(o.data_cadastro).toLocaleDateString()} ${o.hora_cadastro}`, status: o.status })));
+        }
+
+        setDetailsLoading(false);
+    }
+    fetchDetails();
+  }, [contract]);
+
 
   const getRecentInvoices = () => {
-    if (!contract) return [];
+    if (!invoices) return [];
     
-    const allInvoices = [...contract.invoices]
+    const allInvoices = [...invoices]
         .filter(f => f.status.toLowerCase() !== 'cancelado')
         .sort((a, b) => new Date(b.due).getTime() - new Date(a.due).getTime());
 
@@ -47,13 +77,13 @@ export default function OverviewPage() {
     
     const uniqueRecent = Array.from(new Set(recent.map(f => f!.id))).map(id => recent.find(f => f!.id === id));
     
-    return uniqueRecent.slice(0, 3) as typeof contract.invoices;
+    return uniqueRecent.slice(0, 3) as Invoice[];
   };
 
   const getBannerInfo = () => {
-    if (!contract) return { status: 'loading' };
+    if (!invoices) return { status: 'loading' };
 
-    const unpaid = contract.invoices
+    const unpaid = invoices
         .filter(f => f.status.toLowerCase() === 'aberto')
         .sort((a, b) => new Date(a.due).getTime() - new Date(b.due).getTime());
 
@@ -97,69 +127,73 @@ export default function OverviewPage() {
         exit={{ opacity: 0, y: -10 }}
         transition={{ duration: 0.2 }}
       >
-        {bannerInfo.status === 'past_due' && bannerInfo.invoice && (
-            <div className="mb-6 rounded-2xl border border-yellow-500/50 bg-yellow-500/10 p-4 text-yellow-600">
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                    <AlertTriangle className="h-5 w-5 flex-shrink-0" />
-                    <div>
-                    <p className="font-semibold">Você possui {bannerInfo.count} fatura(s) vencida(s)</p>
-                    <p className="text-sm opacity-80">A mais antiga venceu em {format(new Date(bannerInfo.invoice.due), "dd/MM/yyyy", { locale: ptBR })}. Valor R$ {bannerInfo.invoice.amount.toFixed(2)}</p>
+        {detailsLoading ? <Loader2 className="animate-spin text-primary mb-4"/> : 
+          <>
+            {bannerInfo.status === 'past_due' && bannerInfo.invoice && (
+                <div className="mb-6 rounded-2xl border border-yellow-500/50 bg-yellow-500/10 p-4 text-yellow-600">
+                    <div className="flex flex-wrap items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                        <AlertTriangle className="h-5 w-5 flex-shrink-0" />
+                        <div>
+                        <p className="font-semibold">Você possui {bannerInfo.count} fatura(s) vencida(s)</p>
+                        <p className="text-sm opacity-80">A mais antiga venceu em {format(new Date(bannerInfo.invoice.due), "dd/MM/yyyy", { locale: ptBR })}. Valor R$ {bannerInfo.invoice.amount.toFixed(2)}</p>
+                        </div>
+                    </div>
+                    <div className="flex flex-wrap items-center justify-start gap-2 sm:justify-end">
+                        {bannerInfo.invoice.pix && (
+                        <Button id={`unpaid-alert-pix-${bannerInfo.invoice.id}`} onClick={() => setPixModal({ open: true, code: bannerInfo.invoice.pix! })} variant="outline" size="sm" className="border-yellow-500/40 bg-yellow-500/10 hover:bg-yellow-500/20 gap-2">
+                            <QrCode className="h-4 w-4" /> Copiar PIX
+                        </Button>
+                        )}
+                        <Button asChild size="sm" className="gap-2 bg-yellow-600 text-white hover:bg-yellow-700">
+                          <a id={`unpaid-alert-pdf-${bannerInfo.invoice.id}`} href={bannerInfo.invoice.link} target="_blank" rel="noopener noreferrer">
+                            <Receipt className="h-4 w-4" /> 2ª via (PDF)
+                          </a>
+                        </Button>
+                    </div>
                     </div>
                 </div>
-                <div className="flex flex-wrap items-center justify-start gap-2 sm:justify-end">
-                    {bannerInfo.invoice.pix && (
-                    <Button id={`unpaid-alert-pix-${bannerInfo.invoice.id}`} onClick={() => setPixModal({ open: true, code: bannerInfo.invoice.pix! })} variant="outline" size="sm" className="border-yellow-500/40 bg-yellow-500/10 hover:bg-yellow-500/20 gap-2">
-                        <QrCode className="h-4 w-4" /> Copiar PIX
-                    </Button>
-                    )}
-                    <Button asChild size="sm" className="gap-2 bg-yellow-600 text-white hover:bg-yellow-700">
-                      <a id={`unpaid-alert-pdf-${bannerInfo.invoice.id}`} href={bannerInfo.invoice.link} target="_blank" rel="noopener noreferrer">
-                        <Receipt className="h-4 w-4" /> 2ª via (PDF)
-                      </a>
-                    </Button>
-                </div>
-                </div>
-            </div>
-        )}
+            )}
 
-        {bannerInfo.status === 'open' && bannerInfo.invoice && (
-            <div className="mb-6 rounded-2xl border border-primary/50 bg-primary/10 p-4 text-primary">
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                    <Wallet className="h-5 w-5 flex-shrink-0" />
-                    <div>
-                    <p className="font-semibold">Próxima fatura (Doc: {bannerInfo.invoice.doc})</p>
-                    <p className="text-sm opacity-80">Vencimento em {format(new Date(bannerInfo.invoice.due), "dd/MM/yyyy", { locale: ptBR })}. Valor R$ {bannerInfo.invoice.amount.toFixed(2)}</p>
+            {bannerInfo.status === 'open' && bannerInfo.invoice && (
+                <div className="mb-6 rounded-2xl border border-primary/50 bg-primary/10 p-4 text-primary">
+                    <div className="flex flex-wrap items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                        <Wallet className="h-5 w-5 flex-shrink-0" />
+                        <div>
+                        <p className="font-semibold">Próxima fatura (Doc: {bannerInfo.invoice.doc})</p>
+                        <p className="text-sm opacity-80">Vencimento em {format(new Date(bannerInfo.invoice.due), "dd/MM/yyyy", { locale: ptBR })}. Valor R$ {bannerInfo.invoice.amount.toFixed(2)}</p>
+                        </div>
+                    </div>
+                    <div className="flex flex-wrap items-center justify-start gap-2 sm:justify-end">
+                        {bannerInfo.invoice.pix && (
+                        <Button id={`unpaid-alert-pix-${bannerInfo.invoice.id}`} onClick={() => setPixModal({ open: true, code: bannerInfo.invoice.pix! })} variant="outline" size="sm" className="border-primary/40 bg-primary/10 hover:bg-primary/20 gap-2">
+                            <QrCode className="h-4 w-4" /> Copiar PIX
+                        </Button>
+                        )}
+                        <Button asChild size="sm" className="gap-2 bg-foreground text-background hover:bg-foreground/80">
+                          <a id={`unpaid-alert-pdf-${bannerInfo.invoice.id}`} href={bannerInfo.invoice.link} target="_blank" rel="noopener noreferrer">
+                            <Receipt className="h-4 w-4" /> 2ª via (PDF)
+                          </a>
+                        </Button>
+                    </div>
                     </div>
                 </div>
-                <div className="flex flex-wrap items-center justify-start gap-2 sm:justify-end">
-                    {bannerInfo.invoice.pix && (
-                    <Button id={`unpaid-alert-pix-${bannerInfo.invoice.id}`} onClick={() => setPixModal({ open: true, code: bannerInfo.invoice.pix! })} variant="outline" size="sm" className="border-primary/40 bg-primary/10 hover:bg-primary/20 gap-2">
-                        <QrCode className="h-4 w-4" /> Copiar PIX
-                    </Button>
-                    )}
-                    <Button asChild size="sm" className="gap-2 bg-foreground text-background hover:bg-foreground/80">
-                      <a id={`unpaid-alert-pdf-${bannerInfo.invoice.id}`} href={bannerInfo.invoice.link} target="_blank" rel="noopener noreferrer">
-                        <Receipt className="h-4 w-4" /> 2ª via (PDF)
-                      </a>
-                    </Button>
-                </div>
-                </div>
-            </div>
-        )}
-        
-        {bannerInfo.status === 'paid' && (
-             <div className="mb-6 rounded-2xl border border-green-500/50 bg-green-500/10 p-4 text-green-600">
-                <div className="flex items-center gap-3">
-                    <CheckCircle2 className="h-5 w-5 flex-shrink-0" />
-                    <div>
-                        <p className="font-semibold">Tudo em dia!</p>
-                        <p className="text-sm opacity-80">Não há faturas pendentes para este contrato. Obrigado!</p>
+            )}
+            
+            {bannerInfo.status === 'paid' && (
+                 <div className="mb-6 rounded-2xl border border-green-500/50 bg-green-500/10 p-4 text-green-600">
+                    <div className="flex items-center gap-3">
+                        <CheckCircle2 className="h-5 w-5 flex-shrink-0" />
+                        <div>
+                            <p className="font-semibold">Tudo em dia!</p>
+                            <p className="text-sm opacity-80">Não há faturas pendentes para este contrato. Obrigado!</p>
+                        </div>
                     </div>
                 </div>
-            </div>
-        )}
+            )}
+          </>
+        }
 
         <div className="grid gap-6 lg:grid-cols-3">
             {/* Quick stats */}
@@ -178,11 +212,11 @@ export default function OverviewPage() {
                 </div>
                 <div className="rounded-2xl border border-border bg-card p-4">
                 <div className="mb-1 text-sm text-muted-foreground">Faturas pagas (últimos 12m)</div>
-                <div className="text-2xl font-bold">{contract.invoices.filter(i=>i.status.toLowerCase() ==='pago').length}</div>
+                <div className="text-2xl font-bold">{invoices.filter(i=>i.status.toLowerCase() ==='pago').length}</div>
                 </div>
                 <div className="rounded-2xl border border-border bg-card p-4">
                 <div className="mb-1 text-sm text-muted-foreground">Chamados abertos</div>
-                <div className="text-2xl font-bold">{contract.openTickets.length}</div>
+                <div className="text-2xl font-bold">{openTickets.length}</div>
                 </div>
             </div>
 
@@ -243,7 +277,7 @@ export default function OverviewPage() {
                 <button id="overview-view-all-tickets" onClick={() => router.push('/cliente/chamados')} className="text-sm text-muted-foreground hover:text-foreground">Ver todos</button>
                 </div>
                 <div className="space-y-3">
-                {contract.openTickets.map((t) => (
+                {openTickets.map((t) => (
                     <div key={t.id} className="rounded-xl border border-border bg-secondary p-3">
                     <div className="flex items-start justify-between text-sm gap-2">
                         <div className="flex items-center gap-2"><Ticket className="h-4 w-4 text-primary flex-shrink-0" /> <span><b>{t.id}</b> — {t.subject}</span></div>
@@ -252,7 +286,7 @@ export default function OverviewPage() {
                     <div className="mt-1 text-xs text-muted-foreground">Aberto em {t.createdAt}</div>
                     </div>
                 ))}
-                {contract.openTickets.length === 0 && <div className="text-sm text-muted-foreground">Nenhum chamado aberto.</div>}
+                {openTickets.length === 0 && <div className="text-sm text-muted-foreground">Nenhum chamado aberto.</div>}
                 </div>
             </div>
             </div>
@@ -260,4 +294,3 @@ export default function OverviewPage() {
     </AnimatePresence>
   );
 }
-    
