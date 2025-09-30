@@ -103,8 +103,8 @@ export default function FaturasPage() {
     return Array.from(years).sort((a, b) => b.localeCompare(a));
   }, [invoices]);
   
-  const unpaidInvoices = invoices.filter(f => f.status.toLowerCase() === 'aberto');
-  const paidInvoices = invoices.filter(f => f.status.toLowerCase() !== 'aberto' && f.status.toLowerCase() !== 'cancelado');
+  const unpaidInvoices = invoices.filter(f => new Date(f.dataVencimento).getFullYear().toString() === selectedYear && f.status.toLowerCase() === 'aberto');
+  const paidInvoices = invoices.filter(f => new Date(f.dataVencimento).getFullYear().toString() === selectedYear && f.status.toLowerCase() !== 'aberto' && f.status.toLowerCase() !== 'cancelado');
   
   if (loading && invoices.length === 0) { // Só mostra o loading grande se não tiver nada pra mostrar
     return (
@@ -133,7 +133,7 @@ export default function FaturasPage() {
                     {error}
                   </div>
                 ) : unpaidInvoices.length === 0 ? (
-                <div className="rounded-xl border border-border bg-secondary p-3 text-sm text-muted-foreground">Nenhuma fatura em aberto.</div>
+                <div className="rounded-xl border border-border bg-secondary p-3 text-sm text-muted-foreground">Nenhuma fatura em aberto para {selectedYear}.</div>
                 ) : (
                 <div className="space-y-3">
                     {unpaidInvoices.map(f => (
