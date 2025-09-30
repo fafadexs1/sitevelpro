@@ -112,7 +112,7 @@ export default function IndicarAmigoPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {contract.referrals.length === 0 ? (
+                      {!contract.referrals || contract.referrals.length === 0 ? (
                         <TableRow>
                           <TableCell colSpan={4} className="text-center h-24 text-muted-foreground">Você ainda não fez nenhuma indicação.</TableCell>
                         </TableRow>
@@ -140,5 +140,3 @@ export default function IndicarAmigoPage() {
     </AnimatePresence>
   );
 }
-
-    
