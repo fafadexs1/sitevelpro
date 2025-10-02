@@ -11,18 +11,15 @@ import { Testimonials } from "@/components/landing/Testimonials";
 import { Faq } from "@/components/landing/Faq";
 import { Contact } from "@/components/landing/Contact";
 import { Footer } from "@/components/landing/Footer";
-import { createBrowserClient } from "@supabase/ssr";
+import { createClient } from "@/utils/supabase/server";
 import type { Metadata } from 'next';
 
 // Gera metadados dinâmicos com base nas regras de SEO cadastradas
 export async function generateMetadata(
   { params }: { params: { slug: string } }
 ): Promise<Metadata> {
-  // Para generateMetadata em rotas de build, precisamos de um cliente que não dependa de cookies.
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  // Para generateMetadata em rotas de build, precisamos usar o server client.
+  const supabase = createClient();
   const path = `/${params.slug}`;
 
   const { data: rules } = await supabase
@@ -77,15 +74,14 @@ export async function generateMetadata(
 // e também processa as que são padrões (contêm '{cidade}')
 export async function generateStaticParams() {
   try {
-    // Para generateStaticParams, precisamos de um cliente que não dependa de cookies.
-    const supabase = createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
+    // Para generateStaticParams, precisamos usar o server client.
+    const supabase = createClient();
     const { data: rules, error: rulesError } = await supabase.from('dynamic_seo_rules').select('slug_pattern').eq('allow_indexing', true);
     if (rulesError) throw rulesError;
 
     const params: { slug: string }[] = [];
+
+    if (!rules) return [];
 
     // Processa regras que são caminhos estáticos (sem variáveis)
     const staticRules = rules.filter(r => !r.slug_pattern.includes('{'));
