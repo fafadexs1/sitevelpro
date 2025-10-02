@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useForm, useFieldArray } from "react-hook-form";
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import { DragDropContext, Droppable, Draggable, OnDragEndResponder } from "react-beautiful-dnd";
 import {
   PlusCircle,
   Trash2,
@@ -633,7 +633,7 @@ function PlansTable({
     return <div className="p-8 text-center text-muted-foreground">Nenhum plano deste tipo encontrado.</div>;
   }
 
-  const handleOnDragEnd = async (result: any) => {
+  const handleOnDragEnd: OnDragEndResponder = async (result) => {
     if (!result.destination) return;
 
     const items = Array.from(plans);
@@ -771,7 +771,7 @@ export default function PlansPage() {
 
   useEffect(() => {
     getPlans();
-  }, [toast]);
+  }, []);
 
   const filteredPlans = useMemo(() => plans.filter((p) => p.type === activeTab), [plans, activeTab]);
   const setFilteredPlans = (newPlans: Plan[]) => {
