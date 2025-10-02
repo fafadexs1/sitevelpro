@@ -672,7 +672,7 @@ function PlansTable({
     <DragDropContext onDragEnd={handleOnDragEnd}>
         <Droppable droppableId="plans">
         {(provided) => (
-            <Table {...provided.droppableProps} ref={provided.innerRef}>
+            <Table>
                 <TableHeader>
                     <TableRow>
                     <TableHead className="w-[50px]"></TableHead>
@@ -682,15 +682,16 @@ function PlansTable({
                     <TableHead className="text-right">Ações</TableHead>
                     </TableRow>
                 </TableHeader>
-                <TableBody>
+                <TableBody {...provided.droppableProps} ref={provided.innerRef}>
                     {plans.map((plan, index) => (
                     <Draggable key={plan.id} draggableId={plan.id} index={index}>
                         {(provided) => (
                         <TableRow
                             ref={provided.innerRef}
                             {...provided.draggableProps}
+                            {...provided.dragHandleProps}
                         >
-                            <TableCell {...provided.dragHandleProps} className="cursor-grab">
+                            <TableCell className="cursor-grab">
                                 <GripVertical className="h-5 w-5 text-muted-foreground" />
                             </TableCell>
                             <TableCell className="font-medium text-foreground">{plan.speed}</TableCell>
