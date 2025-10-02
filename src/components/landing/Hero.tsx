@@ -33,7 +33,11 @@ type HeroSlide = {
   feature_2_text?: string | null;
 };
 
-export function Hero() {
+interface HeroProps {
+  city?: string | null;
+}
+
+export function Hero({ city }: HeroProps) {
   const [slides, setSlides] = useState<HeroSlide[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -111,14 +115,14 @@ export function Hero() {
                     </div>
                   )}
                   <h1 className="text-4xl font-black tracking-tight sm:text-5xl lg:text-6xl text-white">
-                    {slide.title_regular}{" "}
+                    {slide.title_regular?.replace('{cidade}', city || '')}{" "}
                     {slide.title_highlighted && (
-                      <span className="text-primary">{slide.title_highlighted}</span>
+                      <span className="text-primary">{slide.title_highlighted.replace('{cidade}', city || '')}</span>
                     )}
                   </h1>
                   {slide.subtitle && (
                     <p className="max-w-xl text-lg text-white/80">
-                      {slide.subtitle}
+                      {slide.subtitle.replace('{cidade}', city || '')}
                     </p>
                   )}
                   <div className="flex flex-wrap gap-3">

@@ -13,81 +13,99 @@ import { Contact } from "@/components/landing/Contact";
 import { Footer } from "@/components/landing/Footer";
 import { createClient } from "@/utils/supabase/server";
 import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
+import dynamic from "next/dynamic";
 
-// Gera metadados dinâmicos com base nas regras de SEO cadastradas
-export async function generateMetadata(
-  { params }: { params: { slug: string } }
-): Promise<Metadata> {
-  // Para generateMetadata em rotas de build, precisamos usar o server client.
-  const supabase = createClient();
-  const path = `/${params.slug}`;
+const CdnHighlight = dynamic(() => import('@/components/landing/CdnHighlight').then(mod => mod.CdnHighlight));
+const Games = dynamic(() => import('@/components/landing/Games').then(mod => mod.Games));
+const Streaming = dynamic(() => import('@/components/landing/Streaming').then(mod => mod.Streaming));
 
-  const { data: rules } = await supabase
-    .from('dynamic_seo_rules')
-    .select('slug_pattern, meta_title, meta_description, canonical_url')
-    .eq('allow_indexing', true);
 
-  if (!rules) return {};
+type PageProps = {
+    params: { slug: string };
+};
 
-  let title: string | undefined;
-  let description: string | undefined;
-  let canonical: string | undefined;
+// --- Helper Functions ---
+async function getPageData(slug: string) {
+    const supabase = createClient();
+    const path = `/${slug}`;
+    let cityName: string | null = null;
+    let isDynamicCityPage = false;
 
-  for (const rule of rules) {
-    if (rule.slug_pattern.includes('{cidade}')) {
-      const regex = new RegExp('^' + rule.slug_pattern.replace('{cidade}', '([a-z0-9-]+)') + '$');
-      const match = path.match(regex);
-      if (match) {
-        const citySlug = match[1];
-        const { data: city } = await supabase
-          .from('cities')
-          .select('name')
-          .eq('slug', citySlug)
-          .single();
-        const cityName = city?.name ?? citySlug;
-        title = rule.meta_title.replace('{cidade}', cityName);
-        description = rule.meta_description?.replace('{cidade}', cityName);
-        canonical = rule.canonical_url
-          ? rule.canonical_url.replace('{cidade}', citySlug)
-          : undefined;
-        break;
-      }
-    } else if (rule.slug_pattern === path) {
-      title = rule.meta_title;
-      description = rule.meta_description ?? undefined;
-      canonical = rule.canonical_url ?? undefined;
-      break;
+    const { data: rules } = await supabase
+        .from('dynamic_seo_rules')
+        .select('slug_pattern, meta_title, meta_description, canonical_url')
+        .eq('allow_indexing', true);
+
+    if (!rules) return { cityName, isDynamicCityPage, meta: null };
+    
+    let meta = null;
+
+    for (const rule of rules) {
+        if (rule.slug_pattern.includes('{cidade}')) {
+            const regex = new RegExp('^' + rule.slug_pattern.replace('{cidade}', '([a-z0-9-]+)') + '$');
+            const match = path.match(regex);
+            if (match) {
+                isDynamicCityPage = true;
+                const citySlug = match[1];
+                const { data: city } = await supabase.from('cities').select('name').eq('slug', citySlug).single();
+                
+                if (city) {
+                    cityName = city.name;
+                    meta = {
+                        title: rule.meta_title.replace('{cidade}', cityName),
+                        description: rule.meta_description?.replace('{cidade}', cityName),
+                        canonical: rule.canonical_url?.replace('{cidade}', citySlug),
+                    };
+                }
+                break;
+            }
+        } else if (rule.slug_pattern === path) {
+            meta = {
+                title: rule.meta_title,
+                description: rule.meta_description ?? undefined,
+                canonical: rule.canonical_url ?? undefined,
+            };
+            break;
+        }
     }
-  }
+    
+    // Se nenhuma regra de SEO correspondeu, mas é um slug, pode ser uma página não configurada.
+    // Você pode querer retornar um 404 aqui.
+    if (!meta) {
+        // notFound();
+    }
 
-  return {
-    title,
-    description,
-    alternates: canonical ? { canonical } : undefined,
-    openGraph: { title, description },
-    twitter: { title, description },
-  };
+    return { cityName, isDynamicCityPage, meta };
 }
 
-// Esta função informa ao Next.js quais páginas dinâmicas gerar no momento da compilação.
-// Ela busca os slugs de todas as regras dinâmicas que não são padrões (não contêm '{')
-// e também processa as que são padrões (contêm '{cidade}')
+
+// --- Metadata Generation ---
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+    const { meta } = await getPageData(params.slug);
+
+    return {
+        title: meta?.title,
+        description: meta?.description,
+        alternates: meta?.canonical ? { canonical: meta.canonical } : undefined,
+        openGraph: { title: meta?.title, description: meta?.description },
+        twitter: { title: meta?.title, description: meta?.description },
+    };
+}
+
+// --- Static Path Generation ---
 export async function generateStaticParams() {
   try {
-    // Para generateStaticParams, precisamos usar o server client.
     const supabase = createClient();
     const { data: rules, error: rulesError } = await supabase.from('dynamic_seo_rules').select('slug_pattern').eq('allow_indexing', true);
     if (rulesError) throw rulesError;
 
     const params: { slug: string }[] = [];
-
     if (!rules) return [];
 
-    // Processa regras que são caminhos estáticos (sem variáveis)
     const staticRules = rules.filter(r => !r.slug_pattern.includes('{'));
     staticRules.forEach(r => params.push({ slug: r.slug_pattern.replace('/', '') }));
 
-    // Processa regras que usam a variável {cidade}
     const cityRules = rules.filter(r => r.slug_pattern.includes('{cidade}'));
     if (cityRules.length > 0) {
         const { data: cities, error: citiesError } = await supabase.from('cities').select('slug');
@@ -108,18 +126,21 @@ export async function generateStaticParams() {
   }
 }
 
-// Esta página renderiza o conteúdo da página inicial para qualquer rota dinâmica.
-// Isso permite ter URLs específicas para SEO, como /cidade-ocidental,
-// enquanto exibe o conteúdo principal do site.
-export default function DynamicPage() {
+// --- Page Component ---
+export default async function DynamicPage({ params }: PageProps) {
+  const { cityName, isDynamicCityPage } = await getPageData(params.slug);
+  
   return (
-    <div className="min-h-screen bg-transparent text-white">
+    <div className="min-h-screen bg-background text-foreground">
       <Header />
       <main>
-        <Hero />
-        <Plans />
-        <Coverage />
+        <Hero city={cityName} />
+        <Plans city={cityName} />
+        <CdnHighlight />
+        <Coverage city={cityName} />
         <Advantages />
+        <Games />
+        <Streaming />
         <Mesh />
         <TvSection />
         <Ceo />

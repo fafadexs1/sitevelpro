@@ -4,7 +4,11 @@
 import { useState } from "react";
 import { MapPin } from "lucide-react";
 
-export function Coverage() {
+interface CoverageProps {
+    city?: string | null;
+}
+
+export function Coverage({ city }: CoverageProps) {
   const [cep, setCep] = useState("");
   const [coverage, setCoverage] = useState<{ ok: boolean; msg: string } | null>(null);
 
@@ -21,8 +25,8 @@ export function Coverage() {
     setCoverage({
       ok,
       msg: ok
-        ? "Cobertura disponível! Podemos instalar em até 48h."
-        : "Ainda não atendemos esse CEP. Deixe seu contato.",
+        ? `Cobertura disponível para este CEP${city ? ` em ${city}`: ''}! Podemos instalar em até 48h.`
+        : `Ainda não atendemos esse CEP${city ? ` em ${city}`: ''}. Deixe seu contato.`
     });
   }
 
@@ -30,7 +34,7 @@ export function Coverage() {
     <section id="cobertura" className="border-t border-border bg-secondary py-16 sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mb-8 max-w-2xl">
-          <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">Consulte sua cobertura</h2>
+          <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">Consulte sua cobertura{city ? ` em ${city}` : ''}</h2>
           <p className="mt-2 text-muted-foreground">Informe seu CEP e verifique se já atendemos sua região.</p>
         </div>
         <form onSubmit={handleCoverageCheck} className="grid max-w-xl gap-3 sm:flex sm:items-center">

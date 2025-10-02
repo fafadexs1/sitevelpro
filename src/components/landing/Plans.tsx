@@ -41,6 +41,10 @@ type Plan = {
   conditions: string | null;
 };
 
+interface PlansProps {
+  city?: string | null;
+}
+
 // Mapeamento de nomes de ícones para componentes de ícone
 const ICONS: { [key: string]: React.ElementType } = {
   check: Check,
@@ -146,7 +150,7 @@ const PlanSkeleton = () => (
 );
 
 
-export function Plans() {
+export function Plans({ city }: PlansProps) {
   const [planType, setPlanType] = useState<"residencial" | "empresarial">("residencial");
   const [allPlans, setAllPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
@@ -325,7 +329,7 @@ export function Plans() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4 md:mb-12">
           <div className="max-w-xl">
-            <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">Escolha seu plano</h2>
+            <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">Escolha seu plano{city ? ` em ${city}`: ''}</h2>
             <p className="mt-2 text-muted-foreground">Sem fidelidade, sem pegadinha. Instalação rápida e suporte que resolve.</p>
           </div>
           <div className="flex shrink-0 rounded-xl bg-card border p-1 text-sm">
