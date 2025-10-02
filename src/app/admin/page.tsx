@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
@@ -6,7 +5,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useForm, useFieldArray } from "react-hook-form";
-import { DragDropContext, Droppable, Draggable, OnDragEndResponder } from "react-beautiful-dnd";
+import { DragDropContext, Draggable, OnDragEndResponder } from "react-beautiful-dnd";
+import { Droppable } from "@/components/admin/Droppable";
 import {
   PlusCircle,
   Trash2,
