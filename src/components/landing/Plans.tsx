@@ -156,7 +156,7 @@ export function Plans() {
     async function getPlans() {
       const supabase = createClient();
       setLoading(true);
-      const { data, error } = await supabase.from('plans').select('*').order('price', { ascending: true });
+      const { data, error } = await supabase.from('plans').select('*').order('sort_order', { ascending: true }).order('price', { ascending: true });
       if (error) {
         console.error("Erro ao buscar planos:", error);
       } else {
