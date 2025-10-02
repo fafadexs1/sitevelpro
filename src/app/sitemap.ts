@@ -1,5 +1,6 @@
+
 import { createClient } from '@/utils/supabase/server';
-import { MetadataRoute } from 'next';
+import { NextResponse } from 'next/server';
 
 async function getSiteUrl(): Promise<string> {
   let siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
@@ -9,12 +10,28 @@ async function getSiteUrl(): Promise<string> {
   return 'http://localhost:3000';
 }
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+// Helper para escapar caracteres XML
+function escapeXml(unsafe: string): string {
+    return unsafe.replace(/[<>&'"]/g, function (c) {
+        switch (c) {
+            case '<': return '&lt;';
+            case '>': return '&gt;';
+            case '&': return '&amp;';
+            case '\'': return '&apos;';
+            case '"': return '&quot;';
+            default: return c;
+        }
+    });
+}
+
+export async function GET() {
   const siteUrl = await getSiteUrl();
   const supabase = createClient();
 
+  const routes: { url: string; lastModified: Date; priority: number }[] = [];
+
   // 1. Rotas Estáticas
-  const staticRoutes: MetadataRoute.Sitemap = [
+  [
     '/',
     '/assinar',
     '/cliente',
@@ -22,14 +39,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/termos-de-uso',
     '/status',
     '/tv'
-  ].map((route) => ({
-    url: `${siteUrl}${route}`,
-    lastModified: new Date(),
-    priority: route === '/' ? 1 : 0.8,
-  }));
+  ].forEach(route => {
+    routes.push({
+      url: `${siteUrl}${route}`,
+      lastModified: new Date(),
+      priority: route === '/' ? 1 : 0.8,
+    });
+  });
 
-  const dynamicRoutes: MetadataRoute.Sitemap = [];
-
+  // 2. Rotas Dinâmicas
   try {
     const { data: allRules, error: rulesError } = await supabase
         .from('dynamic_seo_rules')
@@ -42,7 +60,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         const rulesWithVariable = allRules.filter(rule => rule.slug_pattern.includes('{cidade}'));
         const rulesWithoutVariable = allRules.filter(rule => !rule.slug_pattern.includes('{'));
 
-        // Processa regras que dependem da tabela de cidades
         if (rulesWithVariable.length > 0) {
             const { data: cities, error: citiesError } = await supabase.from('cities').select('slug');
             if (citiesError) throw citiesError;
@@ -50,10 +67,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             if (cities) {
                 for (const rule of rulesWithVariable) {
                     for (const city of cities) {
-                        dynamicRoutes.push({
+                        routes.push({
                             url: `${siteUrl}${rule.slug_pattern.replace('{cidade}', city.slug)}`,
                             lastModified: new Date(),
-                            changeFrequency: 'weekly',
                             priority: 0.7,
                         });
                     }
@@ -61,12 +77,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             }
         }
         
-        // Processa regras que são caminhos estáticos
         for (const rule of rulesWithoutVariable) {
-             dynamicRoutes.push({
+             routes.push({
                 url: `${siteUrl}${rule.slug_pattern}`,
                 lastModified: new Date(),
-                changeFrequency: 'weekly',
                 priority: 0.6,
             });
         }
@@ -74,9 +88,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   } catch (error) {
      console.error("Sitemap: Erro ao processar regras de SEO dinâmicas:", error);
   }
-  
-  return [
-    ...staticRoutes,
-    ...dynamicRoutes,
-  ];
+
+  // 3. Construir o XML
+  const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+  ${routes.map(route => `
+    <url>
+      <loc>${escapeXml(route.url)}</loc>
+      <lastmod>${route.lastModified.toISOString().split('T')[0]}</lastmod>
+      <priority>${route.priority}</priority>
+    </url>
+  `).join('')}
+</urlset>`;
+
+  // 4. Retornar a resposta XML
+  return new NextResponse(sitemapXml.trim(), {
+    headers: {
+      'Content-Type': 'application/xml',
+    },
+  });
 }
