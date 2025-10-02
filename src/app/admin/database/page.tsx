@@ -102,6 +102,7 @@ create table if not exists hero_slides (
   title_highlighted text,
   subtitle text,
   image_url text,
+  image_url_mobile text,
   image_opacity integer default 30,
   button_primary_text text,
   button_primary_link text,

@@ -70,6 +70,7 @@ type HeroSlide = {
   title_highlighted?: string;
   subtitle?: string;
   image_url?: string;
+  image_url_mobile?: string;
   image_opacity?: number;
   button_primary_text?: string;
   button_primary_link?: string;
@@ -96,6 +97,10 @@ const slideSchema = z.object({
   is_active: z.boolean().default(true),
   sort_order: z.coerce.number().default(0),
   image_file: z.any()
+    .optional()
+    .refine((file) => !file || (file instanceof File && file.size <= 5 * 1024 * 1024), `Tamanho máximo de 5MB.`)
+    .refine((file) => !file || (file instanceof File && ["image/jpeg", "image/png", "image/webp"].includes(file.type)), "Apenas .jpg, .png e .webp."),
+  image_file_mobile: z.any()
     .optional()
     .refine((file) => !file || (file instanceof File && file.size <= 5 * 1024 * 1024), `Tamanho máximo de 5MB.`)
     .refine((file) => !file || (file instanceof File && ["image/jpeg", "image/png", "image/webp"].includes(file.type)), "Apenas .jpg, .png e .webp."),
@@ -131,14 +136,15 @@ function SlideForm({
   const onSubmit = async (data: SlideFormData) => {
     setIsSubmitting(true);
     let imageUrl = slide?.image_url;
+    let imageUrlMobile = slide?.image_url_mobile;
 
+    // Upload da imagem de desktop
     if (data.image_file) {
         const file = data.image_file;
-        const filePath = `hero-${Date.now()}.${file.name.split('.').pop()}`;
-
+        const filePath = `hero-desktop-${Date.now()}.${file.name.split('.').pop()}`;
         const { error: uploadError } = await supabase.storage.from('hero-slides').upload(filePath, file, { upsert: true });
         if (uploadError) {
-            toast({ variant: "destructive", title: "Erro de Upload", description: uploadError.message });
+            toast({ variant: "destructive", title: "Erro de Upload (Desktop)", description: uploadError.message });
             setIsSubmitting(false);
             return;
         }
@@ -146,8 +152,28 @@ function SlideForm({
         imageUrl = urlData.publicUrl;
     }
 
-    const slideData = { ...data, image_url: imageUrl, image_opacity: data.image_opacity };
-    delete (slideData as Partial<typeof slideData>).image_file; // Remove o campo do arquivo
+    // Upload da imagem de mobile
+    if (data.image_file_mobile) {
+        const file = data.image_file_mobile;
+        const filePath = `hero-mobile-${Date.now()}.${file.name.split('.').pop()}`;
+        const { error: uploadError } = await supabase.storage.from('hero-slides').upload(filePath, file, { upsert: true });
+        if (uploadError) {
+            toast({ variant: "destructive", title: "Erro de Upload (Mobile)", description: uploadError.message });
+            setIsSubmitting(false);
+            return;
+        }
+        const { data: urlData } = supabase.storage.from('hero-slides').getPublicUrl(filePath);
+        imageUrlMobile = urlData.publicUrl;
+    }
+
+    const slideData = { 
+        ...data, 
+        image_url: imageUrl, 
+        image_url_mobile: imageUrlMobile,
+        image_opacity: data.image_opacity 
+    };
+    delete (slideData as any).image_file;
+    delete (slideData as any).image_file_mobile;
     
     let error;
     if (mode === "add") {
@@ -179,22 +205,42 @@ function SlideForm({
               <FormField control={form.control} name="pre_title" render={({ field }) => (<FormItem><FormLabel>Pré-título</FormLabel><FormControl><Input placeholder="Nova geração: Wi-Fi 6" {...field} /></FormControl><FormMessage /></FormItem>)} />
             </div>
             <FormField control={form.control} name="subtitle" render={({ field }) => (<FormItem><FormLabel>Subtítulo</FormLabel><FormControl><Textarea placeholder="Planos estáveis, latência baixíssima..." {...field} /></FormControl><FormMessage /></FormItem>)} />
-            <FormField control={form.control} name="image_file" render={({ field }) => (
-                <FormItem>
-                    <FormLabel>Imagem de Fundo (1920x1080px)</FormLabel>
-                    <FormControl>
-                    <div className="relative flex items-center justify-center w-full">
-                        <label htmlFor="dropzone-file-hero" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-secondary border-border hover:border-primary hover:bg-accent">
-                            <div className="flex flex-col items-center justify-center pt-5 pb-6"><Upload className="w-8 h-8 mb-3 text-muted-foreground"/><p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Clique para enviar</span> ou arraste</p></div>
-                            <Input id="dropzone-file-hero" type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={(e) => field.onChange(e.target.files ? e.target.files[0] : null)}/>
-                        </label>
-                    </div> 
-                    </FormControl>
-                    {field.value?.name && <p className="text-sm text-muted-foreground mt-2">Novo: {field.value.name}</p>}
-                    {slide?.image_url && !field.value?.name && <div className="mt-2"><p className="text-sm">Atual:</p><Image src={slide.image_url} alt="Preview" width={120} height={67} className="rounded-md border border-border"/></div>}
-                    <FormMessage />
-                </FormItem>
-            )}/>
+            
+            <div className="grid md:grid-cols-2 gap-6 pt-4 border-t">
+              <FormField control={form.control} name="image_file" render={({ field }) => (
+                  <FormItem>
+                      <FormLabel>Imagem Desktop (1920x1080px)</FormLabel>
+                      <FormControl>
+                        <div className="relative flex items-center justify-center w-full">
+                            <label htmlFor="dropzone-file-hero-desktop" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-secondary border-border hover:border-primary hover:bg-accent">
+                                <div className="flex flex-col items-center justify-center pt-5 pb-6"><Upload className="w-8 h-8 mb-3 text-muted-foreground"/><p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Clique para enviar</span> ou arraste</p></div>
+                                <Input id="dropzone-file-hero-desktop" type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={(e) => field.onChange(e.target.files ? e.target.files[0] : null)}/>
+                            </label>
+                        </div> 
+                      </FormControl>
+                      {field.value?.name && <p className="text-sm text-muted-foreground mt-2">Novo: {field.value.name}</p>}
+                      {slide?.image_url && !field.value?.name && <div className="mt-2"><p className="text-sm">Atual:</p><Image src={slide.image_url} alt="Preview Desktop" width={120} height={67} className="rounded-md border border-border"/></div>}
+                      <FormMessage />
+                  </FormItem>
+              )}/>
+               <FormField control={form.control} name="image_file_mobile" render={({ field }) => (
+                  <FormItem>
+                      <FormLabel>Imagem Mobile (1080x1920px)</FormLabel>
+                      <FormControl>
+                        <div className="relative flex items-center justify-center w-full">
+                            <label htmlFor="dropzone-file-hero-mobile" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-secondary border-border hover:border-primary hover:bg-accent">
+                                <div className="flex flex-col items-center justify-center pt-5 pb-6"><Upload className="w-8 h-8 mb-3 text-muted-foreground"/><p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Clique para enviar</span> ou arraste</p></div>
+                                <Input id="dropzone-file-hero-mobile" type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={(e) => field.onChange(e.target.files ? e.target.files[0] : null)}/>
+                            </label>
+                        </div> 
+                      </FormControl>
+                      {field.value?.name && <p className="text-sm text-muted-foreground mt-2">Novo: {field.value.name}</p>}
+                      {slide?.image_url_mobile && !field.value?.name && <div className="mt-2"><p className="text-sm">Atual:</p><Image src={slide.image_url_mobile} alt="Preview Mobile" width={67} height={120} className="rounded-md border border-border"/></div>}
+                      <FormMessage />
+                  </FormItem>
+              )}/>
+            </div>
+
              <FormField
                 control={form.control}
                 name="image_opacity"

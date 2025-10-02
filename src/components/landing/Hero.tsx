@@ -23,6 +23,7 @@ type HeroSlide = {
   title_highlighted?: string | null;
   subtitle?: string | null;
   image_url?: string | null;
+  image_url_mobile?: string | null;
   image_opacity?: number | null;
   button_primary_text?: string | null;
   button_primary_link?: string | null;
@@ -74,20 +75,29 @@ export function Hero() {
         {slides.map((slide, index) => (
           <CarouselItem key={slide.id}>
             <div className="relative overflow-hidden border-b border-border bg-black text-white min-h-[600px] flex items-center">
-              {slide.image_url && (
-                <Image
-                  src={slide.image_url}
-                  alt={slide.title_regular || "Imagem de fundo"}
-                  fill
-                  priority={index === 0}
-                  className="object-cover"
-                  style={{ opacity: (slide.image_opacity ?? 30) / 100 }}
-                />
-              )}
+              <picture>
+                {slide.image_url_mobile && (
+                  <source media="(max-width: 768px)" srcSet={slide.image_url_mobile} />
+                )}
+                {slide.image_url && (
+                  <source media="(min-width: 769px)" srcSet={slide.image_url} />
+                )}
+                {slide.image_url && (
+                   <Image
+                    src={slide.image_url}
+                    alt={slide.title_regular || "Imagem de fundo"}
+                    fill
+                    priority={index === 0}
+                    className="object-cover"
+                    style={{ opacity: (slide.image_opacity ?? 30) / 100 }}
+                  />
+                )}
+              </picture>
+              
                <div className="absolute inset-0 bg-gradient-to-r from-black via-black/70 to-transparent" />
                <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
 
-              <div className="w-full max-w-7xl grid items-center gap-10 py-16 z-10 mx-auto">
+              <div className="w-full max-w-7xl mx-auto grid items-center gap-10 py-16 z-10">
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   whileInView={{ opacity: 1, x: 0 }}
