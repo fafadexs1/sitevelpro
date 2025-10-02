@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
@@ -7,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useForm, useFieldArray } from "react-hook-form";
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import {
   PlusCircle,
   Trash2,
@@ -618,17 +618,50 @@ const PlanForm = ({
 
 function PlansTable({
   plans,
+  setPlans,
   onEditPlan,
   onDeletePlan,
 }: {
   plans: Plan[];
+  setPlans: React.Dispatch<React.SetStateAction<Plan[]>>;
   onEditPlan: (plan: Plan) => void;
   onDeletePlan: (planId: string) => void;
 }) {
+  const { toast } = useToast();
 
   if (!plans || plans.length === 0) {
     return <div className="p-8 text-center text-muted-foreground">Nenhum plano deste tipo encontrado.</div>;
   }
+
+  const handleOnDragEnd = async (result: any) => {
+    if (!result.destination) return;
+
+    const items = Array.from(plans);
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+    
+    // Update sort_order based on new position
+    const updatedPlans = items.map((plan, index) => ({
+      ...plan,
+      sort_order: index,
+    }));
+
+    setPlans(updatedPlans); // Optimistic update
+    
+    // Update Supabase
+    const supabase = createClient();
+    const updates = updatedPlans.map(p => ({ id: p.id, sort_order: p.sort_order }));
+    
+    const { error } = await supabase.from('plans').upsert(updates);
+    
+    if (error) {
+      toast({ variant: 'destructive', title: 'Erro ao reordenar', description: 'Não foi possível salvar a nova ordem.'});
+      setPlans(plans); // Revert on error
+    } else {
+      toast({ title: 'Sucesso!', description: 'Ordem dos planos atualizada.'});
+    }
+  };
+
 
   const formatPrice = (value: number | null | undefined): string => {
     if (value === null || value === undefined) return "N/A";
@@ -636,64 +669,80 @@ function PlansTable({
   };
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead className="w-[50px]">Ordem</TableHead>
-          <TableHead className="w-[150px]">Velocidade</TableHead>
-          <TableHead>Preço</TableHead>
-          <TableHead className="text-center">Destaque</TableHead>
-          <TableHead className="text-right">Ações</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {plans.map((plan) => (
-          <TableRow key={plan.id}>
-            <TableCell className="font-mono text-xs text-muted-foreground">{plan.sort_order}</TableCell>
-            <TableCell className="font-medium text-foreground">{plan.speed} MEGA</TableCell>
-            <TableCell>
-              <div className="flex items-center gap-2">
-                <span className="text-foreground">{formatPrice(plan.price)}</span>
-                {plan.original_price && (
-                  <span className="text-xs text-muted-foreground line-through">
-                    {formatPrice(plan.original_price)}
-                  </span>
-                )}
-              </div>
-            </TableCell>
-            <TableCell className="text-center">
-              {plan.highlight && (
-                <Badge className="border-primary/30 bg-primary/20 text-primary">Sim</Badge>
-              )}
-            </TableCell>
-            <TableCell className="text-right">
-              <Button id={`edit-plan-${plan.id}`} variant="ghost" size="sm" className="mr-2" onClick={() => onEditPlan(plan)}>
-                <Edit className="h-4 w-4" />
-              </Button>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button id={`delete-plan-trigger-${plan.id}`} variant="destructive" size="sm"><Trash2 className="h-4 w-4" /></Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent className="bg-background text-foreground">
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Essa ação não pode ser desfeita. Isso irá apagar permanentemente o plano.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel id={`delete-plan-cancel-${plan.id}`}>Cancelar</AlertDialogCancel>
-                    <AlertDialogAction id={`delete-plan-confirm-${plan.id}`} onClick={() => onDeletePlan(plan.id)}>
-                      Continuar
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+    <DragDropContext onDragEnd={handleOnDragEnd}>
+        <Droppable droppableId="plans">
+        {(provided) => (
+            <Table {...provided.droppableProps} ref={provided.innerRef}>
+                <TableHeader>
+                    <TableRow>
+                    <TableHead className="w-[50px]"></TableHead>
+                    <TableHead className="w-[150px]">Velocidade</TableHead>
+                    <TableHead>Preço</TableHead>
+                    <TableHead className="text-center">Destaque</TableHead>
+                    <TableHead className="text-right">Ações</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {plans.map((plan, index) => (
+                    <Draggable key={plan.id} draggableId={plan.id} index={index}>
+                        {(provided) => (
+                        <TableRow
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                        >
+                            <TableCell {...provided.dragHandleProps} className="cursor-grab">
+                                <GripVertical className="h-5 w-5 text-muted-foreground" />
+                            </TableCell>
+                            <TableCell className="font-medium text-foreground">{plan.speed}</TableCell>
+                            <TableCell>
+                            <div className="flex items-center gap-2">
+                                <span className="text-foreground">{formatPrice(plan.price)}</span>
+                                {plan.original_price && (
+                                <span className="text-xs text-muted-foreground line-through">
+                                    {formatPrice(plan.original_price)}
+                                </span>
+                                )}
+                            </div>
+                            </TableCell>
+                            <TableCell className="text-center">
+                            {plan.highlight && (
+                                <Badge className="border-primary/30 bg-primary/20 text-primary">Sim</Badge>
+                            )}
+                            </TableCell>
+                            <TableCell className="text-right">
+                            <Button id={`edit-plan-${plan.id}`} variant="ghost" size="sm" className="mr-2" onClick={() => onEditPlan(plan)}>
+                                <Edit className="h-4 w-4" />
+                            </Button>
+                            <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                <Button id={`delete-plan-trigger-${plan.id}`} variant="destructive" size="sm"><Trash2 className="h-4 w-4" /></Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent className="bg-background text-foreground">
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                    Essa ação não pode ser desfeita. Isso irá apagar permanentemente o plano.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel id={`delete-plan-cancel-${plan.id}`}>Cancelar</AlertDialogCancel>
+                                    <AlertDialogAction id={`delete-plan-confirm-${plan.id}`} onClick={() => onDeletePlan(plan.id)}>
+                                    Continuar
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
+                            </TableCell>
+                        </TableRow>
+                        )}
+                    </Draggable>
+                    ))}
+                    {provided.placeholder}
+                </TableBody>
+            </Table>
+        )}
+        </Droppable>
+    </DragDropContext>
   );
 }
 
@@ -725,6 +774,11 @@ export default function PlansPage() {
   }, [toast]);
 
   const filteredPlans = useMemo(() => plans.filter((p) => p.type === activeTab), [plans, activeTab]);
+  const setFilteredPlans = (newPlans: Plan[]) => {
+    const otherPlans = plans.filter(p => p.type !== activeTab);
+    const combined = [...otherPlans, ...newPlans].sort((a,b) => a.sort_order - b.sort_order);
+    setPlans(combined);
+  };
 
   const handlePlanAdded = () => {
     getPlans();
@@ -823,6 +877,7 @@ export default function PlansPage() {
               ) : (
                 <PlansTable
                   plans={filteredPlans}
+                  setPlans={setFilteredPlans}
                   onEditPlan={setEditingPlan}
                   onDeletePlan={handleDeletePlan}
                 />
