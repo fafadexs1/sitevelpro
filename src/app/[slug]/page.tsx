@@ -30,53 +30,72 @@ async function getPageData(slug: string) {
     const supabase = createClient();
     const path = `/${slug}`;
     let cityName: string | null = null;
-    let isDynamicCityPage = false;
+    let meta = null;
 
     const { data: rules } = await supabase
         .from('dynamic_seo_rules')
-        .select('slug_pattern, meta_title, meta_description, canonical_url')
+        .select('name, slug_pattern, meta_title, meta_description, canonical_url')
         .eq('allow_indexing', true);
 
-    if (!rules) return { cityName, isDynamicCityPage, meta: null };
+    if (!rules) return { cityName, meta: null };
     
-    let meta = null;
+    // Tenta encontrar uma correspondência exata primeiro
+    const staticMatch = rules.find(rule => rule.slug_pattern === path);
 
-    for (const rule of rules) {
-        if (rule.slug_pattern.includes('{cidade}')) {
-            const regex = new RegExp('^' + rule.slug_pattern.replace('{cidade}', '([a-z0-9-]+)') + '$');
-            const match = path.match(regex);
-            if (match) {
-                isDynamicCityPage = true;
-                const citySlug = match[1];
-                const { data: city } = await supabase.from('cities').select('name').eq('slug', citySlug).single();
-                
-                if (city) {
-                    cityName = city.name;
-                    meta = {
-                        title: rule.meta_title.replace('{cidade}', cityName),
-                        description: rule.meta_description?.replace('{cidade}', cityName),
-                        canonical: rule.canonical_url?.replace('{cidade}', citySlug),
-                    };
+    if (staticMatch) {
+        // Usa o nome da própria regra como o nome da cidade para exibição
+        cityName = staticMatch.name; 
+        meta = {
+            title: staticMatch.meta_title.replace('{cidade}', cityName),
+            description: staticMatch.meta_description?.replace('{cidade}', cityName),
+            canonical: staticMatch.canonical_url?.replace('{cidade}', slug),
+        };
+    } else {
+        // Se não houver correspondência estática, tenta as regras dinâmicas com {cidade}
+        for (const rule of rules) {
+            if (rule.slug_pattern.includes('{cidade}')) {
+                const regex = new RegExp('^' + rule.slug_pattern.replace('{cidade}', '([a-z0-9-]+)') + '$');
+                const match = path.match(regex);
+                if (match) {
+                    const citySlug = match[1];
+                    const { data: city } = await supabase.from('cities').select('name').eq('slug', citySlug).single();
+                    
+                    if (city) {
+                        cityName = city.name;
+                        meta = {
+                            title: rule.meta_title.replace('{cidade}', cityName),
+                            description: rule.meta_description?.replace('{cidade}', cityName),
+                            canonical: rule.canonical_url?.replace('{cidade}', citySlug),
+                        };
+                    }
+                    break;
                 }
-                break;
             }
-        } else if (rule.slug_pattern === path) {
-            meta = {
-                title: rule.meta_title,
-                description: rule.meta_description ?? undefined,
-                canonical: rule.canonical_url ?? undefined,
-            };
-            break;
         }
     }
     
-    // Se nenhuma regra de SEO correspondeu, mas é um slug, pode ser uma página não configurada.
-    // Você pode querer retornar um 404 aqui.
+    if (!meta) {
+      const { data: staticPage } = await supabase
+        .from('dynamic_seo_rules')
+        .select('meta_title, meta_description, canonical_url')
+        .eq('slug_pattern', path)
+        .single();
+      
+      if(staticPage) {
+        meta = {
+          title: staticPage.meta_title,
+          description: staticPage.meta_description ?? undefined,
+          canonical: staticPage.canonical_url ?? undefined,
+        };
+      }
+    }
+
+    // Se nenhuma regra correspondeu, a página não deve ser encontrada.
     if (!meta) {
         // notFound();
     }
 
-    return { cityName, isDynamicCityPage, meta };
+    return { cityName, meta };
 }
 
 
@@ -128,7 +147,7 @@ export async function generateStaticParams() {
 
 // --- Page Component ---
 export default async function DynamicPage({ params }: PageProps) {
-  const { cityName, isDynamicCityPage } = await getPageData(params.slug);
+  const { cityName } = await getPageData(params.slug);
   
   return (
     <div className="min-h-screen bg-background text-foreground">
