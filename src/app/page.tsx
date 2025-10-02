@@ -3,6 +3,7 @@ import { Header } from "@/components/landing/Header";
 import { Hero } from "@/components/landing/Hero";
 import { Plans } from "@/components/landing/Plans";
 import dynamic from 'next/dynamic';
+import { createClient } from "@/utils/supabase/server";
 
 const CdnHighlight = dynamic(() => import('@/components/landing/CdnHighlight').then(mod => mod.CdnHighlight));
 const Coverage = dynamic(() => import('@/components/landing/Coverage').then(mod => mod.Coverage));
@@ -18,7 +19,10 @@ const Contact = dynamic(() => import('@/components/landing/Contact').then(mod =>
 const Footer = dynamic(() => import('@/components/landing/Footer').then(mod => mod.Footer));
 
 
-export default function Home() {
+export default async function Home() {
+  const supabase = createClient();
+  const { data: cities } = await supabase.from('cities').select('name, slug').order('name');
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Header />
@@ -26,7 +30,7 @@ export default function Home() {
         <Hero />
         <Plans />
         <CdnHighlight />
-        <Coverage />
+        <Coverage cities={cities || []} />
         <Advantages />
         <Games />
         <Streaming />

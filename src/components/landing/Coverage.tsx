@@ -3,12 +3,41 @@
 
 import { useState } from "react";
 import { MapPin } from "lucide-react";
+import Link from "next/link";
+
+interface City {
+    name: string;
+    slug: string;
+}
 
 interface CoverageProps {
     city?: string | null;
+    cities: City[];
 }
 
-export function Coverage({ city }: CoverageProps) {
+function CityLinks({ cities }: { cities: City[] }) {
+    if (!cities || cities.length === 0) {
+        return null;
+    }
+
+    return (
+        <div className="mt-8">
+            <h3 className="text-center font-medium text-muted-foreground">Ou navegue por nossas áreas de cobertura:</h3>
+            <div className="mt-4 flex flex-wrap justify-center gap-x-4 gap-y-2 text-sm">
+                {cities.map(city => {
+                    const href = `/internet-em-${city.slug}`;
+                    return (
+                        <Link key={city.slug} href={href} className="text-foreground hover:text-primary transition-colors">
+                            {city.name}
+                        </Link>
+                    )
+                })}
+            </div>
+        </div>
+    )
+}
+
+export function Coverage({ city, cities }: CoverageProps) {
   const [cep, setCep] = useState("");
   const [coverage, setCoverage] = useState<{ ok: boolean; msg: string } | null>(null);
 
@@ -33,11 +62,11 @@ export function Coverage({ city }: CoverageProps) {
   return (
     <section id="cobertura" className="border-t border-border bg-secondary py-16 sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mb-8 max-w-2xl">
+        <div className="mb-8 max-w-2xl text-center mx-auto">
           <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">Consulte sua cobertura{city ? ` em ${city}` : ''}</h2>
           <p className="mt-2 text-muted-foreground">Informe seu CEP e verifique se já atendemos sua região.</p>
         </div>
-        <form onSubmit={handleCoverageCheck} className="grid max-w-xl gap-3 sm:flex sm:items-center">
+        <form onSubmit={handleCoverageCheck} className="grid max-w-xl gap-3 sm:flex sm:items-center mx-auto">
           <label htmlFor="cep" className="sr-only">CEP</label>
           <input
             id="cep-input"
@@ -56,7 +85,7 @@ export function Coverage({ city }: CoverageProps) {
         </form>
         {coverage && (
           <div
-            className={`mt-4 max-w-xl rounded-xl border px-4 py-3 ${
+            className={`mt-4 max-w-xl rounded-xl border px-4 py-3 text-center mx-auto ${
               coverage.ok
                 ? "border-primary/40 bg-primary/10 text-primary"
                 : "border-yellow-400/40 bg-yellow-400/10 text-yellow-500"
@@ -65,7 +94,9 @@ export function Coverage({ city }: CoverageProps) {
             {coverage.msg}
           </div>
         )}
-        <p className="mt-3 max-w-xl text-xs text-muted-foreground">* Resultado ilustrativo para demonstração.</p>
+        
+        <CityLinks cities={cities} />
+
       </div>
     </section>
   );

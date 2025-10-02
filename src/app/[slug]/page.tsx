@@ -148,6 +148,8 @@ export async function generateStaticParams() {
 // --- Page Component ---
 export default async function DynamicPage({ params }: PageProps) {
   const { cityName } = await getPageData(params.slug);
+  const supabase = createClient();
+  const { data: cities } = await supabase.from('cities').select('name, slug').order('name');
   
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -156,7 +158,7 @@ export default async function DynamicPage({ params }: PageProps) {
         <Hero city={cityName} />
         <Plans city={cityName} />
         <CdnHighlight />
-        <Coverage city={cityName} />
+        <Coverage city={cityName} cities={cities || []} />
         <Advantages />
         <Games />
         <Streaming />
