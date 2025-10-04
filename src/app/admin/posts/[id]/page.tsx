@@ -28,7 +28,7 @@ import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import ReactMarkdown from 'react-markdown';
+import { RichTextEditor } from "@/components/admin/RichTextEditor";
 
 // ==================================
 // Tipagem e Schema
@@ -41,7 +41,7 @@ type Post = {
   cover_image_url?: string | null;
   is_published: boolean;
   created_at: string;
-  content?: string | null;
+  content?: any; // Alterado para 'any' para aceitar o JSON do editor
   meta_title?: string | null;
   meta_description?: string | null;
   author_name?: string | null;
@@ -51,7 +51,7 @@ const postSchema = z.object({
   title: z.string().min(3, "O título é obrigatório."),
   slug: z.string().min(3, "O slug é obrigatório.").regex(/^[a-z0-9-]+$/, "Slug deve conter apenas letras minúsculas, números e hífens."),
   excerpt: z.string().max(200, "O resumo deve ter no máximo 200 caracteres.").optional().nullable(),
-  content: z.string().min(10, "O conteúdo é obrigatório.").optional().nullable(),
+  content: z.any().optional().nullable(),
   author_name: z.string().optional().nullable(),
   meta_title: z.string().optional().nullable(),
   meta_description: z.string().optional().nullable(),
@@ -82,7 +82,7 @@ export default function PostFormPage({ params }: { params: { id: string } }) {
         is_published: false, 
         title: "", 
         slug: "", 
-        content: "",
+        content: null,
         excerpt: "",
         author_name: "",
         meta_title: "",
@@ -90,8 +90,6 @@ export default function PostFormPage({ params }: { params: { id: string } }) {
     },
   });
 
-  const watchedContent = form.watch('content');
-  
   useEffect(() => {
     if (!isNew) {
       const fetchPost = async () => {
@@ -110,7 +108,7 @@ export default function PostFormPage({ params }: { params: { id: string } }) {
           form.reset({
              ...data,
              excerpt: data.excerpt ?? '',
-             content: data.content ?? '',
+             content: data.content ?? null,
              author_name: data.author_name ?? '',
              meta_title: data.meta_title ?? '',
              meta_description: data.meta_description ?? '',
@@ -182,7 +180,7 @@ export default function PostFormPage({ params }: { params: { id: string } }) {
     } else {
       toast({ title: "Sucesso!", description: "Artigo salvo com sucesso." });
        if (isNew) {
-            // A navegação já acontece acima, mas podemos forçar um refresh se necessário.
+            // A navegação já acontece acima
        } else {
            // Apenas re-fetch dos dados
             const { data: updatedData } = await supabase.from("posts").select("*").eq("id", params.id).single();
@@ -225,25 +223,22 @@ export default function PostFormPage({ params }: { params: { id: string } }) {
                     <CardContent className="space-y-4">
                         <FormField control={form.control} name="title" render={({ field }) => (<FormItem><FormLabel>Título do Artigo</FormLabel><FormControl><Input placeholder="Ex: 5 Dicas para Melhorar seu Wi-Fi" {...field} /></FormControl><FormMessage /></FormItem>)} />
                         
-                        <div className="grid grid-cols-2 gap-4 h-[500px]">
-                            <FormField control={form.control} name="content" render={({ field }) => (
-                                <FormItem className="flex flex-col h-full">
-                                    <FormLabel>Conteúdo (Markdown)</FormLabel>
+                        <FormField
+                            control={form.control}
+                            name="content"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Conteúdo do Artigo</FormLabel>
                                     <FormControl>
-                                        <Textarea placeholder="Escreva seu artigo aqui..." {...field} className="flex-grow resize-none" value={field.value ?? ''} />
+                                        <RichTextEditor
+                                            initialContent={field.value}
+                                            onChange={field.onChange}
+                                        />
                                     </FormControl>
-                                    <p className="text-xs text-muted-foreground">Use # para títulos, * para itálico/negrito, - para listas.</p>
                                     <FormMessage />
                                 </FormItem>
-                            )} />
-                             <div className="h-full">
-                                <FormLabel>Pré-visualização</FormLabel>
-                                <div className="prose prose-sm dark:prose-invert max-w-none h-full overflow-y-auto rounded-md border border-input p-3 bg-secondary">
-                                    <ReactMarkdown>{watchedContent || "A pré-visualização aparecerá aqui."}</ReactMarkdown>
-                                </div>
-                            </div>
-                        </div>
-
+                            )}
+                        />
                     </CardContent>
                 </Card>
                  <Card>

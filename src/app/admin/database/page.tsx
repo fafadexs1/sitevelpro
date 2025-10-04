@@ -175,7 +175,7 @@ create table if not exists posts (
     id uuid default gen_random_uuid() primary key,
     title text not null,
     slug text not null unique,
-    content text,
+    content jsonb,
     excerpt text,
     cover_image_url text,
     meta_title text,

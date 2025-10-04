@@ -46,22 +46,42 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-// Basic Markdown to HTML converter
-const Markdown = ({ content }: { content: string }) => {
-    const html = content
-        .split('\n')
-        .map(line => {
-            if (line.startsWith('# ')) return `<h1 class="text-3xl font-bold mt-8 mb-4">${line.substring(2)}</h1>`;
-            if (line.startsWith('## ')) return `<h2 class="text-2xl font-bold mt-6 mb-3">${line.substring(3)}</h2>`;
-            if (line.startsWith('### ')) return `<h3 class="text-xl font-bold mt-4 mb-2">${line.substring(4)}</h3>`;
-            if (line.trim() === '') return '<br />';
-            return `<p class="leading-relaxed mb-4">${line}</p>`;
-        })
-        .join('');
+// Funções para renderizar o conteúdo JSON
+const renderNode = (node: any): JSX.Element => {
+    switch(node.type) {
+        case 'heading-one': return <h1 className="text-3xl font-bold mt-8 mb-4">{node.children.map(renderText)}</h1>;
+        case 'heading-two': return <h2 className="text-2xl font-bold mt-6 mb-3">{node.children.map(renderText)}</h2>;
+        case 'heading-three': return <h3 className="text-xl font-bold mt-4 mb-2">{node.children.map(renderText)}</h3>;
+        case 'list-item': return <li>{node.children.map(renderText)}</li>;
+        case 'bulleted-list': return <ul className="list-disc list-inside space-y-2 mb-4">{node.children.map(renderNode)}</ul>;
+        case 'numbered-list': return <ol className="list-decimal list-inside space-y-2 mb-4">{node.children.map(renderNode)}</ol>;
+        case 'quote': return <blockquote className="border-l-4 border-primary pl-4 italic text-muted-foreground my-4">{node.children.map(renderText)}</blockquote>;
+        case 'paragraph': return <p className="leading-relaxed mb-4">{node.children.map(renderText)}</p>;
+        default: return <>{node.children.map(renderText)}</>;
+    }
+}
 
-    return <div dangerouslySetInnerHTML={{ __html: html }} />;
+const renderText = (textNode: any) => {
+    let child = <>{textNode.text}</>;
+    if (textNode.bold) {
+        child = <strong>{child}</strong>;
+    }
+    if (textNode.italic) {
+        child = <em>{child}</em>;
+    }
+    if (textNode.underline) {
+        child = <u>{child}</u>;
+    }
+    return child;
 };
 
+const ContentRenderer = ({ content }: { content: any[] }) => {
+    return (
+        <>
+            {content.map(node => renderNode(node))}
+        </>
+    )
+}
 
 export default async function BlogPostPage({ params }: PageProps) {
   const supabase = createClient();
@@ -117,10 +137,10 @@ export default async function BlogPostPage({ params }: PageProps) {
                 </header>
 
                 <div className="prose prose-lg prose-neutral dark:prose-invert max-w-none text-foreground/90">
-                   {post.content ? (
-                      <Markdown content={post.content} />
+                   {post.content && Array.isArray(post.content) ? (
+                      <ContentRenderer content={post.content} />
                     ) : (
-                      <p>Conteúdo não disponível.</p>
+                      <p>Conteúdo não disponível ou em formato inválido.</p>
                     )}
                 </div>
             </div>
