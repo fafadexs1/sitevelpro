@@ -1,5 +1,5 @@
 
-import { createClient as createServerClient } from "@/utils/supabase/server";
+import { createClient as createServerClientUtil } from "@/utils/supabase/server";
 import { Header } from "@/components/landing/Header";
 import { Footer } from "@/components/landing/Footer";
 import Image from "next/image";
@@ -7,15 +7,30 @@ import { notFound } from "next/navigation";
 import { Calendar, User } from "lucide-react";
 import type { Metadata } from 'next';
 import React from 'react';
-import type { CookieOptions } from '@supabase/ssr';
+import { createServerClient, type CookieOptions } from '@supabase/ssr';
 
 type PageProps = {
   params: { slug: string };
 };
 
-// This function can be named anything
+// Helper para criar um cliente Supabase seguro para build
+function createBuildTimeClient() {
+    return createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+          cookies: {
+            get(name: string) { return undefined; },
+            set(name: string, value: string, options: CookieOptions) {},
+            remove(name: string, options: CookieOptions) {},
+          },
+        }
+    );
+}
+
+// --- Metadata Generation ---
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const supabase = createServerClient();
+  const supabase = createBuildTimeClient();
   const { data: post } = await supabase
     .from('posts')
     .select('title, meta_title, meta_description, cover_image_url')
@@ -49,7 +64,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 
 export default async function BlogPostPage({ params }: PageProps) {
-  const supabase = createServerClient();
+  const supabase = createServerClientUtil(); // Usa o cliente padrão para runtime
   const { data: post } = await supabase
     .from('posts')
     .select('*')
@@ -66,8 +81,8 @@ export default async function BlogPostPage({ params }: PageProps) {
       <Header />
       <main className="flex-grow">
         <article>
-          {post.cover_image_url && (
-            <div className="relative h-64 md:h-96 w-full">
+          <header className="relative bg-secondary py-24 sm:py-32">
+            {post.cover_image_url && (
               <Image
                 src={post.cover_image_url}
                 alt={post.title}
@@ -75,32 +90,37 @@ export default async function BlogPostPage({ params }: PageProps) {
                 priority
                 className="object-cover"
               />
-              <div className="absolute inset-0 bg-black/50" />
+            )}
+            <div className="absolute inset-0 bg-black/60" />
+            <div className="relative mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
+              <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl">
+                {post.title}
+              </h1>
+              <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-white/80">
+                {post.author_name && (
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    <span>{post.author_name}</span>
+                  </div>
+                )}
+                {post.published_at && (
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4" />
+                    <time dateTime={post.published_at}>
+                      {new Date(post.published_at).toLocaleDateString("pt-BR", {
+                        day: "2-digit",
+                        month: "long",
+                        year: "numeric",
+                      })}
+                    </time>
+                  </div>
+                )}
+              </div>
             </div>
-          )}
+          </header>
           
           <div className="py-16 sm:py-24 bg-background">
             <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-                <header className="text-center mb-12">
-                    <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-foreground">{post.title}</h1>
-                    <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground mt-6">
-                        {post.author_name && (
-                            <div className="flex items-center gap-2">
-                                <User className="w-4 h-4" />
-                                <span>{post.author_name}</span>
-                            </div>
-                        )}
-                         {post.published_at && (
-                            <div className="flex items-center gap-2">
-                                <Calendar className="w-4 h-4" />
-                                <time dateTime={post.published_at}>
-                                    {new Date(post.published_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
-                                </time>
-                            </div>
-                        )}
-                    </div>
-                </header>
-
                 <div
                   className="prose prose-lg dark:prose-invert max-w-none text-foreground/90"
                   dangerouslySetInnerHTML={{ __html: post.content || '' }}
@@ -114,19 +134,10 @@ export default async function BlogPostPage({ params }: PageProps) {
   );
 }
 
+// --- Static Path Generation ---
 export async function generateStaticParams() {
     try {
-        const supabase = createServerClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-            {
-              cookies: {
-                get(name: string) { return undefined; },
-                set(name: string, value: string, options: CookieOptions) {},
-                remove(name: string, options: CookieOptions) {},
-              },
-            }
-        );
+        const supabase = createBuildTimeClient();
         const { data: posts } = await supabase
             .from('posts')
             .select('slug')
