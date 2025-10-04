@@ -47,30 +47,37 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 // Funções para renderizar o conteúdo JSON
-const renderNode = (node: any): JSX.Element => {
+const renderNode = (node: any, index: number): JSX.Element => {
     switch(node.type) {
-        case 'heading-one': return <h1 className="text-3xl font-bold mt-8 mb-4">{node.children.map(renderText)}</h1>;
-        case 'heading-two': return <h2 className="text-2xl font-bold mt-6 mb-3">{node.children.map(renderText)}</h2>;
-        case 'heading-three': return <h3 className="text-xl font-bold mt-4 mb-2">{node.children.map(renderText)}</h3>;
-        case 'list-item': return <li>{node.children.map(renderText)}</li>;
-        case 'bulleted-list': return <ul className="list-disc list-inside space-y-2 mb-4">{node.children.map(renderNode)}</ul>;
-        case 'numbered-list': return <ol className="list-decimal list-inside space-y-2 mb-4">{node.children.map(renderNode)}</ol>;
-        case 'quote': return <blockquote className="border-l-4 border-primary pl-4 italic text-muted-foreground my-4">{node.children.map(renderText)}</blockquote>;
-        case 'paragraph': return <p className="leading-relaxed mb-4">{node.children.map(renderText)}</p>;
-        default: return <>{node.children.map(renderText)}</>;
+        case 'heading-one': return <h1 key={index} className="text-3xl font-bold mt-8 mb-4">{node.children.map((child: any, i: number) => renderText(child, i))}</h1>;
+        case 'heading-two': return <h2 key={index} className="text-2xl font-bold mt-6 mb-3">{node.children.map((child: any, i: number) => renderText(child, i))}</h2>;
+        case 'heading-three': return <h3 key={index} className="text-xl font-bold mt-4 mb-2">{node.children.map((child: any, i: number) => renderText(child, i))}</h3>;
+        case 'list-item': return <li key={index}>{node.children.map((child: any, i: number) => renderText(child, i))}</li>;
+        case 'bulleted-list': return <ul key={index} className="list-disc list-inside space-y-2 mb-4">{node.children.map((child: any, i: number) => renderNode(child, i))}</ul>;
+        case 'numbered-list': return <ol key={index} className="list-decimal list-inside space-y-2 mb-4">{node.children.map((child: any, i: number) => renderNode(child, i))}</ol>;
+        case 'quote': return <blockquote key={index} className="border-l-4 border-primary pl-4 italic text-muted-foreground my-4">{node.children.map((child: any, i: number) => renderText(child, i))}</blockquote>;
+        case 'image':
+            return (
+                <div key={index} className="my-6">
+                    <Image src={node.url} alt={node.alt || 'Imagem do artigo'} width={800} height={450} className="rounded-lg mx-auto" />
+                </div>
+            );
+        case 'paragraph': 
+        default: 
+            return <p key={index} className="leading-relaxed mb-4">{node.children.map((child: any, i: number) => renderText(child, i))}</p>;
     }
 }
 
-const renderText = (textNode: any) => {
-    let child = <>{textNode.text}</>;
+const renderText = (textNode: any, index: number) => {
+    let child = <React.Fragment key={index}>{textNode.text}</React.Fragment>;
     if (textNode.bold) {
-        child = <strong>{child}</strong>;
+        child = <strong key={index}>{child}</strong>;
     }
     if (textNode.italic) {
-        child = <em>{child}</em>;
+        child = <em key={index}>{child}</em>;
     }
     if (textNode.underline) {
-        child = <u>{child}</u>;
+        child = <u key={index}>{child}</u>;
     }
     return child;
 };
@@ -78,7 +85,7 @@ const renderText = (textNode: any) => {
 const ContentRenderer = ({ content }: { content: any[] }) => {
     return (
         <>
-            {content.map(node => renderNode(node))}
+            {content.map((node, index) => renderNode(node, index))}
         </>
     )
 }

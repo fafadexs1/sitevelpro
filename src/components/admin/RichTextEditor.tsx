@@ -7,14 +7,30 @@ import { Slate, Editable, withReact, ReactEditor, useSlate } from 'slate-react';
 import { withHistory } from 'slate-history';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Bold, Italic, Underline, Pilcrow, Heading1, Heading2, Heading3, List, ListOrdered, Quote } from 'lucide-react';
+import { Bold, Italic, Underline, Pilcrow, Heading1, Heading2, Heading3, List, ListOrdered, Quote, Image as ImageIcon } from 'lucide-react';
+import { createClient } from '@/utils/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import Image from "next/image";
 
 const LIST_TYPES = ['numbered-list', 'bulleted-list'];
 const TEXT_ALIGN_TYPES = ['left', 'center', 'right', 'justify'];
 
+type ImageElement = {
+  type: 'image';
+  url: string;
+  alt: string;
+  children: EmptyText[];
+};
+
+type EmptyText = {
+  text: string;
+};
+
 type CustomElement = {
-  type: 'paragraph' | 'heading-one' | 'heading-two' | 'heading-three' | 'list-item' | 'bulleted-list' | 'numbered-list' | 'quote';
-  children: CustomText[];
+  type: 'paragraph' | 'heading-one' | 'heading-two' | 'heading-three' | 'list-item' | 'bulleted-list' | 'numbered-list' | 'quote' | 'image';
+  children: CustomText[] | EmptyText[];
+  url?: string;
+  alt?: string;
 };
 type CustomText = { text: string; bold?: boolean; italic?: boolean; underline?: boolean };
 
@@ -38,8 +54,64 @@ const initialValue: Descendant[] = [
   },
 ];
 
+// Helper function to insert image
+const insertImage = (editor: Editor, url: string) => {
+    const text = { text: '' };
+    const image: ImageElement = { type: 'image', url, alt: 'Imagem do artigo', children: [text] };
+    Transforms.insertNodes(editor, image);
+    // Move cursor after the image
+    Transforms.move(editor);
+};
+
+
+const withImages = (editor: Editor) => {
+    const { insertData, isVoid } = editor;
+
+    editor.isVoid = element => {
+        return element.type === 'image' ? true : isVoid(element);
+    };
+
+    editor.insertData = data => {
+        const text = data.getData('text/plain');
+        const { files } = data;
+
+        if (files && files.length > 0) {
+            for (const file of files) {
+                const reader = new FileReader();
+                const [mime] = file.type.split('/');
+
+                if (mime === 'image') {
+                    reader.addEventListener('load', () => {
+                        const url = reader.result as string;
+                        // We are not inserting image from file reader directly,
+                        // instead we will upload it and then insert.
+                        // This part can be expanded to show a placeholder while uploading.
+                    });
+                    reader.readAsDataURL(file);
+                }
+            }
+        } else if (isImageUrl(text)) {
+            insertImage(editor, text);
+        } else {
+            insertData(data);
+        }
+    };
+
+    return editor;
+};
+
+const isImageUrl = (url: string) => {
+    if (!url) return false;
+    try {
+        const ext = new URL(url).pathname.split('.').pop();
+        return ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext!);
+    } catch {
+        return false;
+    }
+};
+
 export const RichTextEditor = ({ initialContent, onChange }: RichTextEditorProps) => {
-  const editor = useMemo(() => withHistory(withReact(createEditor())), []);
+  const editor = useMemo(() => withImages(withHistory(withReact(createEditor()))), []);
   const content = useMemo(() => {
     try {
         if (initialContent && Array.isArray(initialContent) && initialContent.length > 0) {
@@ -67,6 +139,60 @@ export const RichTextEditor = ({ initialContent, onChange }: RichTextEditorProps
   );
 };
 
+const ImageButton = () => {
+    const editor = useSlate();
+    const { toast } = useToast();
+
+    const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        const supabase = createClient();
+        const filePath = `post-content/${Date.now()}-${file.name}`;
+        
+        const { error: uploadError } = await supabase.storage
+            .from('post-images')
+            .upload(filePath, file);
+
+        if (uploadError) {
+            toast({ variant: 'destructive', title: 'Erro de Upload', description: uploadError.message });
+            return;
+        }
+
+        const { data: publicUrlData } = supabase.storage
+            .from('post-images')
+            .getPublicUrl(filePath);
+
+        if (publicUrlData) {
+            insertImage(editor, publicUrlData.publicUrl);
+        }
+    };
+
+    return (
+        <>
+            <input
+                type="file"
+                id="image-upload"
+                className="hidden"
+                accept="image/*"
+                onChange={handleImageUpload}
+            />
+            <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onMouseDown={event => {
+                    event.preventDefault();
+                    document.getElementById('image-upload')?.click();
+                }}
+            >
+                <ImageIcon className="h-4 w-4" />
+            </Button>
+        </>
+    );
+};
+
+
 const Toolbar = () => {
     return (
         <div className="flex items-center gap-1 border-b p-2 bg-secondary rounded-t-lg">
@@ -82,6 +208,8 @@ const Toolbar = () => {
             <BlockButton format="quote" icon={Quote} />
             <BlockButton format="numbered-list" icon={ListOrdered} />
             <BlockButton format="bulleted-list" icon={List} />
+            <div className="w-px h-5 bg-border mx-1" />
+            <ImageButton />
         </div>
     )
 }
@@ -111,7 +239,7 @@ const toggleBlock = (editor: Editor, format: string) => {
     };
   } else {
     newProperties = {
-      type: isActive ? 'paragraph' : isList ? 'list-item' : (format as CustomElement['type']),
+      type: isActive ? 'paragraph' : isList ? 'list-item' : (format as any),
     };
   }
   Transforms.setNodes<Element>(editor, newProperties);
@@ -154,7 +282,8 @@ const isMarkActive = (editor: Editor, format: string) => {
   return marks ? (marks as any)[format] === true : false;
 };
 
-const ElementComponent = ({ attributes, children, element }: { attributes: any, children: any, element: CustomElement }) => {
+const ElementComponent = (props: { attributes: any, children: any, element: CustomElement }) => {
+  const { attributes, children, element } = props;
   switch (element.type) {
     case 'heading-one': return <h1 {...attributes}>{children}</h1>;
     case 'heading-two': return <h2 {...attributes}>{children}</h2>;
@@ -163,8 +292,29 @@ const ElementComponent = ({ attributes, children, element }: { attributes: any, 
     case 'list-item': return <li {...attributes}>{children}</li>;
     case 'numbered-list': return <ol {...attributes}>{children}</ol>;
     case 'bulleted-list': return <ul {...attributes}>{children}</ul>;
+    case 'image': return <ImageElementComponent {...props} />;
     default: return <p {...attributes}>{children}</p>;
   }
+};
+
+const ImageElementComponent = ({ attributes, children, element }: { attributes: any, children: any, element: CustomElement }) => {
+  const editor = useSlate();
+  const path = ReactEditor.findPath(editor, element);
+
+  return (
+    <div {...attributes}>
+      <div contentEditable={false}>
+        <Image 
+          src={element.url!} 
+          alt={element.alt || ''} 
+          width={500} 
+          height={300}
+          className="block max-w-full h-auto rounded-md"
+        />
+      </div>
+      {children}
+    </div>
+  )
 };
 
 const Leaf = ({ attributes, children, leaf }: { attributes: any, children: any, leaf: CustomText }) => {
@@ -221,4 +371,3 @@ const MarkButton = ({ format, icon: Icon }: { format: string, icon: React.Elemen
     </Button>
   );
 };
-
