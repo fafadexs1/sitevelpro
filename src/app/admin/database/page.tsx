@@ -170,6 +170,24 @@ create table if not exists cities (
     created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
+-- Cria a tabela de posts para o blog
+create table if not exists posts (
+    id uuid default gen_random_uuid() primary key,
+    title text not null,
+    slug text not null unique,
+    content text,
+    excerpt text,
+    cover_image_url text,
+    meta_title text,
+    meta_description text,
+    is_published boolean default false not null,
+    published_at timestamp with time zone,
+    author_name text,
+    author_avatar_url text,
+    created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+    updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
 -- Cria a tabela de configurações de SEO
 create table if not exists seo_settings (
   id int primary key default 1,
@@ -318,6 +336,11 @@ insert into storage.buckets (id, name, public)
 values ('hero-slides', 'hero-slides', true)
 on conflict (id) do nothing;
 
+-- Cria o bucket 'post-images' se ele não existir
+insert into storage.buckets (id, name, public)
+values ('post-images', 'post-images', true)
+on conflict (id) do nothing;
+
 
 -- Políticas de acesso para o bucket 'canais'
 -- Permite leitura anônima de arquivos
@@ -378,6 +401,19 @@ FOR ALL
 TO authenticated
 USING (bucket_id = 'hero-slides')
 WITH CHECK (bucket_id = 'hero-slides');
+
+-- Políticas de acesso para o bucket 'post-images'
+CREATE POLICY "Public read access for post images"
+ON storage.objects
+FOR SELECT
+USING (bucket_id = 'post-images');
+
+CREATE POLICY "Allow authenticated access for post images"
+ON storage.objects
+FOR ALL
+TO authenticated
+USING (bucket_id = 'post-images')
+WITH CHECK (bucket_id = 'post-images');
 
     `.trim();
 

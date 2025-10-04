@@ -26,6 +26,7 @@ import {
   Map,
   Play,
   Settings,
+  Newspaper,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -224,6 +225,7 @@ function AdminDashboard({
   const navItems = [
     { href: "/admin/hero-slides", label: "Slides do Herói", icon: Play },
     { href: "/admin", label: "Planos", icon: LayoutDashboard },
+    { href: "/admin/posts", label: "Artigos", icon: Newspaper },
     { href: "/admin/tv-channels", label: "Canais de TV", icon: Clapperboard },
     { href: "/admin/tv-packages", label: "Pacotes de TV", icon: Tv },
     { href: "/admin/seo", label: "SEO", icon: Globe },
