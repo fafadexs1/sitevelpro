@@ -9,6 +9,7 @@ import {
   Loader2,
   Upload,
   ArrowLeft,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,9 +29,8 @@ import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { RichTextEditor } from "@/components/admin/RichTextEditor";
-import { Descendant } from "slate";
 import dynamic from "next/dynamic";
+import { generateArticle } from "@/ai/flows/generate-article-flow";
 
 
 // Dynamically import the RichTextEditor to avoid SSR issues
@@ -83,6 +83,8 @@ export default function PostFormPage({ params }: { params: { id: string } }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [post, setPost] = useState<Post | null>(null);
+  const [aiTopic, setAiTopic] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
   const supabase = createClient();
   const isNew = params.id === 'new';
 
@@ -148,6 +150,32 @@ export default function PostFormPage({ params }: { params: { id: string } }) {
       form.setValue("slug", generateSlug(watchTitle), { shouldValidate: true });
     }
   }, [watchTitle, form, isNew]);
+
+  const handleGenerateArticle = async () => {
+    if (!aiTopic) {
+      toast({ variant: "destructive", title: "Tópico Vazio", description: "Por favor, insira um tópico para a IA gerar o artigo." });
+      return;
+    }
+    setIsGenerating(true);
+    try {
+      const article = await generateArticle({ topic: aiTopic });
+      form.reset({
+        ...form.getValues(),
+        title: article.title,
+        content: article.content,
+        excerpt: article.excerpt,
+        meta_title: article.meta_title,
+        meta_description: article.meta_description,
+      });
+      toast({ title: "Sucesso!", description: "Artigo gerado pela IA." });
+    } catch (error) {
+      console.error(error);
+      toast({ variant: "destructive", title: "Erro de IA", description: "Não foi possível gerar o artigo." });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
 
   const onSubmit = async (data: PostFormData) => {
     setIsSubmitting(true);
@@ -221,6 +249,28 @@ export default function PostFormPage({ params }: { params: { id: string } }) {
                 {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null} Salvar Artigo
             </Button>
         </header>
+
+         <Card className="bg-primary/5 border-primary/20">
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2"><Sparkles className="text-primary"/> Assistente de IA</CardTitle>
+                <CardDescription>Não sabe por onde começar? Dê um tópico para a IA e deixe ela criar um rascunho para você.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div className="flex gap-4">
+                    <Input 
+                        placeholder="Ex: 'Os benefícios do Wi-Fi 6 para jogos online'"
+                        value={aiTopic}
+                        onChange={(e) => setAiTopic(e.target.value)}
+                        disabled={isGenerating}
+                    />
+                    <Button type="button" onClick={handleGenerateArticle} disabled={isGenerating || !aiTopic}>
+                        {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Sparkles className="mr-2 h-4 w-4" />}
+                        Gerar Artigo
+                    </Button>
+                </div>
+            </CardContent>
+        </Card>
+
 
          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
             {/* Coluna principal */}
