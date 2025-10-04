@@ -214,7 +214,8 @@ VALUES
     ('external_api_url', '', 'URL base da API externa (ex: https://api.seuprovedor.com.br)'),
     ('external_api_app', '', 'Nome do App para autenticação na API de O.S.'),
     ('external_api_token', '', 'Token para autenticação na API de O.S.'),
-    ('GEMINI_API_KEY', '', 'Chave de API do Google Gemini para funcionalidades de IA.')
+    ('GEMINI_API_KEY', '', 'Chave de API do Google Gemini para funcionalidades de IA.'),
+    ('GEMINI_MODEL', 'gemini-1.5-flash-latest', 'Modelo de linguagem a ser usado (ex: gemini-1.5-flash-latest).')
 ON CONFLICT (key) DO NOTHING;
 
 

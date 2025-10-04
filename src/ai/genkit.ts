@@ -2,30 +2,47 @@ import {genkit} from 'genkit';
 import {googleAI} from '@genkit-ai/googleai';
 import {createClient} from '@/utils/supabase/server';
 
-// Função para obter a chave da API do banco de dados
-async function getGeminiApiKey() {
+type Settings = {
+    apiKey: string | undefined;
+    model: string;
+}
+
+// Função para obter a chave da API e o modelo do banco de dados
+async function getAiSettings(): Promise<Settings> {
   try {
     const supabase = createClient();
     const { data, error } = await supabase
       .from('system_settings')
-      .select('value')
-      .eq('key', 'GEMINI_API_KEY')
-      .single();
+      .select('key, value')
+      .in('key', ['GEMINI_API_KEY', 'GEMINI_MODEL']);
 
     if (error || !data) {
-      console.warn('GEMINI_API_KEY not found in DB, checking environment variables.');
-      return process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+      console.warn('AI settings not found in DB, checking environment variables.');
+      return {
+        apiKey: process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY,
+        model: process.env.GEMINI_MODEL || 'gemini-1.5-flash-latest'
+      };
     }
-    return data.value;
+    
+    const settingsMap = new Map(data.map(item => [item.key, item.value]));
+
+    return {
+        apiKey: settingsMap.get('GEMINI_API_KEY') || process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY,
+        model: settingsMap.get('GEMINI_MODEL') || 'gemini-1.5-flash-latest'
+    }
+
   } catch (e) {
-    console.error("Error fetching Gemini API key:", e);
-    return process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+    console.error("Error fetching AI settings:", e);
+    return {
+        apiKey: process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY,
+        model: process.env.GEMINI_MODEL || 'gemini-1.5-flash-latest'
+    };
   }
 }
 
 // Inicializa o Genkit de forma assíncrona
 const initializeGenkit = async () => {
-    const apiKey = await getGeminiApiKey();
+    const { apiKey, model } = await getAiSettings();
 
     if (!apiKey) {
       console.error("CRITICAL: Gemini API Key is not configured. AI features will fail.");
@@ -33,7 +50,7 @@ const initializeGenkit = async () => {
     
     return genkit({
       plugins: [googleAI({ apiKey: apiKey || '' })],
-      model: 'googleai/gemini-2.5-flash',
+      model: model || 'gemini-1.5-flash-latest',
     });
 };
 
@@ -41,14 +58,11 @@ const initializeGenkit = async () => {
 export const aiPromise = initializeGenkit();
 
 // Para uso nos fluxos, você pode fazer 'const ai = await aiPromise;'
-// No entanto, para simplificar e manter a compatibilidade, vamos exportar um 'ai' que é uma promessa.
-// Isso requer um ajuste em como o 'ai' é usado.
 // A abordagem mais simples é refatorar os fluxos para aguardar a promessa.
 
-// Vamos manter o 'ai' como está por enquanto, mas a lógica de inicialização foi movida para uma função async.
-// E vamos criar um novo objeto 'ai' com a chave.
-
+// Vamos criar um objeto 'ai' com a chave do env para compatibilidade,
+// mas o ideal é sempre usar a promessa.
 export const ai = genkit({
   plugins: [googleAI({apiKey: process.env.GEMINI_API_KEY})],
-  model: 'googleai/gemini-2.5-flash',
+  model: process.env.GEMINI_MODEL || 'gemini-1.5-flash-latest',
 });

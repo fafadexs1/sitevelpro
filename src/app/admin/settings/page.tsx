@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -13,12 +14,14 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { createClient } from "@/utils/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 
 const settingsSchema = z.object({
   external_api_url: z.string().url("Por favor, insira uma URL válida."),
   external_api_app: z.string().optional(),
   external_api_token: z.string().optional(),
   GEMINI_API_KEY: z.string().min(1, "A chave de API do Gemini é obrigatória."),
+  GEMINI_MODEL: z.string().min(1, "É necessário selecionar um modelo."),
 });
 
 type SettingsFormData = z.infer<typeof settingsSchema>;
@@ -36,6 +39,7 @@ export default function SettingsPage() {
       external_api_app: "",
       external_api_token: "",
       GEMINI_API_KEY: "",
+      GEMINI_MODEL: "gemini-1.5-flash-latest",
     },
   });
 
@@ -45,7 +49,7 @@ export default function SettingsPage() {
       const { data, error } = await supabase
         .from('system_settings')
         .select('key, value')
-        .in('key', ['external_api_url', 'external_api_app', 'external_api_token', 'GEMINI_API_KEY']);
+        .in('key', ['external_api_url', 'external_api_app', 'external_api_token', 'GEMINI_API_KEY', 'GEMINI_MODEL']);
       
       if (error) {
         toast({ variant: 'destructive', title: 'Erro ao buscar configurações', description: error.message });
@@ -56,6 +60,7 @@ export default function SettingsPage() {
           external_api_app: settingsMap.get('external_api_app') || '',
           external_api_token: settingsMap.get('external_api_token') || '',
           GEMINI_API_KEY: settingsMap.get('GEMINI_API_KEY') || '',
+          GEMINI_MODEL: settingsMap.get('GEMINI_MODEL') || 'gemini-1.5-flash-latest',
         });
       }
       setLoading(false);
@@ -101,10 +106,10 @@ export default function SettingsPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2"><Sparkles className="h-5 w-5 text-primary"/>Inteligência Artificial</CardTitle>
                 <CardDescription>
-                  Configure a chave de API para as funcionalidades de IA, como a geração de artigos.
+                  Configure a chave de API e o modelo para as funcionalidades de IA, como a geração de artigos.
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-6">
                 <FormField
                   control={form.control}
                   name="GEMINI_API_KEY"
@@ -123,6 +128,31 @@ export default function SettingsPage() {
                       <FormMessage />
                     </FormItem>
                   )}
+                />
+                 <FormField
+                    control={form.control}
+                    name="GEMINI_MODEL"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Modelo Gemini</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Selecione um modelo" />
+                            </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                <SelectItem value="gemini-1.5-flash-latest">Gemini 1.5 Flash (Rápido e Custo-benefício)</SelectItem>
+                                <SelectItem value="gemini-1.5-pro-latest">Gemini 1.5 Pro (Mais Poderoso)</SelectItem>
+                                <SelectItem value="gemini-1.0-pro">Gemini 1.0 Pro (Legado)</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <p className="text-xs text-muted-foreground">
+                           O modelo Flash é mais rápido e barato, ideal para a maioria das tarefas. O Pro é mais potente para tarefas complexas.
+                        </p>
+                        <FormMessage />
+                        </FormItem>
+                    )}
                 />
               </CardContent>
             </Card>
