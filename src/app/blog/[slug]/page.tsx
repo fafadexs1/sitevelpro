@@ -1,5 +1,5 @@
 
-import { createClient } from "@/utils/supabase/server";
+import { createClient as createServerClient } from "@/utils/supabase/server";
 import { Header } from "@/components/landing/Header";
 import { Footer } from "@/components/landing/Footer";
 import Image from "next/image";
@@ -8,6 +8,7 @@ import { Calendar, User } from "lucide-react";
 import type { Metadata } from 'next';
 import React from 'react';
 import ReactMarkdown from "react-markdown";
+import type { CookieOptions } from '@supabase/ssr';
 
 type PageProps = {
   params: { slug: string };
@@ -15,7 +16,7 @@ type PageProps = {
 
 // This function can be named anything
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const supabase = createClient();
+  const supabase = createServerClient();
   const { data: post } = await supabase
     .from('posts')
     .select('title, meta_title, meta_description, cover_image_url')
@@ -49,7 +50,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 
 export default async function BlogPostPage({ params }: PageProps) {
-  const supabase = createClient();
+  const supabase = createServerClient();
   const { data: post } = await supabase
     .from('posts')
     .select('*')
@@ -129,13 +130,28 @@ export default async function BlogPostPage({ params }: PageProps) {
 }
 
 export async function generateStaticParams() {
-    const supabase = createClient();
-    const { data: posts } = await supabase
-        .from('posts')
-        .select('slug')
-        .eq('is_published', true);
+    try {
+        const supabase = createServerClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+            {
+              cookies: {
+                get(name: string) { return undefined; },
+                set(name: string, value: string, options: CookieOptions) {},
+                remove(name: string, options: CookieOptions) {},
+              },
+            }
+        );
+        const { data: posts } = await supabase
+            .from('posts')
+            .select('slug')
+            .eq('is_published', true);
 
-    return posts?.map(post => ({
-        slug: post.slug,
-    })) || [];
+        return posts?.map(post => ({
+            slug: post.slug,
+        })) || [];
+    } catch (error) {
+        console.error('Exception in generateStaticParams for blog posts:', error);
+        return [];
+    }
 }
