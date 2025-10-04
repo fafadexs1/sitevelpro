@@ -15,6 +15,7 @@ import { createClient } from "@/utils/supabase/server";
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import dynamic from "next/dynamic";
+import { createServerClient } from "@supabase/ssr";
 
 const CdnHighlight = dynamic(() => import('@/components/landing/CdnHighlight').then(mod => mod.CdnHighlight));
 const Games = dynamic(() => import('@/components/landing/Games').then(mod => mod.Games));
@@ -40,7 +41,7 @@ async function getPageData(slug: string) {
     if (!rules) return { cityName, meta: null };
     
     // Tenta encontrar uma correspondência exata primeiro
-    const staticMatch = rules.find(rule => rule.slug_pattern === path);
+    const staticMatch = rules.find(rule => rule.slug_pattern.replace('/', '') === slug);
 
     if (staticMatch) {
         // Usa o nome da própria regra como o nome da cidade para exibição
@@ -115,7 +116,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 // --- Static Path Generation ---
 export async function generateStaticParams() {
   try {
-    const supabase = createClient();
+    // Create a Supabase client that doesn't rely on cookies for build-time data fetching.
+    const supabase = createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        { cookies: {} }
+    );
+    
     const { data: rules, error: rulesError } = await supabase.from('dynamic_seo_rules').select('slug_pattern').eq('allow_indexing', true);
     if (rulesError) throw rulesError;
 
