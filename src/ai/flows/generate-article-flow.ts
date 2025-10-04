@@ -70,7 +70,13 @@ export async function generateArticle(input: ArticleTopic): Promise<GeneratedArt
 
     Instructions:
     1.  **Title:** Create a compelling title that is interesting to read and good for SEO.
-    2.  **Content:** Write the full article. Structure it with HTML tags. Use <h2> for subheadings, <p> for paragraphs, <ul> and <li> for lists, and <strong> for emphasis. The tone should be helpful, modern, and tech-savvy.
+    2.  **Content:** Write the full article. The content must be well-structured HTML. 
+        - Start with an introductory paragraph (<p>).
+        - Break the article into logical sections, each with a clear and descriptive subheading (<h2>).
+        - Each section must contain one or more paragraphs (<p>).
+        - Use lists (<ul> and <li>) for items or key points.
+        - Use <strong> tags to emphasize important terms.
+        - The tone should be helpful, modern, and tech-savvy.
     3.  **Excerpt:** Write a short summary of the article (maximum 160 characters).
     4.  **Meta Title:** Create a concise title for search engine results (around 60 characters).
     5.  **Meta Description:** Create an enticing description for search engine results (around 155 characters).
