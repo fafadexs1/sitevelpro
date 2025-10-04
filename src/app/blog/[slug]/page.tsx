@@ -62,6 +62,19 @@ const renderNode = (node: any, index: number): JSX.Element => {
                     <Image src={node.url} alt={node.alt || 'Imagem do artigo'} width={800} height={450} className="rounded-lg mx-auto" />
                 </div>
             );
+        case 'video':
+            return (
+                <div key={index} className="my-6 aspect-video">
+                    <iframe 
+                        src={node.url} 
+                        title="Embedded video"
+                        className="w-full h-full rounded-lg"
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                    ></iframe>
+                </div>
+            );
         case 'paragraph': 
         default: 
             return <p key={index} className="leading-relaxed mb-4">{node.children.map((child: any, i: number) => renderText(child, i))}</p>;

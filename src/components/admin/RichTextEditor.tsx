@@ -2,12 +2,12 @@
 "use client";
 
 import React, { useCallback, useMemo } from 'react';
-import { createEditor, Descendant, Editor, Transforms, Text, Element } from 'slate';
+import { createEditor, Descendant, Editor, Transforms, Text, Element, Range } from 'slate';
 import { Slate, Editable, withReact, ReactEditor, useSlate } from 'slate-react';
 import { withHistory } from 'slate-history';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Bold, Italic, Underline, Pilcrow, Heading1, Heading2, Heading3, List, ListOrdered, Quote, Image as ImageIcon } from 'lucide-react';
+import { Bold, Italic, Underline, Pilcrow, Heading1, Heading2, Heading3, List, ListOrdered, Quote, Image as ImageIcon, Video } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import Image from "next/image";
@@ -22,12 +22,18 @@ type ImageElement = {
   children: EmptyText[];
 };
 
+type VideoElement = {
+  type: 'video';
+  url: string;
+  children: EmptyText[];
+};
+
 type EmptyText = {
   text: string;
 };
 
 type CustomElement = {
-  type: 'paragraph' | 'heading-one' | 'heading-two' | 'heading-three' | 'list-item' | 'bulleted-list' | 'numbered-list' | 'quote' | 'image';
+  type: 'paragraph' | 'heading-one' | 'heading-two' | 'heading-three' | 'list-item' | 'bulleted-list' | 'numbered-list' | 'quote' | 'image' | 'video';
   children: CustomText[] | EmptyText[];
   url?: string;
   alt?: string;
@@ -59,17 +65,35 @@ const insertImage = (editor: Editor, url: string) => {
     const text = { text: '' };
     const image: ImageElement = { type: 'image', url, alt: 'Imagem do artigo', children: [text] };
     Transforms.insertNodes(editor, image);
-    // Move cursor after the image
     Transforms.move(editor);
 };
 
+const insertVideo = (editor: Editor, url: string) => {
+  const text = { text: '' };
+  const video: VideoElement = { type: 'video', url, children: [text] };
+  Transforms.insertNodes(editor, video);
+  Transforms.move(editor);
+};
 
-const withImages = (editor: Editor) => {
-    const { insertData, isVoid } = editor;
+
+const withMedia = (editor: Editor) => {
+    const { insertData, isVoid, insertText } = editor;
 
     editor.isVoid = element => {
-        return element.type === 'image' ? true : isVoid(element);
+        return ['image', 'video'].includes(element.type) ? true : isVoid(element);
     };
+    
+    editor.insertText = text => {
+        if (text && isYoutubeUrl(text)) {
+            const youtubeId = getYoutubeId(text);
+            if(youtubeId) {
+                const embedUrl = `https://www.youtube.com/embed/${youtubeId}`;
+                insertVideo(editor, embedUrl);
+                return;
+            }
+        }
+        insertText(text);
+    }
 
     editor.insertData = data => {
         const text = data.getData('text/plain');
@@ -79,19 +103,18 @@ const withImages = (editor: Editor) => {
             for (const file of files) {
                 const reader = new FileReader();
                 const [mime] = file.type.split('/');
-
                 if (mime === 'image') {
-                    reader.addEventListener('load', () => {
-                        const url = reader.result as string;
-                        // We are not inserting image from file reader directly,
-                        // instead we will upload it and then insert.
-                        // This part can be expanded to show a placeholder while uploading.
-                    });
-                    reader.readAsDataURL(file);
+                    // Placeholder for future deferred upload logic
                 }
             }
         } else if (isImageUrl(text)) {
             insertImage(editor, text);
+        } else if(isYoutubeUrl(text)) {
+             const youtubeId = getYoutubeId(text);
+            if(youtubeId) {
+                const embedUrl = `https://www.youtube.com/embed/${youtubeId}`;
+                insertVideo(editor, embedUrl);
+            }
         } else {
             insertData(data);
         }
@@ -110,8 +133,21 @@ const isImageUrl = (url: string) => {
     }
 };
 
+const isYoutubeUrl = (url: string) => {
+    if (!url) return false;
+    const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/.+$/;
+    return youtubeRegex.test(url);
+}
+
+const getYoutubeId = (url: string) => {
+    const regex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+    const matches = url.match(regex);
+    return matches ? matches[1] : null;
+}
+
+
 export const RichTextEditor = ({ initialContent, onChange }: RichTextEditorProps) => {
-  const editor = useMemo(() => withImages(withHistory(withReact(createEditor()))), []);
+  const editor = useMemo(() => withMedia(withHistory(withReact(createEditor()))), []);
   const content = useMemo(() => {
     try {
         if (initialContent && Array.isArray(initialContent) && initialContent.length > 0) {
@@ -293,6 +329,7 @@ const ElementComponent = (props: { attributes: any, children: any, element: Cust
     case 'numbered-list': return <ol {...attributes}>{children}</ol>;
     case 'bulleted-list': return <ul {...attributes}>{children}</ul>;
     case 'image': return <ImageElementComponent {...props} />;
+    case 'video': return <VideoElementComponent {...props} />;
     default: return <p {...attributes}>{children}</p>;
   }
 };
@@ -315,6 +352,24 @@ const ImageElementComponent = ({ attributes, children, element }: { attributes: 
       {children}
     </div>
   )
+};
+
+const VideoElementComponent = ({ attributes, children, element }: { attributes: any, children: any, element: CustomElement }) => {
+    return (
+        <div {...attributes}>
+            <div contentEditable={false} className="relative aspect-video">
+                 <iframe
+                    src={element.url}
+                    title="Embedded YouTube video"
+                    className="absolute top-0 left-0 w-full h-full rounded-lg"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                />
+            </div>
+            {children}
+        </div>
+    );
 };
 
 const Leaf = ({ attributes, children, leaf }: { attributes: any, children: any, leaf: CustomText }) => {
@@ -371,3 +426,4 @@ const MarkButton = ({ format, icon: Icon }: { format: string, icon: React.Elemen
     </Button>
   );
 };
+
