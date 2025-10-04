@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -30,6 +30,15 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
 import { Descendant } from "slate";
+import dynamic from "next/dynamic";
+
+
+// Dynamically import the RichTextEditor to avoid SSR issues
+const DynamicRichTextEditor = dynamic(
+  () => import('@/components/admin/RichTextEditor').then(mod => mod.RichTextEditor),
+  { ssr: false, loading: () => <div className="h-64 flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin"/></div> }
+);
+
 
 // ==================================
 // Tipagem e Schema
@@ -83,7 +92,7 @@ export default function PostFormPage({ params }: { params: { id: string } }) {
         is_published: false, 
         title: "", 
         slug: "", 
-        content: null,
+        content: "",
         excerpt: "",
         author_name: "",
         meta_title: "",
@@ -109,7 +118,7 @@ export default function PostFormPage({ params }: { params: { id: string } }) {
           form.reset({
              ...data,
              excerpt: data.excerpt ?? '',
-             content: data.content ?? null,
+             content: data.content ?? '',
              author_name: data.author_name ?? '',
              meta_title: data.meta_title ?? '',
              meta_description: data.meta_description ?? '',
@@ -140,40 +149,6 @@ export default function PostFormPage({ params }: { params: { id: string } }) {
     }
   }, [watchTitle, form, isNew]);
 
-  // Função para processar o upload de imagens no conteúdo do artigo
-  const processContentImages = async (content: Descendant[], slug: string): Promise<Descendant[]> => {
-      const newContent = JSON.parse(JSON.stringify(content)); // Deep copy
-      const imageUploadPromises: Promise<void>[] = [];
-
-      const walkNodes = (nodes: Descendant[]) => {
-          for (const node of nodes) {
-              if (node.type === 'image' && node.url.startsWith('blob:')) {
-                  const promise = fetch(node.url)
-                      .then(res => res.blob())
-                      .then(async blob => {
-                          const file = new File([blob], `content-image-${Date.now()}`, { type: blob.type });
-                          const filePath = `post-content/${slug}-${file.name}`;
-                          
-                          const { error: uploadError } = await supabase.storage.from('post-images').upload(filePath, file);
-                          if (uploadError) throw new Error(uploadError.message);
-
-                          const { data: urlData } = supabase.storage.from('post-images').getPublicUrl(filePath);
-                          node.url = urlData.publicUrl;
-                      });
-                  imageUploadPromises.push(promise);
-              }
-              if (Array.isArray((node as any).children)) {
-                  walkNodes((node as any).children);
-              }
-          }
-      };
-
-      walkNodes(newContent);
-      await Promise.all(imageUploadPromises);
-      return newContent;
-  };
-
-
   const onSubmit = async (data: PostFormData) => {
     setIsSubmitting(true);
     let coverImageUrl = post?.cover_image_url;
@@ -190,15 +165,8 @@ export default function PostFormPage({ params }: { params: { id: string } }) {
             coverImageUrl = urlData.publicUrl;
         }
 
-        // Processar imagens no conteúdo do editor
-        let finalContent = data.content;
-        if (data.content) {
-            finalContent = await processContentImages(data.content, data.slug);
-        }
-
         const postData = { 
             ...data, 
-            content: finalContent,
             cover_image_url: coverImageUrl,
             published_at: data.is_published && (!post || !post.published_at) ? new Date().toISOString() : post?.published_at,
             updated_at: new Date().toISOString()
@@ -271,7 +239,7 @@ export default function PostFormPage({ params }: { params: { id: string } }) {
                                 <FormItem>
                                     <FormLabel>Conteúdo do Artigo</FormLabel>
                                     <FormControl>
-                                        <RichTextEditor
+                                        <DynamicRichTextEditor
                                             initialContent={field.value}
                                             onChange={field.onChange}
                                         />
