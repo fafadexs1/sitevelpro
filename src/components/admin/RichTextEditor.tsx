@@ -3,7 +3,7 @@
 
 import React, { useCallback, useMemo } from 'react';
 import { createEditor, Descendant, Editor, Transforms, Text, Element, Range } from 'slate';
-import { Slate, Editable, withReact, ReactEditor, useSlate } from 'slate-react';
+import { Slate, Editable, withReact, ReactEditor, useSlate, useSelected, useFocused } from 'slate-react';
 import { withHistory } from 'slate-history';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -324,13 +324,12 @@ const ElementComponent = (props: { attributes: any, children: any, element: Cust
 };
 
 const ImageElementComponent = ({ attributes, children, element }: { attributes: any, children: any, element: CustomElement }) => {
-  const editor = useSlate();
-  const path = ReactEditor.findPath(editor, element);
-  const isSelected = ReactEditor.isFocused(editor) && ReactEditor.isTargeted(editor, path);
+  const isSelected = useSelected();
+  const isFocused = useFocused();
 
   return (
     <div {...attributes}>
-      <div contentEditable={false} className={cn("relative", isSelected && "shadow-2xl ring-2 ring-primary")}>
+      <div contentEditable={false} className={cn("relative", isSelected && isFocused && "shadow-2xl ring-2 ring-primary")}>
         <Image 
           src={element.url!} 
           alt={element.alt || ''} 
