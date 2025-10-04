@@ -120,7 +120,15 @@ export async function generateStaticParams() {
     const supabase = createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        { cookies: {} }
+        {
+          cookies: {
+            get(name: string) {
+              return undefined;
+            },
+            set(name: string, value: string, options: any) {},
+            remove(name: string, options: any) {},
+          },
+        }
     );
     
     const { data: rules, error: rulesError } = await supabase.from('dynamic_seo_rules').select('slug_pattern').eq('allow_indexing', true);
