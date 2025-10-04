@@ -39,7 +39,7 @@ export default function SettingsPage() {
       external_api_app: "",
       external_api_token: "",
       GEMINI_API_KEY: "",
-      GEMINI_MODEL: "gemini-2.5-flash",
+      GEMINI_MODEL: "gemini-1.5-flash-latest",
     },
   });
 
@@ -60,7 +60,7 @@ export default function SettingsPage() {
           external_api_app: settingsMap.get('external_api_app') || '',
           external_api_token: settingsMap.get('external_api_token') || '',
           GEMINI_API_KEY: settingsMap.get('GEMINI_API_KEY') || '',
-          GEMINI_MODEL: settingsMap.get('GEMINI_MODEL') || 'gemini-2.5-flash',
+          GEMINI_MODEL: settingsMap.get('GEMINI_MODEL') || 'gemini-1.5-flash-latest',
         });
       }
       setLoading(false);
@@ -142,8 +142,8 @@ export default function SettingsPage() {
                             </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                                <SelectItem value="gemini-2.5-flash">Gemini 2.5 Flash (Rápido e Custo-benefício)</SelectItem>
-                                <SelectItem value="gemini-2.5-pro">Gemini 2.5 Pro (Mais Poderoso)</SelectItem>
+                                <SelectItem value="gemini-1.5-flash-latest">Gemini 1.5 Flash (Rápido e Custo-benefício)</SelectItem>
+                                <SelectItem value="gemini-1.5-pro-latest">Gemini 1.5 Pro (Mais Poderoso)</SelectItem>
                             </SelectContent>
                         </Select>
                         <p className="text-xs text-muted-foreground">
