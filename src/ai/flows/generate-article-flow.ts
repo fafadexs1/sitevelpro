@@ -2,7 +2,7 @@
 'use server';
 
 import { ai } from '@/ai/genkit';
-import { z } from 'genkit/zod';
+import { z } from 'zod';
 
 // Input Schema: Just a topic for the article
 export const ArticleTopicSchema = z.object({
