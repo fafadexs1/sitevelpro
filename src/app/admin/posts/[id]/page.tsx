@@ -329,7 +329,10 @@ export default function PostFormPage({ params }: { params: { id: string } }) {
                     </CardContent>
                 </Card>
                  <Card>
-                    <CardHeader><CardTitle>Imagem de Capa</CardTitle></CardHeader>
+                    <CardHeader>
+                        <CardTitle>Imagem de Capa</CardTitle>
+                        <CardDescription>Resolução ideal: 1200 x 630 pixels.</CardDescription>
+                    </CardHeader>
                     <CardContent>
                         <FormField control={form.control} name="cover_image_file" render={({ field: { onChange, value, ...rest} }) => (
                             <FormItem>
