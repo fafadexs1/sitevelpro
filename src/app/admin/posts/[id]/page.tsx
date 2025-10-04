@@ -28,6 +28,7 @@ import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import ReactMarkdown from 'react-markdown';
 
 // ==================================
 // Tipagem e Schema
@@ -88,6 +89,8 @@ export default function PostFormPage({ params }: { params: { id: string } }) {
         meta_description: "",
     },
   });
+
+  const watchedContent = form.watch('content');
   
   useEffect(() => {
     if (!isNew) {
@@ -221,14 +224,26 @@ export default function PostFormPage({ params }: { params: { id: string } }) {
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <FormField control={form.control} name="title" render={({ field }) => (<FormItem><FormLabel>Título do Artigo</FormLabel><FormControl><Input placeholder="Ex: 5 Dicas para Melhorar seu Wi-Fi" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                        <FormField control={form.control} name="content" render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Conteúdo (Markdown)</FormLabel>
-                                <FormControl><Textarea placeholder="Escreva seu artigo aqui... Use Markdown para formatar." {...field} rows={18} value={field.value ?? ''} /></FormControl>
-                                <p className="text-xs text-muted-foreground">Use # para títulos, * para itálico/negrito, - para listas.</p>
-                                <FormMessage />
-                            </FormItem>
-                        )} />
+                        
+                        <div className="grid grid-cols-2 gap-4 h-[500px]">
+                            <FormField control={form.control} name="content" render={({ field }) => (
+                                <FormItem className="flex flex-col h-full">
+                                    <FormLabel>Conteúdo (Markdown)</FormLabel>
+                                    <FormControl>
+                                        <Textarea placeholder="Escreva seu artigo aqui..." {...field} className="flex-grow resize-none" value={field.value ?? ''} />
+                                    </FormControl>
+                                    <p className="text-xs text-muted-foreground">Use # para títulos, * para itálico/negrito, - para listas.</p>
+                                    <FormMessage />
+                                </FormItem>
+                            )} />
+                             <div className="h-full">
+                                <FormLabel>Pré-visualização</FormLabel>
+                                <div className="prose prose-sm dark:prose-invert max-w-none h-full overflow-y-auto rounded-md border border-input p-3 bg-secondary">
+                                    <ReactMarkdown>{watchedContent || "A pré-visualização aparecerá aqui."}</ReactMarkdown>
+                                </div>
+                            </div>
+                        </div>
+
                     </CardContent>
                 </Card>
                  <Card>
