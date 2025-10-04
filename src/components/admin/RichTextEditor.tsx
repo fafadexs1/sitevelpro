@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useCallback, useMemo } from 'react';
-import { createEditor, Descendant, Editor, Transforms, Text, Element, Range } from 'slate';
+import { createEditor, Descendant, Editor, Transforms, Text, Element, Range, Path } from 'slate';
 import { Slate, Editable, withReact, ReactEditor, useSlate, useSelected, useFocused } from 'slate-react';
 import { withHistory } from 'slate-history';
 import { Button } from '@/components/ui/button';
@@ -62,15 +62,26 @@ const initialValue: Descendant[] = [
 const insertImage = (editor: Editor, url: string) => {
     const text = { text: '' };
     const image: ImageElement = { type: 'image', url, alt: 'Imagem do artigo', children: [text] };
+    const paragraph: CustomElement = { type: 'paragraph', children: [{ text: '' }]};
     Transforms.insertNodes(editor, image);
-    Transforms.move(editor);
+    // Move to the next block and insert an empty paragraph
+    if(editor.selection) {
+      const imagePath = Path.parent(editor.selection.anchor.path);
+      const nextPath = Path.next(imagePath);
+      Transforms.insertNodes(editor, paragraph, { at: nextPath, select: true });
+    }
 };
 
 const insertVideo = (editor: Editor, url: string) => {
   const text = { text: '' };
   const video: VideoElement = { type: 'video', url, children: [text] };
+  const paragraph: CustomElement = { type: 'paragraph', children: [{ text: '' }]};
   Transforms.insertNodes(editor, video);
-  Transforms.move(editor);
+    if(editor.selection) {
+      const videoPath = Path.parent(editor.selection.anchor.path);
+      const nextPath = Path.next(videoPath);
+      Transforms.insertNodes(editor, paragraph, { at: nextPath, select: true });
+    }
 };
 
 
@@ -329,7 +340,7 @@ const ImageElementComponent = ({ attributes, children, element }: { attributes: 
 
   return (
     <div {...attributes}>
-      <div contentEditable={false} className={cn("relative", isSelected && isFocused && "shadow-2xl ring-2 ring-primary")}>
+      <div contentEditable={false} className={cn("relative my-4", isSelected && isFocused && "shadow-2xl ring-2 ring-primary")}>
         <Image 
           src={element.url!} 
           alt={element.alt || ''} 
@@ -346,7 +357,7 @@ const ImageElementComponent = ({ attributes, children, element }: { attributes: 
 const VideoElementComponent = ({ attributes, children, element }: { attributes: any, children: any, element: CustomElement }) => {
     return (
         <div {...attributes}>
-            <div contentEditable={false} className="relative aspect-video">
+            <div contentEditable={false} className="relative aspect-video my-4">
                  <iframe
                     src={element.url}
                     title="Embedded YouTube video"
