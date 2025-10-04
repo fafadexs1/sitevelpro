@@ -7,7 +7,6 @@ import { notFound } from "next/navigation";
 import { Calendar, User } from "lucide-react";
 import type { Metadata } from 'next';
 import React from 'react';
-import ReactMarkdown from "react-markdown";
 import type { CookieOptions } from '@supabase/ssr';
 
 type PageProps = {
@@ -102,24 +101,10 @@ export default async function BlogPostPage({ params }: PageProps) {
                     </div>
                 </header>
 
-                <div className="prose prose-lg dark:prose-invert max-w-none text-foreground/90">
-                   {post.content ? (
-                      <ReactMarkdown
-                        components={{
-                            h1: ({node, ...props}) => <h1 className="text-3xl font-bold mt-8 mb-4" {...props} />,
-                            h2: ({node, ...props}) => <h2 className="text-2xl font-bold mt-6 mb-3" {...props} />,
-                            h3: ({node, ...props}) => <h3 className="text-xl font-bold mt-4 mb-2" {...props} />,
-                            p: ({node, ...props}) => <p className="leading-relaxed mb-4" {...props} />,
-                            ul: ({node, ...props}) => <ul className="list-disc list-inside space-y-2 mb-4" {...props} />,
-                            ol: ({node, ...props}) => <ol className="list-decimal list-inside space-y-2 mb-4" {...props} />,
-                            blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-primary pl-4 italic text-muted-foreground my-4" {...props} />,
-                            img: ({node, ...props}) => <Image src={props.src || ''} alt={props.alt || ''} width={800} height={450} className="rounded-lg mx-auto my-6" />,
-                        }}
-                      >{post.content}</ReactMarkdown>
-                    ) : (
-                      <p>Conteúdo não disponível ou em formato inválido.</p>
-                    )}
-                </div>
+                <div
+                  className="prose prose-lg dark:prose-invert max-w-none text-foreground/90"
+                  dangerouslySetInnerHTML={{ __html: post.content || '' }}
+                />
             </div>
           </div>
         </article>
