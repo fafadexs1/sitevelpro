@@ -80,6 +80,10 @@
   div[data-slate-editor="true"] {
     outline: none !important;
   }
+  
+  .prose p {
+    @apply my-4;
+  }
 }
 
 :root {
