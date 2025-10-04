@@ -9,10 +9,9 @@ import { ConversionTracker } from '@/components/analytics/ConversionTracker';
 import React from 'react';
 import Script from 'next/script';
 import { cookies } from 'next/headers';
-import { ConsentBanner } from '@/components/analytics/ConsentBanner';
 import { VisitTracker } from '@/components/analytics/VisitTracker';
 import { EventTracker } from '@/components/analytics/EventTracker';
-import { FloatingWhatsApp } from '@/components/landing/FloatingWhatsApp';
+import { ConditionalLayoutElements } from '@/components/ConditionalLayoutElements';
 
 export const revalidate = 0;
 
@@ -197,10 +196,9 @@ export default async function RootLayout({
         <TrackingNoScript tags={bodyStartNoScripts} />
         
         {children}
-        <FloatingWhatsApp />
 
         <Toaster />
-        <ConsentBanner />
+        <ConditionalLayoutElements />
         <VisitTracker />
         <EventTracker />
         <ConversionTracker />
