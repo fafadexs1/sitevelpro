@@ -1,7 +1,8 @@
 
 'use server';
 
-import { aiPromise } from '@/ai/genkit';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+import { createClient } from '@/utils/supabase/server';
 import { z } from 'zod';
 
 // Input Schema: Just a topic for the article
@@ -21,46 +22,88 @@ const GeneratedArticleSchema = z.object({
 export type GeneratedArticle = z.infer<typeof GeneratedArticleSchema>;
 
 
+async function getAiSettings() {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from('system_settings')
+    .select('key, value')
+    .in('key', ['GEMINI_API_KEY', 'GEMINI_MODEL']);
+
+  if (error) {
+    console.error('Error fetching AI settings:', error);
+    throw new Error("Could not retrieve AI settings from the database.");
+  }
+  
+  const settingsMap = new Map(data.map(item => [item.key, item.value]));
+  const apiKey = settingsMap.get('GEMINI_API_KEY');
+  const modelName = settingsMap.get('GEMINI_MODEL') || 'gemini-1.5-flash-latest';
+  
+  if (!apiKey) {
+    throw new Error('GEMINI_API_KEY is not configured in the system settings.');
+  }
+
+  return { apiKey, modelName };
+}
+
 export async function generateArticle(input: ArticleTopic): Promise<GeneratedArticle> {
-  const ai = await aiPromise;
-  
-  const generateArticlePrompt = ai.definePrompt(
-    {
-      name: 'generateArticlePrompt',
-      input: { schema: ArticleTopicSchema },
-      output: { schema: GeneratedArticleSchema },
-      prompt: `
-        You are an expert blog writer and SEO specialist for a modern internet provider called Velpro.
-        Your task is to write a complete, engaging, and SEO-optimized blog post about the given topic.
+  // Validate input
+  const parsedInput = ArticleTopicSchema.safeParse(input);
+  if (!parsedInput.success) {
+    throw new Error(`Invalid input: ${parsedInput.error.message}`);
+  }
 
-        Topic: {{{topic}}}
+  const { apiKey, modelName } = await getAiSettings();
 
-        Instructions:
-        1.  **Title:** Create a compelling title that is interesting to read and good for SEO.
-        2.  **Content:** Write the full article. Structure it with HTML tags. Use <h2> for subheadings, <p> for paragraphs, <ul> and <li> for lists, and <strong> for emphasis. The tone should be helpful, modern, and tech-savvy.
-        3.  **Excerpt:** Write a short summary of the article.
-        4.  **Meta Title:** Create a concise title for search engine results (around 60 characters).
-        5.  **Meta Description:** Create an enticing description for search engine results (around 155 characters).
-
-        Generate the complete article based on these instructions.
-      `,
-    },
-  );
-
-  const generateArticleFlow = ai.defineFlow(
-    {
-      name: 'generateArticleFlow',
-      inputSchema: ArticleTopicSchema,
-      outputSchema: GeneratedArticleSchema,
-    },
-    async (input) => {
-      const { output } = await generateArticlePrompt(input);
-      if (!output) {
-        throw new Error("The AI model did not return a valid article structure.");
-      }
-      return output;
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const model = genAI.getGenerativeModel({ 
+    model: modelName,
+    generationConfig: {
+        responseMimeType: "application/json",
     }
-  );
-  
-  return generateArticleFlow(input);
+  });
+
+  const prompt = `
+    You are an expert blog writer and SEO specialist for a modern internet provider called Velpro.
+    Your task is to write a complete, engaging, and SEO-optimized blog post about the given topic.
+
+    Topic: ${parsedInput.data.topic}
+
+    Instructions:
+    1.  **Title:** Create a compelling title that is interesting to read and good for SEO.
+    2.  **Content:** Write the full article. Structure it with HTML tags. Use <h2> for subheadings, <p> for paragraphs, <ul> and <li> for lists, and <strong> for emphasis. The tone should be helpful, modern, and tech-savvy.
+    3.  **Excerpt:** Write a short summary of the article.
+    4.  **Meta Title:** Create a concise title for search engine results (around 60 characters).
+    5.  **Meta Description:** Create an enticing description for search engine results (around 155 characters).
+
+    Return the response as a valid JSON object matching this schema:
+    {
+      "title": "string",
+      "content": "string (HTML)",
+      "excerpt": "string",
+      "meta_title": "string",
+      "meta_description": "string"
+    }
+  `;
+
+  try {
+    const result = await model.generateContent(prompt);
+    const responseText = result.response.text();
+    const responseJson = JSON.parse(responseText);
+
+    // Validate the output from the AI
+    const parsedOutput = GeneratedArticleSchema.safeParse(responseJson);
+    if (!parsedOutput.success) {
+      throw new Error(`AI returned an invalid data structure: ${parsedOutput.error.message}`);
+    }
+
+    return parsedOutput.data;
+
+  } catch (error: any) {
+    console.error("Error generating article with Gemini:", error);
+    // Forward a more user-friendly error message
+    if (error.message.includes('SAFETY')) {
+        throw new Error('The content could not be generated due to safety settings. Please try a different topic.');
+    }
+    throw new Error(error.message || 'An unknown error occurred while generating the article.');
+  }
 }

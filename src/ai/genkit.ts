@@ -1,68 +1,14 @@
+
+// This file is no longer used for the article generation flow, 
+// but is kept for potential future Genkit-based features.
+// The core AI logic has been moved to a direct SDK implementation
+// in `src/ai/flows/generate-article-flow.ts`.
+
 import {genkit} from 'genkit';
 import {googleAI} from '@genkit-ai/googleai';
-import {createClient} from '@/utils/supabase/server';
 
-type Settings = {
-    apiKey: string | undefined;
-    model: string;
-}
-
-// Função para obter a chave da API e o modelo do banco de dados
-async function getAiSettings(): Promise<Settings> {
-  try {
-    const supabase = createClient();
-    const { data, error } = await supabase
-      .from('system_settings')
-      .select('key, value')
-      .in('key', ['GEMINI_API_KEY', 'GEMINI_MODEL']);
-
-    if (error || !data) {
-      console.warn('AI settings not found in DB, checking environment variables.');
-      return {
-        apiKey: process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY,
-        model: process.env.GEMINI_MODEL || 'gemini-1.5-flash-latest'
-      };
-    }
-    
-    const settingsMap = new Map(data.map(item => [item.key, item.value]));
-
-    return {
-        apiKey: settingsMap.get('GEMINI_API_KEY') || process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY,
-        model: settingsMap.get('GEMINI_MODEL') || 'gemini-1.5-flash-latest'
-    }
-
-  } catch (e) {
-    console.error("Error fetching AI settings:", e);
-    return {
-        apiKey: process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY,
-        model: process.env.GEMINI_MODEL || 'gemini-1.5-flash-latest'
-    };
-  }
-}
-
-// Inicializa o Genkit de forma assíncrona
-const initializeGenkit = async () => {
-    const { apiKey, model } = await getAiSettings();
-
-    if (!apiKey) {
-      console.error("CRITICAL: Gemini API Key is not configured. AI features will fail.");
-    }
-    
-    return genkit({
-      plugins: [googleAI({ apiKey: apiKey || '' })],
-      model: model || 'gemini-1.5-flash-latest',
-    });
-};
-
-// Exportamos uma promessa que resolve para a instância do 'ai'
-export const aiPromise = initializeGenkit();
-
-// Para uso nos fluxos, você pode fazer 'const ai = await aiPromise;'
-// A abordagem mais simples é refatorar os fluxos para aguardar a promessa.
-
-// Vamos criar um objeto 'ai' com a chave do env para compatibilidade,
-// mas o ideal é sempre usar a promessa.
+// We keep a simple, environment-based Genkit initialization
+// for any other potential flows that might be added later.
 export const ai = genkit({
   plugins: [googleAI({apiKey: process.env.GEMINI_API_KEY})],
-  model: process.env.GEMINI_MODEL || 'gemini-1.5-flash-latest',
 });
