@@ -213,7 +213,8 @@ INSERT INTO system_settings (key, value, description)
 VALUES 
     ('external_api_url', '', 'URL base da API externa (ex: https://api.seuprovedor.com.br)'),
     ('external_api_app', '', 'Nome do App para autenticação na API de O.S.'),
-    ('external_api_token', '', 'Token para autenticação na API de O.S.')
+    ('external_api_token', '', 'Token para autenticação na API de O.S.'),
+    ('GEMINI_API_KEY', '', 'Chave de API do Google Gemini para funcionalidades de IA.')
 ON CONFLICT (key) DO NOTHING;
 
 

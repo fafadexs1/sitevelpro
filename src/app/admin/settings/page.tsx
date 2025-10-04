@@ -5,18 +5,20 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Loader2, Settings, Link as LinkIcon, KeyRound, AppWindow } from "lucide-react";
+import { Loader2, Settings, Link as LinkIcon, KeyRound, AppWindow, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { createClient } from "@/utils/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import Link from "next/link";
 
 const settingsSchema = z.object({
   external_api_url: z.string().url("Por favor, insira uma URL válida."),
   external_api_app: z.string().optional(),
   external_api_token: z.string().optional(),
+  GEMINI_API_KEY: z.string().min(1, "A chave de API do Gemini é obrigatória."),
 });
 
 type SettingsFormData = z.infer<typeof settingsSchema>;
@@ -33,6 +35,7 @@ export default function SettingsPage() {
       external_api_url: "",
       external_api_app: "",
       external_api_token: "",
+      GEMINI_API_KEY: "",
     },
   });
 
@@ -42,7 +45,7 @@ export default function SettingsPage() {
       const { data, error } = await supabase
         .from('system_settings')
         .select('key, value')
-        .in('key', ['external_api_url', 'external_api_app', 'external_api_token']);
+        .in('key', ['external_api_url', 'external_api_app', 'external_api_token', 'GEMINI_API_KEY']);
       
       if (error) {
         toast({ variant: 'destructive', title: 'Erro ao buscar configurações', description: error.message });
@@ -52,6 +55,7 @@ export default function SettingsPage() {
           external_api_url: settingsMap.get('external_api_url') || '',
           external_api_app: settingsMap.get('external_api_app') || '',
           external_api_token: settingsMap.get('external_api_token') || '',
+          GEMINI_API_KEY: settingsMap.get('GEMINI_API_KEY') || '',
         });
       }
       setLoading(false);
@@ -95,9 +99,39 @@ export default function SettingsPage() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <Card>
               <CardHeader>
+                <CardTitle className="flex items-center gap-2"><Sparkles className="h-5 w-5 text-primary"/>Inteligência Artificial</CardTitle>
+                <CardDescription>
+                  Configure a chave de API para as funcionalidades de IA, como a geração de artigos.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <FormField
+                  control={form.control}
+                  name="GEMINI_API_KEY"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Chave da API do Google Gemini</FormLabel>
+                      <FormControl>
+                        <Input type="password" placeholder="Cole sua chave de API aqui" {...field} />
+                      </FormControl>
+                       <p className="text-xs text-muted-foreground">
+                        Sua chave é armazenada de forma segura. Você pode obter uma em{' '}
+                        <Link href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="underline hover:text-primary">
+                            Google AI Studio
+                        </Link>.
+                      </p>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
                 <CardTitle className="flex items-center gap-2"><LinkIcon className="h-5 w-5 text-primary"/>Integrações Externas</CardTitle>
                 <CardDescription>
-                  Configure os endpoints e credenciais para serviços externos.
+                  Configure os endpoints e credenciais para serviços externos (área do cliente).
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
