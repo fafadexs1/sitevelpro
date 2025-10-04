@@ -1,3 +1,4 @@
+
 import { createClient } from '@/utils/supabase/server';
 import { NextResponse } from 'next/server';
 
@@ -37,7 +38,8 @@ export async function GET() {
     '/politica-de-privacidade',
     '/termos-de-uso',
     '/status',
-    '/tv'
+    '/tv',
+    '/blog'
   ].forEach(route => {
     routes.push({
       url: `${siteUrl}${route}`,
@@ -46,7 +48,7 @@ export async function GET() {
     });
   });
 
-  // 2. Rotas Dinâmicas
+  // 2. Rotas Dinâmicas de SEO
   try {
     const { data: allRules, error: rulesError } = await supabase
         .from('dynamic_seo_rules')
@@ -88,7 +90,27 @@ export async function GET() {
      console.error("Sitemap: Erro ao processar regras de SEO dinâmicas:", error);
   }
 
-  // 3. Construir o XML
+  // 3. Rotas de Blog
+  try {
+    const { data: posts, error: postsError } = await supabase
+      .from('posts')
+      .select('slug, updated_at')
+      .eq('is_published', true);
+
+    if (postsError) throw postsError;
+
+    posts?.forEach(post => {
+      routes.push({
+        url: `${siteUrl}/blog/${post.slug}`,
+        lastModified: new Date(post.updated_at),
+        priority: 0.7,
+      });
+    });
+  } catch (error) {
+    console.error("Sitemap: Erro ao processar posts do blog:", error);
+  }
+
+  // 4. Construir o XML
   const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
   ${routes.map(route => `
@@ -100,7 +122,7 @@ export async function GET() {
   `).join('')}
 </urlset>`;
 
-  // 4. Retornar a resposta XML
+  // 5. Retornar a resposta XML
   return new NextResponse(sitemapXml.trim(), {
     headers: {
       'Content-Type': 'application/xml',
