@@ -20,7 +20,7 @@ async function getAiSettings(): Promise<Settings> {
       console.warn('AI settings not found in DB, checking environment variables.');
       return {
         apiKey: process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY,
-        model: process.env.GEMINI_MODEL || 'gemini-1.5-flash-latest'
+        model: process.env.GEMINI_MODEL || 'gemini-2.5-flash'
       };
     }
     
@@ -28,14 +28,14 @@ async function getAiSettings(): Promise<Settings> {
 
     return {
         apiKey: settingsMap.get('GEMINI_API_KEY') || process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY,
-        model: settingsMap.get('GEMINI_MODEL') || 'gemini-1.5-flash-latest'
+        model: settingsMap.get('GEMINI_MODEL') || 'gemini-2.5-flash'
     }
 
   } catch (e) {
     console.error("Error fetching AI settings:", e);
     return {
         apiKey: process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY,
-        model: process.env.GEMINI_MODEL || 'gemini-1.5-flash-latest'
+        model: process.env.GEMINI_MODEL || 'gemini-2.5-flash'
     };
   }
 }
@@ -50,7 +50,7 @@ const initializeGenkit = async () => {
     
     return genkit({
       plugins: [googleAI({ apiKey: apiKey || '' })],
-      model: model || 'gemini-1.5-flash-latest',
+      model: model || 'gemini-2.5-flash',
     });
 };
 
@@ -64,5 +64,5 @@ export const aiPromise = initializeGenkit();
 // mas o ideal é sempre usar a promessa.
 export const ai = genkit({
   plugins: [googleAI({apiKey: process.env.GEMINI_API_KEY})],
-  model: process.env.GEMINI_MODEL || 'gemini-1.5-flash-latest',
+  model: process.env.GEMINI_MODEL || 'gemini-2.5-flash',
 });
