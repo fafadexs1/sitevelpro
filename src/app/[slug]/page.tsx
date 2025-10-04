@@ -13,7 +13,7 @@ import { createClient } from "@/utils/supabase/server";
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import dynamic from "next/dynamic";
-import { createServerClient } from "@supabase/ssr";
+import { createServerClient, type CookieOptions } from '@supabase/ssr';
 
 const CdnHighlight = dynamic(() => import('@/components/landing/CdnHighlight').then(mod => mod.CdnHighlight));
 const Games = dynamic(() => import('@/components/landing/Games').then(mod => mod.Games));
@@ -125,8 +125,8 @@ export async function generateStaticParams() {
             get(name: string) {
               return undefined;
             },
-            set(name: string, value: string, options: any) {},
-            remove(name: string, options: any) {},
+            set(name: string, value: string, options: CookieOptions) {},
+            remove(name: string, options: CookieOptions) {},
           },
         }
     );
