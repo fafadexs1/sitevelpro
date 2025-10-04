@@ -5,13 +5,13 @@ import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 
 // Input Schema: Just a topic for the article
-export const ArticleTopicSchema = z.object({
+const ArticleTopicSchema = z.object({
   topic: z.string().describe('The main topic or title for the blog article.'),
 });
 export type ArticleTopic = z.infer<typeof ArticleTopicSchema>;
 
 // Output Schema: A complete, structured article
-export const GeneratedArticleSchema = z.object({
+const GeneratedArticleSchema = z.object({
   title: z.string().describe('A catchy, SEO-friendly title for the article.'),
   content: z.string().describe('The full content of the article, formatted as HTML with tags like <h2>, <p>, <ul>, <li>, and <strong>.'),
   excerpt: z.string().describe('A short, engaging summary of the article, around 160 characters.'),
@@ -43,7 +43,7 @@ const generateArticlePrompt = ai.definePrompt(
   },
 );
 
-export const generateArticleFlow = ai.defineFlow(
+const generateArticleFlow = ai.defineFlow(
   {
     name: 'generateArticleFlow',
     inputSchema: ArticleTopicSchema,
