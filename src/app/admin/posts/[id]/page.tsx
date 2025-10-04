@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
@@ -168,9 +169,9 @@ export default function PostFormPage({ params }: { params: { id: string } }) {
         meta_description: article.meta_description,
       });
       toast({ title: "Sucesso!", description: "Artigo gerado pela IA." });
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      toast({ variant: "destructive", title: "Erro de IA", description: "Não foi possível gerar o artigo." });
+      toast({ variant: "destructive", title: "Erro de IA", description: error.message || "Não foi possível gerar o artigo." });
     } finally {
       setIsGenerating(false);
     }
