@@ -8,8 +8,6 @@ import { withHistory } from 'slate-history';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Bold, Italic, Underline, Pilcrow, Heading1, Heading2, Heading3, List, ListOrdered, Quote, Image as ImageIcon, Video } from 'lucide-react';
-import { createClient } from '@/utils/supabase/client';
-import { useToast } from '@/hooks/use-toast';
 import Image from "next/image";
 
 const LIST_TYPES = ['numbered-list', 'bulleted-list'];
@@ -60,7 +58,7 @@ const initialValue: Descendant[] = [
   },
 ];
 
-// Helper function to insert image
+// Helper function to insert image with a local blob URL
 const insertImage = (editor: Editor, url: string) => {
     const text = { text: '' };
     const image: ImageElement = { type: 'image', url, alt: 'Imagem do artigo', children: [text] };
@@ -104,7 +102,9 @@ const withMedia = (editor: Editor) => {
                 const reader = new FileReader();
                 const [mime] = file.type.split('/');
                 if (mime === 'image') {
-                    // Placeholder for future deferred upload logic
+                    // Generate a local URL for instant preview
+                    const localUrl = URL.createObjectURL(file);
+                    insertImage(editor, localUrl);
                 }
             }
         } else if (isImageUrl(text)) {
@@ -125,13 +125,10 @@ const withMedia = (editor: Editor) => {
 
 const isImageUrl = (url: string) => {
     if (!url) return false;
-    try {
-        const ext = new URL(url).pathname.split('.').pop();
-        return ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext!);
-    } catch {
-        return false;
-    }
+    // Simple check for image extensions, can be improved.
+    return /\.(jpeg|jpg|png|gif|webp)$/.test(url);
 };
+
 
 const isYoutubeUrl = (url: string) => {
     if (!url) return false;
@@ -177,49 +174,41 @@ export const RichTextEditor = ({ initialContent, onChange }: RichTextEditorProps
 
 const ImageButton = () => {
     const editor = useSlate();
-    const { toast } = useToast();
 
-    const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (!file) return;
-
-        const supabase = createClient();
-        const filePath = `post-content/${Date.now()}-${file.name}`;
-        
-        const { error: uploadError } = await supabase.storage
-            .from('post-images')
-            .upload(filePath, file);
-
-        if (uploadError) {
-            toast({ variant: 'destructive', title: 'Erro de Upload', description: uploadError.message });
-            return;
-        }
-
-        const { data: publicUrlData } = supabase.storage
-            .from('post-images')
-            .getPublicUrl(filePath);
-
-        if (publicUrlData) {
-            insertImage(editor, publicUrlData.publicUrl);
-        }
+    // This button just triggers the file input.
+    // The actual handling is now in editor.insertData
+    const handleTriggerUpload = () => {
+        const input = document.getElementById('image-upload');
+        input?.click();
     };
+    
+    // We need an input element in the DOM to trigger the file dialog
+    const FileInput = () => (
+      <input
+        type="file"
+        id="image-upload"
+        className="hidden"
+        accept="image/*"
+        onChange={event => {
+            const file = event.target.files?.[0];
+            if (file) {
+                 const localUrl = URL.createObjectURL(file);
+                 insertImage(editor, localUrl);
+            }
+        }}
+      />
+    );
 
     return (
         <>
-            <input
-                type="file"
-                id="image-upload"
-                className="hidden"
-                accept="image/*"
-                onChange={handleImageUpload}
-            />
+            <FileInput />
             <Button
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8"
                 onMouseDown={event => {
                     event.preventDefault();
-                    document.getElementById('image-upload')?.click();
+                    handleTriggerUpload();
                 }}
             >
                 <ImageIcon className="h-4 w-4" />
@@ -337,10 +326,11 @@ const ElementComponent = (props: { attributes: any, children: any, element: Cust
 const ImageElementComponent = ({ attributes, children, element }: { attributes: any, children: any, element: CustomElement }) => {
   const editor = useSlate();
   const path = ReactEditor.findPath(editor, element);
+  const isSelected = ReactEditor.isFocused(editor) && ReactEditor.isTargeted(editor, path);
 
   return (
     <div {...attributes}>
-      <div contentEditable={false}>
+      <div contentEditable={false} className={cn("relative", isSelected && "shadow-2xl ring-2 ring-primary")}>
         <Image 
           src={element.url!} 
           alt={element.alt || ''} 
@@ -426,4 +416,3 @@ const MarkButton = ({ format, icon: Icon }: { format: string, icon: React.Elemen
     </Button>
   );
 };
-

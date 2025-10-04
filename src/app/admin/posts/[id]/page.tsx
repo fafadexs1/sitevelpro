@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -29,6 +29,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
+import { Descendant } from "slate";
 
 // ==================================
 // Tipagem e Schema
@@ -41,7 +42,7 @@ type Post = {
   cover_image_url?: string | null;
   is_published: boolean;
   created_at: string;
-  content?: any; // Alterado para 'any' para aceitar o JSON do editor
+  content?: any;
   meta_title?: string | null;
   meta_description?: string | null;
   author_name?: string | null;
@@ -139,58 +140,98 @@ export default function PostFormPage({ params }: { params: { id: string } }) {
     }
   }, [watchTitle, form, isNew]);
 
+  // Função para processar o upload de imagens no conteúdo do artigo
+  const processContentImages = async (content: Descendant[], slug: string): Promise<Descendant[]> => {
+      const newContent = JSON.parse(JSON.stringify(content)); // Deep copy
+      const imageUploadPromises: Promise<void>[] = [];
+
+      const walkNodes = (nodes: Descendant[]) => {
+          for (const node of nodes) {
+              if (node.type === 'image' && node.url.startsWith('blob:')) {
+                  const promise = fetch(node.url)
+                      .then(res => res.blob())
+                      .then(async blob => {
+                          const file = new File([blob], `content-image-${Date.now()}`, { type: blob.type });
+                          const filePath = `post-content/${slug}-${file.name}`;
+                          
+                          const { error: uploadError } = await supabase.storage.from('post-images').upload(filePath, file);
+                          if (uploadError) throw new Error(uploadError.message);
+
+                          const { data: urlData } = supabase.storage.from('post-images').getPublicUrl(filePath);
+                          node.url = urlData.publicUrl;
+                      });
+                  imageUploadPromises.push(promise);
+              }
+              if (Array.isArray((node as any).children)) {
+                  walkNodes((node as any).children);
+              }
+          }
+      };
+
+      walkNodes(newContent);
+      await Promise.all(imageUploadPromises);
+      return newContent;
+  };
+
+
   const onSubmit = async (data: PostFormData) => {
     setIsSubmitting(true);
     let coverImageUrl = post?.cover_image_url;
 
-    if (data.cover_image_file) {
-        const file = data.cover_image_file;
-        const filePath = `post-${data.slug}-${Date.now()}.${file.name.split('.').pop()}`;
-        const { error: uploadError } = await supabase.storage.from('post-images').upload(filePath, file, { upsert: true });
-        if (uploadError) {
-            toast({ variant: "destructive", title: "Erro de Upload", description: uploadError.message });
-            setIsSubmitting(false);
-            return;
+    try {
+        // Upload da imagem de capa
+        if (data.cover_image_file) {
+            const file = data.cover_image_file;
+            const filePath = `post-${data.slug}-${Date.now()}.${file.name.split('.').pop()}`;
+            const { error: uploadError } = await supabase.storage.from('post-images').upload(filePath, file, { upsert: true });
+            if (uploadError) throw new Error(`Erro de Upload (Capa): ${uploadError.message}`);
+            
+            const { data: urlData } = supabase.storage.from('post-images').getPublicUrl(filePath);
+            coverImageUrl = urlData.publicUrl;
         }
-        const { data: urlData } = supabase.storage.from('post-images').getPublicUrl(filePath);
-        coverImageUrl = urlData.publicUrl;
-    }
 
-    const postData = { 
-        ...data, 
-        cover_image_url: coverImageUrl,
-        published_at: data.is_published && (!post || !post.published_at) ? new Date().toISOString() : post?.published_at,
-        updated_at: new Date().toISOString()
-    };
-    delete (postData as any).cover_image_file;
-    
-    let error;
-    if (isNew) {
-      const { data: newPost, error: insertError } = await supabase.from("posts").insert(postData).select().single();
-      error = insertError;
-      if (!error && newPost) {
-        router.push(`/admin/posts/${newPost.id}`); // Redirect to edit page
-      }
-    } else if (post) {
-      ({ error } = await supabase.from("posts").update(postData).eq("id", post.id));
-    }
+        // Processar imagens no conteúdo do editor
+        let finalContent = data.content;
+        if (data.content) {
+            finalContent = await processContentImages(data.content, data.slug);
+        }
 
-    if (error) {
-      toast({ variant: "destructive", title: "Erro ao Salvar", description: `Não foi possível salvar o artigo: ${error.message}`});
-    } else {
-      toast({ title: "Sucesso!", description: "Artigo salvo com sucesso." });
-       if (isNew) {
-            // A navegação já acontece acima
-       } else {
-           // Apenas re-fetch dos dados
-            const { data: updatedData } = await supabase.from("posts").select("*").eq("id", params.id).single();
-            if(updatedData) {
-                 setPost(updatedData);
-                 form.reset(updatedData);
-            }
-       }
+        const postData = { 
+            ...data, 
+            content: finalContent,
+            cover_image_url: coverImageUrl,
+            published_at: data.is_published && (!post || !post.published_at) ? new Date().toISOString() : post?.published_at,
+            updated_at: new Date().toISOString()
+        };
+        delete (postData as any).cover_image_file;
+        
+        let error;
+        if (isNew) {
+          const { data: newPost, error: insertError } = await supabase.from("posts").insert(postData).select().single();
+          error = insertError;
+          if (!error && newPost) {
+            toast({ title: "Sucesso!", description: "Artigo criado com sucesso." });
+            router.push(`/admin/posts/${newPost.id}`);
+          }
+        } else if (post) {
+          ({ error } = await supabase.from("posts").update(postData).eq("id", post.id));
+           if (!error) {
+              toast({ title: "Sucesso!", description: "Artigo salvo com sucesso." });
+              const { data: updatedData } = await supabase.from("posts").select("*").eq("id", params.id).single();
+              if(updatedData) {
+                   setPost(updatedData);
+                   form.reset(updatedData);
+              }
+           }
+        }
+
+        if (error) throw new Error(`Não foi possível salvar o artigo: ${error.message}`);
+
+    } catch (e: any) {
+        toast({ variant: "destructive", title: "Erro ao Salvar", description: e.message });
+    } finally {
+        setIsSubmitting(false);
     }
-    setIsSubmitting(false);
   };
   
   if(loading) {
