@@ -29,7 +29,7 @@ const ChannelCard = ({ channel, delay }: { channel: Channel; delay: number }) =>
 );
 
 
-export function TvSection() {
+export function TvGrid() {
   const [channels, setChannels] = useState<Channel[]>([]);
   const [loading, setLoading] = useState(true);
 

@@ -11,10 +11,10 @@ const Advantages = dynamic(() => import('@/components/landing/Advantages').then(
 const Games = dynamic(() => import('@/components/landing/Games').then(mod => mod.Games));
 const Streaming = dynamic(() => import('@/components/landing/Streaming').then(mod => mod.Streaming));
 const Mesh = dynamic(() => import('@/components/landing/Mesh').then(mod => mod.Mesh));
-const TvSection = dynamic(() => import('@/components/landing/TvSection').then(mod => mod.TvSection));
+const TvGrid = dynamic(() => import('@/components/landing/TvGrid').then(mod => mod.TvGrid));
 const Ceo = dynamic(() => import('@/components/landing/Ceo').then(mod => mod.Ceo));
 const Testimonials = dynamic(() => import('@/components/landing/Testimonials').then(mod => mod.Testimonials));
-const BlogSection = dynamic(() => import('@/components/landing/BlogSection').then(mod => mod.BlogSection));
+const BlogSection = dynamic(() => import('@/components/landing/BlogSection'));
 const Faq = dynamic(() => import('@/components/landing/Faq').then(mod => mod.Faq));
 const Contact = dynamic(() => import('@/components/landing/Contact').then(mod => mod.Contact));
 const Footer = dynamic(() => import('@/components/landing/Footer').then(mod => mod.Footer));
@@ -36,7 +36,7 @@ export default async function Home() {
         <Games />
         <Streaming />
         <Mesh />
-        <TvSection />
+        <TvGrid />
         <Ceo />
         <Testimonials />
         <BlogSection />

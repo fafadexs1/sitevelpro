@@ -5,8 +5,6 @@ import { Plans } from "@/components/landing/Plans";
 import { Coverage } from "@/components/landing/Coverage";
 import { Advantages } from "@/components/landing/Advantages";
 import { Mesh } from "@/components/landing/Mesh";
-import { TvSection } from "@/components/landing/Tv";
-import { Ceo } from "@/components/landing/Ceo";
 import { Testimonials } from "@/components/landing/Testimonials";
 import { Faq } from "@/components/landing/Faq";
 import { Contact } from "@/components/landing/Contact";
@@ -20,6 +18,8 @@ import { createServerClient } from "@supabase/ssr";
 const CdnHighlight = dynamic(() => import('@/components/landing/CdnHighlight').then(mod => mod.CdnHighlight));
 const Games = dynamic(() => import('@/components/landing/Games').then(mod => mod.Games));
 const Streaming = dynamic(() => import('@/components/landing/Streaming').then(mod => mod.Streaming));
+const TvGrid = dynamic(() => import('@/components/landing/TvGrid').then(mod => mod.TvGrid));
+const Ceo = dynamic(() => import('@/components/landing/Ceo').then(mod => mod.Ceo));
 
 
 type PageProps = {
@@ -178,7 +178,7 @@ export default async function DynamicPage({ params }: PageProps) {
         <Games />
         <Streaming />
         <Mesh />
-        <TvSection />
+        <TvGrid />
         <Ceo />
         <Testimonials />
         <Faq />
