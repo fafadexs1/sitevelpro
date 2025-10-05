@@ -1,8 +1,7 @@
-
 "use client";
 
 import { useState } from "react";
-import { Wifi, ChevronRight, Menu, User, X, FileText, ArrowRight, Smartphone, Download, Gauge, MonitorSmartphone, CircleDollarSign, MessageCircle, Phone, ChevronDown, Tv, Package, Shield, Building, Info, LifeBuoy, GanttChartSquare, Sparkle, MapPin } from "lucide-react";
+import { Wifi, ChevronRight, Menu, User, X, FileText, ArrowRight, Smartphone, Download, Gauge, MonitorSmartphone, CircleDollarSign, MessageCircle, Phone, ChevronDown, Tv, Package, Shield, Building, Info, LifeBuoy, GanttChartSquare, Sparkle, MapPin, Newspaper } from "lucide-react";
 import Link from "next/link";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -93,8 +92,9 @@ export function Header() {
              </NavMenu>
              <NavMenu title="Ajuda" icon={LifeBuoy}>
                 <NavMenuItem href="#faq" icon={Info}>Perguntas Frequentes</NavMenuItem>
+                <NavMenuItem href="/blog" icon={Newspaper}>Artigos</NavMenuItem>
                 <NavMenuItem href="#contato" icon={MessageCircle}>Fale Conosco</NavMenuItem>
-            </NavMenu>
+             </NavMenu>
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">
