@@ -18,6 +18,7 @@ import type { DateRange } from 'react-day-picker';
 
 type Visit = {
   visitor_id: string;
+  pathname: string;
   is_new_visitor: boolean;
   created_at: string;
 };
@@ -79,39 +80,70 @@ export default function StatisticsPage() {
         
         const queryEndDate = startOfDay(addDays(endDate, 1));
         
-        const { data: visits, error: visitsError } = await supabase
-            .from('visits')
-            .select('visitor_id, pathname, is_new_visitor, created_at', { count: 'exact' })
-            .gte('created_at', startDate.toISOString())
-            .lt('created_at', queryEndDate.toISOString());
+        let allVisits: Visit[] = [];
+        let allEvents: Event[] = [];
+        const PAGE_SIZE = 1000;
 
-
-        if (visitsError) {
-            console.error("Error fetching visits:", visitsError);
-            setLoading(false);
-            return;
+        // Fetch all visits with pagination
+        let visitsPage = 0;
+        let visitsHasMore = true;
+        while(visitsHasMore) {
+            const { data: visits, error } = await supabase
+                .from('visits')
+                .select('visitor_id, pathname, is_new_visitor, created_at')
+                .gte('created_at', startDate.toISOString())
+                .lt('created_at', queryEndDate.toISOString())
+                .range(visitsPage * PAGE_SIZE, (visitsPage + 1) * PAGE_SIZE - 1);
+            
+            if (error) {
+                console.error("Error fetching visits:", error);
+                visitsHasMore = false;
+                setLoading(false);
+                return;
+            }
+            if(visits && visits.length > 0) {
+                allVisits = [...allVisits, ...visits];
+            }
+            if (!visits || visits.length < PAGE_SIZE) {
+                visitsHasMore = false;
+            }
+            visitsPage++;
         }
         
-        const { data: events, error: eventsError } = await supabase
-            .from('events')
-            .select('name, properties')
-            .eq('name', 'cta_click')
-            .gte('created_at', startDate.toISOString())
-            .lt('created_at', queryEndDate.toISOString());
+        // Fetch all events with pagination
+        let eventsPage = 0;
+        let eventsHasMore = true;
+        while(eventsHasMore) {
+            const { data: events, error } = await supabase
+                .from('events')
+                .select('name, properties')
+                .eq('name', 'cta_click')
+                .gte('created_at', startDate.toISOString())
+                .lt('created_at', queryEndDate.toISOString())
+                .range(eventsPage * PAGE_SIZE, (eventsPage + 1) * PAGE_SIZE - 1);
             
-        if (eventsError) {
-            console.error("Error fetching events:", eventsError);
+            if (error) {
+                console.error("Error fetching events:", error);
+                eventsHasMore = false;
+            }
+             if(events && events.length > 0) {
+                allEvents = [...allEvents, ...events];
+            }
+            if (!events || events.length < PAGE_SIZE) {
+                eventsHasMore = false;
+            }
+            eventsPage++;
         }
 
 
         // --- Process Visits Data ---
-        setTotalVisits(visits.length);
-        const uniqueVisitorIds = new Set(visits.map(v => v.visitor_id));
+        setTotalVisits(allVisits.length);
+        const uniqueVisitorIds = new Set(allVisits.map(v => v.visitor_id));
         setUniqueVisitors(uniqueVisitorIds.size);
-        const newVisitorCount = new Set(visits.filter(v => v.is_new_visitor).map(v => v.visitor_id)).size;
+        const newVisitorCount = new Set(allVisits.filter(v => v.is_new_visitor).map(v => v.visitor_id)).size;
         setNewVisitors(newVisitorCount);
 
-        const pageCounts = visits.reduce((acc, visit) => {
+        const pageCounts = allVisits.reduce((acc, visit) => {
             acc[visit.pathname] = (acc[visit.pathname] || 0) + 1;
             return acc;
         }, {} as Record<string, number>);
@@ -126,7 +158,7 @@ export default function StatisticsPage() {
                 const hourStr = format(hour, 'yyyy-MM-dd HH:00');
                 hourlyCounts[hourStr] = 0;
             });
-            visits.forEach(visit => {
+            allVisits.forEach(visit => {
                 const hourStr = format(new Date(visit.created_at), 'yyyy-MM-dd HH:00');
                 if (hourlyCounts[hourStr] !== undefined) {
                     hourlyCounts[hourStr]++;
@@ -141,7 +173,7 @@ export default function StatisticsPage() {
                 dailyCounts[dateStr] = 0;
             });
 
-            visits.forEach(visit => {
+            allVisits.forEach(visit => {
                 const date = format(new Date(visit.created_at), 'yyyy-MM-dd');
                 if (dailyCounts[date] !== undefined) {
                     dailyCounts[date]++;
@@ -151,7 +183,7 @@ export default function StatisticsPage() {
         }
 
         const visitorData: Record<string, { count: number; last_visit: string }> = {};
-        visits.forEach(visit => {
+        allVisits.forEach(visit => {
             if (!visitorData[visit.visitor_id]) {
                 visitorData[visit.visitor_id] = { count: 0, last_visit: '' };
             }
@@ -164,8 +196,8 @@ export default function StatisticsPage() {
         setRecurringVisitors(recurring);
         
         // --- Process Events Data ---
-        if (events) {
-            const planClickCounts = events
+        if (allEvents) {
+            const planClickCounts = allEvents
                 .filter(e => e.properties.plan_name)
                 .reduce((acc, e) => {
                     const planKey = `${e.properties.plan_name}`;
@@ -173,7 +205,7 @@ export default function StatisticsPage() {
                     return acc;
                 }, {} as Record<string, number>);
 
-            const otherClickCounts = events
+            const otherClickCounts = allEvents
                 .filter(e => e.properties.button_id)
                 .reduce((acc, e) => {
                     const buttonKey = e.properties.button_id;
