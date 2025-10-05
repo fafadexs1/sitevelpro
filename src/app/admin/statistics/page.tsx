@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { Bar, BarChart as RechartsBarChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
-import { subDays, format, startOfMonth, endOfMonth, eachDayOfInterval, startOfDay, eachHourOfInterval, endOfDay } from 'date-fns';
+import { subDays, format, startOfMonth, endOfMonth, eachDayOfInterval, startOfDay, eachHourOfInterval, endOfDay, addDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
 import { Calendar } from "@/components/ui/calendar";
@@ -78,34 +78,37 @@ export default function StatisticsPage() {
         const supabase = createClient();
         
         let startDate: Date;
-        let endDate: Date = endOfDay(new Date());
+        let endDate: Date;
 
         if (activeFilter === 'custom' && dateRange?.from) {
              startDate = startOfDay(dateRange.from);
-             endDate = dateRange.to ? endOfDay(dateRange.to) : endOfDay(dateRange.from);
+             endDate = dateRange.to ? dateRange.to : dateRange.from;
         } else {
+            const now = new Date();
+            endDate = now;
             switch (activeFilter) {
                 case 'today':
-                    startDate = startOfDay(new Date());
-                    endDate = endOfDay(new Date());
+                    startDate = startOfDay(now);
                     break;
                 case '7d':
-                    startDate = startOfDay(subDays(new Date(), 6));
+                    startDate = startOfDay(subDays(now, 6));
                     break;
                 case 'month':
-                    startDate = startOfMonth(new Date());
+                    startDate = startOfMonth(now);
                     break;
                 case '30d':
                 default:
-                    startDate = startOfDay(subDays(new Date(), 29));
+                    startDate = startOfDay(subDays(now, 29));
             }
         }
+        
+        const queryEndDate = startOfDay(addDays(endDate, 1));
         
         const { data: visits, error: visitsError } = await supabase
             .from('visits')
             .select('visitor_id, pathname, is_new_visitor, created_at', { count: 'exact' })
             .gte('created_at', startDate.toISOString())
-            .lte('created_at', endDate.toISOString());
+            .lt('created_at', queryEndDate.toISOString());
 
 
         if (visitsError) {
@@ -119,7 +122,7 @@ export default function StatisticsPage() {
             .select('name, properties')
             .eq('name', 'cta_click')
             .gte('created_at', startDate.toISOString())
-            .lte('created_at', endDate.toISOString());
+            .lt('created_at', queryEndDate.toISOString());
             
         if (eventsError) {
             console.error("Error fetching events:", eventsError);
@@ -143,7 +146,7 @@ export default function StatisticsPage() {
         // --- Process Chart Data ---
         if (activeFilter === 'today') {
             const hourlyCounts: Record<string, number> = {};
-            const intervalHours = eachHourOfInterval({ start: startDate, end: endDate });
+            const intervalHours = eachHourOfInterval({ start: startOfDay(startDate), end: endOfDay(endDate) });
             intervalHours.forEach(hour => {
                 const hourStr = format(hour, 'yyyy-MM-dd HH:00');
                 hourlyCounts[hourStr] = 0;
