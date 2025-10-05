@@ -69,38 +69,13 @@ export default function StatisticsPage() {
     const [otherClicks, setOtherClicks] = useState<CtaClick[]>([]);
     const [activeFilter, setActiveFilter] = useState<FilterRange>('30d');
     const [dateRange, setDateRange] = useState<DateRange | undefined>({
-        from: subDays(new Date(), 29),
-        to: new Date(),
+        from: startOfDay(subDays(new Date(), 29)),
+        to: endOfDay(new Date()),
     });
 
-    const fetchData = useCallback(async () => {
+    const fetchData = useCallback(async (startDate: Date, endDate: Date) => {
         setLoading(true);
         const supabase = createClient();
-        
-        let startDate: Date;
-        let endDate: Date;
-
-        if (activeFilter === 'custom' && dateRange?.from) {
-             startDate = startOfDay(dateRange.from);
-             endDate = dateRange.to ? dateRange.to : dateRange.from;
-        } else {
-            const now = new Date();
-            endDate = now;
-            switch (activeFilter) {
-                case 'today':
-                    startDate = startOfDay(now);
-                    break;
-                case '7d':
-                    startDate = startOfDay(subDays(now, 6));
-                    break;
-                case 'month':
-                    startDate = startOfMonth(now);
-                    break;
-                case '30d':
-                default:
-                    startDate = startOfDay(subDays(new Date(), 29));
-            }
-        }
         
         const queryEndDate = startOfDay(addDays(endDate, 1));
         
@@ -211,29 +186,33 @@ export default function StatisticsPage() {
         }
 
         setLoading(false);
-    }, [activeFilter, dateRange]);
-
-    useEffect(() => {
-        fetchData();
-    }, [fetchData]);
-    
-    useEffect(() => {
-        if (activeFilter !== 'custom') {
-            const now = new Date();
-            let fromDate;
-             switch (activeFilter) {
-                case 'today': fromDate = now; break;
-                case '7d': fromDate = subDays(now, 6); break;
-                case 'month': fromDate = startOfMonth(now); break;
-                case '30d': default: fromDate = subDays(now, 29); break;
-            }
-            setDateRange({ from: fromDate, to: now });
-        }
     }, [activeFilter]);
     
+    // Recalculate date range when a preset filter is clicked
+    useEffect(() => {
+        if (activeFilter === 'custom') return;
+
+        const now = new Date();
+        let fromDate;
+        switch (activeFilter) {
+            case 'today': fromDate = startOfDay(now); break;
+            case '7d': fromDate = startOfDay(subDays(now, 6)); break;
+            case 'month': fromDate = startOfMonth(now); break;
+            case '30d': default: fromDate = startOfDay(subDays(now, 29)); break;
+        }
+        setDateRange({ from: fromDate, to: endOfDay(now) });
+    }, [activeFilter]);
+    
+    // Fetch data whenever the date range changes
+    useEffect(() => {
+        if (dateRange?.from && dateRange?.to) {
+            fetchData(dateRange.from, dateRange.to);
+        }
+    }, [dateRange, fetchData]);
+    
     const handleDateRangeSelect = (range: DateRange | undefined) => {
-        setDateRange(range);
         if (range?.from) {
+             setDateRange({ from: range.from, to: range.to || range.from });
              setActiveFilter('custom');
         }
     }
