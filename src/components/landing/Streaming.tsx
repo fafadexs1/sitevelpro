@@ -35,35 +35,43 @@ export function Streaming() {
   return (
     <div className="w-full overflow-hidden">
         <section className="relative min-h-[70vh] w-full border-t border-border bg-background pt-32 sm:pt-48 pb-16 sm:pb-24 flex items-end">
-        {/* Background Image */}
-        <AnimatePresence>
-                <motion.div
-                    key={selectedService.bgImage}
-                    initial={{ opacity: 0, scale: 1.1 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-                    className="absolute inset-0 streaming-background"
-                    style={{ backgroundImage: `url('${selectedService.bgImage}')`, backgroundSize: 'cover', backgroundPosition: 'center' }}
-                />
+            {/* Background Image Layers */}
+            <AnimatePresence>
+                {streamingServices.map((service) => (
+                    selectedService.logoAlt === service.logoAlt && (
+                        <motion.div
+                            key={service.bgImage}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.7, ease: "easeInOut" }}
+                            className="absolute inset-0 streaming-background"
+                            style={{ backgroundImage: `url('${service.bgImage}')`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+                        />
+                    )
+                ))}
             </AnimatePresence>
 
         <div className="relative z-10 w-full p-4 sm:p-8 lg:p-12 text-foreground">
             <div className="mx-auto max-w-7xl">
                 {/* Content Display */}
-                <motion.div 
-                    key={selectedService.title}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
-                    className="max-w-2xl"
-                >
-                    <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-white drop-shadow-md">
-                        {selectedService.title}
-                    </h2>
-                    <p className="mt-4 text-lg text-white/80 drop-shadow-sm">
-                        {selectedService.description}
-                    </p>
-                </motion.div>
+                <AnimatePresence mode="wait">
+                    <motion.div 
+                        key={selectedService.title}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        transition={{ duration: 0.5, ease: "easeOut" }}
+                        className="max-w-2xl"
+                    >
+                        <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-white drop-shadow-md">
+                            {selectedService.title}
+                        </h2>
+                        <p className="mt-4 text-lg text-white/80 drop-shadow-sm">
+                            {selectedService.description}
+                        </p>
+                    </motion.div>
+                </AnimatePresence>
                 
                 {/* Logo Grid */}
                 <div className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
@@ -76,12 +84,13 @@ export function Streaming() {
                                 ? 'border-primary/80 scale-105 shadow-2xl shadow-primary/20'
                                 : 'border-transparent opacity-60 hover:opacity-100 hover:scale-105'
                             }`}
-                            whileHover={{ scale: 1.05 }}
+                            whileHover={{ scale: selectedService.logoAlt === service.logoAlt ? 1.05 : 1.02 }}
                         >
                             <Image
                                 src={service.logo}
                                 alt={service.logoAlt}
                                 fill
+                                sizes="(max-width: 640px) 100vw, 33vw"
                                 className="object-contain p-2 sm:p-4 bg-black/30 backdrop-blur-sm rounded-lg"
                             />
                         </motion.div>
