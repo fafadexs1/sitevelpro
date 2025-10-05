@@ -98,7 +98,7 @@ export default function StatisticsPage() {
                     break;
                 case '30d':
                 default:
-                    startDate = startOfDay(subDays(now, 29));
+                    startDate = startOfDay(subDays(new Date(), 29));
             }
         }
         
@@ -502,5 +502,3 @@ export default function StatisticsPage() {
         </>
     );
 }
-
-    
