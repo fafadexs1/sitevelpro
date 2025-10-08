@@ -240,7 +240,7 @@ export default function StatisticsPage() {
         if (dateRange?.from && dateRange?.to) {
             fetchData(dateRange.from, dateRange.to);
         }
-    }, [dateRange, fetchData]);
+    }, [dateRange]);
     
     const handleDateRangeSelect = (range: DateRange | undefined) => {
         if (range?.from) {
