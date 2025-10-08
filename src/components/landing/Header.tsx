@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Wifi, ChevronRight, Menu, User, X, FileText, ArrowRight, Smartphone, Download, Gauge, MonitorSmartphone, CircleDollarSign, MessageCircle, Phone, ChevronDown, Tv, Package, Shield, Building, Info, LifeBuoy, GanttChartSquare, Sparkle, MapPin, Newspaper } from "lucide-react";
+import { Wifi, ChevronRight, Menu, User, X, FileText, ArrowRight, Smartphone, Download, Gauge, MonitorSmartphone, CircleDollarSign, MessageCircle, Phone, ChevronDown, Tv, Package, Shield, Building, Info, LifeBuoy, GanttChartSquare, Sparkle, MapPin, Newspaper, HelpCircle } from "lucide-react";
 import Link from "next/link";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -193,6 +193,15 @@ export function Header() {
     )
   }
 
+  const mobileNavLinks = [
+    { href: "#planos", icon: Package, text: "Planos e Serviços" },
+    { href: "#vantagens", icon: Sparkle, text: "Vantagens" },
+    { href: "/tv", icon: Tv, text: "Pacotes de TV" },
+    { href: "/blog", icon: Newspaper, text: "Blog" },
+    { href: "#faq", icon: HelpCircle, text: "Dúvidas Frequentes" },
+    { href: "#contato", icon: MessageCircle, text: "Fale Conosco" },
+  ];
+
   return (
     <>
     <header className="sticky top-0 z-40 border-b border-border/40 bg-background/60 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -287,11 +296,28 @@ export function Header() {
                                </div>
                             </div>
                         </div>
+                         
+                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <div className="flex-grow border-t border-border"></div>
+                            <span>NAVEGUE</span>
+                            <div className="flex-grow border-t border-border"></div>
+                         </div>
+                         
+                         <nav className="grid grid-cols-2 gap-3">
+                           {mobileNavLinks.map(link => (
+                               <Link key={link.href} href={link.href} className="flex flex-col items-center justify-center gap-2 rounded-xl border border-border p-4 bg-background hover:bg-accent cursor-pointer text-center">
+                                 <link.icon className="h-6 w-6 text-primary"/>
+                                 <span className="text-sm">{link.text}</span>
+                               </Link>
+                           ))}
+                         </nav>
+
                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
                             <div className="flex-grow border-t border-border"></div>
                             <span>OU</span>
                             <div className="flex-grow border-t border-border"></div>
                          </div>
+
                          <div className="space-y-3">
                              <a href="https://wa.me/5508003810404?text=Olá!%20Gostaria%20de%20saber%20mais%20sobre%20os%20planos." target="_blank" rel="noopener noreferrer" className="w-full inline-flex items-center justify-center gap-2 rounded-full border-2 border-primary bg-transparent p-3 text-sm font-bold text-primary transition-colors hover:bg-primary/10">
                                 <MessageCircle className="h-5 w-5"/> CONVERSAR NO WHATSAPP
