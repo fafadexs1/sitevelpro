@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   LogIn, User, Lock, Eye, EyeOff, ArrowRight, Loader2, Wifi, Zap,
@@ -16,6 +16,49 @@ import { useToast } from "@/hooks/use-toast";
 import { loginWithApi } from "@/actions/authActions";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
+import { createClient } from "@/utils/supabase/client";
+
+
+// =====================================================
+// Componente de Logo Dinâmico
+// =====================================================
+function DynamicLogo() {
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchLogo = async () => {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from('system_settings')
+        .select('value')
+        .eq('key', 'company_logo_url')
+        .single();
+      
+      if (data?.value) {
+        setLogoUrl(data.value);
+      }
+      setLoading(false);
+    };
+    fetchLogo();
+  }, []);
+
+  if (loading) {
+    return <div className="grid h-10 w-10 place-items-center rounded-xl bg-secondary" />;
+  }
+
+  return (
+    <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-primary to-green-400 text-white shadow-lg shadow-primary/20 overflow-hidden">
+      {logoUrl ? (
+        <Image src={logoUrl} alt="Logo da Empresa" width={40} height={40} className="object-contain" />
+      ) : (
+        <Wifi className="h-5 w-5" />
+      )}
+    </div>
+  );
+}
+
 
 const loginSchema = z.object({
   cpfcnpj: z.string().min(1, "CPF ou CNPJ é obrigatório."),
@@ -78,9 +121,7 @@ export function LoginScreen({ onLoginSuccess }: { onLoginSuccess: () => void }) 
       <LightningBG />
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-8 px-6 py-10 absolute top-0 left-0 right-0">
             <Link href="/" className="flex items-center gap-3">
-            <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-primary to-green-400 text-foreground shadow-lg shadow-primary/20">
-                <Wifi className="h-5 w-5" />
-            </div>
+              <DynamicLogo />
             <div>
                 <p className="text-lg font-semibold leading-none">Velpro Telecom</p>
                 <p className="text-xs text-muted-foreground">Área do Cliente</p>

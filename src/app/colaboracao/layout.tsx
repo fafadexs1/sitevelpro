@@ -28,6 +28,47 @@ import { useToast } from "@/hooks/use-toast";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { usePathname } from 'next/navigation'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import Image from "next/image";
+
+
+// ==================================
+// Componente de Logo Dinâmico
+// ==================================
+function DynamicLogo() {
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchLogo = async () => {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from('system_settings')
+        .select('value')
+        .eq('key', 'company_logo_url')
+        .single();
+      
+      if (data?.value) {
+        setLogoUrl(data.value);
+      }
+      setLoading(false);
+    };
+    fetchLogo();
+  }, []);
+
+  if (loading) {
+    return <div className="grid h-10 w-10 place-items-center rounded-xl bg-secondary" />;
+  }
+
+  return (
+    <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-primary to-green-400 text-white shadow-lg shadow-primary/20 overflow-hidden">
+      {logoUrl ? (
+        <Image src={logoUrl} alt="Logo da Empresa" width={40} height={40} className="object-contain" />
+      ) : (
+        <Wifi className="h-5 w-5" />
+      )}
+    </div>
+  );
+}
 
 
 // ==================================
@@ -80,9 +121,7 @@ function ColaboracaoLogin({ onLogin }: { onLogin: (user: SupabaseUser) => void }
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-secondary p-4">
       <Link href="/" className="mb-8 flex w-fit items-center gap-3">
-        <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-primary to-green-400 text-white shadow-lg shadow-primary/20">
-          <Wifi className="h-5 w-5" />
-        </div>
+        <DynamicLogo />
         <div>
           <p className="text-lg font-semibold leading-none text-foreground">Velpro Telecom</p>
           <p className="text-xs text-muted-foreground">Área do Colaborador</p>
@@ -198,9 +237,7 @@ function ColaboracaoDashboard({
       {/* Sidebar */}
       <aside className="sticky top-0 hidden h-screen w-64 flex-col border-r border-border bg-card p-4 md:flex">
         <div className="mb-8 flex w-fit items-center gap-3">
-          <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-primary to-green-400 text-white shadow-lg shadow-primary/20">
-            <Wifi className="h-5 w-5" />
-          </div>
+          <DynamicLogo />
           <div>
             <p className="text-lg font-semibold leading-none text-foreground">Velpro</p>
             <p className="text-xs text-muted-foreground">Colaboração</p>

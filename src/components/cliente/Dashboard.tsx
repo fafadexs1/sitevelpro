@@ -1,7 +1,7 @@
 
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Settings, Share2,
@@ -14,6 +14,47 @@ import { useContract } from "@/components/cliente/ContractProvider";
 import { Wifi } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
+
+
+// =====================================================
+// Componente de Logo Dinâmico
+// =====================================================
+function DynamicLogo() {
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchLogo = async () => {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from('system_settings')
+        .select('value')
+        .eq('key', 'company_logo_url')
+        .single();
+      
+      if (data?.value) {
+        setLogoUrl(data.value);
+      }
+      setLoading(false);
+    };
+    fetchLogo();
+  }, []);
+
+  if (loading) {
+    return <div className="grid h-9 w-9 place-items-center rounded-xl bg-secondary" />;
+  }
+
+  return (
+    <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-primary to-green-400 text-white shadow-lg shadow-primary/20 overflow-hidden">
+      {logoUrl ? (
+        <Image src={logoUrl} alt="Logo da Empresa" width={36} height={36} className="object-contain" />
+      ) : (
+        <Wifi className="h-5 w-5" />
+      )}
+    </div>
+  );
+}
 
 // =====================================================
 // Dashboard with Multi-Contracts + Top Menu Tabs
@@ -58,9 +99,7 @@ export function Dashboard({ children }: { children: React.ReactNode }) {
       <div className="sticky top-0 z-40 border-b border-border bg-background/70 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3">
           <Link href="/" className="flex items-center gap-3">
-            <div className="grid h-9 w-9 flex-shrink-0 place-items-center rounded-xl bg-gradient-to-br from-primary to-green-400 text-foreground shadow-lg shadow-primary/20">
-              <Wifi className="h-5 w-5" />
-            </div>
+            <DynamicLogo />
             <div className="hidden sm:block">
               <p className="text-sm font-semibold leading-none">Velpro • Área do Cliente</p>
               <p className="text-[11px] text-muted-foreground">Internet + TV</p>
