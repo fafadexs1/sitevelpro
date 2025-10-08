@@ -33,6 +33,7 @@ import {
   BookOpen,
   Settings2,
   Brush,
+  Network
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -305,7 +306,7 @@ function AdminDashboard({
     onLogout();
   };
 
-  const isGroupActive = (paths: string[]) => paths.some(path => pathname === path);
+  const isGroupActive = (paths: string[]) => paths.some(path => pathname.startsWith(path));
 
   return (
     <div className="flex min-h-screen bg-secondary text-foreground">
@@ -325,7 +326,7 @@ function AdminDashboard({
                 <NavLink href="/admin/posts" label="Artigos" icon={Newspaper} />
                 <NavLink href="/admin/seo" label="SEO" icon={Globe} />
             </NavGroup>
-             <NavGroup title="Planos e TV" icon={Package} startOpen={isGroupActive(['/admin', '/admin/tv-channels', '/admin/tv-packages'])}>
+             <NavGroup title="Planos e TV" icon={Package} startOpen={isGroupActive(['/admin/plans', '/admin/tv-channels', '/admin/tv-packages'])}>
                 <NavLink href="/admin" label="Planos" icon={LayoutDashboard} />
                 <NavLink href="/admin/tv-channels" label="Canais de TV" icon={Clapperboard} />
                 <NavLink href="/admin/tv-packages" label="Pacotes de TV" icon={Tv} />
@@ -335,9 +336,10 @@ function AdminDashboard({
                 <NavLink href="/admin/google-ads" label="Google Ads" icon={Megaphone} />
                 <NavLink href="/admin/statistics" label="Estatísticas" icon={BarChart2} />
             </NavGroup>
-             <NavGroup title="Sistema" icon={Settings2} startOpen={isGroupActive(['/admin/database', '/admin/settings'])}>
+             <NavGroup title="Sistema" icon={Settings2} startOpen={isGroupActive(['/admin/database', '/admin/settings', '/admin/domains'])}>
                 <NavLink href="/admin/database" label="Banco de Dados" icon={Database} />
                 <NavLink href="/admin/settings" label="Configurações" icon={Settings} />
+                 <NavLink href="/admin/domains" label="Domínios" icon={Network} />
             </NavGroup>
         </nav>
 

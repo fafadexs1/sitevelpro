@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
 import Image from "next/image";
 
+type DomainType = 'main_site' | 'sales_page';
 
 const NavMenu = ({ title, icon: Icon, children }: { title: string, icon: React.ElementType, children: React.ReactNode }) => (
     <DropdownMenu>
@@ -86,6 +87,24 @@ function DynamicLogo() {
 
 export function Header() {
   const [showAfterHoursDialog, setShowAfterHoursDialog] = useState(false);
+  const [domainType, setDomainType] = useState<DomainType>('sales_page');
+
+  useEffect(() => {
+    const getDomainType = async () => {
+      const hostname = window.location.hostname;
+      const supabase = createClient();
+      const { data } = await supabase
+        .from('domains')
+        .select('type')
+        .eq('hostname', hostname)
+        .single();
+        
+      if (data) {
+        setDomainType(data.type as DomainType);
+      }
+    };
+    getDomainType();
+  }, []);
 
   const handleCallClick = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
     const now = new Date();
@@ -101,6 +120,47 @@ export function Header() {
     }
     // Se estiver no horário, o comportamento padrão do link (href="tel:...") prosseguirá.
   };
+
+  const MainCtaButton = () => {
+    const isMainSite = domainType === 'main_site';
+    const href = isMainSite ? 'https://velpro.net.br/app/app.html' : 'tel:08003810404';
+    const label = isMainSite ? 'Área do Cliente' : 'Ligue Agora';
+    const Icon = isMainSite ? User : Phone;
+
+    return (
+      <a
+        id="header-cta-ligue"
+        href={href}
+        onClick={!isMainSite ? handleCallClick : undefined}
+        data-track-event="cta_click"
+        data-track-prop-button-id="main-cta-header"
+        className="inline-flex items-center gap-2 rounded-xl border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+      >
+        <Icon className="h-4 w-4" /> {label}
+      </a>
+    );
+  };
+  
+  const MobileMainCtaButton = () => {
+    const isMainSite = domainType === 'main_site';
+    const href = isMainSite ? 'https://velpro.net.br/app/app.html' : 'tel:08003810404';
+    const label = isMainSite ? 'Área do Cliente' : 'Ligar agora';
+    const Icon = isMainSite ? User : Phone;
+
+    return (
+       <a
+          id="mobile-cta-ligue"
+          href={href}
+          onClick={!isMainSite ? handleCallClick : undefined}
+          data-track-event="cta_click"
+          data-track-prop-button-id="main-cta-header-mobile"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-input bg-background text-sm font-medium text-foreground transition-colors hover:bg-accent"
+          aria-label={label}
+      >
+          <Icon className="h-5 w-5" />
+      </a>
+    )
+  }
 
   return (
     <>
@@ -136,16 +196,7 @@ export function Header() {
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">
-          <a
-            id="header-cta-ligue"
-            href="tel:08003810404"
-            onClick={handleCallClick}
-            data-track-event="cta_click"
-            data-track-prop-button-id="ligue-agora-header"
-            className="inline-flex items-center gap-2 rounded-xl border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
-          >
-            <Phone className="h-4 w-4" /> Ligue Agora
-          </a>
+          <MainCtaButton />
           <a
             id="header-cta-assine"
             href="/assinar"
@@ -158,17 +209,7 @@ export function Header() {
         </div>
         
         <div className="flex items-center gap-2 md:hidden">
-            <a
-                id="mobile-cta-ligue"
-                href="tel:08003810404"
-                onClick={handleCallClick}
-                data-track-event="cta_click"
-                data-track-prop-button-id="ligue-agora-header-mobile"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-input bg-background text-sm font-medium text-foreground transition-colors hover:bg-accent"
-                aria-label="Ligar agora"
-            >
-                <Phone className="h-5 w-5" />
-            </a>
+            <MobileMainCtaButton />
             <Sheet>
                 <SheetTrigger asChild>
                     <Button variant="outline" size="icon" id="mobile-menu-toggle" aria-label="Abrir menu">
@@ -259,7 +300,6 @@ export function Header() {
                 </AlertDialogAction>
             </AlertDialogFooter>
         </AlertDialogContent>
-    </AlertDialog>
     </>
   );
 }

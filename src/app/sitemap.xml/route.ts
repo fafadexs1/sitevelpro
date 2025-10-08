@@ -34,7 +34,6 @@ export async function GET() {
   [
     '/',
     '/assinar',
-    '/cliente',
     '/politica-de-privacidade',
     '/termos-de-uso',
     '/status',

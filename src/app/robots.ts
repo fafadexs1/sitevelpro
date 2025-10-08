@@ -23,23 +23,33 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
 
   const allowIndexing = data?.allow_indexing ?? true;
 
+  const baseRules = {
+    userAgent: '*',
+    disallow: ['/cliente/', '/admin/', '/colaborador/'],
+  };
+
   if (!allowIndexing) {
     return {
-      rules: {
-        userAgent: '*',
-        disallow: '/',
-      },
+      rules: [
+        baseRules,
+        {
+          userAgent: '*',
+          disallow: '/',
+        },
+      ],
     };
   }
 
   const siteUrl = await getSiteUrl();
 
   return {
-    rules: {
-      userAgent: '*',
-      allow: '/',
-    },
+    rules: [
+      baseRules,
+      {
+        userAgent: '*',
+        allow: '/',
+      },
+    ],
     sitemap: `${siteUrl}/sitemap.xml`,
   };
 }
-

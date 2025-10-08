@@ -200,6 +200,14 @@ create table if not exists seo_settings (
   constraint single_row_check check (id = 1)
 );
 
+-- Cria a tabela de domínios
+create table if not exists domains (
+  id uuid default gen_random_uuid() primary key,
+  hostname text not null unique,
+  type text not null default 'sales_page', -- 'main_site' or 'sales_page'
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
 -- Cria a tabela de configurações do Sistema
 create table if not exists system_settings (
     key text primary key,
