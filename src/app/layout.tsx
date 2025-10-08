@@ -5,12 +5,9 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { Inter } from 'next/font/google';
 import { createClient } from '@/utils/supabase/server';
-import { ConversionTracker } from '@/components/analytics/ConversionTracker';
 import React from 'react';
 import Script from 'next/script';
 import { cookies } from 'next/headers';
-import { VisitTracker } from '@/components/analytics/VisitTracker';
-import { EventTracker } from '@/components/analytics/EventTracker';
 import { ConditionalLayoutElements } from '@/components/ConditionalLayoutElements';
 
 export const revalidate = 0;
@@ -199,9 +196,6 @@ export default async function RootLayout({
 
         <Toaster />
         <ConditionalLayoutElements />
-        <VisitTracker />
-        <EventTracker />
-        <ConversionTracker />
         <TrackingScripts tags={bodyEndScripts} position="body_end" />
       </body>
     </html>

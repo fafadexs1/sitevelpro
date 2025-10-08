@@ -13,6 +13,11 @@ export function EventTracker() {
         const visitorId = localStorage.getItem(VISITOR_ID_KEY);
         if (!visitorId) return;
 
+        // Não rastreia eventos em páginas de admin/colaborador
+        if (pathname.startsWith('/admin') || pathname.startsWith('/colaborador') || pathname.startsWith('/colaboracao')) {
+            return;
+        }
+
         try {
             await fetch('/api/track-event', {
                 method: 'POST',

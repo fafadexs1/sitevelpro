@@ -17,7 +17,7 @@ export function VisitTracker() {
         }
 
         // Não rastreia as páginas do admin
-        if (pathname.startsWith('/admin')) {
+        if (pathname.startsWith('/admin') || pathname.startsWith('/colaborador') || pathname.startsWith('/colaboracao')) {
             return;
         }
 
