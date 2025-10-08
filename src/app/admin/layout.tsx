@@ -28,6 +28,11 @@ import {
   Play,
   Settings,
   Newspaper,
+  ChevronDown,
+  Package,
+  BookOpen,
+  Settings2,
+  Brush,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,6 +43,9 @@ import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { usePathname } from 'next/navigation'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import Image from "next/image";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { cn } from "@/lib/utils";
+
 
 // ==================================
 // Componente de Logo Dinâmico
@@ -243,6 +251,42 @@ function AdminLogin({ onLogin }: { onLogin: (user: SupabaseUser) => void }) {
   );
 }
 
+const NavLink = ({ href, label, icon: Icon }: { href: string; label: string; icon: React.ElementType }) => {
+    const pathname = usePathname();
+    const isActive = pathname === href;
+    return (
+        <Button
+            variant="ghost"
+            asChild
+            className={cn(
+                "w-full justify-start gap-2",
+                isActive ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+            )}
+        >
+            <Link href={href}>
+                <Icon className="h-4 w-4" /> {label}
+            </Link>
+        </Button>
+    )
+}
+
+const NavGroup = ({ title, icon: Icon, children, startOpen = false }: { title: string; icon: React.ElementType, children: React.ReactNode, startOpen?: boolean }) => (
+    <Collapsible defaultOpen={startOpen}>
+        <CollapsibleTrigger asChild>
+            <Button variant="ghost" className="w-full justify-between group">
+                <span className="flex items-center gap-2">
+                    <Icon className="h-4 w-4 text-muted-foreground" /> {title}
+                </span>
+                <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
+            </Button>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+            <div className="py-1 pl-8 pr-2 space-y-1 border-l border-border ml-4">
+                {children}
+            </div>
+        </CollapsibleContent>
+    </Collapsible>
+)
 
 function AdminDashboard({
   user,
@@ -261,19 +305,7 @@ function AdminDashboard({
     onLogout();
   };
 
-  const navItems = [
-    { href: "/admin/hero-slides", label: "Slides do Herói", icon: Play },
-    { href: "/admin", label: "Planos", icon: LayoutDashboard },
-    { href: "/admin/posts", label: "Artigos", icon: Newspaper },
-    { href: "/admin/tv-channels", label: "Canais de TV", icon: Clapperboard },
-    { href: "/admin/tv-packages", label: "Pacotes de TV", icon: Tv },
-    { href: "/admin/seo", label: "SEO", icon: Globe },
-    { href: "/admin/cities", label: "Cidades", icon: Map },
-    { href: "/admin/statistics", label: "Estatísticas", icon: BarChart2 },
-    { href: "/admin/google-ads", label: "Google Ads", icon: Megaphone },
-    { href: "/admin/database", label: "Banco de Dados", icon: Database },
-    { href: "/admin/settings", label: "Configurações", icon: Settings },
-  ];
+  const isGroupActive = (paths: string[]) => paths.some(path => pathname === path);
 
   return (
     <div className="flex min-h-screen bg-secondary text-foreground">
@@ -287,24 +319,26 @@ function AdminDashboard({
           </div>
         </div>
 
-        <nav className="flex flex-grow flex-col gap-2">
-          {navItems.map((item) => (
-            <Button
-              key={item.href}
-              id={`nav-link-${item.label.toLowerCase().replace(/ /g, '-')}`}
-              variant="ghost"
-              asChild
-              className={`justify-start gap-2 ${
-                pathname === item.href
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-              }`}
-            >
-              <Link href={item.href}>
-                <item.icon className="h-4 w-4" /> {item.label}
-              </Link>
-            </Button>
-          ))}
+        <nav className="flex flex-grow flex-col gap-1">
+             <NavGroup title="Conteúdo" icon={Brush} startOpen={isGroupActive(['/admin/hero-slides', '/admin/posts', '/admin/seo'])}>
+                <NavLink href="/admin/hero-slides" label="Slides do Herói" icon={Play} />
+                <NavLink href="/admin/posts" label="Artigos" icon={Newspaper} />
+                <NavLink href="/admin/seo" label="SEO" icon={Globe} />
+            </NavGroup>
+             <NavGroup title="Planos e TV" icon={Package} startOpen={isGroupActive(['/admin', '/admin/tv-channels', '/admin/tv-packages'])}>
+                <NavLink href="/admin" label="Planos" icon={LayoutDashboard} />
+                <NavLink href="/admin/tv-channels" label="Canais de TV" icon={Clapperboard} />
+                <NavLink href="/admin/tv-packages" label="Pacotes de TV" icon={Tv} />
+            </NavGroup>
+             <NavLink href="/admin/cities" label="Cidades" icon={Map} />
+            <NavGroup title="Marketing" icon={Megaphone} startOpen={isGroupActive(['/admin/google-ads', '/admin/statistics'])}>
+                <NavLink href="/admin/google-ads" label="Google Ads" icon={Megaphone} />
+                <NavLink href="/admin/statistics" label="Estatísticas" icon={BarChart2} />
+            </NavGroup>
+             <NavGroup title="Sistema" icon={Settings2} startOpen={isGroupActive(['/admin/database', '/admin/settings'])}>
+                <NavLink href="/admin/database" label="Banco de Dados" icon={Database} />
+                <NavLink href="/admin/settings" label="Configurações" icon={Settings} />
+            </NavGroup>
         </nav>
 
         <div className="border-t border-border pt-4">
