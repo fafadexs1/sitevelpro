@@ -8,7 +8,7 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "../ui/sheet";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
-import { 
+import {
     AlertDialog,
     AlertDialogAction,
     AlertDialogCancel,
@@ -21,6 +21,7 @@ import {
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
 import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
 
 type DomainType = 'main_site' | 'sales_page';
 
@@ -146,18 +147,48 @@ export function Header() {
     const href = isMainSite ? 'https://velpro.net.br/app/app.html' : 'tel:08003810404';
     const label = isMainSite ? 'Área do Cliente' : 'Ligar agora';
     const Icon = isMainSite ? User : Phone;
+    const [showText, setShowText] = useState(true);
+
+    useEffect(() => {
+        if (isMainSite) {
+            const timer = setTimeout(() => {
+                setShowText(false);
+            }, 2500); // Mostra o texto por 2.5 segundos
+            return () => clearTimeout(timer);
+        }
+    }, [isMainSite]);
 
     return (
        <a
           id="mobile-cta-ligue"
           href={href}
-          onClick={!isMainSite ? handleCallClick : undefined}
           data-track-event="cta_click"
           data-track-prop-button-id="main-cta-header-mobile"
-          className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-input bg-background text-sm font-medium text-foreground transition-colors hover:bg-accent"
+          className={cn(
+              "relative inline-flex items-center justify-center rounded-xl border border-input bg-background text-sm font-medium text-foreground transition-all duration-300 hover:bg-accent overflow-hidden",
+              isMainSite ? (showText ? "w-36 h-10 px-3" : "w-10 h-10") : "w-10 h-10"
+          )}
           aria-label={label}
       >
-          <Icon className="h-5 w-5" />
+          <AnimatePresence>
+            <motion.div 
+                className="flex items-center gap-2"
+                initial={{ opacity: 1 }}
+                animate={{ opacity: 1 }}
+            >
+                <Icon className="h-5 w-5 flex-shrink-0" />
+                {isMainSite && (
+                    <motion.span
+                        initial={{ opacity: 1, width: 'auto' }}
+                        animate={{ opacity: showText ? 1 : 0, width: showText ? 'auto' : 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="whitespace-nowrap"
+                    >
+                        Área do Cliente
+                    </motion.span>
+                )}
+            </motion.div>
+          </AnimatePresence>
       </a>
     )
   }
