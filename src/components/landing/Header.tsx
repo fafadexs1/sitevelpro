@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Wifi, ChevronRight, Menu, User, X, FileText, ArrowRight, Smartphone, Download, Gauge, MonitorSmartphone, CircleDollarSign, MessageCircle, Phone, ChevronDown, Tv, Package, Shield, Building, Info, LifeBuoy, GanttChartSquare, Sparkle, MapPin, Newspaper } from "lucide-react";
 import Link from "next/link";
 import { Button } from "../ui/button";
@@ -18,6 +19,8 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
+import { createClient } from "@/utils/supabase/client";
+import Image from "next/image";
 
 
 const NavMenu = ({ title, icon: Icon, children }: { title: string, icon: React.ElementType, children: React.ReactNode }) => (
@@ -42,7 +45,44 @@ const NavMenuItem = ({ href, children, icon: Icon }: { href: string, children: R
             <span>{children}</span>
         </Link>
     </DropdownMenuItem>
-)
+);
+
+function DynamicLogo() {
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchLogo = async () => {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from('system_settings')
+        .select('value')
+        .eq('key', 'company_logo_url')
+        .single();
+      
+      if (data?.value) {
+        setLogoUrl(data.value);
+      }
+      setLoading(false);
+    };
+    fetchLogo();
+  }, []);
+
+  if (loading) {
+    return <div className="grid h-9 w-9 place-items-center rounded-xl bg-secondary" />;
+  }
+
+  return (
+    <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-primary to-green-400 text-white shadow-lg shadow-primary/20 overflow-hidden">
+      {logoUrl ? (
+        <Image src={logoUrl} alt="Logo da Empresa" width={36} height={36} className="object-contain" />
+      ) : (
+        <Wifi className="h-5 w-5" />
+      )}
+    </div>
+  );
+}
+
 
 export function Header() {
   const [showAfterHoursDialog, setShowAfterHoursDialog] = useState(false);
@@ -67,9 +107,7 @@ export function Header() {
     <header className="sticky top-0 z-40 border-b border-border/40 bg-background/60 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
         <a id="nav-logo" href="/" className="group flex items-center gap-3">
-          <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-primary to-green-400 text-white shadow-lg shadow-primary/20">
-            <Wifi className="h-5 w-5" />
-          </div>
+          <DynamicLogo />
           <div>
             <p className="text-lg font-semibold leading-none text-foreground">Velpro Telecom</p>
             <p className="text-xs text-muted-foreground transition-colors group-hover:text-foreground/80">
@@ -225,3 +263,5 @@ export function Header() {
     </>
   );
 }
+
+    
