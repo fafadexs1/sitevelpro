@@ -187,10 +187,10 @@ export function Header() {
                 <NavMenuItem href="#ceo" icon={Building}>Sobre a Velpro</NavMenuItem>
                 <NavMenuItem href="/politica-de-privacidade" icon={Shield}>Política de Privacidade</NavMenuItem>
                 <NavMenuItem href="/termos-de-uso" icon={FileText}>Termos de Uso</NavMenuItem>
-             </NavMenu>
+            </NavMenu>
              <NavMenu title="Ajuda" icon={LifeBuoy}>
-                <NavMenuItem href="#faq" icon={Info}>Perguntas Frequentes</NavMenuItem>
                 <NavMenuItem href="/blog" icon={Newspaper}>Artigos</NavMenuItem>
+                <NavMenuItem href="#faq" icon={Info}>Perguntas Frequentes</NavMenuItem>
                 <NavMenuItem href="#contato" icon={MessageCircle}>Fale Conosco</NavMenuItem>
              </NavMenu>
         </nav>
@@ -300,8 +300,7 @@ export function Header() {
                 </AlertDialogAction>
             </AlertDialogFooter>
         </AlertDialogContent>
+    </AlertDialog>
     </>
   );
 }
-
-    
