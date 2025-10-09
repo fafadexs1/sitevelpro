@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acessando a Área do Cliente...</title>
+</head>
+<body>
+    <script>
+        function detectarSO() {
+            var userAgent = navigator.userAgent || navigator.vendor || window.opera;
+
+            if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+                window.location.replace("https://apps.apple.com/br/app/velpro-telecom/id6443708450");
+            } else if (/android/i.test(userAgent)) {
+                window.location.replace("https://play.google.com/store/apps/details?id=br.net.velpro.centralcliente&hl=pt_BR");
+            } else {
+                window.location.replace("https://velpro.sgp.tsmx.com.br/accounts/central/login");
+            }
+        }
+
+        detectarSO();
+    </script>
+</body>
+</html>
