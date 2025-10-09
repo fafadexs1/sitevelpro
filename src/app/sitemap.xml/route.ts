@@ -1,14 +1,6 @@
 
 import { createClient } from '@/utils/supabase/server';
-import { NextResponse } from 'next/server';
-
-async function getSiteUrl(): Promise<string> {
-  let siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
-  if (siteUrl) {
-    return siteUrl.endsWith('/') ? siteUrl.slice(0, -1) : siteUrl;
-  }
-  return 'http://localhost:3000';
-}
+import { type NextRequest, NextResponse } from 'next/server';
 
 // Helper para escapar caracteres XML
 function escapeXml(unsafe: string): string {
@@ -24,8 +16,11 @@ function escapeXml(unsafe: string): string {
     });
 }
 
-export async function GET() {
-  const siteUrl = await getSiteUrl();
+export async function GET(request: NextRequest) {
+  const protocol = request.headers.get('x-forwarded-proto') ?? 'http';
+  const host = request.headers.get('host');
+  const siteUrl = `${protocol}://${host}`;
+  
   const supabase = createClient();
 
   const routes: { url: string; lastModified: Date; priority: number }[] = [];

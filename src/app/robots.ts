@@ -1,16 +1,7 @@
 
 import { createClient } from '@/utils/supabase/server';
 import { MetadataRoute } from 'next';
-import { cookies } from 'next/headers';
-
-async function getSiteUrl(): Promise<string> {
-    let siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
-    if (siteUrl) {
-        return siteUrl.endsWith('/') ? siteUrl.slice(0, -1) : siteUrl;
-    }
-    // Fallback se a variável de ambiente não estiver definida
-    return 'http://localhost:3000';
-}
+import { cookies, headers } from 'next/headers';
 
 export default async function robots(): Promise<MetadataRoute.Robots> {
   // A chamada a cookies() força a renderização dinâmica, desabilitando o cache.
@@ -39,8 +30,11 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
       ],
     };
   }
-
-  const siteUrl = await getSiteUrl();
+  
+  const headersList = headers();
+  const host = headersList.get('host');
+  const protocol = headersList.get('x-forwarded-proto') ?? 'http';
+  const siteUrl = `${protocol}://${host}`;
 
   return {
     rules: [
