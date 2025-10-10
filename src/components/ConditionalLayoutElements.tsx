@@ -2,7 +2,6 @@
 "use client";
 
 import { usePathname } from 'next/navigation';
-import { FloatingWhatsApp } from '@/components/landing/FloatingWhatsApp';
 import { ConsentBanner } from '@/components/analytics/ConsentBanner';
 import { createClient } from '@/utils/supabase/client';
 import { useEffect, useState } from 'react';
@@ -52,7 +51,7 @@ function TrackingScripts({
   tags: TrackingTag[];
   position: 'head_start' | 'body_end';
 }) {
-  const strategy = position === 'body_end' ? 'afterInteractive' : 'beforeInteractive';
+  const strategy = position === 'body_end' ? 'afterInteractive' : 'afterInteractive';
   
   return (
     <>
