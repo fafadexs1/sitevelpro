@@ -112,10 +112,10 @@ const MainContent = ({ selectedChannel }: { selectedChannel: Channel | null }) =
                                 <h4 className="text-lg font-bold text-card-foreground">TV</h4>
                             </div>
                             <ul className="space-y-2 text-muted-foreground">
+                                <li><strong className="text-foreground">LG (WebOS):</strong> Versão 4.5.0+, modelos Série 7 em diante.</li>
+                                <li><strong className="text-foreground">Samsung (Tizen):</strong> Modelos Série 7 em diante.</li>
                                 <li>Amazon Fire TV</li>
                                 <li>Android TV & Roku</li>
-                                <li>LG (WebOS 4.5+)</li>
-                                <li>Samsung (Tizen, modelos 2018+)</li>
                                 <li>Chromecast</li>
                             </ul>
                         </div>
