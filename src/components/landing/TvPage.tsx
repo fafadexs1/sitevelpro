@@ -293,7 +293,7 @@ export function TvPage() {
                         >
                             <div className="relative z-10">
                                 <div className="p-3 rounded-lg bg-primary/10 border border-primary/20 w-fit mb-4">
-                                    <Package className="w-6 h-6 text-primary"/>
+                                    <Tv className="w-6 h-6 text-primary"/>
                                 </div>
                                 <h2 className="text-2xl font-bold text-card-foreground">{pkg.name}</h2>
                                 <p className="text-muted-foreground mt-2">{channelCount} canais inclusos</p>
