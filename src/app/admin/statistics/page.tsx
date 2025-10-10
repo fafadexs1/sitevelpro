@@ -63,6 +63,7 @@ export default function StatisticsPage() {
     const [selectedDomain, setSelectedDomain] = useState<string>('all');
     
     // Stats
+    const [allVisits, setAllVisits] = useState<Visit[]>([]);
     const [totalVisits, setTotalVisits] = useState(0);
     const [uniqueVisitors, setUniqueVisitors] = useState(0);
     const [clickEvents, setClickEvents] = useState(0);
@@ -110,7 +111,7 @@ export default function StatisticsPage() {
             eventsQuery = eventsQuery.eq('hostname', domain);
         }
 
-        const [{ data: allVisits, error: visitsError }, { data: allEvents, error: eventsError }] = await Promise.all([
+        const [{ data: visitsData, error: visitsError }, { data: eventsData, error: eventsError }] = await Promise.all([
             visitsQuery,
             eventsQuery
         ]);
@@ -121,26 +122,28 @@ export default function StatisticsPage() {
             return;
         }
 
+        setAllVisits(visitsData);
+
         // --- Process Data ---
-        setTotalVisits(allVisits.length);
-        const uniqueVisitorIds = new Set(allVisits.map(v => v.visitor_id));
+        setTotalVisits(visitsData.length);
+        const uniqueVisitorIds = new Set(visitsData.map(v => v.visitor_id));
         setUniqueVisitors(uniqueVisitorIds.size);
-        setClickEvents(allEvents.length);
+        setClickEvents(eventsData.length);
         
         // Bounce Rate: Visitors with only 1 visit and 0 events
         const visitorActions: Record<string, {visits: number, events: number}> = {};
-        allVisits.forEach(v => {
+        visitsData.forEach(v => {
             if (!visitorActions[v.visitor_id]) visitorActions[v.visitor_id] = { visits: 0, events: 0 };
             visitorActions[v.visitor_id].visits++;
         });
-        allEvents.forEach(e => {
+        eventsData.forEach(e => {
             if (visitorActions[e.visitor_id]) visitorActions[e.visitor_id].events++;
         });
         const bouncedVisitors = Object.values(visitorActions).filter(v => v.events === 0).length;
         setBounceRate(uniqueVisitorIds.size > 0 ? (bouncedVisitors / uniqueVisitorIds.size) * 100 : 0);
 
 
-        const pageCounts = allVisits.reduce((acc, visit) => {
+        const pageCounts = visitsData.reduce((acc, visit) => {
             if (!acc[visit.pathname]) {
                  acc[visit.pathname] = { visit_count: 0, visitors: new Set() };
             }
@@ -156,7 +159,7 @@ export default function StatisticsPage() {
             const hourlyCounts: Record<string, number> = {};
             const intervalHours = eachHourOfInterval({ start: startOfDay(startDate), end: endOfDay(endDate) });
             intervalHours.forEach(hour => hourlyCounts[format(hour, 'yyyy-MM-dd HH:00')] = 0);
-            allVisits.forEach(visit => {
+            visitsData.forEach(visit => {
                 const hourStr = format(new Date(visit.created_at), 'yyyy-MM-dd HH:00');
                 if (hourlyCounts[hourStr] !== undefined) hourlyCounts[hourStr]++;
             });
@@ -166,7 +169,7 @@ export default function StatisticsPage() {
             const intervalDays = eachDayOfInterval({ start: startDate, end: endDate });
             intervalDays.forEach(day => dailyCounts[format(day, 'yyyy-MM-dd')] = 0);
 
-            allVisits.forEach(visit => {
+            visitsData.forEach(visit => {
                 const date = format(new Date(visit.created_at), 'yyyy-MM-dd');
                 if (dailyCounts[date] !== undefined) dailyCounts[date]++;
             });
@@ -174,7 +177,7 @@ export default function StatisticsPage() {
         }
 
         // --- Process Events Data ---
-        const ctaClickCounts = allEvents
+        const ctaClickCounts = eventsData
             .filter(e => e.name === 'cta_click' && e.properties.button_id)
             .reduce((acc, e) => {
                 const ctaKey = e.properties.button_id;
