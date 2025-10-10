@@ -1,14 +1,14 @@
 
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { createClient } from '@/utils/supabase/client';
-import { BarChart, Users, Repeat, UserPlus, Loader2, File, Eye, MousePointerClick, CalendarDays, Calendar as CalendarIcon, ExternalLink, Globe } from 'lucide-react';
+import { BarChart, Users, Repeat, UserPlus, Loader2, File, Eye, MousePointerClick, CalendarDays, Calendar as CalendarIcon, ExternalLink, Globe, Clock, ArrowRight } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { Bar, BarChart as RechartsBarChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
-import { subDays, format, startOfMonth, endOfMonth, eachDayOfInterval, startOfDay, eachHourOfInterval, endOfDay, addDays } from 'date-fns';
+import { subDays, format, startOfMonth, endOfMonth, eachDayOfInterval, startOfDay, eachHourOfInterval, endOfDay, addDays, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
 import { Calendar } from "@/components/ui/calendar";
@@ -18,6 +18,7 @@ import type { DateRange } from 'react-day-picker';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 type Visit = {
+  id: string;
   visitor_id: string;
   hostname: string;
   pathname: string;
@@ -26,11 +27,16 @@ type Visit = {
 };
 
 type Event = {
+    id: string;
     visitor_id: string;
     hostname: string;
     name: string;
     properties: Record<string, any>;
+    created_at: string;
 };
+
+type Activity = (Visit & { type: 'visit' }) | (Event & { type: 'event' });
+
 
 type PageVisit = {
     pathname: string;
@@ -64,6 +70,9 @@ export default function StatisticsPage() {
     
     // Stats
     const [allVisits, setAllVisits] = useState<Visit[]>([]);
+    const [allEvents, setAllEvents] = useState<Event[]>([]);
+    const [activityFeed, setActivityFeed] = useState<Activity[]>([]);
+
     const [totalVisits, setTotalVisits] = useState(0);
     const [uniqueVisitors, setUniqueVisitors] = useState(0);
     const [clickEvents, setClickEvents] = useState(0);
@@ -96,13 +105,13 @@ export default function StatisticsPage() {
         
         let visitsQuery = supabase
             .from('visits')
-            .select('visitor_id, hostname, pathname, is_new_visitor, created_at')
+            .select('id, visitor_id, hostname, pathname, is_new_visitor, created_at')
             .gte('created_at', startDate.toISOString())
             .lt('created_at', queryEndDate.toISOString());
             
         let eventsQuery = supabase
             .from('events')
-            .select('visitor_id, hostname, name, properties')
+            .select('id, visitor_id, hostname, name, properties, created_at')
             .gte('created_at', startDate.toISOString())
             .lt('created_at', queryEndDate.toISOString());
 
@@ -123,6 +132,7 @@ export default function StatisticsPage() {
         }
 
         setAllVisits(visitsData);
+        setAllEvents(eventsData);
 
         // --- Process Data ---
         setTotalVisits(visitsData.length);
@@ -130,7 +140,6 @@ export default function StatisticsPage() {
         setUniqueVisitors(uniqueVisitorIds.size);
         setClickEvents(eventsData.length);
         
-        // Bounce Rate: Visitors with only 1 visit and 0 events
         const visitorActions: Record<string, {visits: number, events: number}> = {};
         visitsData.forEach(v => {
             if (!visitorActions[v.visitor_id]) visitorActions[v.visitor_id] = { visits: 0, events: 0 };
@@ -142,7 +151,6 @@ export default function StatisticsPage() {
         const bouncedVisitors = Object.values(visitorActions).filter(v => v.events === 0).length;
         setBounceRate(uniqueVisitorIds.size > 0 ? (bouncedVisitors / uniqueVisitorIds.size) * 100 : 0);
 
-
         const pageCounts = visitsData.reduce((acc, visit) => {
             if (!acc[visit.pathname]) {
                  acc[visit.pathname] = { visit_count: 0, visitors: new Set() };
@@ -151,10 +159,9 @@ export default function StatisticsPage() {
             acc[visit.pathname].visitors.add(visit.visitor_id);
             return acc;
         }, {} as Record<string, { visit_count: number; visitors: Set<string> }>);
-        const sortedPages = Object.entries(pageCounts).map(([pathname, data]) => ({ pathname, visit_count: data.visit_count, unique_visitors: data.visitors.size })).sort((a, b) => b.visit_count - a.visit_count).slice(0, 7);
+        const sortedPages = Object.entries(pageCounts).map(([pathname, data]) => ({ pathname, visit_count: data.visit_count, unique_visitors: data.visitors.size })).sort((a, b) => b.visit_count - a.visit_count).slice(0, 5);
         setTopPages(sortedPages);
         
-        // --- Process Chart Data ---
         if (activeFilter === 'today') {
             const hourlyCounts: Record<string, number> = {};
             const intervalHours = eachHourOfInterval({ start: startOfDay(startDate), end: endOfDay(endDate) });
@@ -176,7 +183,6 @@ export default function StatisticsPage() {
             setDailyVisits(Object.entries(dailyCounts).map(([date, visits]) => ({ date, visits })));
         }
 
-        // --- Process Events Data for Top Plans ---
         const planClickCounts = eventsData
             .filter(e => e.name === 'cta_click' && e.properties.plan_name)
             .reduce((acc, e) => {
@@ -185,7 +191,14 @@ export default function StatisticsPage() {
                 return acc;
             }, {} as Record<string, number>);
         
-        setTopPlans(Object.entries(planClickCounts).map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count).slice(0, 7));
+        setTopPlans(Object.entries(planClickCounts).map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count).slice(0, 5));
+
+        const combinedFeed: Activity[] = [
+            ...(visitsData.map(v => ({ ...v, type: 'visit' as const }))),
+            ...(eventsData.map(e => ({ ...e, type: 'event' as const })))
+        ];
+        combinedFeed.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        setActivityFeed(combinedFeed.slice(0, 15));
 
 
         setLoading(false);
@@ -217,7 +230,11 @@ export default function StatisticsPage() {
         }
     }
 
-    const clickThroughRate = totalVisits > 0 ? (clickEvents / totalVisits) * 100 : 0;
+    const newVisitorsPercentage = useMemo(() => {
+        if (uniqueVisitors === 0) return 0;
+        const newVisitorIds = new Set(allVisits.filter(v => v.is_new_visitor).map(v => v.visitor_id));
+        return (newVisitorIds.size / uniqueVisitors) * 100;
+    }, [allVisits, uniqueVisitors]);
 
     const chartConfig = {
         visits: { label: "Visitas", color: "hsl(var(--primary))" },
@@ -294,8 +311,8 @@ export default function StatisticsPage() {
                         <MousePointerClick className="h-4 w-4 text-gray-500" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-3xl font-bold">{clickThroughRate.toFixed(1)}%</div>
-                        <p className="text-xs text-gray-500">{clickEvents} cliques totais.</p>
+                        <div className="text-3xl font-bold">{(totalVisits > 0 ? (allEvents.length / totalVisits) * 100 : 0).toFixed(1)}%</div>
+                        <p className="text-xs text-gray-500">{allEvents.length} cliques totais.</p>
                     </CardContent>
                 </Card>
                 <Card>
@@ -314,7 +331,7 @@ export default function StatisticsPage() {
                         <UserPlus className="h-4 w-4 text-gray-500" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-3xl font-bold">{((uniqueVisitors > 0 ? new Set(allVisits.filter(v => v.is_new_visitor).map(v => v.visitor_id)).size / uniqueVisitors : 0) * 100).toFixed(1)}%</div>
+                        <div className="text-3xl font-bold">{newVisitorsPercentage.toFixed(1)}%</div>
                         <p className="text-xs text-gray-500">Percentual de primeiras visitas.</p>
                     </CardContent>
                 </Card>
@@ -340,60 +357,86 @@ export default function StatisticsPage() {
                 </Card>
             </div>
 
-            <div className="grid gap-8 md:grid-cols-2 mt-8">
-                <Card>
+            <div className="grid gap-8 md:grid-cols-3 mt-8">
+                 <Card className="md:col-span-1">
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><File className="text-primary"/>Páginas Mais Visitadas</CardTitle>
+                        <CardTitle className="flex items-center gap-2"><Clock className="text-primary"/> Atividade Recente</CardTitle>
+                        <CardDescription>O que seus visitantes estão fazendo agora.</CardDescription>
                     </CardHeader>
-                    <CardContent>
-                        <Table>
-                            <TableHeader>
-                                <TableRow className="hover:bg-transparent">
-                                    <TableHead>Página</TableHead>
-                                    <TableHead className="text-right">Visitas</TableHead>
-                                    <TableHead className="text-right">Visitantes Únicos</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {topPages.map(page => (
-                                    <TableRow key={page.pathname}>
-                                        <TableCell className="font-mono text-sm">{page.pathname}</TableCell>
-                                        <TableCell className="text-right font-medium">{page.visit_count}</TableCell>
-                                        <TableCell className="text-right font-medium">{page.unique_visitors}</TableCell>
-                                    </TableRow>
-                                ))}
-                                {topPages.length === 0 && <TableRow><TableCell colSpan={3} className="h-24 text-center text-muted-foreground">Nenhuma visita registrada no período.</TableCell></TableRow>}
-                            </TableBody>
-                        </Table>
+                    <CardContent className="space-y-4">
+                        {activityFeed.map((activity) => (
+                            <div key={activity.id} className="flex items-start gap-3">
+                                <div className="grid place-items-center bg-secondary rounded-full w-8 h-8 flex-shrink-0">
+                                    {activity.type === 'visit' ? <Eye className="w-4 h-4 text-muted-foreground" /> : <MousePointerClick className="w-4 h-4 text-muted-foreground"/>}
+                                </div>
+                                <div>
+                                    <p className="text-sm font-medium text-foreground">
+                                        {activity.type === 'visit' ? `Visita em ${activity.pathname}` : `Clique em "${activity.properties.buttonId || 'Elemento'}"`}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                        {formatDistanceToNow(new Date(activity.created_at), { addSuffix: true, locale: ptBR })}
+                                    </p>
+                                </div>
+                            </div>
+                        ))}
                     </CardContent>
                 </Card>
-                 <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><MousePointerClick className="text-primary"/>Planos Mais Clicados</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                         <Table>
-                            <TableHeader>
-                                <TableRow className="hover:bg-transparent">
-                                    <TableHead>Nome do Plano</TableHead>
-                                    <TableHead className="text-right">Cliques</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {topPlans.map(plan => (
-                                     <TableRow key={plan.name}>
-                                        <TableCell className="font-medium">{plan.name}</TableCell>
-                                        <TableCell className="text-right font-medium">{plan.count}</TableCell>
+                <div className="md:col-span-2 grid grid-rows-2 gap-8">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2"><File className="text-primary"/>Páginas Mais Visitadas</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow className="hover:bg-transparent">
+                                        <TableHead>Página</TableHead>
+                                        <TableHead className="text-right">Visitas</TableHead>
+                                        <TableHead className="text-right">Visitantes Únicos</TableHead>
                                     </TableRow>
-                                ))}
-                                 {topPlans.length === 0 && <TableRow><TableCell colSpan={2} className="h-24 text-center text-muted-foreground">Nenhum clique em planos no período.</TableCell></TableRow>}
-                            </TableBody>
-                        </Table>
-                    </CardContent>
-                </Card>
+                                </TableHeader>
+                                <TableBody>
+                                    {topPages.map(page => (
+                                        <TableRow key={page.pathname}>
+                                            <TableCell className="font-mono text-sm">{page.pathname}</TableCell>
+                                            <TableCell className="text-right font-medium">{page.visit_count}</TableCell>
+                                            <TableCell className="text-right font-medium">{page.unique_visitors}</TableCell>
+                                        </TableRow>
+                                    ))}
+                                    {topPages.length === 0 && <TableRow><TableCell colSpan={3} className="h-24 text-center text-muted-foreground">Nenhuma visita registrada no período.</TableCell></TableRow>}
+                                </TableBody>
+                            </Table>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2"><MousePointerClick className="text-primary"/>Planos Mais Clicados</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow className="hover:bg-transparent">
+                                        <TableHead>Nome do Plano</TableHead>
+                                        <TableHead className="text-right">Cliques</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {topPlans.map(plan => (
+                                        <TableRow key={plan.name}>
+                                            <TableCell className="font-medium">{plan.name}</TableCell>
+                                            <TableCell className="text-right font-medium">{plan.count}</TableCell>
+                                        </TableRow>
+                                    ))}
+                                    {topPlans.length === 0 && <TableRow><TableCell colSpan={2} className="h-24 text-center text-muted-foreground">Nenhum clique em planos no período.</TableCell></TableRow>}
+                                </TableBody>
+                            </Table>
+                        </CardContent>
+                    </Card>
+                </div>
             </div>
             </>
             )}
         </>
     );
 }
+
