@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -165,7 +166,7 @@ export function TvPage() {
                                         </p>
                                     </div>
                                 </div>
-                                <Alert variant="default" className="mt-8 max-w-4xl mx-auto bg-yellow-500/5 border-yellow-500/20">
+                                <Alert variant="default" className="mt-8 mb-8 max-w-4xl mx-auto bg-yellow-500/5 border-yellow-500/20">
                                     <AlertTriangle className="h-4 w-4 text-yellow-500" />
                                     <AlertTitle className="text-yellow-700">Dica de Performance</AlertTitle>
                                     <AlertDescription className="text-yellow-600">
