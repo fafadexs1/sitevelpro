@@ -182,8 +182,8 @@ export function TvPage() {
                     </div>
                 </div>
 
-                <Alert variant="default" className="mt-12 max-w-4xl mx-auto bg-yellow-500/5 border-yellow-500/20">
-                    <AlertTriangle className="h-4 w-4 !text-yellow-500" />
+                 <Alert variant="default" className="mt-12 max-w-4xl mx-auto bg-yellow-500/5 border-yellow-500/20">
+                    <AlertTriangle className="h-4 w-4 text-yellow-500" />
                     <AlertTitle className="text-yellow-700">Dica de Performance</AlertTitle>
                     <AlertDescription className="text-yellow-600">
                         Para a melhor experiência de TV, recomendamos conectar sua TV ou dispositivo de streaming diretamente ao roteador com um cabo de rede. Conexões Wi-Fi podem sofrer instabilidades e causar travamentos no sinal.
