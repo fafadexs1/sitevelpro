@@ -10,6 +10,7 @@ import { EventTracker } from './analytics/EventTracker';
 import { ConversionTracker } from './analytics/ConversionTracker';
 import Script from 'next/script';
 import { ScrollDepthTracker } from './analytics/ScrollDepthTracker';
+import { FloatingWhatsApp } from '@/components/landing/FloatingWhatsApp';
 
 type TrackingTag = {
   id: string | number;
