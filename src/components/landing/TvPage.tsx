@@ -6,7 +6,7 @@ import { createClient } from "@/utils/supabase/client";
 import { motion } from "framer-motion";
 import { Tv, Smartphone, Loader2, Computer, AlertTriangle, Search } from "lucide-react";
 import Image from "next/image";
-import { ScrollArea } from "../ui/scroll-area";
+import { ScrollArea, ScrollBar } from "../ui/scroll-area";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { Input } from "../ui/input";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -251,4 +251,3 @@ export function TvPage() {
         </div>
     );
 }
-
