@@ -154,7 +154,7 @@ export function TVGuide() {
       }
       setLoading(false);
     }
-    fetchAllChannels();
+    fetchData();
   }, []);
 
   if (loading) {
