@@ -12,8 +12,6 @@ import { ConversionTracker } from './analytics/ConversionTracker';
 import Script from 'next/script';
 import { ScrollDepthTracker } from './analytics/ScrollDepthTracker';
 
-type DomainType = 'main_site' | 'sales_page';
-
 type TrackingTag = {
   id: string | number;
   script_content: string;
@@ -75,40 +73,32 @@ function TrackingScripts({
 
 export function ConditionalLayoutElements() {
     const pathname = usePathname();
-    const [domainType, setDomainType] = useState<DomainType | null>(null);
     const [tags, setTags] = useState<TrackingTag[]>([]);
+    const [shouldTrack, setShouldTrack] = useState(false);
 
     const isAdminPage = pathname.startsWith('/admin') || pathname.startsWith('/colaborador') || pathname.startsWith('/colaboracao');
 
     useEffect(() => {
-        if (typeof window === 'undefined' || isAdminPage) return;
-        
-        const getDomainAndTags = async () => {
-            const hostname = window.location.hostname;
-            const supabase = createClient();
-            
-            const { data: domainData } = await supabase
-                .from('domains')
-                .select('type')
-                .eq('hostname', hostname)
-                .single();
-            
-            const currentDomainType = (domainData?.type as DomainType) || 'sales_page';
-            setDomainType(currentDomainType);
-
-            if (currentDomainType === 'sales_page') {
-                const { data: tagsData } = await supabase
-                    .from('tracking_tags')
-                    .select('id, script_content, placement')
-                    .eq('is_active', true);
-                setTags((tagsData as TrackingTag[]) ?? []);
-            }
+        if (typeof window === 'undefined' || isAdminPage) {
+            setShouldTrack(false);
+            return;
         };
         
-        getDomainAndTags();
+        setShouldTrack(true);
+
+        const getTags = async () => {
+            const supabase = createClient();
+            const { data: tagsData } = await supabase
+                .from('tracking_tags')
+                .select('id, script_content, placement')
+                .eq('is_active', true);
+            setTags((tagsData as TrackingTag[]) ?? []);
+        };
+        
+        getTags();
     }, [pathname, isAdminPage]);
 
-    if (isAdminPage || domainType === null) {
+    if (!shouldTrack) {
         return null;
     }
 
@@ -123,18 +113,14 @@ export function ConditionalLayoutElements() {
             <EventTracker />
             <ScrollDepthTracker />
 
-            {/* Componentes e tags exclusivas para páginas de vendas */}
-            {domainType === 'sales_page' && (
-                <>
-                    <TrackingScripts tags={headScripts} position="head_start" />
-                    <TrackingNoScript tags={bodyStartNoScripts} />
-                    <TrackingScripts tags={bodyEndScripts} position="body_end" />
+            {/* Componentes e tags de marketing */}
+            <TrackingScripts tags={headScripts} position="head_start" />
+            <TrackingNoScript tags={bodyStartNoScripts} />
+            <TrackingScripts tags={bodyEndScripts} position="body_end" />
 
-                    <FloatingWhatsApp />
-                    <ConsentBanner />
-                    <ConversionTracker />
-                </>
-            )}
+            <FloatingWhatsApp />
+            <ConsentBanner />
+            <ConversionTracker />
         </>
     );
 }
