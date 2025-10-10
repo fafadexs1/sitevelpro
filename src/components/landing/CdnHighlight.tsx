@@ -4,10 +4,10 @@
 import Image from "next/image";
 
 const cdnLogos = [
-  { src: "https://velpro.net.br/wp-content/uploads/2025/05/Google-CDN.png", alt: "Google CDN" },
-  { src: "https://velpro.net.br/wp-content/uploads/2025/05/Logo-Netflix-1024x430-1.png", alt: "Netflix" },
-  { src: "https://velpro.net.br/wp-content/uploads/2025/05/Facebook_logo_square.png", alt: "Facebook" },
-  { src: "https://velpro.net.br/wp-content/uploads/2025/05/Instagram_icon.png", alt: "Instagram" },
+  { src: "https://bqxdyinyzfxqghyuzsbs.supabase.co/storage/v1/object/public/site-assets/redes%20sociais/Google.webp", alt: "Google CDN" },
+  { src: "https://bqxdyinyzfxqghyuzsbs.supabase.co/storage/v1/object/public/site-assets/redes%20sociais/Logo-Netflix.webp", alt: "Netflix" },
+  { src: "https://bqxdyinyzfxqghyuzsbs.supabase.co/storage/v1/object/public/site-assets/redes%20sociais/Facebook_logo.webp", alt: "Facebook" },
+  { src: "https://bqxdyinyzfxqghyuzsbs.supabase.co/storage/v1/object/public/site-assets/redes%20sociais/Instagram.webp", alt: "Instagram" },
 ];
 
 export function CdnHighlight() {
