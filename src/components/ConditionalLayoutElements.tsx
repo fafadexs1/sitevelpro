@@ -76,9 +76,9 @@ export function ConditionalLayoutElements() {
     const [tags, setTags] = useState<TrackingTag[]>([]);
     const [shouldTrack, setShouldTrack] = useState(false);
 
-    const isAdminPage = pathname.startsWith('/admin') || pathname.startsWith('/colaborador') || pathname.startsWith('/colaboracao');
-
     useEffect(() => {
+        const isAdminPage = pathname.startsWith('/admin') || pathname.startsWith('/colaborador') || pathname.startsWith('/colaboracao');
+        
         if (typeof window === 'undefined' || isAdminPage) {
             setShouldTrack(false);
             return;
@@ -96,7 +96,7 @@ export function ConditionalLayoutElements() {
         };
         
         getTags();
-    }, [pathname, isAdminPage]);
+    }, [pathname]);
 
     if (!shouldTrack) {
         return null;
