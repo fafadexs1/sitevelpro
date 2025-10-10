@@ -4,7 +4,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { createClient } from '@/utils/supabase/client';
-import { BarChart, Users, Repeat, UserPlus, Loader2, File, Eye, MousePointerClick, CalendarDays, Calendar as CalendarIcon, ExternalLink, Globe, Clock, ArrowRight, Gauge } from 'lucide-react';
+import { BarChart, Users, Repeat, UserPlus, Loader2, File, Eye, MousePointerClick, CalendarDays, Calendar as CalendarIcon, ExternalLink, Globe, Clock, ArrowRight, Gauge, ChevronDown, ChevronRightIcon } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
@@ -19,6 +19,7 @@ import { cn } from '@/lib/utils';
 import type { DateRange } from 'react-day-picker';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 type Visit = {
   id: string;
@@ -84,11 +85,11 @@ export default function StatisticsPage() {
     const [topPlans, setTopPlans] = useState<PlanClick[]>([]);
     const [dailyVisits, setDailyVisits] = useState<ChartDataPoint[]>([]);
     
-    const [activeFilter, setActiveFilter] = useState<FilterRange>('30d');
     const [dateRange, setDateRange] = useState<DateRange | undefined>({
         from: startOfDay(subDays(new Date(), 29)),
         to: endOfDay(new Date()),
     });
+    const [activeFilter, setActiveFilter] = useState<FilterRange>('30d');
 
      useEffect(() => {
         const fetchDomains = async () => {
@@ -253,6 +254,47 @@ export default function StatisticsPage() {
         }
         return format(new Date(value), "d MMM", { locale: ptBR });
     };
+    
+    const ClicksModalContent = ({ clicks }: { clicks: Event[] }) => {
+        const clicksByVisitor = useMemo(() => {
+            return clicks.reduce((acc, click) => {
+                if (!acc[click.visitor_id]) {
+                    acc[click.visitor_id] = [];
+                }
+                acc[click.visitor_id].push(click);
+                return acc;
+            }, {} as Record<string, Event[]>);
+        }, [clicks]);
+
+        return (
+            <ScrollArea className="h-72">
+                <div className="space-y-4 pr-4">
+                    {Object.entries(clicksByVisitor).map(([visitorId, visitorClicks]) => (
+                        <Collapsible key={visitorId}>
+                            <CollapsibleTrigger className="flex w-full items-center justify-between rounded-lg bg-secondary p-2 text-left text-sm group">
+                                <div className="font-mono text-xs text-muted-foreground truncate">
+                                    <span className="font-semibold text-foreground">Visitante:</span> {visitorId.substring(0, 8)}...
+                                </div>
+                                <div className="flex items-center gap-2">
+                                     <span className="rounded-md bg-background px-2 py-0.5 text-xs font-semibold">{visitorClicks.length} clique{visitorClicks.length > 1 && 's'}</span>
+                                     <ChevronDown className="h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                                </div>
+                            </CollapsibleTrigger>
+                            <CollapsibleContent>
+                                <div className="space-y-1 py-2 pl-4 border-l ml-2">
+                                {visitorClicks.map(click => (
+                                    <div key={click.id} className="text-xs text-muted-foreground">
+                                        {format(new Date(click.created_at), "dd/MM/yyyy 'às' HH:mm:ss", { locale: ptBR })}
+                                    </div>
+                                ))}
+                                </div>
+                            </CollapsibleContent>
+                        </Collapsible>
+                    ))}
+                </div>
+            </ScrollArea>
+        );
+    };
 
     return (
         <>
@@ -412,22 +454,14 @@ export default function StatisticsPage() {
                                                 <p className="text-xs text-muted-foreground">cliques</p>
                                             </div>
                                         </DialogTrigger>
-                                        <DialogContent className="max-w-md">
+                                        <DialogContent className="max-w-lg">
                                             <DialogHeader>
                                                 <DialogTitle>Histórico de Cliques: {plan.name}</DialogTitle>
                                                 <DialogDescription>
-                                                    Lista de horários em que os visitantes clicaram neste plano.
+                                                    Lista de visitantes que clicaram neste plano e a quantidade de cliques.
                                                 </DialogDescription>
                                             </DialogHeader>
-                                            <ScrollArea className="h-72">
-                                                <div className="space-y-2 pr-4">
-                                                {plan.clicks.map(click => (
-                                                    <div key={click.id} className="text-sm text-muted-foreground">
-                                                        {format(new Date(click.created_at), "dd/MM/yyyy 'às' HH:mm:ss", { locale: ptBR })}
-                                                    </div>
-                                                ))}
-                                                </div>
-                                            </ScrollArea>
+                                            <ClicksModalContent clicks={plan.clicks} />
                                         </DialogContent>
                                     </Dialog>
                                 ))}
@@ -469,4 +503,5 @@ export default function StatisticsPage() {
         </>
     );
 }
+
 
