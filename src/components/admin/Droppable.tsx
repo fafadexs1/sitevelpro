@@ -19,5 +19,5 @@ export const Droppable = ({ children, ...props }: DroppableProps) => {
         return null;
     }
 
-    return <OriginalDroppable {...props}>{children}</OriginalDroppable>;
+    return <OriginalDroppable isDropDisabled={false} {...props}>{children}</OriginalDroppable>;
 };

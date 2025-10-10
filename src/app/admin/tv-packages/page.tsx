@@ -17,6 +17,7 @@ import {
     AlertDialogContent,
     AlertDialogHeader,
     AlertDialogTitle,
+    AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { createClient } from "@/utils/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -55,7 +56,7 @@ export default function TvPackagesPage() {
 
     useEffect(() => {
         getPackages();
-    }, [toast]);
+    }, []);
   
      const handleDeletePackage = async (packageId: string) => {
         const supabase = createClient();
