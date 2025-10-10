@@ -15,10 +15,12 @@ import {
     AlertDialogAction,
     AlertDialogCancel,
     AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
     AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+} from "@/components/ui/alert-dialog";
 import { createClient } from "@/utils/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ChannelPackageForm } from "@/components/admin/ChannelPackageForm";
@@ -139,9 +141,9 @@ export default function TvPackagesPage() {
                     <AlertDialogContent className="bg-background text-foreground">
                         <AlertDialogHeader>
                             <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
-                            <p className="text-sm text-muted-foreground">
+                            <AlertDialogDescription>
                                 Essa ação não pode ser desfeita. Isso irá apagar o pacote e todas as suas associações com canais.
-                            </p>
+                            </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                             <AlertDialogCancel id={`delete-package-cancel-${pkg.id}`}>Cancelar</AlertDialogCancel>
