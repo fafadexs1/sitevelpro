@@ -1,13 +1,15 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { motion } from "framer-motion";
-import { Tv, Smartphone, Loader2, Computer, AlertTriangle } from "lucide-react";
+import { Tv, Smartphone, Loader2, Computer, AlertTriangle, Search } from "lucide-react";
 import Image from "next/image";
 import { ScrollArea } from "../ui/scroll-area";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
+import { Input } from "../ui/input";
+
 
 type Channel = {
   id: string;
@@ -36,6 +38,7 @@ export function TvPage() {
     const [channels, setChannels] = useState<Channel[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedChannel, setSelectedChannel] = useState<Channel | null>(null);
+    const [searchTerm, setSearchTerm] = useState("");
 
     useEffect(() => {
         const fetchData = async () => {
@@ -59,6 +62,22 @@ export function TvPage() {
         fetchData();
     }, []);
 
+    const filteredChannels = useMemo(() => {
+        return channels.filter(channel =>
+            channel.name.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }, [channels, searchTerm]);
+
+    useEffect(() => {
+        if (!selectedChannel && filteredChannels.length > 0) {
+            setSelectedChannel(filteredChannels[0]);
+        } else if (filteredChannels.length === 0) {
+            setSelectedChannel(null);
+        } else if (selectedChannel && !filteredChannels.some(c => c.id === selectedChannel.id)) {
+            setSelectedChannel(filteredChannels[0] || null);
+        }
+    }, [filteredChannels, selectedChannel]);
+
     if (loading) {
         return (
             <div className="flex items-center justify-center flex-grow bg-background">
@@ -74,16 +93,27 @@ export function TvPage() {
                 {/* Channel List (Sidebar) */}
                 <aside className="w-64 border-r border-border p-2 hidden md:flex flex-col">
                     <h2 className="text-lg font-semibold p-2 mb-2">Canais</h2>
+                     <div className="relative mb-2 px-1">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            placeholder="Buscar canal..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="pl-9 bg-secondary"
+                        />
+                    </div>
                     <ScrollArea className="flex-grow">
                         <div className="space-y-1">
-                            {channels.map(channel => (
+                            {filteredChannels.length > 0 ? filteredChannels.map(channel => (
                                 <ChannelListItem
                                     key={channel.id}
                                     channel={channel}
                                     isSelected={selectedChannel?.id === channel.id}
                                     onSelect={() => setSelectedChannel(channel)}
                                 />
-                            ))}
+                            )) : (
+                                <p className="p-4 text-center text-sm text-muted-foreground">Nenhum canal encontrado.</p>
+                            )}
                         </div>
                     </ScrollArea>
                 </aside>
@@ -97,7 +127,7 @@ export function TvPage() {
                             animate={{ opacity: 1, y: 0 }}
                             className="flex flex-col h-full"
                         >
-                            <div className="flex items-center gap-4 mb-4">
+                             <div className="flex items-center gap-4 mb-4">
                                 <div className="w-20 h-20 rounded-xl bg-secondary p-2 border border-border flex items-center justify-center">
                                     <Image src={selectedChannel.logo_url} alt={selectedChannel.name} width={64} height={64} className="object-contain" unoptimized />
                                 </div>
@@ -105,11 +135,9 @@ export function TvPage() {
                                     <h1 className="text-3xl sm:text-4xl font-bold">{selectedChannel.name}</h1>
                                 </div>
                             </div>
-
                             <div className="text-muted-foreground text-base leading-relaxed flex-grow">
                                 <p>{selectedChannel.description || "Descrição não disponível para este canal."}</p>
                             </div>
-
                             <div className="mt-8 pt-6 border-t border-border">
                                 <div className="text-center mb-8">
                                     <h3 className="text-2xl font-bold">Dispositivos Compatíveis</h3>
