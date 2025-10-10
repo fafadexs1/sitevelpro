@@ -223,7 +223,8 @@ VALUES
     ('external_api_app', '', 'Nome do App para autenticação na API de O.S.'),
     ('external_api_token', '', 'Token para autenticação na API de O.S.'),
     ('GEMINI_API_KEY', '', 'Chave de API do Google Gemini para funcionalidades de IA.'),
-    ('GEMINI_MODEL', 'gemini-1.5-flash-latest', 'Modelo de linguagem a ser usado (ex: gemini-1.5-flash-latest).')
+    ('GEMINI_MODEL', 'gemini-1.5-flash-latest', 'Modelo de linguagem a ser usado (ex: gemini-1.5-flash-latest).'),
+    ('commemorative_theme_enabled', 'false', 'Ativa ou desativa o tema comemorativo no site.')
 ON CONFLICT (key) DO NOTHING;
 
 

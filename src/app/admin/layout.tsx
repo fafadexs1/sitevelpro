@@ -321,10 +321,11 @@ function AdminDashboard({
         </div>
 
         <nav className="flex flex-grow flex-col gap-1">
-             <NavGroup title="Conteúdo" icon={Brush} startOpen={isGroupActive(['/admin/hero-slides', '/admin/posts', '/admin/seo'])}>
+             <NavGroup title="Conteúdo" icon={BookOpen} startOpen={isGroupActive(['/admin/hero-slides', '/admin/posts', '/admin/seo', '/admin/themes'])}>
                 <NavLink href="/admin/hero-slides" label="Slides do Herói" icon={Play} />
                 <NavLink href="/admin/posts" label="Artigos" icon={Newspaper} />
                 <NavLink href="/admin/seo" label="SEO" icon={Globe} />
+                <NavLink href="/admin/themes" label="Aparência" icon={Brush} />
             </NavGroup>
              <NavGroup title="Planos e TV" icon={Package} startOpen={isGroupActive(['/admin/plans', '/admin/tv-channels', '/admin/tv-packages'])}>
                 <NavLink href="/admin" label="Planos" icon={LayoutDashboard} />

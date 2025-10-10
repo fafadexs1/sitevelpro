@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -63,6 +64,36 @@
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
     --ring: 142 71% 45%;
+  }
+
+  .theme-halloween {
+    --background: 240 5% 12%; /* Dark spooky background */
+    --foreground: 22 15% 85%; /* Off-white text */
+
+    --card: 240 5% 15%;
+    --card-foreground: 22 15% 85%;
+ 
+    --popover: 240 5% 10%;
+    --popover-foreground: 22 15% 85%;
+ 
+    --primary: 22 96% 54%; /* Halloween Orange */
+    --primary-foreground: 0 0% 10%;
+ 
+    --secondary: 240 5% 20%;
+    --secondary-foreground: 22 15% 85%;
+ 
+    --muted: 240 5% 20%;
+    --muted-foreground: 240 4% 50%;
+ 
+    --accent: 260 50% 50%; /* Purple Accent */
+    --accent-foreground: 0 0% 98%;
+ 
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 5% 25%;
+    --input: 240 5% 25%;
+    --ring: 22 96% 54%;
   }
 }
 
