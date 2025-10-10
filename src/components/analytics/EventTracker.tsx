@@ -24,6 +24,7 @@ export function EventTracker() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     visitorId,
+                    hostname: window.location.hostname,
                     pathname,
                     eventName,
                     properties,

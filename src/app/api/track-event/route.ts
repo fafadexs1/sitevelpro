@@ -5,9 +5,9 @@ import { createClient } from '@/utils/supabase/server';
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const { visitorId, pathname, eventName, properties } = body;
+        const { visitorId, hostname, pathname, eventName, properties } = body;
 
-        if (!visitorId || !pathname || !eventName) {
+        if (!visitorId || !pathname || !eventName || !hostname) {
             return new NextResponse('Missing required fields', { status: 400 });
         }
 
@@ -15,6 +15,7 @@ export async function POST(request: Request) {
 
         const { error } = await supabase.from('events').insert({
             visitor_id: visitorId,
+            hostname: hostname,
             pathname: pathname,
             name: eventName,
             properties: properties || {},

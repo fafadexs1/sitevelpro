@@ -39,6 +39,7 @@ export function VisitTracker() {
                     },
                     body: JSON.stringify({
                         visitorId: visitorId,
+                        hostname: window.location.hostname,
                         pathname: pathname,
                         isNewVisitor: isNewVisitor,
                     }),
