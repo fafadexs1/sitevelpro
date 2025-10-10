@@ -81,8 +81,7 @@ export function ConditionalLayoutElements() {
     const isAdminPage = pathname.startsWith('/admin') || pathname.startsWith('/colaborador') || pathname.startsWith('/colaboracao');
 
     useEffect(() => {
-        // Run only on client
-        if (typeof window === 'undefined') return;
+        if (typeof window === 'undefined' || isAdminPage) return;
         
         const getDomainAndTags = async () => {
             const hostname = window.location.hostname;
@@ -97,7 +96,6 @@ export function ConditionalLayoutElements() {
             const currentDomainType = (domainData?.type as DomainType) || 'sales_page';
             setDomainType(currentDomainType);
 
-            // Only fetch tags if it's a sales page
             if (currentDomainType === 'sales_page') {
                 const { data: tagsData } = await supabase
                     .from('tracking_tags')
@@ -107,16 +105,10 @@ export function ConditionalLayoutElements() {
             }
         };
         
-        if (!isAdminPage) {
-            getDomainAndTags();
-        }
+        getDomainAndTags();
     }, [pathname, isAdminPage]);
 
-    if (isAdminPage || domainType === 'main_site') {
-        return null;
-    }
-    
-    if (domainType === null) {
+    if (isAdminPage || domainType === null) {
         return null;
     }
 
@@ -124,21 +116,25 @@ export function ConditionalLayoutElements() {
     const bodyStartNoScripts = tags.filter(t => t.placement === 'body_start');
     const bodyEndScripts = tags.filter(t => t.placement === 'body_end');
 
-    // Render for sales pages
     return (
         <>
-            {/* Scripts and NoScripts */}
-            <TrackingScripts tags={headScripts} position="head_start" />
-            <TrackingNoScript tags={bodyStartNoScripts} />
-            <TrackingScripts tags={bodyEndScripts} position="body_end" />
-
-            {/* Other marketing/tracking components */}
-            <FloatingWhatsApp />
-            <ConsentBanner />
+            {/* Rastreamento interno (cliques, visitas) para todos os domínios públicos */}
             <VisitTracker />
             <EventTracker />
-            <ConversionTracker />
             <ScrollDepthTracker />
+
+            {/* Componentes e tags exclusivas para páginas de vendas */}
+            {domainType === 'sales_page' && (
+                <>
+                    <TrackingScripts tags={headScripts} position="head_start" />
+                    <TrackingNoScript tags={bodyStartNoScripts} />
+                    <TrackingScripts tags={bodyEndScripts} position="body_end" />
+
+                    <FloatingWhatsApp />
+                    <ConsentBanner />
+                    <ConversionTracker />
+                </>
+            )}
         </>
     );
 }
