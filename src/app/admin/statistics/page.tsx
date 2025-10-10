@@ -69,7 +69,7 @@ export default function StatisticsPage() {
     const [clickEvents, setClickEvents] = useState(0);
     const [bounceRate, setBounceRate] = useState(0);
     const [topPages, setTopPages] = useState<PageVisit[]>([]);
-    const [topCTAs, setTopCTAs] = useState<CtaClick[]>([]);
+    const [topPlans, setTopPlans] = useState<CtaClick[]>([]);
     const [dailyVisits, setDailyVisits] = useState<ChartDataPoint[]>([]);
     
     const [activeFilter, setActiveFilter] = useState<FilterRange>('30d');
@@ -176,15 +176,16 @@ export default function StatisticsPage() {
             setDailyVisits(Object.entries(dailyCounts).map(([date, visits]) => ({ date, visits })));
         }
 
-        // --- Process Events Data ---
-        const ctaClickCounts = eventsData
-            .filter(e => e.name === 'cta_click' && e.properties.button_id)
+        // --- Process Events Data for Top Plans ---
+        const planClickCounts = eventsData
+            .filter(e => e.name === 'cta_click' && e.properties.plan_name)
             .reduce((acc, e) => {
-                const ctaKey = e.properties.button_id;
-                acc[ctaKey] = (acc[ctaKey] || 0) + 1;
+                const planName = e.properties.plan_name;
+                acc[planName] = (acc[planName] || 0) + 1;
                 return acc;
             }, {} as Record<string, number>);
-        setTopCTAs(Object.entries(ctaClickCounts).map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count).slice(0, 7));
+        
+        setTopPlans(Object.entries(planClickCounts).map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count).slice(0, 7));
 
 
         setLoading(false);
@@ -368,24 +369,24 @@ export default function StatisticsPage() {
                 </Card>
                  <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><MousePointerClick className="text-primary"/>Principais Ações (CTAs)</CardTitle>
+                        <CardTitle className="flex items-center gap-2"><MousePointerClick className="text-primary"/>Planos Mais Clicados</CardTitle>
                     </CardHeader>
                     <CardContent>
                          <Table>
                             <TableHeader>
                                 <TableRow className="hover:bg-transparent">
-                                    <TableHead>ID do Botão/Ação</TableHead>
+                                    <TableHead>Nome do Plano</TableHead>
                                     <TableHead className="text-right">Cliques</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {topCTAs.map(cta => (
-                                     <TableRow key={cta.name}>
-                                        <TableCell className="font-mono text-xs">{cta.name}</TableCell>
-                                        <TableCell className="text-right font-medium">{cta.count}</TableCell>
+                                {topPlans.map(plan => (
+                                     <TableRow key={plan.name}>
+                                        <TableCell className="font-medium">{plan.name}</TableCell>
+                                        <TableCell className="text-right font-medium">{plan.count}</TableCell>
                                     </TableRow>
                                 ))}
-                                 {topCTAs.length === 0 && <TableRow><TableCell colSpan={2} className="h-24 text-center text-muted-foreground">Nenhum clique em CTAs no período.</TableCell></TableRow>}
+                                 {topPlans.length === 0 && <TableRow><TableCell colSpan={2} className="h-24 text-center text-muted-foreground">Nenhum clique em planos no período.</TableCell></TableRow>}
                             </TableBody>
                         </Table>
                     </CardContent>
