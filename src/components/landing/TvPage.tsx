@@ -110,24 +110,28 @@ export function TvPage() {
 
                         <div className="mt-8 pt-6 border-t border-border">
                             <h3 className="text-xl font-semibold mb-4">Dispositivos Compatíveis</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-sm">
-                                <div className="rounded-2xl border border-border bg-card p-6">
-                                    <div className="flex items-center gap-3 mb-4">
-                                        <Computer className="h-6 w-6 text-primary" />
-                                        <h4 className="text-lg font-bold text-card-foreground">Computador</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
+                                <div className="rounded-2xl border border-border bg-card overflow-hidden">
+                                    <div className="p-4 bg-secondary border-b border-border">
+                                        <div className="flex items-center gap-3">
+                                            <Computer className="h-6 w-6 text-primary" />
+                                            <h4 className="text-lg font-bold text-card-foreground">Computador</h4>
+                                        </div>
                                     </div>
-                                    <ul className="space-y-2 text-muted-foreground">
+                                    <ul className="p-6 space-y-2 text-muted-foreground">
                                         <li>Google Chrome</li>
                                         <li>Mozilla Firefox</li>
                                         <li>Microsoft Edge</li>
                                     </ul>
                                 </div>
-                                <div className="rounded-2xl border border-border bg-card p-6">
-                                    <div className="flex items-center gap-3 mb-4">
-                                        <Tv className="h-6 w-6 text-primary" />
-                                        <h4 className="text-lg font-bold text-card-foreground">TV</h4>
+                                <div className="rounded-2xl border border-border bg-card overflow-hidden">
+                                     <div className="p-4 bg-secondary border-b border-border">
+                                        <div className="flex items-center gap-3">
+                                            <Tv className="h-6 w-6 text-primary" />
+                                            <h4 className="text-lg font-bold text-card-foreground">TV</h4>
+                                        </div>
                                     </div>
-                                    <ul className="space-y-2 text-muted-foreground">
+                                    <ul className="p-6 space-y-2 text-muted-foreground">
                                         <li>Amazon Fire TV</li>
                                         <li>Android TV & Roku</li>
                                         <li>LG (WebOS 4.5+)</li>
@@ -135,16 +139,18 @@ export function TvPage() {
                                         <li>Chromecast</li>
                                     </ul>
                                 </div>
-                                <div className="rounded-2xl border border-border bg-card p-6">
-                                    <div className="flex items-center gap-3 mb-4">
-                                        <Smartphone className="h-6 w-6 text-primary" />
-                                        <h4 className="text-lg font-bold text-card-foreground">Celulares e Tablets</h4>
+                                <div className="rounded-2xl border border-border bg-card overflow-hidden">
+                                     <div className="p-4 bg-secondary border-b border-border">
+                                        <div className="flex items-center gap-3">
+                                            <Smartphone className="h-6 w-6 text-primary" />
+                                            <h4 className="text-lg font-bold text-card-foreground">Celulares e Tablets</h4>
+                                        </div>
                                     </div>
-                                    <ul className="space-y-2 text-muted-foreground">
+                                    <ul className="p-6 space-y-2 text-muted-foreground">
                                         <li>Celulares e Tablets Android</li>
                                         <li>iPhone e iPad (iOS)</li>
                                     </ul>
-                                    <p className="text-xs text-muted-foreground/80 mt-4">
+                                     <p className="px-6 pb-6 text-xs text-muted-foreground/80">
                                         Baixe nosso app na sua loja de aplicativos.
                                     </p>
                                 </div>
