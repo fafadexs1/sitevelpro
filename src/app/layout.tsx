@@ -7,7 +7,6 @@ import { Inter } from 'next/font/google';
 import { createClient } from '@/utils/supabase/server';
 import React from 'react';
 import Script from 'next/script';
-import { cookies } from 'next/headers';
 import { ConditionalLayoutElements } from '@/components/ConditionalLayoutElements';
 
 export const revalidate = 0;
@@ -17,12 +16,6 @@ const inter = Inter({
   variable: '--font-inter',
   display: 'swap',
 });
-
-type TrackingTag = {
-  id: string | number;
-  script_content: string;
-  placement: 'head_start' | 'body_start' | 'body_end';
-};
 
 // --- Data loaders (server) ---
 async function getSeoSettings() {
@@ -42,21 +35,6 @@ async function getSeoSettings() {
         console.error("[LOG] Exceção crítica na função getSeoSettings:", e);
         return null;
     }
-}
-
-async function getTrackingTags(): Promise<TrackingTag[]> {
-  try {
-    cookies();
-    const supabase = createClient();
-    const { data } = await supabase
-      .from('tracking_tags')
-      .select('id, script_content, placement')
-      .eq('is_active', true);
-    return (data ?? []) as TrackingTag[];
-  } catch {
-    console.error("Could not fetch tracking tags.");
-    return [];
-  }
 }
 
 // --- Metadata ---
@@ -100,68 +78,11 @@ export async function generateMetadata(
   };
 }
 
-// Helper para sanitizar o conteúdo de scripts para o next/script
-const sanitizeScriptContent = (content: string): string => {
-    // Remove <script> e </script> tags, mas mantém o conteúdo
-    const scriptMatch = content.match(/<script[^>]*>([\s\S]*?)<\/script>/);
-    return scriptMatch ? scriptMatch[1] : '';
-};
-
-// Helper para renderizar noscript tags de forma segura
-const TrackingNoScript = ({ tags }: { tags: TrackingTag[] }) => {
-    return (
-        <>
-            {tags.map((tag, index) => {
-                const noScriptMatch = tag.script_content.match(/<noscript>([\s\S]*?)<\/noscript>/);
-                if (!noScriptMatch) return null;
-                return (
-                 <noscript
-                    key={`noscript-${tag.id}-${index}`}
-                    dangerouslySetInnerHTML={{ __html: noScriptMatch[1] }}
-                 />
-                )
-            })}
-        </>
-    );
-};
-
-
-// Helper para renderizar scripts com next/script
-function TrackingScripts({
-  tags,
-  position,
-}: {
-  tags: TrackingTag[];
-  position: 'head_start' | 'body_end';
-}) {
-  const strategy = position === 'body_end' ? 'afterInteractive' : 'beforeInteractive';
-  
-  return (
-    <>
-      {tags
-        .filter(t => t.placement === position)
-        .map((tag, index) => (
-            <Script
-              id={`tracking-tag-${position}-${tag.id}-${index}`}
-              key={`script-${position}-${tag.id}-${index}`}
-              strategy={strategy}
-              dangerouslySetInnerHTML={{ __html: sanitizeScriptContent(tag.script_content) }}
-            />
-        ))}
-    </>
-  );
-}
-
 
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const allTags = await getTrackingTags();
   const settings = await getSeoSettings();
-
-  const headScripts = allTags.filter(t => t.placement === 'head_start');
-  const bodyStartNoScripts = allTags.filter(t => t.placement === 'body_start');
-  const bodyEndScripts = allTags.filter(t => t.placement === 'body_end');
 
   // Construção da URL do Favicon com cache-busting
   const faviconUrl = settings?.favicon_url 
@@ -186,17 +107,12 @@ export default async function RootLayout({
             });
           `}
         </Script>
-        {/* Fontes via next/font */}
-        <TrackingScripts tags={headScripts} position="head_start" />
       </head>
       <body className="font-body antialiased" suppressHydrationWarning>
-        <TrackingNoScript tags={bodyStartNoScripts} />
-        
         {children}
 
         <Toaster />
         <ConditionalLayoutElements />
-        <TrackingScripts tags={bodyEndScripts} position="body_end" />
       </body>
     </html>
   );
