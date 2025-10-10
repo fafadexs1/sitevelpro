@@ -66,34 +66,60 @@
     --ring: 142 71% 45%;
   }
 
-  .theme-halloween {
-    --background: 240 5% 12%; /* Dark spooky background */
-    --foreground: 22 15% 85%; /* Off-white text */
+  /* Removemos a troca completa de paleta e adicionamos animações */
+  .theme-halloween body::before,
+  .theme-halloween body::after {
+    content: '';
+    position: fixed;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+  }
 
-    --card: 240 5% 15%;
-    --card-foreground: 22 15% 85%;
- 
-    --popover: 240 5% 10%;
-    --popover-foreground: 22 15% 85%;
- 
-    --primary: 22 96% 54%; /* Halloween Orange */
-    --primary-foreground: 0 0% 10%;
- 
-    --secondary: 240 5% 20%;
-    --secondary-foreground: 22 15% 85%;
- 
-    --muted: 240 5% 20%;
-    --muted-foreground: 240 4% 50%;
- 
-    --accent: 260 50% 50%; /* Purple Accent */
-    --accent-foreground: 0 0% 98%;
- 
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 0 0% 98%;
+  /* Abóbora no canto */
+  .theme-halloween body::before {
+    content: '🎃';
+    font-size: 4rem;
+    bottom: -2rem;
+    right: 1rem;
+    opacity: 1;
+    text-shadow: 0 0 15px hsl(22 96% 54% / 0.8);
+    animation: pumpkin-glow 4s ease-in-out infinite;
+  }
 
-    --border: 240 5% 25%;
-    --input: 240 5% 25%;
-    --ring: 22 96% 54%;
+  /* Morcegos Voadores */
+  .theme-halloween body::after {
+    content: '🦇';
+    font-size: 1.5rem;
+    top: 5%;
+    left: -5%;
+    opacity: 0.8;
+    animation-name: fly-by;
+    animation-duration: 15s;
+    animation-delay: 2s;
+  }
+
+  /* Efeito de brilho nos botões primários */
+  .theme-halloween .bg-primary {
+      animation: halloween-glow 3s ease-in-out infinite;
+  }
+
+  @keyframes pumpkin-glow {
+    0%, 100% { transform: scale(1); text-shadow: 0 0 15px hsl(22 96% 54% / 0.7); }
+    50% { transform: scale(1.05); text-shadow: 0 0 25px hsl(22 96% 54% / 1); }
+  }
+
+  @keyframes fly-by {
+    0% { transform: translateX(0) translateY(0) rotateZ(0deg); opacity: 0.8; }
+    50% { transform: translateX(55vw) translateY(-20px) rotateZ(5deg); opacity: 1; }
+    100% { transform: translateX(110vw) translateY(30px) rotateZ(-5deg); opacity: 0.8; }
+  }
+  
+  @keyframes halloween-glow {
+    0%, 100% { box-shadow: 0 0 5px hsl(var(--primary)/0.5); }
+    50% { box-shadow: 0 0 20px hsl(22 96% 54% / 0.7); }
   }
 }
 
