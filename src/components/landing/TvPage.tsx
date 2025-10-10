@@ -78,7 +78,7 @@ export function TvPage() {
     const [loading, setLoading] = useState(true);
     const [selectedChannel, setSelectedChannel] = useState<Channel | null>(null);
     const [searchTerm, setSearchTerm] = useState("");
-    const [selectedPackageId, setSelectedPackageId] = useState<string>('all');
+    const [selectedPackageId, setSelectedPackageId] = useState<string | null>(null);
     const isMobile = useIsMobile();
 
     useEffect(() => {
@@ -95,6 +95,9 @@ export function TvPage() {
                 setAllChannels(channelsData);
                 setPackages(packagesData);
                 setPackageChannels(relationsData);
+                if (packagesData.length > 0) {
+                    setSelectedPackageId(packagesData[0].id); // Seleciona o primeiro pacote por padrão
+                }
             }
             setLoading(false);
         };
@@ -102,8 +105,8 @@ export function TvPage() {
     }, []);
 
     const channelsForPackage = useMemo(() => {
-        if (selectedPackageId === 'all') {
-            return allChannels;
+        if (!selectedPackageId) {
+            return [];
         }
         const channelIdsInPackage = packageChannels
             .filter(pc => pc.package_id === selectedPackageId)
@@ -117,6 +120,12 @@ export function TvPage() {
             channel.name.toLowerCase().includes(searchTerm.toLowerCase())
         );
     }, [channelsForPackage, searchTerm]);
+
+    useEffect(() => {
+        if (selectedPackageId) {
+            setSearchTerm(''); // Limpa a busca ao trocar de pacote
+        }
+    }, [selectedPackageId]);
 
     useEffect(() => {
         if (!selectedChannel && filteredChannels.length > 0) {
@@ -137,18 +146,48 @@ export function TvPage() {
     }
     
     const PackageSelector = () => (
-        <div className="border-b border-border px-2 py-2">
-             <ScrollArea className="w-full whitespace-nowrap">
-                 <div className="flex w-max space-x-2 p-1">
-                    <button onClick={() => setSelectedPackageId('all')} className={cn("rounded-md px-3 py-1.5 text-sm font-medium transition-colors", selectedPackageId === 'all' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground hover:bg-accent')}>Todos os Canais</button>
+         <div className="border-b border-border px-2 py-2">
+            <ScrollArea className="w-full whitespace-nowrap">
+                <div className="flex w-max space-x-2 p-1">
                     {packages.map(pkg => (
-                        <button key={pkg.id} onClick={() => setSelectedPackageId(pkg.id)} className={cn("rounded-md px-3 py-1.5 text-sm font-medium transition-colors", selectedPackageId === pkg.id ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground hover:bg-accent')}>{pkg.name}</button>
+                        <button 
+                            key={pkg.id} 
+                            onClick={() => setSelectedPackageId(pkg.id)} 
+                            className={cn(
+                                "rounded-md px-3 py-1.5 text-sm font-medium transition-colors", 
+                                selectedPackageId === pkg.id 
+                                    ? 'bg-primary text-primary-foreground' 
+                                    : 'bg-secondary text-secondary-foreground hover:bg-accent'
+                            )}
+                        >
+                            {pkg.name}
+                        </button>
                     ))}
-                 </div>
-                 <ScrollBar orientation="horizontal" className="h-0" />
+                </div>
+                <ScrollBar orientation="horizontal" className="h-0" />
             </ScrollArea>
         </div>
     );
+    
+    const DesktopPackageSelector = () => (
+        <div className="space-y-1 p-1">
+             {packages.map(pkg => (
+                <button 
+                    key={pkg.id} 
+                    onClick={() => setSelectedPackageId(pkg.id)} 
+                    className={cn(
+                        "w-full text-left rounded-md px-3 py-2 text-sm font-medium transition-colors", 
+                        selectedPackageId === pkg.id 
+                            ? 'bg-primary/10 text-primary' 
+                            : 'text-foreground/70 hover:bg-accent hover:text-foreground'
+                    )}
+                >
+                    {pkg.name}
+                </button>
+            ))}
+        </div>
+    );
+
 
     const MainContent = () => (
          <main className="flex-1 flex flex-col p-4 sm:p-8 overflow-y-auto">
@@ -225,7 +264,7 @@ export function TvPage() {
                 </motion.div>
             ) : (
                 <div className="flex items-center justify-center h-full text-muted-foreground">
-                    <p>Selecione um canal para ver os detalhes.</p>
+                    <p>Nenhum canal encontrado para os filtros selecionados.</p>
                 </div>
             )}
         </main>
@@ -245,11 +284,11 @@ export function TvPage() {
             ) : (
                 <div className="flex-grow flex overflow-hidden">
                     <aside className="w-72 border-r border-border p-2 flex flex-col">
-                        <h2 className="text-lg font-semibold p-2 mb-2">Canais</h2>
-                        <div className="px-1 mb-2">
-                             <PackageSelector />
-                        </div>
-                        <div className="relative mb-2 px-1">
+                         <div className="p-2">
+                             <h2 className="text-lg font-semibold mb-2">Pacotes</h2>
+                             <DesktopPackageSelector />
+                         </div>
+                        <div className="relative my-2 px-1">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                             <Input
                                 placeholder="Buscar canal no pacote..."
@@ -280,3 +319,4 @@ export function TvPage() {
     );
 }
 
+    
