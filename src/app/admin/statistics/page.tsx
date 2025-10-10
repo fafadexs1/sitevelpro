@@ -1,9 +1,10 @@
 
+
 "use client";
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { createClient } from '@/utils/supabase/client';
-import { BarChart, Users, Repeat, UserPlus, Loader2, File, Eye, MousePointerClick, CalendarDays, Calendar as CalendarIcon, ExternalLink, Globe, Clock, ArrowRight } from 'lucide-react';
+import { BarChart, Users, Repeat, UserPlus, Loader2, File, Eye, MousePointerClick, CalendarDays, Calendar as CalendarIcon, ExternalLink, Globe, Clock, ArrowRight, Gauge } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
@@ -13,9 +14,11 @@ import { ptBR } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { cn } from '@/lib/utils';
 import type { DateRange } from 'react-day-picker';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 type Visit = {
   id: string;
@@ -44,9 +47,9 @@ type PageVisit = {
     unique_visitors: number;
 }
 
-type CtaClick = {
+type PlanClick = {
     name: string;
-    count: number;
+    clicks: Event[];
 };
 
 type ChartDataPoint = {
@@ -78,7 +81,7 @@ export default function StatisticsPage() {
     const [clickEvents, setClickEvents] = useState(0);
     const [bounceRate, setBounceRate] = useState(0);
     const [topPages, setTopPages] = useState<PageVisit[]>([]);
-    const [topPlans, setTopPlans] = useState<CtaClick[]>([]);
+    const [topPlans, setTopPlans] = useState<PlanClick[]>([]);
     const [dailyVisits, setDailyVisits] = useState<ChartDataPoint[]>([]);
     
     const [activeFilter, setActiveFilter] = useState<FilterRange>('30d');
@@ -183,15 +186,19 @@ export default function StatisticsPage() {
             setDailyVisits(Object.entries(dailyCounts).map(([date, visits]) => ({ date, visits })));
         }
 
-        const planClickCounts = eventsData
+        const planClickGroups = eventsData
             .filter(e => e.name === 'cta_click' && e.properties.plan_name)
             .reduce((acc, e) => {
                 const planName = e.properties.plan_name;
-                acc[planName] = (acc[planName] || 0) + 1;
+                if (!acc[planName]) {
+                    acc[planName] = [];
+                }
+                acc[planName].push(e);
                 return acc;
-            }, {} as Record<string, number>);
+            }, {} as Record<string, Event[]>);
         
-        setTopPlans(Object.entries(planClickCounts).map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count).slice(0, 5));
+        setTopPlans(Object.entries(planClickGroups).map(([name, clicks]) => ({ name, clicks })).sort((a, b) => b.clicks.length - a.clicks.length));
+
 
         const combinedFeed: Activity[] = [
             ...(visitsData.map(v => ({ ...v, type: 'visit' as const }))),
@@ -379,9 +386,55 @@ export default function StatisticsPage() {
                                 </div>
                             </div>
                         ))}
+                         {activityFeed.length === 0 && <p className="text-center text-sm text-muted-foreground py-4">Nenhuma atividade registrada no período.</p>}
                     </CardContent>
                 </Card>
-                <div className="md:col-span-2 grid grid-rows-2 gap-8">
+                <div className="md:col-span-2 space-y-8">
+                     <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2"><MousePointerClick className="text-primary"/>Planos Mais Clicados</CardTitle>
+                             <CardDescription>Visão geral do interesse dos visitantes nos planos oferecidos.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            {topPlans.length === 0 ? (
+                                <p className="h-24 text-center text-muted-foreground flex items-center justify-center">Nenhum clique em planos no período.</p>
+                            ) : (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {topPlans.map(plan => (
+                                    <Dialog key={plan.name}>
+                                        <DialogTrigger asChild>
+                                            <div className="group cursor-pointer rounded-xl border bg-card p-4 transition-all hover:border-primary hover:shadow-lg hover:-translate-y-1">
+                                                <div className="flex items-start justify-between">
+                                                    <p className="font-semibold text-card-foreground">{plan.name}</p>
+                                                    <Gauge className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                                                </div>
+                                                <p className="text-3xl font-bold text-foreground mt-2">{plan.clicks.length}</p>
+                                                <p className="text-xs text-muted-foreground">cliques</p>
+                                            </div>
+                                        </DialogTrigger>
+                                        <DialogContent className="max-w-md">
+                                            <DialogHeader>
+                                                <DialogTitle>Histórico de Cliques: {plan.name}</DialogTitle>
+                                                <DialogDescription>
+                                                    Lista de horários em que os visitantes clicaram neste plano.
+                                                </DialogDescription>
+                                            </DialogHeader>
+                                            <ScrollArea className="h-72">
+                                                <div className="space-y-2 pr-4">
+                                                {plan.clicks.map(click => (
+                                                    <div key={click.id} className="text-sm text-muted-foreground">
+                                                        {format(new Date(click.created_at), "dd/MM/yyyy 'às' HH:mm:ss", { locale: ptBR })}
+                                                    </div>
+                                                ))}
+                                                </div>
+                                            </ScrollArea>
+                                        </DialogContent>
+                                    </Dialog>
+                                ))}
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2"><File className="text-primary"/>Páginas Mais Visitadas</CardTitle>
@@ -408,30 +461,7 @@ export default function StatisticsPage() {
                             </Table>
                         </CardContent>
                     </Card>
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2"><MousePointerClick className="text-primary"/>Planos Mais Clicados</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <Table>
-                                <TableHeader>
-                                    <TableRow className="hover:bg-transparent">
-                                        <TableHead>Nome do Plano</TableHead>
-                                        <TableHead className="text-right">Cliques</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {topPlans.map(plan => (
-                                        <TableRow key={plan.name}>
-                                            <TableCell className="font-medium">{plan.name}</TableCell>
-                                            <TableCell className="text-right font-medium">{plan.count}</TableCell>
-                                        </TableRow>
-                                    ))}
-                                    {topPlans.length === 0 && <TableRow><TableCell colSpan={2} className="h-24 text-center text-muted-foreground">Nenhum clique em planos no período.</TableCell></TableRow>}
-                                </TableBody>
-                            </Table>
-                        </CardContent>
-                    </Card>
+                   
                 </div>
             </div>
             </>
