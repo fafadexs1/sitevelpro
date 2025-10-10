@@ -33,7 +33,7 @@ const ChannelListItem = ({ channel, isSelected, onSelect }: { channel: Channel, 
 // Componente para o card de canal na barra inferior
 const BottomChannelCard = ({ channel, isSelected, onSelect }: { channel: Channel, isSelected: boolean, onSelect: () => void }) => (
     <button onClick={onSelect} className={`relative rounded-md aspect-video h-16 sm:h-20 transition-all duration-300 ${isSelected ? 'border-2 border-primary scale-105' : 'opacity-60 hover:opacity-100'}`}>
-        <Image src={channel.logo_url} alt={channel.name} fill className="object-contain bg-foreground/10 rounded-md p-1" unoptimized/>
+        <Image src={channel.logo_url} alt={channel.name} fill className="object-contain bg-secondary rounded-md p-1" unoptimized/>
     </button>
 )
 
@@ -72,18 +72,18 @@ export function TVGuide() {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center h-[80vh] bg-black">
+            <div className="flex items-center justify-center h-[80vh] bg-background">
                 <Loader2 className="h-10 w-10 animate-spin text-primary" />
             </div>
         );
     }
 
     return (
-        <div className="bg-black text-white h-[calc(100vh-80px)] flex flex-col overflow-hidden">
+        <div className="bg-background text-foreground h-[calc(100vh-80px)] flex flex-col overflow-hidden">
             {/* Main Content Area */}
             <div className="flex-grow flex overflow-hidden">
                 {/* Channel List (Sidebar) */}
-                <aside className="w-64 border-r border-white/10 p-2 hidden md:flex flex-col">
+                <aside className="w-64 border-r border-border p-2 hidden md:flex flex-col">
                     <h2 className="text-lg font-semibold p-2 mb-2">Canais</h2>
                     <ScrollArea className="flex-grow">
                         <div className="space-y-1">
@@ -109,7 +109,7 @@ export function TVGuide() {
                             className="flex flex-col h-full"
                         >
                             <div className="flex items-center gap-4 mb-4">
-                                <div className="w-20 h-20 rounded-xl bg-foreground/10 p-2 border border-white/10 flex items-center justify-center">
+                                <div className="w-20 h-20 rounded-xl bg-secondary p-2 border border-border flex items-center justify-center">
                                     <Image src={selectedChannel.logo_url} alt={selectedChannel.name} width={64} height={64} className="object-contain" unoptimized />
                                 </div>
                                 <div>
@@ -117,11 +117,11 @@ export function TVGuide() {
                                 </div>
                             </div>
 
-                            <div className="text-white/70 text-base leading-relaxed flex-grow">
+                            <div className="text-muted-foreground text-base leading-relaxed flex-grow">
                                 <p>{selectedChannel.description || "Descrição não disponível para este canal."}</p>
                             </div>
 
-                            <div className="mt-8 pt-6 border-t border-white/10">
+                            <div className="mt-8 pt-6 border-t border-border">
                                 <h3 className="text-xl font-semibold mb-4">Dispositivos Compatíveis</h3>
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-sm">
                                      <div className="flex items-center gap-3"><Tv className="h-6 w-6 text-primary" /><span>Smart TVs e Set-top boxes</span></div>
@@ -131,7 +131,7 @@ export function TVGuide() {
                             </div>
                         </motion.div>
                     ) : (
-                        <div className="flex items-center justify-center h-full text-white/50">
+                        <div className="flex items-center justify-center h-full text-muted-foreground">
                             <p>Selecione um canal para ver os detalhes.</p>
                         </div>
                     )}
@@ -139,7 +139,7 @@ export function TVGuide() {
             </div>
 
             {/* Bottom Bar: Timeline / Channel Switcher */}
-            <footer className="border-t border-white/10 bg-black/50 backdrop-blur-sm p-4">
+            <footer className="border-t border-border bg-background/80 backdrop-blur-sm p-4">
                 <ScrollArea className="w-full whitespace-nowrap">
                     <div className="flex items-center gap-4">
                          {channels.map(channel => (
