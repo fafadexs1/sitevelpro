@@ -1,10 +1,9 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { motion } from "framer-motion";
-import { Tv, Smartphone, Laptop, Clapperboard, Loader2, Computer, AlertTriangle } from "lucide-react";
+import { Tv, Smartphone, Loader2, Computer, AlertTriangle } from "lucide-react";
 import Image from "next/image";
 import { ScrollArea } from "../ui/scroll-area";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
@@ -68,108 +67,120 @@ export function TvPage() {
     }
 
     return (
-        <div className="bg-background text-foreground flex-grow flex overflow-hidden">
-            {/* Channel List (Sidebar) */}
-            <aside className="w-64 border-r border-border p-2 flex flex-col">
-                <h2 className="text-lg font-semibold p-2 mb-2">Canais</h2>
-                <ScrollArea className="flex-grow">
-                    <div className="space-y-1">
-                        {channels.map(channel => (
-                            <ChannelListItem
-                                key={channel.id}
-                                channel={channel}
-                                isSelected={selectedChannel?.id === channel.id}
-                                onSelect={() => setSelectedChannel(channel)}
-                            />
-                        ))}
-                    </div>
-                </ScrollArea>
-            </aside>
-
-            {/* Program Details View */}
-            <main className="flex-1 flex flex-col p-4 sm:p-8 overflow-y-auto">
-                {selectedChannel ? (
-                    <motion.div 
-                        key={selectedChannel.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="flex flex-col h-full"
-                    >
-                        <div className="flex items-center gap-4 mb-4">
-                            <div className="w-20 h-20 rounded-xl bg-secondary p-2 border border-border flex items-center justify-center">
-                                <Image src={selectedChannel.logo_url} alt={selectedChannel.name} width={64} height={64} className="object-contain" unoptimized />
-                            </div>
-                            <div>
-                                <h1 className="text-3xl sm:text-4xl font-bold">{selectedChannel.name}</h1>
-                            </div>
+        <div className="bg-background text-foreground flex-grow flex flex-col overflow-hidden">
+            {/* Main Content Area */}
+            <div className="flex-grow flex overflow-hidden">
+                {/* Channel List (Sidebar) */}
+                <aside className="w-64 border-r border-border p-2 hidden md:flex flex-col">
+                    <h2 className="text-lg font-semibold p-2 mb-2">Canais</h2>
+                    <ScrollArea className="flex-grow">
+                        <div className="space-y-1">
+                            {channels.map(channel => (
+                                <ChannelListItem
+                                    key={channel.id}
+                                    channel={channel}
+                                    isSelected={selectedChannel?.id === channel.id}
+                                    onSelect={() => setSelectedChannel(channel)}
+                                />
+                            ))}
                         </div>
+                    </ScrollArea>
+                </aside>
 
-                        <div className="text-muted-foreground text-base leading-relaxed flex-grow">
-                            <p>{selectedChannel.description || "Descrição não disponível para este canal."}</p>
-                        </div>
+                {/* Program Details View */}
+                <main className="flex-1 flex flex-col p-4 sm:p-8 overflow-y-auto">
+                    {selectedChannel ? (
+                        <motion.div 
+                            key={selectedChannel.id}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="flex flex-col h-full"
+                        >
+                            <div className="flex items-center gap-4 mb-4">
+                                <div className="w-20 h-20 rounded-xl bg-secondary p-2 border border-border flex items-center justify-center">
+                                    <Image src={selectedChannel.logo_url} alt={selectedChannel.name} width={64} height={64} className="object-contain" unoptimized />
+                                </div>
+                                <div>
+                                    <h1 className="text-3xl sm:text-4xl font-bold">{selectedChannel.name}</h1>
+                                </div>
+                            </div>
 
-                        <div className="mt-8 pt-6 border-t border-border">
-                            <h3 className="text-xl font-semibold mb-4">Dispositivos Compatíveis</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
-                                <div className="rounded-2xl border border-border bg-card overflow-hidden">
-                                    <div className="p-4 bg-secondary border-b border-border">
-                                        <div className="flex items-center gap-3">
+                            <div className="text-muted-foreground text-base leading-relaxed flex-grow">
+                                <p>{selectedChannel.description || "Descrição não disponível para este canal."}</p>
+                            </div>
+
+                            <div className="mt-8 pt-6 border-t border-border">
+                                <div className="text-center mb-8">
+                                    <h3 className="text-2xl font-bold">Dispositivos Compatíveis</h3>
+                                    <p className="text-muted-foreground">Assista em suas telas favoritas, onde e quando quiser.</p>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-sm">
+                                    <div className="rounded-2xl border border-border bg-card p-6">
+                                        <div className="flex items-center gap-3 mb-4">
                                             <Computer className="h-6 w-6 text-primary" />
                                             <h4 className="text-lg font-bold text-card-foreground">Computador</h4>
                                         </div>
+                                        <ul className="space-y-2 text-muted-foreground">
+                                            <li>Google Chrome</li>
+                                            <li>Mozilla Firefox</li>
+                                            <li>Microsoft Edge</li>
+                                        </ul>
                                     </div>
-                                    <ul className="p-6 space-y-2 text-muted-foreground">
-                                        <li>Google Chrome</li>
-                                        <li>Mozilla Firefox</li>
-                                        <li>Microsoft Edge</li>
-                                    </ul>
-                                </div>
-                                <div className="rounded-2xl border border-border bg-card overflow-hidden">
-                                     <div className="p-4 bg-secondary border-b border-border">
-                                        <div className="flex items-center gap-3">
+                                    <div className="rounded-2xl border border-border bg-card p-6">
+                                        <div className="flex items-center gap-3 mb-4">
                                             <Tv className="h-6 w-6 text-primary" />
                                             <h4 className="text-lg font-bold text-card-foreground">TV</h4>
                                         </div>
+                                        <ul className="space-y-2 text-muted-foreground">
+                                            <li>Amazon Fire TV</li>
+                                            <li>Android TV</li>
+                                            <li>Roku</li>
+                                            <li>Chromecast</li>
+                                            <li className="pt-2">
+                                                <span className="font-semibold text-card-foreground">LG (WebOS)</span>
+                                                <ul className="pl-4 text-xs">
+                                                    <li>Versão mínima WebOS: 4.5.0</li>
+                                                    <li>Modelos: Série 7 em diante</li>
+                                                </ul>
+                                            </li>
+                                             <li className="pt-2">
+                                                <span className="font-semibold text-card-foreground">Samsung (Tizen)</span>
+                                                <ul className="pl-4 text-xs">
+                                                    <li>Modelos: Série 7 em diante</li>
+                                                </ul>
+                                            </li>
+                                        </ul>
                                     </div>
-                                    <ul className="p-6 space-y-2 text-muted-foreground">
-                                        <li>Amazon Fire TV</li>
-                                        <li>Android TV & Roku</li>
-                                        <li>LG (WebOS 4.5+)</li>
-                                        <li>Samsung (Tizen, modelos 2018+)</li>
-                                        <li>Chromecast</li>
-                                    </ul>
-                                </div>
-                                <div className="rounded-2xl border border-border bg-card overflow-hidden">
-                                     <div className="p-4 bg-secondary border-b border-border">
-                                        <div className="flex items-center gap-3">
+                                    <div className="rounded-2xl border border-border bg-card p-6">
+                                        <div className="flex items-center gap-3 mb-4">
                                             <Smartphone className="h-6 w-6 text-primary" />
                                             <h4 className="text-lg font-bold text-card-foreground">Celulares e Tablets</h4>
                                         </div>
+                                        <ul className="space-y-2 text-muted-foreground">
+                                            <li>Celulares e Tablets Android</li>
+                                            <li>iPhone e iPad</li>
+                                        </ul>
+                                        <p className="text-xs text-muted-foreground/80 mt-4">
+                                            Certifique-se de que seus dispositivos e aplicativos estão atualizados para garantir a melhor experiência.
+                                        </p>
                                     </div>
-                                    <ul className="p-6 space-y-2 text-muted-foreground">
-                                        <li>Celulares e Tablets Android</li>
-                                        <li>iPhone e iPad (iOS)</li>
-                                    </ul>
-                                     <p className="px-6 pb-6 text-xs text-muted-foreground/80">
-                                        Baixe nosso app na sua loja de aplicativos.
-                                    </p>
                                 </div>
+                                <Alert variant="default" className="mt-8 max-w-4xl mx-auto bg-yellow-500/5 border-yellow-500/20">
+                                    <AlertTriangle className="h-4 w-4 text-yellow-500" />
+                                    <AlertTitle className="text-yellow-700">Dica de Performance</AlertTitle>
+                                    <AlertDescription className="text-yellow-600">
+                                        Para a melhor experiência de TV, recomendamos conectar sua TV ou dispositivo de streaming diretamente ao roteador com um cabo de rede. Conexões Wi-Fi podem sofrer instabilidades e causar travamentos no sinal.
+                                    </AlertDescription>
+                                </Alert>
                             </div>
-                            <Alert variant="default" className="mt-8 max-w-4xl mx-auto bg-yellow-500/5 border-yellow-500/20">
-                                <AlertTriangle className="h-4 w-4 text-yellow-500" />
-                                <AlertTitle className="text-yellow-700">Dica de Performance</AlertTitle>
-                                <AlertDescription className="text-yellow-600">
-                                    Para a melhor experiência, conecte sua TV ou dispositivo de streaming diretamente ao roteador com um cabo de rede.
-                                </AlertDescription>
-                            </Alert>
+                        </motion.div>
+                    ) : (
+                        <div className="flex items-center justify-center h-full text-muted-foreground">
+                            <p>Selecione um canal para ver os detalhes.</p>
                         </div>
-                    </motion.div>
-                ) : (
-                    <div className="flex items-center justify-center h-full text-muted-foreground">
-                        <p>Selecione um canal para ver os detalhes.</p>
-                    </div>
-                )}
-            </main>
+                    )}
+                </main>
+            </div>
         </div>
     );
 }
