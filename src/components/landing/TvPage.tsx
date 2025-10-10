@@ -20,6 +20,16 @@ type Channel = {
   logo_url: string;
 };
 
+type TvPackage = {
+    id: string;
+    name: string;
+};
+
+type PackageChannel = {
+    package_id: string;
+    channel_id: string;
+};
+
 // Componente para um único card de canal na lista lateral (Desktop)
 const ChannelListItem = ({ channel, isSelected, onSelect }: { channel: Channel, isSelected: boolean, onSelect: () => void }) => (
     <button
@@ -62,39 +72,51 @@ const MobileChannelScroller = ({ channels, selectedChannel, onSelect }: { channe
 
 
 export function TvPage() {
-    const [channels, setChannels] = useState<Channel[]>([]);
+    const [allChannels, setAllChannels] = useState<Channel[]>([]);
+    const [packages, setPackages] = useState<TvPackage[]>([]);
+    const [packageChannels, setPackageChannels] = useState<PackageChannel[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedChannel, setSelectedChannel] = useState<Channel | null>(null);
     const [searchTerm, setSearchTerm] = useState("");
+    const [selectedPackageId, setSelectedPackageId] = useState<string>('all');
     const isMobile = useIsMobile();
 
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
             const supabase = createClient();
-            const { data, error } = await supabase
-                .from("tv_channels")
-                .select("id, name, description, logo_url")
-                .order("name", { ascending: true });
+            const { data: channelsData, error: channelsError } = await supabase.from("tv_channels").select("id, name, description, logo_url").order("name", { ascending: true });
+            const { data: packagesData, error: packagesError } = await supabase.from("tv_packages").select("id, name").order("name", { ascending: true });
+            const { data: relationsData, error: relationsError } = await supabase.from("tv_package_channels").select("package_id, channel_id");
 
-            if (error) {
-                console.error("Error fetching channels:", error);
+            if (channelsError || packagesError || relationsError) {
+                console.error("Error fetching TV data:", channelsError || packagesError || relationsError);
             } else {
-                setChannels(data);
-                if (data.length > 0) {
-                    setSelectedChannel(data[0]);
-                }
+                setAllChannels(channelsData);
+                setPackages(packagesData);
+                setPackageChannels(relationsData);
             }
             setLoading(false);
         };
         fetchData();
     }, []);
 
+    const channelsForPackage = useMemo(() => {
+        if (selectedPackageId === 'all') {
+            return allChannels;
+        }
+        const channelIdsInPackage = packageChannels
+            .filter(pc => pc.package_id === selectedPackageId)
+            .map(pc => pc.channel_id);
+        
+        return allChannels.filter(channel => channelIdsInPackage.includes(channel.id));
+    }, [selectedPackageId, allChannels, packageChannels]);
+
     const filteredChannels = useMemo(() => {
-        return channels.filter(channel =>
+        return channelsForPackage.filter(channel =>
             channel.name.toLowerCase().includes(searchTerm.toLowerCase())
         );
-    }, [channels, searchTerm]);
+    }, [channelsForPackage, searchTerm]);
 
     useEffect(() => {
         if (!selectedChannel && filteredChannels.length > 0) {
@@ -114,6 +136,20 @@ export function TvPage() {
         );
     }
     
+    const PackageSelector = () => (
+        <div className="border-b border-border px-2 py-2">
+             <ScrollArea className="w-full whitespace-nowrap">
+                 <div className="flex w-max space-x-2 p-1">
+                    <button onClick={() => setSelectedPackageId('all')} className={cn("rounded-md px-3 py-1.5 text-sm font-medium transition-colors", selectedPackageId === 'all' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground hover:bg-accent')}>Todos os Canais</button>
+                    {packages.map(pkg => (
+                        <button key={pkg.id} onClick={() => setSelectedPackageId(pkg.id)} className={cn("rounded-md px-3 py-1.5 text-sm font-medium transition-colors", selectedPackageId === pkg.id ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground hover:bg-accent')}>{pkg.name}</button>
+                    ))}
+                 </div>
+                 <ScrollBar orientation="horizontal" className="h-0" />
+            </ScrollArea>
+        </div>
+    );
+
     const MainContent = () => (
          <main className="flex-1 flex flex-col p-4 sm:p-8 overflow-y-auto">
             {selectedChannel ? (
@@ -158,22 +194,10 @@ export function TvPage() {
                                 </div>
                                 <ul className="space-y-2 text-muted-foreground">
                                     <li>Amazon Fire TV</li>
-                                    <li>Android TV</li>
-                                    <li>Roku</li>
+                                    <li>Android TV & Roku</li>
+                                    <li>LG (WebOS 4.5+)</li>
+                                    <li>Samsung (Tizen, modelos 2018+)</li>
                                     <li>Chromecast</li>
-                                    <li className="pt-2">
-                                        <span className="font-semibold text-card-foreground">LG (WebOS)</span>
-                                        <ul className="pl-4 text-xs">
-                                            <li>Versão mínima WebOS: 4.5.0</li>
-                                            <li>Modelos: Série 7 em diante</li>
-                                        </ul>
-                                    </li>
-                                     <li className="pt-2">
-                                        <span className="font-semibold text-card-foreground">Samsung (Tizen)</span>
-                                        <ul className="pl-4 text-xs">
-                                            <li>Modelos: Série 7 em diante</li>
-                                        </ul>
-                                    </li>
                                 </ul>
                             </div>
                             <div className="rounded-2xl border border-border bg-card p-6">
@@ -183,10 +207,10 @@ export function TvPage() {
                                 </div>
                                 <ul className="space-y-2 text-muted-foreground">
                                     <li>Celulares e Tablets Android</li>
-                                    <li>iPhone e iPad</li>
+                                    <li>iPhone e iPad (iOS)</li>
                                 </ul>
                                 <p className="text-xs text-muted-foreground/80 mt-4">
-                                    Certifique-se de que seus dispositivos e aplicativos estão atualizados para garantir a melhor experiência.
+                                    Baixe nosso app na sua loja de aplicativos.
                                 </p>
                             </div>
                         </div>
@@ -194,7 +218,7 @@ export function TvPage() {
                             <AlertTriangle className="h-4 w-4 text-yellow-500" />
                             <AlertTitle className="text-yellow-700">Dica de Performance</AlertTitle>
                             <AlertDescription className="text-yellow-600">
-                                Para a melhor experiência de TV, recomendamos conectar sua TV ou dispositivo de streaming diretamente ao roteador com um cabo de rede. Conexões Wi-Fi podem sofrer instabilidades e causar travamentos no sinal.
+                                Para a melhor experiência, conecte sua TV ou dispositivo de streaming diretamente ao roteador com um cabo de rede.
                             </AlertDescription>
                         </Alert>
                     </div>
@@ -212,19 +236,23 @@ export function TvPage() {
         <div className="bg-background text-foreground flex-grow flex flex-col overflow-hidden">
              {isMobile ? (
                  <div className="flex flex-col flex-grow overflow-hidden">
-                    <MobileChannelScroller channels={channels} selectedChannel={selectedChannel} onSelect={setSelectedChannel} />
+                    <PackageSelector />
+                    <MobileChannelScroller channels={filteredChannels} selectedChannel={selectedChannel} onSelect={setSelectedChannel} />
                     <div className="flex-grow overflow-y-auto">
                         <MainContent />
                     </div>
                 </div>
             ) : (
                 <div className="flex-grow flex overflow-hidden">
-                    <aside className="w-64 border-r border-border p-2 flex flex-col">
+                    <aside className="w-72 border-r border-border p-2 flex flex-col">
                         <h2 className="text-lg font-semibold p-2 mb-2">Canais</h2>
+                        <div className="px-1 mb-2">
+                             <PackageSelector />
+                        </div>
                         <div className="relative mb-2 px-1">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                             <Input
-                                placeholder="Buscar canal..."
+                                placeholder="Buscar canal no pacote..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="pl-9 bg-secondary"
@@ -251,3 +279,4 @@ export function TvPage() {
         </div>
     );
 }
+
