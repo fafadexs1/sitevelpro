@@ -112,9 +112,13 @@
   }
 
   @keyframes fly-by {
-    0% { transform: translateX(0) translateY(0) rotateZ(0deg); opacity: 0.8; }
-    50% { transform: translateX(55vw) translateY(-20px) rotateZ(5deg); opacity: 1; }
-    100% { transform: translateX(110vw) translateY(30px) rotateZ(-5deg); opacity: 0.8; }
+    0% { transform: translateX(-10vw) translateY(2vh) rotateZ(-5deg); opacity: 0; }
+    10% { opacity: 1; }
+    25% { transform: translateX(20vw) translateY(-3vh) rotateZ(5deg); }
+    50% { transform: translateX(50vw) translateY(4vh) rotateZ(-8deg); }
+    75% { transform: translateX(80vw) translateY(-2vh) rotateZ(10deg); }
+    90% { opacity: 1; }
+    100% { transform: translateX(110vw) translateY(5vh) rotateZ(-5deg); opacity: 0; }
   }
   
   @keyframes halloween-glow {
