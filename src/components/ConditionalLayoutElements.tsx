@@ -18,6 +18,9 @@ type TrackingTag = {
   placement: 'head_start' | 'body_start' | 'body_end';
 };
 
+type DomainType = 'main_site' | 'sales_page';
+
+
 // Helper para sanitizar o conteúdo de scripts para o next/script
 const sanitizeScriptContent = (content: string): string => {
     // Remove <script> e </script> tags, mas mantém o conteúdo
@@ -52,7 +55,7 @@ function TrackingScripts({
   tags: TrackingTag[];
   position: 'head_start' | 'body_end';
 }) {
-  const strategy = position === 'body_end' ? 'afterInteractive' : 'afterInteractive';
+  const strategy = position === 'head_start' ? 'afterInteractive' : 'afterInteractive';
   
   return (
     <>
@@ -74,31 +77,43 @@ function TrackingScripts({
 export function ConditionalLayoutElements() {
     const pathname = usePathname();
     const [tags, setTags] = useState<TrackingTag[]>([]);
-    const [shouldTrack, setShouldTrack] = useState(false);
+    const [domainType, setDomainType] = useState<DomainType | null>(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const isAdminPage = pathname.startsWith('/admin') || pathname.startsWith('/colaborador') || pathname.startsWith('/colaboracao');
-        
         if (typeof window === 'undefined' || isAdminPage) {
-            setShouldTrack(false);
+            setLoading(false);
             return;
-        };
-        
-        setShouldTrack(true);
+        }
 
-        const getTags = async () => {
+        const getDomainInfo = async () => {
+            const hostname = window.location.hostname;
             const supabase = createClient();
-            const { data: tagsData } = await supabase
-                .from('tracking_tags')
-                .select('id, script_content, placement')
-                .eq('is_active', true);
-            setTags((tagsData as TrackingTag[]) ?? []);
+            
+            const { data: domainData } = await supabase
+                .from('domains')
+                .select('type')
+                .eq('hostname', hostname)
+                .single();
+            
+            const currentDomainType = (domainData?.type as DomainType) || 'sales_page'; // Default para sales_page se não encontrado
+            setDomainType(currentDomainType);
+
+            if (currentDomainType === 'sales_page') {
+                const { data: tagsData } = await supabase
+                    .from('tracking_tags')
+                    .select('id, script_content, placement')
+                    .eq('is_active', true);
+                setTags((tagsData as TrackingTag[]) ?? []);
+            }
+            setLoading(false);
         };
         
-        getTags();
+        getDomainInfo();
     }, [pathname]);
-
-    if (!shouldTrack) {
+    
+    if (loading || !domainType || domainType !== 'sales_page') {
         return null;
     }
 
@@ -108,12 +123,12 @@ export function ConditionalLayoutElements() {
 
     return (
         <>
-            {/* Rastreamento interno (cliques, visitas) para todos os domínios públicos */}
+            {/* Rastreamento interno (cliques, visitas) */}
             <VisitTracker />
             <EventTracker />
             <ScrollDepthTracker />
 
-            {/* Componentes e tags de marketing */}
+            {/* Componentes e tags de marketing para páginas de vendas */}
             <TrackingScripts tags={headScripts} position="head_start" />
             <TrackingNoScript tags={bodyStartNoScripts} />
             <TrackingScripts tags={bodyEndScripts} position="body_end" />
