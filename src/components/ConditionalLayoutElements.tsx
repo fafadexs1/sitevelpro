@@ -10,6 +10,7 @@ import { VisitTracker } from './analytics/VisitTracker';
 import { EventTracker } from './analytics/EventTracker';
 import { ConversionTracker } from './analytics/ConversionTracker';
 import Script from 'next/script';
+import { ScrollDepthTracker } from './analytics/ScrollDepthTracker';
 
 type DomainType = 'main_site' | 'sales_page';
 
@@ -137,6 +138,7 @@ export function ConditionalLayoutElements() {
             <VisitTracker />
             <EventTracker />
             <ConversionTracker />
+            <ScrollDepthTracker />
         </>
     );
 }
