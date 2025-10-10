@@ -274,8 +274,8 @@ export function TvPage() {
     }
 
     return (
-        <div className="flex-grow flex flex-col items-center justify-center p-4 sm:p-8 bg-secondary">
-             <div className="text-center mb-12">
+        <div className="flex-grow flex flex-col items-center p-4 sm:p-8 bg-secondary overflow-y-auto">
+             <div className="text-center mb-12 w-full">
                 <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">Nossos Pacotes de TV</h1>
                 <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
                     Escolha um pacote para explorar a lista completa de canais e descobrir um universo de entretenimento.
