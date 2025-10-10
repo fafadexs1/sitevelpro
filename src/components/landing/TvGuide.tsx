@@ -4,9 +4,11 @@
 import { useEffect, useState, useMemo } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { motion } from "framer-motion";
-import { Tv, Smartphone, Laptop, Clapperboard, Loader2, Computer } from "lucide-react";
+import { Tv, Smartphone, Laptop, Clapperboard, Loader2, Computer, AlertTriangle } from "lucide-react";
 import Image from "next/image";
-import { ScrollArea, ScrollBar } from "../ui/scroll-area";
+import { ScrollArea } from "../ui/scroll-area";
+import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
+
 
 type Channel = {
   id: string;
@@ -30,12 +32,6 @@ const ChannelListItem = ({ channel, isSelected, onSelect }: { channel: Channel, 
     </button>
 );
 
-// Componente para o card de canal na barra inferior
-const BottomChannelCard = ({ channel, isSelected, onSelect }: { channel: Channel, isSelected: boolean, onSelect: () => void }) => (
-    <button onClick={onSelect} className={`relative rounded-md aspect-video h-16 sm:h-20 transition-all duration-300 ${isSelected ? 'border-2 border-primary scale-105' : 'opacity-60 hover:opacity-100'}`}>
-        <Image src={channel.logo_url} alt={channel.name} fill className="object-contain bg-secondary rounded-md p-1" unoptimized/>
-    </button>
-)
 
 export function TVGuide() {
     const [channels, setChannels] = useState<Channel[]>([]);
@@ -63,12 +59,6 @@ export function TVGuide() {
         };
         fetchData();
     }, []);
-
-    const selectedChannelIndex = useMemo(() => {
-        if (!selectedChannel) return -1;
-        return channels.findIndex(c => c.id === selectedChannel.id);
-    }, [channels, selectedChannel]);
-
 
     if (loading) {
         return (
@@ -123,11 +113,52 @@ export function TVGuide() {
 
                             <div className="mt-8 pt-6 border-t border-border">
                                 <h3 className="text-xl font-semibold mb-4">Dispositivos Compatíveis</h3>
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-sm">
-                                     <div className="flex items-center gap-3"><Tv className="h-6 w-6 text-primary" /><span>Smart TVs e Set-top boxes</span></div>
-                                     <div className="flex items-center gap-3"><Smartphone className="h-6 w-6 text-primary" /><span>Celulares e Tablets</span></div>
-                                     <div className="flex items-center gap-3"><Computer className="h-6 w-6 text-primary" /><span>Computadores (via navegador)</span></div>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-sm">
+                                    <div className="rounded-2xl border border-border bg-card p-6">
+                                        <div className="flex items-center gap-3 mb-4">
+                                            <Computer className="h-6 w-6 text-primary" />
+                                            <h4 className="text-lg font-bold text-card-foreground">Computador</h4>
+                                        </div>
+                                        <ul className="space-y-2 text-muted-foreground">
+                                            <li>Google Chrome</li>
+                                            <li>Mozilla Firefox</li>
+                                            <li>Microsoft Edge</li>
+                                        </ul>
+                                    </div>
+                                    <div className="rounded-2xl border border-border bg-card p-6">
+                                        <div className="flex items-center gap-3 mb-4">
+                                            <Tv className="h-6 w-6 text-primary" />
+                                            <h4 className="text-lg font-bold text-card-foreground">TV</h4>
+                                        </div>
+                                        <ul className="space-y-2 text-muted-foreground">
+                                            <li>Amazon Fire TV</li>
+                                            <li>Android TV & Roku</li>
+                                            <li>LG (WebOS 4.5+)</li>
+                                            <li>Samsung (Tizen, modelos 2018+)</li>
+                                            <li>Chromecast</li>
+                                        </ul>
+                                    </div>
+                                    <div className="rounded-2xl border border-border bg-card p-6">
+                                        <div className="flex items-center gap-3 mb-4">
+                                            <Smartphone className="h-6 w-6 text-primary" />
+                                            <h4 className="text-lg font-bold text-card-foreground">Celulares e Tablets</h4>
+                                        </div>
+                                        <ul className="space-y-2 text-muted-foreground">
+                                            <li>Celulares e Tablets Android</li>
+                                            <li>iPhone e iPad (iOS)</li>
+                                        </ul>
+                                        <p className="text-xs text-muted-foreground/80 mt-4">
+                                            Baixe nosso app na sua loja de aplicativos.
+                                        </p>
+                                    </div>
                                 </div>
+                                <Alert variant="default" className="mt-8 max-w-4xl mx-auto bg-yellow-500/5 border-yellow-500/20">
+                                    <AlertTriangle className="h-4 w-4 text-yellow-500" />
+                                    <AlertTitle className="text-yellow-700">Dica de Performance</AlertTitle>
+                                    <AlertDescription className="text-yellow-600">
+                                        Para a melhor experiência, conecte sua TV ou dispositivo de streaming diretamente ao roteador com um cabo de rede.
+                                    </AlertDescription>
+                                </Alert>
                             </div>
                         </motion.div>
                     ) : (
@@ -137,23 +168,7 @@ export function TVGuide() {
                     )}
                 </main>
             </div>
-
-            {/* Bottom Bar: Timeline / Channel Switcher */}
-            <footer className="border-t border-border bg-background/80 backdrop-blur-sm p-4">
-                <ScrollArea className="w-full whitespace-nowrap">
-                    <div className="flex items-center gap-4">
-                         {channels.map(channel => (
-                            <BottomChannelCard
-                                key={channel.id}
-                                channel={channel}
-                                isSelected={selectedChannel?.id === channel.id}
-                                onSelect={() => setSelectedChannel(channel)}
-                            />
-                         ))}
-                    </div>
-                     <ScrollBar orientation="horizontal" />
-                </ScrollArea>
-            </footer>
         </div>
     );
 }
+    
