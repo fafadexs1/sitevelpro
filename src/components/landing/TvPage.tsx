@@ -9,8 +9,6 @@ import Image from "next/image";
 import { ScrollArea } from "../ui/scroll-area";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { Carousel, CarouselContent, CarouselItem } from "../ui/carousel";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 type Channel = {
   id: string;
@@ -105,7 +103,6 @@ export function TvPage() {
     const [packageChannels, setPackageChannels] = useState<PackageChannel[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedPackage, setSelectedPackage] = useState<TvPackage | null>(null);
-    const isMobile = useIsMobile();
     
     useEffect(() => {
         const fetchData = async () => {
@@ -132,21 +129,21 @@ export function TvPage() {
         return (
              <motion.button
                 onClick={() => setSelectedPackage(pkg)}
-                className="group relative text-left w-full h-full rounded-2xl border border-border bg-card p-6 overflow-hidden transition-all duration-300 hover:border-primary/50 hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-1"
-                whileHover={{ scale: 1.03 }}
+                className="group relative text-left w-full h-full rounded-2xl border border-border bg-card p-6 overflow-hidden transition-all duration-300 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-1"
+                whileHover={{ scale: 1.02 }}
             >
                 <div className="relative z-10">
-                    <div className="p-3 rounded-lg bg-primary/10 border border-primary/20 w-fit mb-4">
-                        <Tv className="w-6 h-6 text-primary"/>
+                    <div className="p-3 rounded-lg bg-primary/10 border border-primary/20 w-fit mb-3">
+                        <Tv className="w-5 h-5 text-primary"/>
                     </div>
-                    <h2 className="text-2xl font-bold text-card-foreground">{pkg.name}</h2>
-                    <p className="text-muted-foreground mt-2">{channelCount} canais inclusos</p>
-                    <div className="mt-4 text-primary font-semibold flex items-center gap-2">
+                    <h2 className="text-xl font-bold text-card-foreground">{pkg.name}</h2>
+                    <p className="text-sm text-muted-foreground mt-1">{channelCount} canais inclusos</p>
+                    <div className="mt-3 text-primary font-semibold flex items-center gap-1 text-sm">
                         Ver canais do pacote
                         <ArrowLeft className="w-4 h-4 transform transition-transform duration-300 group-hover:translate-x-1 rotate-180" />
                     </div>
                 </div>
-               <Sparkles className="absolute -bottom-8 -right-8 w-32 h-32 text-primary/5 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+               <Sparkles className="absolute -bottom-4 -right-4 w-24 h-24 text-primary/5 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
             </motion.button>
         )
     }
@@ -161,24 +158,16 @@ export function TvPage() {
 
     return (
         <div className="flex-grow flex flex-col items-center p-4 sm:p-8 bg-secondary overflow-y-auto">
-             <div className="text-center mb-12 w-full">
+             <div className="text-center mb-8 sm:mb-12 w-full">
                 <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">Nossos Pacotes de TV</h1>
                 <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
                     Escolha um pacote para explorar a lista completa de canais e descobrir um universo de entretenimento.
                 </p>
             </div>
              
-             {isMobile ? (
-                <div className="w-full max-w-sm space-y-4">
-                    {packages.map(pkg => (
-                        <PackageCard key={pkg.id} pkg={pkg} />
-                    ))}
-                </div>
-             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full max-w-6xl">
-                    {packages.map(pkg => <PackageCard key={pkg.id} pkg={pkg} />)}
-                </div>
-             )}
+             <div className="w-full max-w-sm space-y-4 md:max-w-6xl md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-8 md:space-y-0">
+                {packages.map(pkg => <PackageCard key={pkg.id} pkg={pkg} />)}
+            </div>
         </div>
     );
 }
