@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
@@ -129,7 +128,7 @@ export function TvPage() {
         return (
              <motion.button
                 onClick={() => setSelectedPackage(pkg)}
-                className="group relative text-left w-full h-full rounded-2xl border border-border bg-card p-4 sm:p-6 overflow-hidden transition-all duration-300 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-1"
+                className="group relative text-left w-full rounded-2xl border border-border bg-card p-4 sm:p-6 overflow-hidden transition-all duration-300 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-1"
                 whileHover={{ scale: 1.02 }}
             >
                 <div className="relative z-10">
