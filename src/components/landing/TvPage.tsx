@@ -129,21 +129,21 @@ export function TvPage() {
         return (
              <motion.button
                 onClick={() => setSelectedPackage(pkg)}
-                className="group relative text-left w-full h-full rounded-2xl border border-border bg-card p-6 overflow-hidden transition-all duration-300 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-1"
+                className="group relative text-left w-full h-full rounded-2xl border border-border bg-card p-4 sm:p-6 overflow-hidden transition-all duration-300 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-1"
                 whileHover={{ scale: 1.02 }}
             >
                 <div className="relative z-10">
-                    <div className="p-3 rounded-lg bg-primary/10 border border-primary/20 w-fit mb-3">
-                        <Tv className="w-5 h-5 text-primary"/>
+                    <div className="p-2 sm:p-3 rounded-lg bg-primary/10 border border-primary/20 w-fit mb-2 sm:mb-3">
+                        <Tv className="w-4 h-4 sm:w-5 sm:h-5 text-primary"/>
                     </div>
-                    <h2 className="text-xl font-bold text-card-foreground">{pkg.name}</h2>
-                    <p className="text-sm text-muted-foreground mt-1">{channelCount} canais inclusos</p>
-                    <div className="mt-3 text-primary font-semibold flex items-center gap-1 text-sm">
+                    <h2 className="text-lg sm:text-xl font-bold text-card-foreground">{pkg.name}</h2>
+                    <p className="text-xs sm:text-sm text-muted-foreground mt-1">{channelCount} canais inclusos</p>
+                    <div className="mt-2 sm:mt-3 text-primary font-semibold flex items-center gap-1 text-xs sm:text-sm">
                         Ver canais do pacote
-                        <ArrowLeft className="w-4 h-4 transform transition-transform duration-300 group-hover:translate-x-1 rotate-180" />
+                        <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 transform transition-transform duration-300 group-hover:translate-x-1 rotate-180" />
                     </div>
                 </div>
-               <Sparkles className="absolute -bottom-4 -right-4 w-24 h-24 text-primary/5 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+               <Sparkles className="absolute -bottom-4 -right-4 w-16 h-16 sm:w-24 sm:h-24 text-primary/5 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
             </motion.button>
         )
     }
