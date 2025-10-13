@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
@@ -163,13 +162,8 @@ export function TvPage() {
         setShowPerformanceTip(false);
         if (tempSelectedPackage) {
             setSelectedPackage(tempSelectedPackage);
-            setShowAccessModal(true); // Abre o modal de acesso logo após fechar o de performance
+            setShowAccessModal(true);
         }
-    };
-
-    const handleCloseAccessModal = () => {
-        setShowAccessModal(false);
-        setTempSelectedPackage(null);
     };
 
 
@@ -207,11 +201,11 @@ export function TvPage() {
                     onBack={() => setSelectedPackage(null)} 
                 />
                 <Dialog open={showAccessModal} onOpenChange={setShowAccessModal}>
-                    <DialogContent className="max-w-3xl bg-card text-card-foreground flex flex-col max-h-[90vh]">
-                        <DialogHeader>
+                    <DialogContent className="max-w-3xl bg-card text-card-foreground p-0">
+                         <DialogHeader className="p-6 pb-0">
                             <DialogTitle>Como Acessar</DialogTitle>
                         </DialogHeader>
-                        <ScrollArea className="flex-1 -mx-6 px-6">
+                        <ScrollArea className="max-h-[70vh] p-6 pt-0">
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
                                 <div className="rounded-2xl border border-border bg-secondary p-6">
                                     <div className="flex items-center gap-3 mb-4">
@@ -252,8 +246,8 @@ export function TvPage() {
                                 </div>
                             </div>
                         </ScrollArea>
-                        <div className="flex justify-end mt-4 pt-4 border-t border-border -mx-6 px-6">
-                            <Button onClick={handleCloseAccessModal}>Fechar</Button>
+                        <div className="flex justify-end p-6 pt-0">
+                            <Button onClick={() => setShowAccessModal(false)}>Fechar</Button>
                         </div>
                     </DialogContent>
                 </Dialog>
