@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
@@ -8,6 +9,15 @@ import Image from "next/image";
 import { ScrollArea } from "../ui/scroll-area";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+
 
 type Channel = {
   id: string;
@@ -26,18 +36,23 @@ type PackageChannel = {
     channel_id: string;
 };
 
-const ChannelGridCard = ({ channel }: { channel: Channel }) => (
-    <div className="relative aspect-square w-full rounded-xl bg-card border border-border flex items-center justify-center p-4 transition-all duration-300 hover:shadow-lg hover:border-primary/30 hover:-translate-y-1">
-        <Image
-            src={channel.logo_url}
-            alt={channel.name}
-            width={80}
-            height={80}
-            className="object-contain"
-            unoptimized
-        />
-        <p className="absolute bottom-2 text-center text-[10px] text-muted-foreground">{channel.name}</p>
-    </div>
+const ChannelGridCard = ({ channel, children }: { channel: Channel, children: React.ReactNode }) => (
+    <Dialog>
+        <DialogTrigger asChild>
+            {children}
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-md bg-card text-card-foreground">
+            <DialogHeader className="flex-row items-center gap-4">
+                <div className="w-20 h-20 rounded-xl bg-secondary p-2 border border-border flex items-center justify-center flex-shrink-0">
+                    <Image src={channel.logo_url} alt={channel.name} width={64} height={64} className="object-contain" unoptimized />
+                </div>
+                <DialogTitle className="text-2xl">{channel.name}</DialogTitle>
+            </DialogHeader>
+            <DialogDescription className="mt-4 text-muted-foreground">
+                {channel.description || "Descrição não disponível para este canal."}
+            </DialogDescription>
+        </DialogContent>
+    </Dialog>
 );
 
 
@@ -86,7 +101,19 @@ const ChannelGuideView = ({ pkg, allChannels, packageChannels, onBack }: { pkg: 
              <ScrollArea className="flex-grow">
                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-4 pr-4">
                     {filteredChannels.length > 0 ? filteredChannels.map(channel => (
-                        <ChannelGridCard key={channel.id} channel={channel} />
+                        <ChannelGridCard key={channel.id} channel={channel}>
+                            <button className="relative aspect-square w-full rounded-xl bg-card border border-border flex items-center justify-center p-4 transition-all duration-300 hover:shadow-lg hover:border-primary/30 hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-primary">
+                                <Image
+                                    src={channel.logo_url}
+                                    alt={channel.name}
+                                    width={80}
+                                    height={80}
+                                    className="object-contain"
+                                    unoptimized
+                                />
+                                <p className="absolute bottom-2 text-center text-[10px] text-muted-foreground">{channel.name}</p>
+                            </button>
+                        </ChannelGridCard>
                     )) : (
                         <p className="col-span-full text-center text-muted-foreground py-16">Nenhum canal encontrado com esse nome.</p>
                     )}
@@ -164,7 +191,7 @@ export function TvPage() {
                 </p>
             </div>
              
-             <div className="w-full max-w-sm space-y-4 md:max-w-6xl md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-8 md:space-y-0">
+             <div className="w-full max-w-md space-y-4 md:max-w-6xl md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-8 md:space-y-0">
                 {packages.map(pkg => <PackageCard key={pkg.id} pkg={pkg} />)}
             </div>
         </div>
