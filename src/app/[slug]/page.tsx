@@ -14,6 +14,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import dynamic from "next/dynamic";
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
+import Script from "next/script";
 
 const CdnHighlight = dynamic(() => import('@/components/landing/CdnHighlight').then(mod => mod.CdnHighlight));
 const Games = dynamic(() => import('@/components/landing/Games').then(mod => mod.Games));
@@ -26,19 +27,30 @@ type PageProps = {
     params: { slug: string };
 };
 
+type PageData = {
+    cityName: string | null;
+    meta: {
+        title: string;
+        description?: string;
+        canonical?: string;
+    } | null;
+    schemaType: 'LocalBusiness' | 'Product' | 'Offer' | 'FAQ' | 'Article' | 'None';
+}
+
 // --- Helper Functions ---
-async function getPageData(slug: string) {
+async function getPageData(slug: string): Promise<PageData> {
     const supabase = createClient();
     const path = `/${slug}`;
     let cityName: string | null = null;
     let meta = null;
+    let schemaType: PageData['schemaType'] = 'None';
 
     const { data: rules } = await supabase
         .from('dynamic_seo_rules')
-        .select('name, slug_pattern, meta_title, meta_description, canonical_url')
+        .select('name, slug_pattern, meta_title, meta_description, canonical_url, schema_type')
         .eq('allow_indexing', true);
 
-    if (!rules) return { cityName, meta: null };
+    if (!rules) return { cityName, meta: null, schemaType: 'None' };
     
     // Tenta encontrar uma correspondência exata primeiro
     const staticMatch = rules.find(rule => rule.slug_pattern.replace('/', '') === slug);
@@ -51,6 +63,7 @@ async function getPageData(slug: string) {
             description: staticMatch.meta_description?.replace('{cidade}', cityName),
             canonical: staticMatch.canonical_url?.replace('{cidade}', slug),
         };
+        schemaType = staticMatch.schema_type as PageData['schemaType'];
     } else {
         // Se não houver correspondência estática, tenta as regras dinâmicas com {cidade}
         for (const rule of rules) {
@@ -68,6 +81,7 @@ async function getPageData(slug: string) {
                             description: rule.meta_description?.replace('{cidade}', cityName),
                             canonical: rule.canonical_url?.replace('{cidade}', citySlug),
                         };
+                        schemaType = rule.schema_type as PageData['schemaType'];
                     }
                     break;
                 }
@@ -78,7 +92,7 @@ async function getPageData(slug: string) {
     if (!meta) {
       const { data: staticPage } = await supabase
         .from('dynamic_seo_rules')
-        .select('meta_title, meta_description, canonical_url')
+        .select('meta_title, meta_description, canonical_url, schema_type')
         .eq('slug_pattern', path)
         .single();
       
@@ -88,6 +102,7 @@ async function getPageData(slug: string) {
           description: staticPage.meta_description ?? undefined,
           canonical: staticPage.canonical_url ?? undefined,
         };
+        schemaType = staticPage.schema_type as PageData['schemaType'];
       }
     }
 
@@ -96,7 +111,7 @@ async function getPageData(slug: string) {
         // notFound();
     }
 
-    return { cityName, meta };
+    return { cityName, meta, schemaType };
 }
 
 
@@ -160,31 +175,67 @@ export async function generateStaticParams() {
   }
 }
 
+// --- JSON-LD Schema Generation ---
+function getLocalBusinessJsonLd(cityName: string, slug: string) {
+    const jsonLd = {
+        "@context": "https://schema.org",
+        "@type": "LocalBusiness",
+        "name": "Velpro Telecom",
+        "telephone": "0800 381 0404",
+        "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "SQ 13 QUADRA 01 LOTE 11 SALA 101 CENTRO",
+            "addressLocality": "Cidade Ocidental",
+            "addressRegion": "GO",
+            "postalCode": "72880-000",
+            "addressCountry": "BR"
+        },
+        "url": `https://velpro.net.br/internet-em-${slug}`,
+        "@id": `https://velpro.net.br/internet-em-${slug}#LocalBusiness`,
+        "areaServed": {
+            "@type": "City",
+            "name": cityName
+        },
+        "priceRange": "$$",
+        "image": "https://velpro.net.br/logo.png" // Adicione uma URL de logo válida
+    };
+    return JSON.stringify(jsonLd);
+}
+
 // --- Page Component ---
 export default async function DynamicPage({ params }: PageProps) {
-  const { cityName } = await getPageData(params.slug);
+  const { cityName, schemaType } = await getPageData(params.slug);
   const supabase = createClient();
   const { data: cities } = await supabase.from('cities').select('name, slug').order('name');
   
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <Header />
-      <main>
-        <Hero city={cityName} />
-        <Plans city={cityName} />
-        <CdnHighlight />
-        <Coverage city={cityName} cities={cities || []} />
-        <Advantages />
-        <Games />
-        <Streaming />
-        <Mesh />
-        <TvGrid />
-        <Ceo />
-        <Testimonials />
-        <Faq />
-        <Contact />
-      </main>
-      <Footer />
-    </div>
+    <>
+      {schemaType === 'LocalBusiness' && cityName && (
+          <Script
+              id="local-business-schema"
+              type="application/ld+json"
+              dangerouslySetInnerHTML={{ __html: getLocalBusinessJsonLd(cityName, params.slug) }}
+          />
+      )}
+      <div className="min-h-screen bg-background text-foreground">
+        <Header />
+        <main>
+          <Hero city={cityName} />
+          <Plans city={cityName} />
+          <CdnHighlight />
+          <Coverage city={cityName} cities={cities || []} />
+          <Advantages />
+          <Games />
+          <Streaming />
+          <Mesh />
+          <TvGrid />
+          <Ceo />
+          <Testimonials />
+          <Faq />
+          <Contact />
+        </main>
+        <Footer />
+      </div>
+    </>
   );
 }
