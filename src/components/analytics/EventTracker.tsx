@@ -37,26 +37,32 @@ export function EventTracker() {
 
     useEffect(() => {
         const handleClick = (e: MouseEvent) => {
-            const element = (e.target as Element).closest('[data-track-event]');
-            if (!element) return;
-            
-            const eventName = element.getAttribute('data-track-event');
-            if (!eventName) return;
+            const targetElement = e.target as Element;
+            // Encontra o elemento rastreável mais próximo do clique
+            const trackedElement = targetElement.closest('[data-track-event]');
 
-            const properties: Record<string, any> = {};
-            for (const attr of element.attributes) {
-                if (attr.name.startsWith('data-track-prop-')) {
-                    const propName = attr.name.substring(16).replace(/-/g, '_');
-                    properties[propName] = attr.value;
+            if (trackedElement) {
+                const eventName = trackedElement.getAttribute('data-track-event');
+                if (!eventName) return;
+
+                const properties: Record<string, any> = {};
+                // Coleta todas as propriedades data-track-prop-* do elemento
+                for (const attr of trackedElement.attributes) {
+                    if (attr.name.startsWith('data-track-prop-')) {
+                        const propName = attr.name.substring(16).replace(/-/g, '_');
+                        properties[propName] = attr.value;
+                    }
                 }
+                
+                trackEvent(eventName, properties);
             }
-            trackEvent(eventName, properties);
         };
         
-        document.addEventListener('click', handleClick, true); // Use capture phase
+        // Adiciona um único listener no documento
+        document.addEventListener('click', handleClick);
 
         return () => {
-            document.removeEventListener('click', handleClick, true);
+            document.removeEventListener('click', handleClick);
         };
     }, [trackEvent]);
 
