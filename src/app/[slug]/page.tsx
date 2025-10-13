@@ -14,7 +14,6 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import dynamic from "next/dynamic";
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
-import Script from "next/script";
 
 const CdnHighlight = dynamic(() => import('@/components/landing/CdnHighlight').then(mod => mod.CdnHighlight));
 const Games = dynamic(() => import('@/components/landing/Games').then(mod => mod.Games));
@@ -114,18 +113,52 @@ async function getPageData(slug: string): Promise<PageData> {
     return { cityName, meta, schemaType };
 }
 
+function getLocalBusinessJsonLd(cityName: string, slug: string) {
+    const jsonLd = {
+        "@context": "https://schema.org",
+        "@type": "LocalBusiness",
+        "name": "Velpro Telecom",
+        "telephone": "0800 381 0404",
+        "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "SQ 13 QUADRA 01 LOTE 11 SALA 101 CENTRO",
+            "addressLocality": "Cidade Ocidental",
+            "addressRegion": "GO",
+            "postalCode": "72880-000",
+            "addressCountry": "BR"
+        },
+        "url": `https://velpro.net.br/internet-em-${slug}`,
+        "@id": `https://velpro.net.br/internet-em-${slug}#LocalBusiness`,
+        "areaServed": {
+            "@type": "City",
+            "name": cityName
+        },
+        "priceRange": "$$",
+        "image": "https://velpro.net.br/logo.png"
+    };
+    return JSON.stringify(jsonLd);
+}
+
 
 // --- Metadata Generation ---
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-    const { meta } = await getPageData(params.slug);
+    const { cityName, meta, schemaType } = await getPageData(params.slug);
 
-    return {
+    const metadata: Metadata = {
         title: meta?.title,
         description: meta?.description,
         alternates: meta?.canonical ? { canonical: meta.canonical } : undefined,
         openGraph: { title: meta?.title, description: meta?.description },
         twitter: { title: meta?.title, description: meta?.description },
     };
+    
+    if (schemaType === 'LocalBusiness' && cityName) {
+        metadata.other = {
+            'application/ld+json': getLocalBusinessJsonLd(cityName, params.slug)
+        }
+    }
+    
+    return metadata;
 }
 
 // --- Static Path Generation ---
@@ -175,48 +208,14 @@ export async function generateStaticParams() {
   }
 }
 
-// --- JSON-LD Schema Generation ---
-function getLocalBusinessJsonLd(cityName: string, slug: string) {
-    const jsonLd = {
-        "@context": "https://schema.org",
-        "@type": "LocalBusiness",
-        "name": "Velpro Telecom",
-        "telephone": "0800 381 0404",
-        "address": {
-            "@type": "PostalAddress",
-            "streetAddress": "SQ 13 QUADRA 01 LOTE 11 SALA 101 CENTRO",
-            "addressLocality": "Cidade Ocidental",
-            "addressRegion": "GO",
-            "postalCode": "72880-000",
-            "addressCountry": "BR"
-        },
-        "url": `https://velpro.net.br/internet-em-${slug}`,
-        "@id": `https://velpro.net.br/internet-em-${slug}#LocalBusiness`,
-        "areaServed": {
-            "@type": "City",
-            "name": cityName
-        },
-        "priceRange": "$$",
-        "image": "https://velpro.net.br/logo.png" // Adicione uma URL de logo válida
-    };
-    return JSON.stringify(jsonLd);
-}
-
 // --- Page Component ---
 export default async function DynamicPage({ params }: PageProps) {
-  const { cityName, schemaType } = await getPageData(params.slug);
+  const { cityName } = await getPageData(params.slug);
   const supabase = createClient();
   const { data: cities } = await supabase.from('cities').select('name, slug').order('name');
   
   return (
     <>
-      {schemaType === 'LocalBusiness' && cityName && (
-          <Script
-              id="local-business-schema"
-              type="application/ld+json"
-              dangerouslySetInnerHTML={{ __html: getLocalBusinessJsonLd(cityName, params.slug) }}
-          />
-      )}
       <div className="min-h-screen bg-background text-foreground">
         <Header />
         <main>
@@ -239,3 +238,4 @@ export default async function DynamicPage({ params }: PageProps) {
     </>
   );
 }
+
