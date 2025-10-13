@@ -44,7 +44,7 @@ const ChannelGridCard = ({ channel, children }: { channel: Channel, children: Re
         <DialogContent className="sm:max-w-md bg-card text-card-foreground">
             <DialogHeader className="flex-row items-center gap-4">
                 <div className="w-20 h-20 rounded-xl bg-secondary p-2 border border-border flex items-center justify-center flex-shrink-0">
-                    <Image src={channel.logo_url} alt={channel.name} width={64} height={64} className="object-contain" unoptimized />
+                    <Image src={channel.logo_url} alt={channel.name} width={100} height={100} className="object-contain" unoptimized />
                 </div>
                 <DialogTitle className="text-2xl">{channel.name}</DialogTitle>
             </DialogHeader>
@@ -163,8 +163,8 @@ export function TvPage() {
         setShowPerformanceTip(false);
         if (tempSelectedPackage) {
             setSelectedPackage(tempSelectedPackage);
+            setShowAccessModal(true); // Abre o modal de acesso logo após fechar o de performance
         }
-        setShowAccessModal(true);
     };
 
     const handleCloseAccessModal = () => {
@@ -207,50 +207,52 @@ export function TvPage() {
                     onBack={() => setSelectedPackage(null)} 
                 />
                 <Dialog open={showAccessModal} onOpenChange={setShowAccessModal}>
-                    <DialogContent className="max-w-3xl bg-card text-card-foreground">
+                    <DialogContent className="max-w-3xl bg-card text-card-foreground flex flex-col max-h-[90vh]">
                         <DialogHeader>
                             <DialogTitle>Como Acessar</DialogTitle>
                         </DialogHeader>
-                        <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
-                            <div className="rounded-2xl border border-border bg-secondary p-6">
-                                <div className="flex items-center gap-3 mb-4">
-                                    <Computer className="h-6 w-6 text-primary" />
-                                    <h4 className="text-lg font-bold text-card-foreground">Computador</h4>
+                        <ScrollArea className="flex-1 -mx-6 px-6">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
+                                <div className="rounded-2xl border border-border bg-secondary p-6">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <Computer className="h-6 w-6 text-primary" />
+                                        <h4 className="text-lg font-bold text-card-foreground">Computador</h4>
+                                    </div>
+                                    <ul className="space-y-2 text-muted-foreground">
+                                        <li>Google Chrome</li>
+                                        <li>Mozilla Firefox</li>
+                                        <li>Microsoft Edge</li>
+                                    </ul>
                                 </div>
-                                <ul className="space-y-2 text-muted-foreground">
-                                    <li>Google Chrome</li>
-                                    <li>Mozilla Firefox</li>
-                                    <li>Microsoft Edge</li>
-                                </ul>
-                            </div>
-                            <div className="rounded-2xl border border-border bg-secondary p-6">
-                                <div className="flex items-center gap-3 mb-4">
-                                    <Tv className="h-6 w-6 text-primary" />
-                                    <h4 className="text-lg font-bold text-card-foreground">TV</h4>
+                                <div className="rounded-2xl border border-border bg-secondary p-6">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <Tv className="h-6 w-6 text-primary" />
+                                        <h4 className="text-lg font-bold text-card-foreground">TV</h4>
+                                    </div>
+                                    <ul className="space-y-2 text-muted-foreground">
+                                        <li><b>LG (WebOS):</b> Versão 4.5.0+, modelos Série 7 em diante.</li>
+                                        <li><b>Samsung (Tizen):</b> Modelos Série 7 em diante.</li>
+                                        <li>Amazon Fire TV</li>
+                                        <li>Android TV & Roku</li>
+                                        <li>Chromecast</li>
+                                    </ul>
                                 </div>
-                                <ul className="space-y-2 text-muted-foreground">
-                                    <li><b>LG (WebOS):</b> Versão 4.5.0+, modelos Série 7 em diante.</li>
-                                    <li><b>Samsung (Tizen):</b> Modelos Série 7 em diante.</li>
-                                    <li>Amazon Fire TV</li>
-                                    <li>Android TV & Roku</li>
-                                    <li>Chromecast</li>
-                                </ul>
-                            </div>
-                            <div className="rounded-2xl border border-border bg-secondary p-6">
-                                <div className="flex items-center gap-3 mb-4">
-                                    <Smartphone className="h-6 w-6 text-primary" />
-                                    <h4 className="text-lg font-bold text-card-foreground">Celulares e Tablets</h4>
+                                <div className="rounded-2xl border border-border bg-secondary p-6">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <Smartphone className="h-6 w-6 text-primary" />
+                                        <h4 className="text-lg font-bold text-card-foreground">Celulares e Tablets</h4>
+                                    </div>
+                                    <ul className="space-y-2 text-muted-foreground">
+                                        <li>Celulares e Tablets Android</li>
+                                        <li>iPhone e iPad (iOS)</li>
+                                    </ul>
+                                    <p className="text-xs text-muted-foreground/80 mt-4">
+                                        Baixe nosso app na sua loja de aplicativos.
+                                    </p>
                                 </div>
-                                <ul className="space-y-2 text-muted-foreground">
-                                    <li>Celulares e Tablets Android</li>
-                                    <li>iPhone e iPad (iOS)</li>
-                                </ul>
-                                <p className="text-xs text-muted-foreground/80 mt-4">
-                                    Baixe nosso app na sua loja de aplicativos.
-                                </p>
                             </div>
-                        </div>
-                        <div className="flex justify-end mt-4">
+                        </ScrollArea>
+                        <div className="flex justify-end mt-4 pt-4 border-t border-border -mx-6 px-6">
                             <Button onClick={handleCloseAccessModal}>Fechar</Button>
                         </div>
                     </DialogContent>
