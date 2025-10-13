@@ -131,7 +131,6 @@ export function TvPage() {
     const [selectedPackage, setSelectedPackage] = useState<TvPackage | null>(null);
 
     const [showPerformanceTip, setShowPerformanceTip] = useState(false);
-    const [showAccessButton, setShowAccessButton] = useState(false);
     const [showAccessModal, setShowAccessModal] = useState(false);
     const [tempSelectedPackage, setTempSelectedPackage] = useState<TvPackage | null>(null);
 
@@ -162,20 +161,15 @@ export function TvPage() {
     
     const handleClosePerformanceTip = () => {
         setShowPerformanceTip(false);
-        setShowAccessButton(true);
-    };
-
-    const handleOpenAccessModal = () => {
-        setShowAccessButton(false);
+        if (tempSelectedPackage) {
+            setSelectedPackage(tempSelectedPackage);
+        }
         setShowAccessModal(true);
     };
 
     const handleCloseAccessModal = () => {
         setShowAccessModal(false);
-        if (tempSelectedPackage) {
-            setSelectedPackage(tempSelectedPackage);
-            setTempSelectedPackage(null);
-        }
+        setTempSelectedPackage(null);
     };
 
 
@@ -204,7 +198,65 @@ export function TvPage() {
     }
     
     if (selectedPackage) {
-        return <ChannelGuideView pkg={selectedPackage} allChannels={allChannels} packageChannels={packageChannels} onBack={() => setSelectedPackage(null)} />;
+        return (
+            <>
+                <ChannelGuideView 
+                    pkg={selectedPackage} 
+                    allChannels={allChannels} 
+                    packageChannels={packageChannels} 
+                    onBack={() => setSelectedPackage(null)} 
+                />
+                <Dialog open={showAccessModal} onOpenChange={setShowAccessModal}>
+                    <DialogContent className="max-w-3xl bg-card text-card-foreground">
+                        <DialogHeader>
+                            <DialogTitle>Como Acessar</DialogTitle>
+                        </DialogHeader>
+                        <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
+                            <div className="rounded-2xl border border-border bg-secondary p-6">
+                                <div className="flex items-center gap-3 mb-4">
+                                    <Computer className="h-6 w-6 text-primary" />
+                                    <h4 className="text-lg font-bold text-card-foreground">Computador</h4>
+                                </div>
+                                <ul className="space-y-2 text-muted-foreground">
+                                    <li>Google Chrome</li>
+                                    <li>Mozilla Firefox</li>
+                                    <li>Microsoft Edge</li>
+                                </ul>
+                            </div>
+                            <div className="rounded-2xl border border-border bg-secondary p-6">
+                                <div className="flex items-center gap-3 mb-4">
+                                    <Tv className="h-6 w-6 text-primary" />
+                                    <h4 className="text-lg font-bold text-card-foreground">TV</h4>
+                                </div>
+                                <ul className="space-y-2 text-muted-foreground">
+                                    <li><b>LG (WebOS):</b> Versão 4.5.0+, modelos Série 7 em diante.</li>
+                                    <li><b>Samsung (Tizen):</b> Modelos Série 7 em diante.</li>
+                                    <li>Amazon Fire TV</li>
+                                    <li>Android TV & Roku</li>
+                                    <li>Chromecast</li>
+                                </ul>
+                            </div>
+                            <div className="rounded-2xl border border-border bg-secondary p-6">
+                                <div className="flex items-center gap-3 mb-4">
+                                    <Smartphone className="h-6 w-6 text-primary" />
+                                    <h4 className="text-lg font-bold text-card-foreground">Celulares e Tablets</h4>
+                                </div>
+                                <ul className="space-y-2 text-muted-foreground">
+                                    <li>Celulares e Tablets Android</li>
+                                    <li>iPhone e iPad (iOS)</li>
+                                </ul>
+                                <p className="text-xs text-muted-foreground/80 mt-4">
+                                    Baixe nosso app na sua loja de aplicativos.
+                                </p>
+                            </div>
+                        </div>
+                        <div className="flex justify-end mt-4">
+                            <Button onClick={handleCloseAccessModal}>Fechar</Button>
+                        </div>
+                    </DialogContent>
+                </Dialog>
+            </>
+        );
     }
 
     return (
@@ -223,7 +275,7 @@ export function TvPage() {
             </div>
 
             {/* Performance Tip Modal */}
-            <Dialog open={showPerformanceTip} onOpenChange={(open) => !open && handleClosePerformanceTip()}>
+            <Dialog open={showPerformanceTip} onOpenChange={(open) => !open && setShowPerformanceTip(false)}>
                  <DialogContent className="sm:max-w-md bg-card text-card-foreground">
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2"><AlertTriangle className="text-yellow-500" /> Dica de Performance</DialogTitle>
@@ -236,68 +288,6 @@ export function TvPage() {
                     </div>
                  </DialogContent>
             </Dialog>
-
-            {/* Access Instructions Modal */}
-            <Dialog open={showAccessModal} onOpenChange={(open) => !open && handleCloseAccessModal()}>
-                 <DialogContent className="max-w-3xl bg-card text-card-foreground">
-                    <DialogHeader>
-                        <DialogTitle>Como Acessar</DialogTitle>
-                    </DialogHeader>
-                    <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
-                        <div className="rounded-2xl border border-border bg-secondary p-6">
-                            <div className="flex items-center gap-3 mb-4">
-                                <Computer className="h-6 w-6 text-primary" />
-                                <h4 className="text-lg font-bold text-card-foreground">Computador</h4>
-                            </div>
-                            <ul className="space-y-2 text-muted-foreground">
-                                <li>Google Chrome</li>
-                                <li>Mozilla Firefox</li>
-                                <li>Microsoft Edge</li>
-                            </ul>
-                        </div>
-                        <div className="rounded-2xl border border-border bg-secondary p-6">
-                            <div className="flex items-center gap-3 mb-4">
-                                <Tv className="h-6 w-6 text-primary" />
-                                <h4 className="text-lg font-bold text-card-foreground">TV</h4>
-                            </div>
-                            <ul className="space-y-2 text-muted-foreground">
-                                <li><b>LG (WebOS):</b> Versão 4.5.0+, modelos Série 7 em diante.</li>
-                                <li><b>Samsung (Tizen):</b> Modelos Série 7 em diante.</li>
-                                <li>Amazon Fire TV</li>
-                                <li>Android TV & Roku</li>
-                                <li>Chromecast</li>
-                            </ul>
-                        </div>
-                        <div className="rounded-2xl border border-border bg-secondary p-6">
-                            <div className="flex items-center gap-3 mb-4">
-                                <Smartphone className="h-6 w-6 text-primary" />
-                                <h4 className="text-lg font-bold text-card-foreground">Celulares e Tablets</h4>
-                            </div>
-                            <ul className="space-y-2 text-muted-foreground">
-                                <li>Celulares e Tablets Android</li>
-                                <li>iPhone e iPad (iOS)</li>
-                            </ul>
-                            <p className="text-xs text-muted-foreground/80 mt-4">
-                                Baixe nosso app na sua loja de aplicativos.
-                            </p>
-                        </div>
-                    </div>
-                     <div className="flex justify-end mt-4">
-                         <Button onClick={handleCloseAccessModal}>Fechar</Button>
-                    </div>
-                 </DialogContent>
-            </Dialog>
-            
-            {/* Floating "Veja como acessar" button */}
-            {showAccessButton && (
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="fixed bottom-6 right-6 z-50"
-                >
-                    <Button onClick={handleOpenAccessModal} size="lg">Veja como acessar</Button>
-                </motion.div>
-            )}
         </>
     );
 }
