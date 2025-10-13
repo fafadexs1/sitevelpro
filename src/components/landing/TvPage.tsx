@@ -4,7 +4,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { motion } from "framer-motion";
-import { Tv, Search, ArrowLeft, Package, Sparkles } from "lucide-react";
+import { Tv, Search, ArrowLeft, Package, Sparkles, AlertTriangle, Computer, Smartphone, X } from "lucide-react";
 import Image from "next/image";
 import { ScrollArea } from "../ui/scroll-area";
 import { Input } from "../ui/input";
@@ -129,7 +129,12 @@ export function TvPage() {
     const [packageChannels, setPackageChannels] = useState<PackageChannel[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedPackage, setSelectedPackage] = useState<TvPackage | null>(null);
-    
+
+    const [showPerformanceTip, setShowPerformanceTip] = useState(false);
+    const [showAccessButton, setShowAccessButton] = useState(false);
+    const [showAccessModal, setShowAccessModal] = useState(false);
+    const [tempSelectedPackage, setTempSelectedPackage] = useState<TvPackage | null>(null);
+
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
@@ -150,30 +155,50 @@ export function TvPage() {
         fetchData();
     }, []);
 
+    const handlePackageClick = (pkg: TvPackage) => {
+        setTempSelectedPackage(pkg);
+        setShowPerformanceTip(true);
+    };
+    
+    const handleClosePerformanceTip = () => {
+        setShowPerformanceTip(false);
+        setShowAccessButton(true);
+    };
+
+    const handleOpenAccessModal = () => {
+        setShowAccessButton(false);
+        setShowAccessModal(true);
+    };
+
+    const handleCloseAccessModal = () => {
+        setShowAccessModal(false);
+        if (tempSelectedPackage) {
+            setSelectedPackage(tempSelectedPackage);
+            setTempSelectedPackage(null);
+        }
+    };
+
+
     const PackageCard = ({ pkg }: { pkg: TvPackage }) => {
         const channelCount = packageChannels.filter(pc => pc.package_id === pkg.id).length;
         return (
              <motion.button
-                onClick={() => setSelectedPackage(pkg)}
-                className="group relative text-left w-full rounded-2xl border border-border bg-card p-4 sm:p-6 overflow-hidden transition-all duration-300 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-1"
+                onClick={() => handlePackageClick(pkg)}
+                className="group relative text-left w-full rounded-2xl border border-border bg-card p-4 overflow-hidden transition-all duration-300 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-1"
                 whileHover={{ scale: 1.02 }}
             >
                 <div className="relative z-10">
-                    <div className="p-2 sm:p-3 rounded-lg bg-primary/10 border border-primary/20 w-fit mb-2 sm:mb-3">
-                        <Tv className="w-4 h-4 sm:w-5 sm:h-5 text-primary"/>
+                    <div className="p-2 rounded-lg bg-primary/10 border border-primary/20 w-fit mb-2">
+                        <Tv className="w-4 h-4 text-primary"/>
                     </div>
-                    <h2 className="text-lg sm:text-xl font-bold text-card-foreground">{pkg.name}</h2>
-                    <p className="text-xs sm:text-sm text-muted-foreground mt-1">{channelCount} canais inclusos</p>
-                    <div className="mt-2 sm:mt-3 text-primary font-semibold flex items-center gap-1 text-xs sm:text-sm">
-                        Ver canais do pacote
-                        <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 transform transition-transform duration-300 group-hover:translate-x-1 rotate-180" />
-                    </div>
+                    <h2 className="text-lg font-bold text-card-foreground">{pkg.name}</h2>
+                    <p className="text-sm text-muted-foreground mt-1">{channelCount} canais inclusos</p>
                 </div>
-               <Sparkles className="absolute -bottom-4 -right-4 w-16 h-16 sm:w-24 sm:h-24 text-primary/5 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+               <Sparkles className="absolute -bottom-4 -right-4 w-16 h-16 text-primary/5 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
             </motion.button>
         )
     }
-
+    
     if (loading) {
         return null;
     }
@@ -183,17 +208,96 @@ export function TvPage() {
     }
 
     return (
-        <div className="flex-grow flex flex-col items-center p-4 sm:p-8 bg-secondary overflow-y-auto">
-             <div className="text-center mb-8 sm:mb-12 w-full">
-                <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">Nossos Pacotes de TV</h1>
-                <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-                    Escolha um pacote para explorar a lista completa de canais e descobrir um universo de entretenimento.
-                </p>
+        <>
+            <div className="flex-grow flex flex-col items-center p-4 sm:p-8 bg-secondary overflow-y-auto">
+                <div className="text-center mb-8 sm:mb-12 w-full">
+                    <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">Nossos Pacotes de TV</h1>
+                    <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
+                        Escolha um pacote para explorar a lista completa de canais e descobrir um universo de entretenimento.
+                    </p>
+                </div>
+                
+                <div className="w-full max-w-sm space-y-4 md:max-w-6xl md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6 md:space-y-0">
+                    {packages.map(pkg => <PackageCard key={pkg.id} pkg={pkg} />)}
+                </div>
             </div>
-             
-             <div className="w-full max-w-sm space-y-4 md:max-w-6xl md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-8 md:space-y-0">
-                {packages.map(pkg => <PackageCard key={pkg.id} pkg={pkg} />)}
-            </div>
-        </div>
+
+            {/* Performance Tip Modal */}
+            <Dialog open={showPerformanceTip} onOpenChange={(open) => !open && handleClosePerformanceTip()}>
+                 <DialogContent className="sm:max-w-md bg-card text-card-foreground">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2"><AlertTriangle className="text-yellow-500" /> Dica de Performance</DialogTitle>
+                    </DialogHeader>
+                     <DialogDescription className="mt-2 text-muted-foreground">
+                        Para a melhor experiência, conecte sua TV ou dispositivo de streaming diretamente ao roteador com um cabo de rede.
+                    </DialogDescription>
+                    <div className="flex justify-end mt-4">
+                         <Button onClick={handleClosePerformanceTip}>Entendi</Button>
+                    </div>
+                 </DialogContent>
+            </Dialog>
+
+            {/* Access Instructions Modal */}
+            <Dialog open={showAccessModal} onOpenChange={(open) => !open && handleCloseAccessModal()}>
+                 <DialogContent className="max-w-3xl bg-card text-card-foreground">
+                    <DialogHeader>
+                        <DialogTitle>Como Acessar</DialogTitle>
+                    </DialogHeader>
+                    <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
+                        <div className="rounded-2xl border border-border bg-secondary p-6">
+                            <div className="flex items-center gap-3 mb-4">
+                                <Computer className="h-6 w-6 text-primary" />
+                                <h4 className="text-lg font-bold text-card-foreground">Computador</h4>
+                            </div>
+                            <ul className="space-y-2 text-muted-foreground">
+                                <li>Google Chrome</li>
+                                <li>Mozilla Firefox</li>
+                                <li>Microsoft Edge</li>
+                            </ul>
+                        </div>
+                        <div className="rounded-2xl border border-border bg-secondary p-6">
+                            <div className="flex items-center gap-3 mb-4">
+                                <Tv className="h-6 w-6 text-primary" />
+                                <h4 className="text-lg font-bold text-card-foreground">TV</h4>
+                            </div>
+                            <ul className="space-y-2 text-muted-foreground">
+                                <li><b>LG (WebOS):</b> Versão 4.5.0+, modelos Série 7 em diante.</li>
+                                <li><b>Samsung (Tizen):</b> Modelos Série 7 em diante.</li>
+                                <li>Amazon Fire TV</li>
+                                <li>Android TV & Roku</li>
+                                <li>Chromecast</li>
+                            </ul>
+                        </div>
+                        <div className="rounded-2xl border border-border bg-secondary p-6">
+                            <div className="flex items-center gap-3 mb-4">
+                                <Smartphone className="h-6 w-6 text-primary" />
+                                <h4 className="text-lg font-bold text-card-foreground">Celulares e Tablets</h4>
+                            </div>
+                            <ul className="space-y-2 text-muted-foreground">
+                                <li>Celulares e Tablets Android</li>
+                                <li>iPhone e iPad (iOS)</li>
+                            </ul>
+                            <p className="text-xs text-muted-foreground/80 mt-4">
+                                Baixe nosso app na sua loja de aplicativos.
+                            </p>
+                        </div>
+                    </div>
+                     <div className="flex justify-end mt-4">
+                         <Button onClick={handleCloseAccessModal}>Fechar</Button>
+                    </div>
+                 </DialogContent>
+            </Dialog>
+            
+            {/* Floating "Veja como acessar" button */}
+            {showAccessButton && (
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="fixed bottom-6 right-6 z-50"
+                >
+                    <Button onClick={handleOpenAccessModal} size="lg">Veja como acessar</Button>
+                </motion.div>
+            )}
+        </>
     );
 }
