@@ -102,16 +102,16 @@ const ChannelGuideView = ({ pkg, allChannels, packageChannels, onBack }: { pkg: 
                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-4 pr-4">
                     {filteredChannels.length > 0 ? filteredChannels.map(channel => (
                         <ChannelGridCard key={channel.id} channel={channel}>
-                            <button className="relative aspect-square w-full rounded-xl bg-card border border-border flex items-center justify-center p-4 transition-all duration-300 hover:shadow-lg hover:border-primary/30 hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-primary">
+                            <button className="relative aspect-square w-full rounded-xl bg-black border border-border flex items-center justify-center p-4 transition-all duration-300 hover:shadow-lg hover:border-primary/30 hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-primary">
                                 <Image
                                     src={channel.logo_url}
                                     alt={channel.name}
-                                    width={80}
-                                    height={80}
+                                    width={100}
+                                    height={100}
                                     className="object-contain"
                                     unoptimized
                                 />
-                                <p className="absolute bottom-2 text-center text-[10px] text-muted-foreground">{channel.name}</p>
+                                <p className="absolute bottom-2 text-center text-[10px] text-gray-400">{channel.name}</p>
                             </button>
                         </ChannelGridCard>
                     )) : (
@@ -191,7 +191,7 @@ export function TvPage() {
                 </p>
             </div>
              
-             <div className="w-full max-w-md space-y-4 md:max-w-6xl md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-8 md:space-y-0">
+             <div className="w-full max-w-sm space-y-4 md:max-w-6xl md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-8 md:space-y-0">
                 {packages.map(pkg => <PackageCard key={pkg.id} pkg={pkg} />)}
             </div>
         </div>
