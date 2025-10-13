@@ -169,17 +169,11 @@ export function TvPage() {
             </div>
              
              {isMobile ? (
-                <Carousel className="w-full max-w-sm">
-                    <CarouselContent className="-ml-2">
-                        {packages.map(pkg => (
-                            <CarouselItem key={pkg.id} className="pl-2 basis-3/4">
-                                <div className="p-1 h-full">
-                                    <PackageCard pkg={pkg} />
-                                </div>
-                            </CarouselItem>
-                        ))}
-                    </CarouselContent>
-                </Carousel>
+                <div className="w-full max-w-sm space-y-4">
+                    {packages.map(pkg => (
+                        <PackageCard key={pkg.id} pkg={pkg} />
+                    ))}
+                </div>
              ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full max-w-6xl">
                     {packages.map(pkg => <PackageCard key={pkg.id} pkg={pkg} />)}
