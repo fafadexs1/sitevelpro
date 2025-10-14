@@ -24,27 +24,28 @@ async function getThemeAndSeoSettings() {
         const supabase = createClient();
         const { data, error } = await supabase
             .from('system_settings')
-            .select('key, value, updated_at')
-            .in('key', ['site_title', 'site_description', 'og_image_url', 'favicon_url', 'allow_indexing', 'commemorative_theme_enabled']);
+            .select('key, value, updated_at');
 
-        if (error && error.code !== 'PGRST116') {
-            console.error('Erro ao buscar configurações do Supabase:', error);
+        if (error) {
+            console.error('Erro ao buscar configurações de SEO/Tema do Supabase:', error);
             return { seo: null, theme: null };
         }
         
-        const settingsMap = new Map(data?.map(item => [item.key, item.value]));
+        const settingsMap = new Map(data?.map(item => [item.key, { value: item.value, updatedAt: item.updated_at }]));
+
+        const getSetting = (key: string) => settingsMap.get(key);
 
         const seo = {
-            site_title: settingsMap.get('site_title') || 'Velpro Telecom',
-            site_description: settingsMap.get('site_description') || 'Internet ultrarrápida para tudo que importa.',
-            og_image_url: settingsMap.get('og_image_url') || null,
-            favicon_url: settingsMap.get('favicon_url') || null,
-            allow_indexing: settingsMap.get('allow_indexing') !== 'false',
-            updated_at: data?.find(item => item.key === 'favicon_url')?.updated_at ?? new Date().toISOString(),
+            site_title: getSetting('site_title')?.value || 'Velpro Telecom',
+            site_description: getSetting('site_description')?.value || 'Internet ultrarrápida para tudo que importa.',
+            og_image_url: getSetting('og_image_url')?.value || null,
+            favicon_url: getSetting('favicon_url')?.value || null,
+            allow_indexing: getSetting('allow_indexing')?.value !== 'false',
+            favicon_updated_at: getSetting('favicon_url')?.updatedAt ?? new Date().toISOString(),
         };
 
         const theme = {
-            commemorative_enabled: settingsMap.get('commemorative_theme_enabled') === 'true'
+            commemorative_enabled: getSetting('commemorative_theme_enabled')?.value === 'true'
         };
 
         return { seo, theme };
@@ -53,6 +54,7 @@ async function getThemeAndSeoSettings() {
         return { seo: null, theme: null };
     }
 }
+
 
 // --- Metadata ---
 export async function generateMetadata(
@@ -103,7 +105,7 @@ export default async function RootLayout({
 
   // Construção da URL do Favicon com cache-busting
   const faviconUrl = settings?.favicon_url 
-    ? `${settings.favicon_url}?v=${new Date(settings.updated_at).getTime()}` 
+    ? `${settings.favicon_url}?v=${new Date(settings.favicon_updated_at).getTime()}` 
     : null;
 
   return (
