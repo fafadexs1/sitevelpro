@@ -22,30 +22,38 @@ const inter = Inter({
 async function getThemeAndSeoSettings() {
     try {
         const supabase = createClient();
-        const { data, error } = await supabase
-            .from('system_settings')
-            .select('key, value, updated_at');
+        
+        // Busca as configurações de SEO globais
+        const { data: seoData, error: seoError } = await supabase
+            .from('seo_settings')
+            .select('site_title, site_description, og_image_url, favicon_url, allow_indexing, updated_at')
+            .single();
 
-        if (error) {
-            console.error('Erro ao buscar configurações de SEO/Tema do Supabase:', error);
-            return { seo: null, theme: null };
+        if (seoError && seoError.code !== 'PGRST116') {
+             console.error('Erro ao buscar seo_settings do Supabase:', seoError);
         }
         
-        const settingsMap = new Map(data?.map(item => [item.key, { value: item.value, updatedAt: item.updated_at }]));
+        // Busca as configurações de tema
+        const { data: themeData, error: themeError } = await supabase
+            .from('system_settings')
+            .select('key, value')
+            .eq('key', 'commemorative_theme_enabled');
 
-        const getSetting = (key: string) => settingsMap.get(key);
+        if (themeError) {
+             console.error('Erro ao buscar theme_settings do Supabase:', themeError);
+        }
 
         const seo = {
-            site_title: getSetting('site_title')?.value || 'Velpro Telecom',
-            site_description: getSetting('site_description')?.value || 'Internet ultrarrápida para tudo que importa.',
-            og_image_url: getSetting('og_image_url')?.value || null,
-            favicon_url: getSetting('favicon_url')?.value || null,
-            allow_indexing: getSetting('allow_indexing')?.value !== 'false',
-            favicon_updated_at: getSetting('favicon_url')?.updatedAt ?? new Date().toISOString(),
+            site_title: seoData?.site_title || 'Velpro Telecom',
+            site_description: seoData?.site_description || 'Internet ultrarrápida para tudo que importa.',
+            og_image_url: seoData?.og_image_url || null,
+            favicon_url: seoData?.favicon_url || null,
+            allow_indexing: seoData?.allow_indexing ?? true,
+            favicon_updated_at: seoData?.updated_at ?? new Date().toISOString(),
         };
 
         const theme = {
-            commemorative_enabled: getSetting('commemorative_theme_enabled')?.value === 'true'
+            commemorative_enabled: themeData?.[0]?.value === 'true'
         };
 
         return { seo, theme };
@@ -111,7 +119,7 @@ export default async function RootLayout({
   return (
     <html lang="pt-BR" className={cn(inter.variable, theme?.commemorative_enabled && "theme-halloween")} suppressHydrationWarning>
       <head>
-        {faviconUrl && <link rel="icon" href={faviconUrl} type="image/png" />}
+        {faviconUrl && <link rel="icon" href={faviconUrl} type="image/png" sizes="any" />}
         <Script id="google-consent-mode" strategy="beforeInteractive">
           {`
             window.dataLayer = window.dataLayer || [];
