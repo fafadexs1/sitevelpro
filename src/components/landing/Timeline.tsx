@@ -21,7 +21,7 @@ const timelineData = [
     {
         year: "Em Seguida",
         title: "Serviços Corporativos",
-        description: "Passamos a interligar matriz e filiais, entregando acesso em alta velocidade e soluções sob medida para empresas de diferentes portes e segmentos.",
+        description: "Passamos a interligar matriz e filiais, entregando acesso em alta velocidade e soluções sob medida para empresas.",
         icon: Building,
     },
     {
