@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Wifi, ChevronRight, Menu, User, X, FileText, ArrowRight, Smartphone, Download, Gauge, MonitorSmartphone, CircleDollarSign, MessageCircle, Phone, ChevronDown, Tv, Package, Shield, Building, Info, LifeBuoy, GanttChartSquare, Sparkle, MapPin, Newspaper, HelpCircle } from "lucide-react";
+import { Wifi, ChevronRight, Menu, User, X, FileText, ArrowRight, Smartphone, Download, Gauge, MonitorSmartphone, CircleDollarSign, MessageCircle, Phone, ChevronDown, Tv, Package, Shield, Building, Info, LifeBuoy, GanttChartSquare, Sparkle, MapPin, Newspaper, HelpCircle, BookHeart } from "lucide-react";
 import Link from "next/link";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -224,7 +224,7 @@ export function Header() {
                 <NavMenuItem href="#cobertura" icon={MapPin}>Consultar Cobertura</NavMenuItem>
             </NavMenu>
              <NavMenu title="Empresa" icon={Building}>
-                <NavMenuItem href="#ceo" icon={Building}>Sobre a Velpro</NavMenuItem>
+                <NavMenuItem href="/historia" icon={BookHeart}>Nossa História</NavMenuItem>
                 <NavMenuItem href="/politica-de-privacidade" icon={Shield}>Política de Privacidade</NavMenuItem>
                 <NavMenuItem href="/termos-de-uso" icon={FileText}>Termos de Uso</NavMenuItem>
             </NavMenu>
