@@ -3,7 +3,7 @@
 
 import { motion, useScroll, useSpring } from "framer-motion";
 import { useRef } from "react";
-import { Radio, CircuitBoard, Wifi, Building, Target, Users, BookOpen, MessageCircle } from "lucide-react";
+import { Radio, CircuitBoard, Wifi, Building, Target, Users, MessageCircle, Map as MapIcon } from "lucide-react";
 
 const timelineData = [
     {
@@ -21,14 +21,14 @@ const timelineData = [
     {
         year: "Em Seguida",
         title: "Serviços Corporativos",
-        description: "Passamos a interligar matriz e filiais, entregando acesso em alta velocidade e soluções sob medida para empresas.",
+        description: "Passamos a interligar matriz e filiais, entregando acesso em alta velocidade e soluções sob medida para empresas de diferentes portes e segmentos.",
         icon: Building,
     },
     {
         year: "2004-2011",
         title: "Crescimento Regional",
         description: "Seguimos investindo em infraestrutura e expandimos nossa atuação para cidades vizinhas e estados circunvizinhos.",
-        icon: Map,
+        icon: MapIcon,
     },
     {
         year: "Hoje",
