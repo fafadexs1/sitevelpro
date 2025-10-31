@@ -11,6 +11,8 @@ import { ConversionTracker } from './analytics/ConversionTracker';
 import Script from 'next/script';
 import { ScrollDepthTracker } from './analytics/ScrollDepthTracker';
 import { FloatingWhatsApp } from '@/components/landing/FloatingWhatsApp';
+import { PopupManager } from './landing/PopupManager';
+
 
 type TrackingTag = {
   id: string | number;
@@ -113,7 +115,7 @@ export function ConditionalLayoutElements() {
         getDomainInfo();
     }, [pathname]);
     
-    if (loading || !domainType || domainType !== 'sales_page') {
+    if (loading) {
         return null;
     }
 
@@ -128,14 +130,21 @@ export function ConditionalLayoutElements() {
             <EventTracker />
             <ScrollDepthTracker />
 
-            {/* Componentes e tags de marketing para páginas de vendas */}
-            <TrackingScripts tags={headScripts} position="head_start" />
-            <TrackingNoScript tags={bodyStartNoScripts} />
-            <TrackingScripts tags={bodyEndScripts} position="body_end" />
+            {/* Gerenciador de Pop-ups */}
+            <PopupManager domainType={domainType} />
 
-            <FloatingWhatsApp />
-            <ConsentBanner />
-            <ConversionTracker />
+            {/* Componentes e tags de marketing para páginas de vendas */}
+            {domainType === 'sales_page' && (
+                <>
+                    <TrackingScripts tags={headScripts} position="head_start" />
+                    <TrackingNoScript tags={bodyStartNoScripts} />
+                    <TrackingScripts tags={bodyEndScripts} position="body_end" />
+
+                    <FloatingWhatsApp />
+                    <ConsentBanner />
+                    <ConversionTracker />
+                </>
+            )}
         </>
     );
 }

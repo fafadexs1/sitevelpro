@@ -332,6 +332,24 @@ create table if not exists referral_settings (
     constraint single_row_check check (id = 1)
 );
 
+-- Cria a tabela de Popups
+create table if not exists popups (
+    id uuid default gen_random_uuid() primary key,
+    name text not null,
+    title text,
+    content text,
+    image_url text,
+    button_text text,
+    button_link text,
+    display_on text default 'sales_page', -- 'sales_page' ou 'main_site'
+    trigger_type text default 'delay', -- 'delay', 'exit_intent'
+    trigger_value integer default 5, -- segundos para 'delay', sensibilidade para 'exit_intent'
+    frequency text default 'once_per_session', -- 'once_per_session', 'once_per_day', 'always'
+    is_active boolean default false not null,
+    created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+    updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
 
 -- Cria o bucket 'canais' se ele não existir
 -- As políticas RLS garantem que ele seja público
@@ -352,6 +370,11 @@ on conflict (id) do nothing;
 -- Cria o bucket 'post-images' se ele não existir
 insert into storage.buckets (id, name, public)
 values ('post-images', 'post-images', true)
+on conflict (id) do nothing;
+
+-- Cria o bucket 'popup-images' se ele não existir
+insert into storage.buckets (id, name, public)
+values ('popup-images', 'popup-images', true)
 on conflict (id) do nothing;
 
 
@@ -427,6 +450,19 @@ FOR ALL
 TO authenticated
 USING (bucket_id = 'post-images')
 WITH CHECK (bucket_id = 'post-images');
+
+-- Políticas de acesso para o bucket 'popup-images'
+CREATE POLICY "Public read access for popup images"
+ON storage.objects
+FOR SELECT
+USING (bucket_id = 'popup-images');
+
+CREATE POLICY "Allow authenticated access for popup images"
+ON storage.objects
+FOR ALL
+TO authenticated
+USING (bucket_id = 'popup-images')
+WITH CHECK (bucket_id = 'popup-images');
 
     `.trim();
 

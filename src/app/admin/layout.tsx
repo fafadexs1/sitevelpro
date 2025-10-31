@@ -33,7 +33,8 @@ import {
   BookOpen,
   Settings2,
   Brush,
-  Network
+  Network,
+  MessageSquare
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -333,9 +334,10 @@ function AdminDashboard({
                 <NavLink href="/admin/tv-packages" label="Pacotes de TV" icon={Tv} />
             </NavGroup>
              <NavLink href="/admin/cities" label="Cidades" icon={Map} />
-            <NavGroup title="Marketing" icon={Megaphone} startOpen={isGroupActive(['/admin/google-ads', '/admin/statistics'])}>
+            <NavGroup title="Marketing" icon={Megaphone} startOpen={isGroupActive(['/admin/google-ads', '/admin/statistics', '/admin/popups'])}>
                 <NavLink href="/admin/google-ads" label="Google Ads" icon={Megaphone} />
                 <NavLink href="/admin/statistics" label="Estatísticas" icon={BarChart2} />
+                <NavLink href="/admin/popups" label="Pop-ups" icon={MessageSquare} />
             </NavGroup>
              <NavGroup title="Sistema" icon={Settings2} startOpen={isGroupActive(['/admin/database', '/admin/settings', '/admin/domains'])}>
                 <NavLink href="/admin/database" label="Banco de Dados" icon={Database} />
