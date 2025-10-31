@@ -210,7 +210,6 @@ export function PopupManager({ domainType }: PopupManagerProps) {
             try {
                 const snippetFunc = new Function('gtag', event.event_snippet);
                 snippetFunc(window.gtag);
-                console.log(`Conversion event tracked via PopupManager: ${event.name}`);
             } catch (e) {
                 console.error(`Error executing event snippet for "${event.name}":`, e);
             }
@@ -218,6 +217,7 @@ export function PopupManager({ domainType }: PopupManagerProps) {
     }, []);
 
     const handlePopupClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+        e.stopPropagation(); // Impede que o clique feche o popup
         if (conversionEvents.length === 0) return;
         
         const targetElement = e.target as Element;
@@ -339,7 +339,7 @@ export function PopupManager({ domainType }: PopupManagerProps) {
                         animate={{ y: 0, opacity: 1 }}
                         exit={{ y: 50, opacity: 0 }}
                         className="relative w-full max-w-sm rounded-2xl bg-card text-card-foreground shadow-2xl overflow-hidden"
-                        onClick={handlePopupClick} // Attach local click handler here
+                        onClick={handlePopupClick}
                     >
                         <Button variant="ghost" size="icon" onClick={handleClose} className="absolute top-3 right-3 z-10 text-muted-foreground hover:text-foreground">
                             <X className="h-5 w-5" />
