@@ -350,6 +350,12 @@ create table if not exists popups (
     updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
+-- Políticas de acesso para a tabela 'popups'
+-- Permite que usuários autenticados realizem todas as operações
+drop policy if exists "Allow all access to authenticated users" on public.popups;
+create policy "Allow all access to authenticated users" on public.popups
+  for all to authenticated using (true) with check (true);
+
 
 -- Cria o bucket 'canais' se ele não existir
 -- As políticas RLS garantem que ele seja público
@@ -521,3 +527,5 @@ WITH CHECK (bucket_id = 'popup-images');
         </>
     );
 };
+
+    
