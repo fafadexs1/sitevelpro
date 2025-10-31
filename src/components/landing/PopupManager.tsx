@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -184,7 +183,7 @@ export function PopupManager({ domainType }: PopupManagerProps) {
   const pathname = usePathname();
 
   const checkAndSetPopup = useCallback(async () => {
-    if (!domainType) return;
+    if (!domainType || pathname !== '/') return;
 
     const supabase = createClient();
     const { data: popupData, error } = await supabase
@@ -203,7 +202,7 @@ export function PopupManager({ domainType }: PopupManagerProps) {
     if (popupData) {
       setPopup(popupData as Popup);
     }
-  }, [domainType]);
+  }, [domainType, pathname]);
 
   useEffect(() => {
     checkAndSetPopup();
@@ -223,7 +222,7 @@ export function PopupManager({ domainType }: PopupManagerProps) {
   };
 
   useEffect(() => {
-    if (!popup) return;
+    if (!popup || pathname !== '/') return;
 
     const hasBeenShown = () => {
       if (popup.frequency === 'once_per_session') {
@@ -260,7 +259,7 @@ export function PopupManager({ domainType }: PopupManagerProps) {
       document.addEventListener('mouseout', handleMouseOut);
       return () => document.removeEventListener('mouseout', handleMouseOut);
     }
-  }, [popup]);
+  }, [popup, pathname]);
 
   const getButtonLink = (): string => {
     if (!popup || !popup.button_link) return "#";
@@ -346,4 +345,3 @@ export function PopupManager({ domainType }: PopupManagerProps) {
   );
 }
 
-    
