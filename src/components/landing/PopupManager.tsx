@@ -68,7 +68,8 @@ const formatBRL = (value: number) =>
   value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 const generatePlanSlug = (planType: string, planSpeed: string) => {
-    return `${planType}-${planSpeed.replace(/\s+/g, '').toLowerCase()}`;
+    const speed = planSpeed.replace(/\s+/g, '-').toLowerCase();
+    return `${planType}-${speed}`;
 }
 
 const PlanPopupContent = ({ plan }: { plan: Plan }) => {
@@ -106,7 +107,7 @@ const PlanPopupContent = ({ plan }: { plan: Plan }) => {
                         </DialogHeader>
                         <div className="flex flex-col gap-3 pt-4">
                              <Button 
-                                id={`cta-site-popup-${slug}`}
+                                id={`cta-site-${slug}`}
                                 asChild 
                                 variant="default" 
                                 size="lg"
@@ -120,7 +121,7 @@ const PlanPopupContent = ({ plan }: { plan: Plan }) => {
                                 </Link>
                             </Button>
                             <Button 
-                                id={`whatsapp-plano-popup-${slug}`}
+                                id={`whatsapp-plano-${slug}`}
                                 asChild 
                                 variant="outline" 
                                 size="lg" 
@@ -320,20 +321,27 @@ export function PopupManager({ domainType }: PopupManagerProps) {
 
         if (isOpen || hasBeenShown()) return;
 
-        if (popup.trigger_type === 'delay') {
-            const timer = setTimeout(() => setIsOpen(true), popup.trigger_value * 1000);
-            return () => clearTimeout(timer);
-        }
+        let timer: NodeJS.Timeout;
+        const handleMouseOut = (e: MouseEvent) => {
+            if (e.clientY <= 0 && !isOpen && !hasBeenShown()) {
+                setIsOpen(true);
+            }
+        };
 
-        if (popup.trigger_type === 'exit_intent') {
-            const handleMouseOut = (e: MouseEvent) => {
-                if (e.clientY <= 0 && !isOpen && !hasBeenShown()) {
+        if (popup.trigger_type === 'delay') {
+            timer = setTimeout(() => {
+                if (!hasBeenShown()) {
                     setIsOpen(true);
                 }
-            };
+            }, popup.trigger_value * 1000);
+        } else if (popup.trigger_type === 'exit_intent') {
             document.addEventListener('mouseout', handleMouseOut);
-            return () => document.removeEventListener('mouseout', handleMouseOut);
         }
+        
+        return () => {
+            clearTimeout(timer);
+            document.removeEventListener('mouseout', handleMouseOut);
+        };
     }, [popup, pathname, isOpen]);
     
     const getButtonLink = (): string => {
