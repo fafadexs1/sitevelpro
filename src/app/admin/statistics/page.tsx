@@ -1,10 +1,9 @@
 
-
 "use client";
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { createClient } from '@/utils/supabase/client';
-import { BarChart, Users, Repeat, UserPlus, Loader2, File, Eye, MousePointerClick, CalendarDays, Calendar as CalendarIcon, ExternalLink, Globe, Clock, ArrowRight, Gauge, ChevronDown, ChevronRightIcon, TrendingUp, Handshake } from 'lucide-react';
+import { BarChart, Users, Repeat, UserPlus, Loader2, File, Eye, MousePointerClick, CalendarDays, Calendar as CalendarIcon, ExternalLink, Globe, Clock, ArrowRight, Gauge, ChevronDown, ChevronRightIcon, TrendingUp, Handshake, CornerDownRight } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
@@ -270,10 +269,11 @@ export default function StatisticsPage() {
         return format(new Date(value), "d MMM", { locale: ptBR });
     };
     
-    const ActivityIcon = ({ type, eventName }: { type: string, eventName?: string }) => {
-        if (type === 'visit') return <Eye className="w-4 h-4 text-muted-foreground" />;
-        if (eventName === 'signup_form_submit') return <Handshake className="w-4 h-4 text-green-500" />;
-        if (eventName === 'cta_click') return <MousePointerClick className="w-4 h-4 text-blue-500" />;
+    const ActivityIcon = ({ activity }: { activity: Activity }) => {
+        if (activity.type === 'visit') return <Eye className="w-4 h-4 text-muted-foreground" />;
+        if (activity.name === 'signup_form_submit') return <Handshake className="w-4 h-4 text-green-500" />;
+        if (activity.name === 'cta_click') return <MousePointerClick className="w-4 h-4 text-blue-500" />;
+        if (activity.name === 'scroll_depth_reach') return <CornerDownRight className="w-4 h-4 text-indigo-500" />;
         return <MousePointerClick className="w-4 h-4 text-muted-foreground" />;
     };
 
@@ -281,6 +281,7 @@ export default function StatisticsPage() {
         if (activity.type === 'visit') return `Visita em ${activity.pathname}`;
         if (activity.name === 'signup_form_submit') return `Novo lead assinou!`;
         if (activity.name === 'cta_click') return `Clique em "${activity.properties.button_id || 'Elemento'}"`;
+        if (activity.name === 'scroll_depth_reach') return `Seção '${activity.properties.section_id}' alcançada`;
         return `Evento: ${activity.name}`;
     };
 
@@ -445,7 +446,7 @@ export default function StatisticsPage() {
                         {activityFeed.map((activity) => (
                             <div key={activity.id} className="flex items-start gap-3">
                                 <div className="grid place-items-center bg-secondary rounded-full w-8 h-8 flex-shrink-0">
-                                   <ActivityIcon type={activity.type} eventName={activity.type === 'event' ? activity.name : undefined} />
+                                   <ActivityIcon activity={activity} />
                                 </div>
                                 <div>
                                     <p className="text-sm font-medium text-foreground">
@@ -532,4 +533,3 @@ export default function StatisticsPage() {
         </>
     );
 }
-
