@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -71,9 +72,9 @@ const PlanPopupContent = ({ plan }: { plan: Plan }) => {
     const priceBRL = formatBRL(plan.price);
     const firstMonthPriceBRL = plan.first_month_price ? formatBRL(plan.first_month_price) : null;
     const slug = `${plan.type}-${plan.speed.replace(/\s+/g, '-').toLowerCase()}`;
-    const planName = `${plan.speed} MEGA`;
+    const planName = `${plan.speed}`;
     const hasWhatsapp = !!plan.whatsapp_number;
-    const whatsappMessage = plan.whatsapp_message?.replace('{{VELOCIDADE}}', plan.speed) || `Olá, gostaria de mais informações sobre o plano de ${plan.speed} MEGA.`;
+    const whatsappMessage = plan.whatsapp_message?.replace('{{VELOCIDADE}}', plan.speed) || `Olá, gostaria de mais informações sobre o plano de ${plan.speed}.`;
     const whatsappUrl = `https://wa.me/${plan.whatsapp_number}?text=${encodeURIComponent(whatsappMessage)}`;
 
     const CtaButton = () => {
@@ -81,7 +82,16 @@ const PlanPopupContent = ({ plan }: { plan: Plan }) => {
             return (
                 <Dialog>
                     <DialogTrigger asChild>
-                         <Button size="lg" className="w-full mt-6">Assinar Agora <ArrowRight className="ml-2 h-4 w-4" /></Button>
+                         <Button 
+                            size="lg" 
+                            className="w-full mt-6"
+                            data-track-event="cta_click"
+                            data-track-prop-button-id={`popup-assinar-${slug}`}
+                            data-track-prop-plan-name={planName}
+                            data-track-prop-plan-price={plan.price}
+                         >
+                            Assinar Agora <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
                     </DialogTrigger>
                     <DialogContent className="sm:max-w-md bg-card text-card-foreground">
                         <DialogHeader>
@@ -110,7 +120,14 @@ const PlanPopupContent = ({ plan }: { plan: Plan }) => {
         }
 
         return (
-            <Button asChild size="lg" className="w-full mt-6">
+            <Button 
+                asChild size="lg" 
+                className="w-full mt-6"
+                data-track-event="cta_click"
+                data-track-prop-button-id={`popup-assinar-${slug}`}
+                data-track-prop-plan-name={planName}
+                data-track-prop-plan-price={plan.price}
+            >
                 <Link href="/assinar">Assinar Agora <ArrowRight className="ml-2 h-4 w-4" /></Link>
             </Button>
         )
@@ -307,7 +324,13 @@ export function PopupManager({ domainType }: PopupManagerProps) {
                   <p className="text-muted-foreground mb-6">{popup.content}</p>
                 )}
                 {popup.button_text && popup.button_link && (
-                  <Button asChild size="lg">
+                  <Button 
+                    asChild 
+                    size="lg"
+                    data-track-event="cta_click"
+                    data-track-prop-button-id={`popup-cta-${popup.id}`}
+                    data-track-prop-popup-name={popup.name}
+                  >
                     <a href={getButtonLink()} target={popup.button_action_type === 'link' ? '_blank' : undefined} rel="noopener noreferrer">
                         {popup.button_text}
                     </a>

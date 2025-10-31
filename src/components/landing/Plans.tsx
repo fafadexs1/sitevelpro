@@ -175,7 +175,7 @@ export function Plans({ city }: PlansProps) {
 
   const PlanCard = ({ plan, index }: { plan: Plan, index: number }) => {
     const slug = `${plan.type}-${plan.speed.replace(/\s+/g, '-').toLowerCase()}`;
-    const planName = `${plan.speed} MEGA`;
+    const planName = `${plan.speed}`;
     const priceBRL = formatBRL(plan.price);
     const firstMonthPriceBRL = plan.first_month_price ? formatBRL(plan.first_month_price) : null;
     const whatsappMessage = plan.whatsapp_message?.replace('{{VELOCIDADE}}', plan.speed) || `Olá, gostaria de mais informações sobre o plano de ${plan.speed} MEGA.`;
@@ -273,6 +273,7 @@ export function Plans({ city }: PlansProps) {
                         data-track-event="cta_click"
                         data-track-prop-button-id={`saiba-mais-plano-${slug}`}
                         data-track-prop-plan-name={planName}
+                        data-track-prop-plan-price={plan.price}
                         className="w-full font-bold bg-[#03bf03] hover:bg-[#03bf03]/90 text-white"
                      >
                         Saiba mais
@@ -388,3 +389,5 @@ export function Plans({ city }: PlansProps) {
     </section>
   );
 }
+
+    
