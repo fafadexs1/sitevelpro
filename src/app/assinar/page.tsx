@@ -445,6 +445,27 @@ export default function SignupPage() {
     defaultValues: formData
   });
 
+  const trackEvent = async (eventName: string, properties: Record<string, any>) => {
+    const visitorId = localStorage.getItem('velpro_visitor_id');
+    if (!visitorId) return;
+
+    try {
+        await fetch('/api/track-event', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                visitorId,
+                hostname: window.location.hostname,
+                pathname: window.location.pathname,
+                eventName,
+                properties,
+            }),
+        });
+    } catch (error) {
+        console.error('Failed to track event:', error);
+    }
+  };
+
   const goNext = async (data: any) => {
     const newFormData = { ...formData, ...data };
     setFormData(newFormData);
@@ -470,6 +491,8 @@ export default function SignupPage() {
         });
       } else {
         setIsSuccess(true);
+        // Track successful submission
+        trackEvent('signup_form_submit', { form_name: 'assinatura' });
       }
       setIsSubmitting(false);
     }

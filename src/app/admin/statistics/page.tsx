@@ -4,7 +4,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { createClient } from '@/utils/supabase/client';
-import { BarChart, Users, Repeat, UserPlus, Loader2, File, Eye, MousePointerClick, CalendarDays, Calendar as CalendarIcon, ExternalLink, Globe, Clock, ArrowRight, Gauge, ChevronDown, ChevronRightIcon } from 'lucide-react';
+import { BarChart, Users, Repeat, UserPlus, Loader2, File, Eye, MousePointerClick, CalendarDays, Calendar as CalendarIcon, ExternalLink, Globe, Clock, ArrowRight, Gauge, ChevronDown, ChevronRightIcon, TrendingUp, Handshake } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
@@ -79,8 +79,8 @@ export default function StatisticsPage() {
 
     const [totalVisits, setTotalVisits] = useState(0);
     const [uniqueVisitors, setUniqueVisitors] = useState(0);
-    const [clickEvents, setClickEvents] = useState(0);
-    const [bounceRate, setBounceRate] = useState(0);
+    const [signupSubmissions, setSignupSubmissions] = useState(0);
+    const [conversionRate, setConversionRate] = useState(0);
     const [topPages, setTopPages] = useState<PageVisit[]>([]);
     const [topPlans, setTopPlans] = useState<PlanClick[]>([]);
     const [dailyVisits, setDailyVisits] = useState<ChartDataPoint[]>([]);
@@ -142,19 +142,11 @@ export default function StatisticsPage() {
         setTotalVisits(visitsData.length);
         const uniqueVisitorIds = new Set(visitsData.map(v => v.visitor_id));
         setUniqueVisitors(uniqueVisitorIds.size);
-        setClickEvents(eventsData.length);
         
-        const visitorActions: Record<string, {visits: number, events: number}> = {};
-        visitsData.forEach(v => {
-            if (!visitorActions[v.visitor_id]) visitorActions[v.visitor_id] = { visits: 0, events: 0 };
-            visitorActions[v.visitor_id].visits++;
-        });
-        eventsData.forEach(e => {
-            if (visitorActions[e.visitor_id]) visitorActions[e.visitor_id].events++;
-        });
-        const bouncedVisitors = Object.values(visitorActions).filter(v => v.events === 0).length;
-        setBounceRate(uniqueVisitorIds.size > 0 ? (bouncedVisitors / uniqueVisitorIds.size) * 100 : 0);
-
+        const submissions = eventsData.filter(e => e.name === 'signup_form_submit');
+        setSignupSubmissions(submissions.length);
+        setConversionRate(uniqueVisitorIds.size > 0 ? (submissions.length / uniqueVisitorIds.size) * 100 : 0);
+        
         const pageCounts = visitsData.reduce((acc, visit) => {
             if (!acc[visit.pathname]) {
                  acc[visit.pathname] = { visit_count: 0, visitors: new Set() };
@@ -356,32 +348,32 @@ export default function StatisticsPage() {
                 </Card>
                  <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Taxa de Cliques</CardTitle>
-                        <MousePointerClick className="h-4 w-4 text-gray-500" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-3xl font-bold">{(totalVisits > 0 ? (allEvents.length / totalVisits) * 100 : 0).toFixed(1)}%</div>
-                        <p className="text-xs text-gray-500">{allEvents.length} cliques totais.</p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Taxa de Rejeição</CardTitle>
-                        <ExternalLink className="h-4 w-4 text-gray-500" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-3xl font-bold">{bounceRate.toFixed(1)}%</div>
-                        <p className="text-xs text-gray-500">Visitas sem interação.</p>
-                    </CardContent>
-                </Card>
-                 <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Novos Visitantes</CardTitle>
                         <UserPlus className="h-4 w-4 text-gray-500" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-3xl font-bold">{newVisitorsPercentage.toFixed(1)}%</div>
                         <p className="text-xs text-gray-500">Percentual de primeiras visitas.</p>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Assinaturas</CardTitle>
+                        <Handshake className="h-4 w-4 text-gray-500" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-3xl font-bold">{signupSubmissions}</div>
+                        <p className="text-xs text-gray-500">Leads gerados no período.</p>
+                    </CardContent>
+                </Card>
+                 <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Taxa de Conversão</CardTitle>
+                        <TrendingUp className="h-4 w-4 text-gray-500" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-3xl font-bold">{conversionRate.toFixed(2)}%</div>
+                        <p className="text-xs text-gray-500">De visitantes para leads.</p>
                     </CardContent>
                 </Card>
             </div>
@@ -420,7 +412,7 @@ export default function StatisticsPage() {
                                 </div>
                                 <div>
                                     <p className="text-sm font-medium text-foreground">
-                                        {activity.type === 'visit' ? `Visita em ${activity.pathname}` : `Clique em "${activity.properties.buttonId || 'Elemento'}"`}
+                                        {activity.type === 'visit' ? `Visita em ${activity.pathname}` : `Clique em "${activity.properties.button_id || 'Elemento'}"`}
                                     </p>
                                     <p className="text-xs text-muted-foreground">
                                         {formatDistanceToNow(new Date(activity.created_at), { addSuffix: true, locale: ptBR })}
@@ -503,5 +495,6 @@ export default function StatisticsPage() {
         </>
     );
 }
+
 
 
