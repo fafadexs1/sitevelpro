@@ -222,6 +222,36 @@ export default function StatisticsPage() {
             fetchData(dateRange.from, dateRange.to, selectedDomain);
         }
     }, [dateRange, selectedDomain, fetchData]);
+
+    // Supabase Realtime Subscription
+    useEffect(() => {
+        const supabase = createClient();
+        const channel = supabase
+            .channel('statistics-realtime')
+            .on(
+                'postgres_changes',
+                { event: 'INSERT', schema: 'public', table: 'visits' },
+                () => {
+                    if (dateRange?.from && dateRange?.to) {
+                       fetchData(dateRange.from, dateRange.to, selectedDomain);
+                    }
+                }
+            )
+            .on(
+                'postgres_changes',
+                { event: 'INSERT', schema: 'public', table: 'events' },
+                () => {
+                     if (dateRange?.from && dateRange?.to) {
+                       fetchData(dateRange.from, dateRange.to, selectedDomain);
+                    }
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [fetchData, dateRange, selectedDomain]);
     
     const handleDateRangeSelect = (range: DateRange | undefined) => {
         if (range?.from) {
@@ -495,6 +525,4 @@ export default function StatisticsPage() {
         </>
     );
 }
-
-
 
