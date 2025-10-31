@@ -4,11 +4,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Wifi, Upload, Download, Check, Star, ArrowRight } from "lucide-react";
+import { X, Wifi, Upload, Download, Check, Star, ArrowRight, Smartphone } from "lucide-react";
 import { Button } from "../ui/button";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
 
 type Plan = {
   id: string;
@@ -20,6 +21,8 @@ type Plan = {
   original_price: number | null;
   first_month_price: number | null;
   features: string[] | null;
+  whatsapp_number: string | null;
+  whatsapp_message: string | null;
 };
 
 type Popup = {
@@ -67,7 +70,52 @@ const formatBRL = (value: number) =>
 const PlanPopupContent = ({ plan }: { plan: Plan }) => {
     const priceBRL = formatBRL(plan.price);
     const firstMonthPriceBRL = plan.first_month_price ? formatBRL(plan.first_month_price) : null;
-    
+    const slug = `${plan.type}-${plan.speed.replace(/\s+/g, '-').toLowerCase()}`;
+    const planName = `${plan.speed} MEGA`;
+    const hasWhatsapp = !!plan.whatsapp_number;
+    const whatsappMessage = plan.whatsapp_message?.replace('{{VELOCIDADE}}', plan.speed) || `Olá, gostaria de mais informações sobre o plano de ${plan.speed} MEGA.`;
+    const whatsappUrl = `https://wa.me/${plan.whatsapp_number}?text=${encodeURIComponent(whatsappMessage)}`;
+
+    const CtaButton = () => {
+        if (hasWhatsapp) {
+            return (
+                <Dialog>
+                    <DialogTrigger asChild>
+                         <Button size="lg" className="w-full mt-6">Assinar Agora <ArrowRight className="ml-2 h-4 w-4" /></Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-md bg-card text-card-foreground">
+                        <DialogHeader>
+                            <DialogTitle>Como você prefere contratar?</DialogTitle>
+                            <DialogDescription>
+                                Escolha a melhor forma de contratar o plano de {planName}.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="flex flex-col gap-3 pt-4">
+                            <Button asChild variant="default" size="lg">
+                                <Link href="/assinar">
+                                    Continuar pelo site
+                                    <ArrowRight className="ml-2 h-4 w-4"/>
+                                </Link>
+                            </Button>
+                            <Button asChild variant="outline" size="lg" className="border-green-600 text-green-600 hover:bg-green-50 hover:text-green-700">
+                                <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+                                    Falar no WhatsApp
+                                    <Smartphone className="ml-2 h-4 w-4"/>
+                                </a>
+                            </Button>
+                        </div>
+                    </DialogContent>
+                </Dialog>
+            );
+        }
+
+        return (
+            <Button asChild size="lg" className="w-full mt-6">
+                <Link href="/assinar">Assinar Agora <ArrowRight className="ml-2 h-4 w-4" /></Link>
+            </Button>
+        )
+    }
+
     return (
         <div className="p-6 sm:p-8 text-center">
             <h2 className="text-xl font-bold mb-1 text-primary">Oferta Especial!</h2>
@@ -108,9 +156,7 @@ const PlanPopupContent = ({ plan }: { plan: Plan }) => {
                     )}
                 </div>
             </div>
-             <Button asChild size="lg" className="w-full mt-6">
-                <Link href="/assinar">Assinar Agora <ArrowRight className="ml-2 h-4 w-4" /></Link>
-              </Button>
+            <CtaButton />
         </div>
     );
 };
@@ -232,7 +278,7 @@ export function PopupManager({ domainType }: PopupManagerProps) {
           initial={{ y: 50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 50, opacity: 0 }}
-          className="relative w-full max-w-md rounded-2xl bg-card text-card-foreground shadow-2xl overflow-hidden"
+          className="relative w-full max-w-sm rounded-2xl bg-card text-card-foreground shadow-2xl overflow-hidden"
           onClick={(e) => e.stopPropagation()}
         >
           <Button
@@ -276,3 +322,5 @@ export function PopupManager({ domainType }: PopupManagerProps) {
     </AnimatePresence>
   );
 }
+
+    
