@@ -183,12 +183,18 @@ export function PopupManager({ domainType }: PopupManagerProps) {
   const pathname = usePathname();
 
   const checkAndSetPopup = useCallback(async () => {
-    if (!domainType || pathname !== '/') return;
+    if (!domainType) return;
+
+    // Apenas busca popups se estiver na página inicial
+    if (pathname !== '/') {
+        setPopup(null); // Garante que nenhum popup de uma navegação anterior seja exibido
+        return;
+    }
 
     const supabase = createClient();
     const { data: popupData, error } = await supabase
       .from("popups")
-      .select("*, plans!left(*)")
+      .select("*, plans:plan_id(*)")
       .eq("is_active", true)
       .eq("display_on", domainType)
       .order("created_at", { ascending: false })
@@ -276,7 +282,7 @@ export function PopupManager({ domainType }: PopupManagerProps) {
     }
   };
 
-  if (!isOpen || !popup) {
+  if (!popup) {
     return null;
   }
 
@@ -295,7 +301,7 @@ export function PopupManager({ domainType }: PopupManagerProps) {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 50, opacity: 0 }}
           className="relative w-full max-w-sm rounded-2xl bg-card text-card-foreground shadow-2xl overflow-hidden"
-          onClick={(e) => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()} // Impede que o clique feche o modal
         >
           <Button
             variant="ghost"
@@ -344,4 +350,3 @@ export function PopupManager({ domainType }: PopupManagerProps) {
     </AnimatePresence>
   );
 }
-
