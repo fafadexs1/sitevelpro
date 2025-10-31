@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { createClient } from '@/utils/supabase/client';
-import { BarChart, Users, Repeat, UserPlus, Loader2, File, Eye, MousePointerClick, CalendarDays, Calendar as CalendarIcon, ExternalLink, Globe, Clock, ArrowRight, Gauge, ChevronDown, ChevronRightIcon, TrendingUp, Handshake, CornerDownRight } from 'lucide-react';
+import { BarChart, Users, Repeat, UserPlus, Loader2, File, Eye, MousePointerClick, CalendarDays, Calendar as CalendarIcon, ExternalLink, Globe, Clock, ArrowRight, Gauge, ChevronDown, ChevronRightIcon, TrendingUp, Handshake, CornerDownRight, Info } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { TooltipProvider, Tooltip as UITooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { cn } from '@/lib/utils';
 import type { DateRange } from 'react-day-picker';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -65,6 +66,15 @@ const filterOptions: { label: string; value: Exclude<FilterRange, 'custom'> }[] 
     { label: 'Últimos 30 dias', value: '30d' },
     { label: 'Este Mês', value: 'month' },
 ];
+
+const eventExplanations: Record<string, string> = {
+    visit: 'Um usuário visualizou uma página no seu site.',
+    signup_form_submit: 'Um visitante preencheu e enviou o formulário de assinatura, tornando-se um lead.',
+    cta_click: "Um visitante clicou em um botão de chamada para ação (Ex: 'Assinar Agora', 'Saiba Mais').",
+    scroll_depth_reach: 'Um visitante rolou a página até uma nova seção principal ser exibida.',
+    default: 'Um evento genérico foi rastreado.'
+};
+
 
 export default function StatisticsPage() {
     const [loading, setLoading] = useState(true);
@@ -327,7 +337,7 @@ export default function StatisticsPage() {
     };
 
     return (
-        <>
+        <TooltipProvider>
             <header className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2"><BarChart className="text-primary"/> Estatísticas do Site</h1>
@@ -448,10 +458,20 @@ export default function StatisticsPage() {
                                 <div className="grid place-items-center bg-secondary rounded-full w-8 h-8 flex-shrink-0">
                                    <ActivityIcon activity={activity} />
                                 </div>
-                                <div>
-                                    <p className="text-sm font-medium text-foreground">
-                                        <ActivityText activity={activity} />
-                                    </p>
+                                <div className="flex-grow">
+                                    <div className="flex items-center justify-between">
+                                        <p className="text-sm font-medium text-foreground">
+                                            <ActivityText activity={activity} />
+                                        </p>
+                                        <UITooltip>
+                                            <TooltipTrigger>
+                                                <Info className="w-3.5 h-3.5 text-muted-foreground hover:text-foreground cursor-help"/>
+                                            </TooltipTrigger>
+                                            <TooltipContent side="left">
+                                                <p className="max-w-xs">{eventExplanations[activity.type === 'visit' ? 'visit' : activity.name] || eventExplanations.default}</p>
+                                            </TooltipContent>
+                                        </UITooltip>
+                                    </div>
                                     <p className="text-xs text-muted-foreground">
                                         {formatDistanceToNow(new Date(activity.created_at), { addSuffix: true, locale: ptBR })}
                                     </p>
@@ -525,11 +545,10 @@ export default function StatisticsPage() {
                             </Table>
                         </CardContent>
                     </Card>
-                   
                 </div>
             </div>
             </>
             )}
-        </>
+        </TooltipProvider>
     );
 }
