@@ -219,19 +219,24 @@ export function PopupManager({ domainType }: PopupManagerProps) {
             console.warn(`[Popup] gtag not found. Could not track event: ${event.name}`);
         }
     }, []);
+    
+    useEffect(() => {
+        const handler = (e: MouseEvent) => {
+            if (conversionEvents.length === 0) return;
+            const target = e.target as Element | null;
+            if (!target) return;
 
-    const handlePopupClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-        e.stopPropagation();
-        if (conversionEvents.length === 0) return;
-        
-        const targetElement = e.target as Element;
+            conversionEvents.forEach((event) => {
+                if (event.selector && target.closest(event.selector)) {
+                    trackGtagConversion(event);
+                }
+            });
+        };
 
-        conversionEvents.forEach(event => {
-            if (event.selector && targetElement.closest(event.selector)) {
-                trackGtagConversion(event);
-            }
-        });
+        document.addEventListener('click', handler, { capture: true });
+        return () => document.removeEventListener('click', handler, { capture: true });
     }, [conversionEvents, trackGtagConversion]);
+    // --- End Conversion Tracking Logic ---
     
     useEffect(() => {
         const fetchEvents = async () => {
@@ -246,7 +251,6 @@ export function PopupManager({ domainType }: PopupManagerProps) {
         };
         fetchEvents();
     }, []);
-    // --- End Conversion Tracking Logic ---
 
 
     const checkAndSetPopup = useCallback(async () => {
@@ -357,7 +361,7 @@ export function PopupManager({ domainType }: PopupManagerProps) {
                         animate={{ y: 0, opacity: 1 }}
                         exit={{ y: 50, opacity: 0 }}
                         className="relative w-full max-w-sm rounded-2xl bg-card text-card-foreground shadow-2xl overflow-hidden"
-                        onClick={handlePopupClick}
+                        onClick={(e) => e.stopPropagation()}
                     >
                         <Button variant="ghost" size="icon" onClick={handleClose} className="absolute top-3 right-3 z-10 text-muted-foreground hover:text-foreground">
                             <X className="h-5 w-5" />
