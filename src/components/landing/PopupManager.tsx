@@ -101,13 +101,28 @@ const PlanPopupContent = ({ plan }: { plan: Plan }) => {
                             </DialogDescription>
                         </DialogHeader>
                         <div className="flex flex-col gap-3 pt-4">
-                            <Button asChild variant="default" size="lg">
+                             <Button 
+                                asChild 
+                                variant="default" 
+                                size="lg"
+                                data-track-event="cta_click"
+                                data-track-prop-button-id={`popup-continuar-site-${slug}`}
+                                data-track-prop-plan-name={planName}
+                            >
                                 <Link href="/assinar">
                                     Continuar pelo site
                                     <ArrowRight className="ml-2 h-4 w-4"/>
                                 </Link>
                             </Button>
-                            <Button asChild variant="outline" size="lg" className="border-green-600 text-green-600 hover:bg-green-50 hover:text-green-700">
+                            <Button 
+                                asChild 
+                                variant="outline" 
+                                size="lg" 
+                                className="border-green-600 text-green-600 hover:bg-green-50 hover:text-green-700"
+                                data-track-event="cta_click"
+                                data-track-prop-button-id={`popup-whatsapp-${slug}`}
+                                data-track-prop-plan-name={planName}
+                            >
                                 <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
                                     Falar no WhatsApp
                                     <Smartphone className="ml-2 h-4 w-4"/>
@@ -191,6 +206,33 @@ export function PopupManager({ domainType }: PopupManagerProps) {
     const [conversionEvents, setConversionEvents] = useState<ConversionEvent[]>([]);
 
     // --- Conversion Tracking Logic ---
+    const trackGtagConversion = useCallback((event: ConversionEvent) => {
+        if (typeof window.gtag === 'function') {
+            try {
+                const snippetFunc = new Function('gtag', event.event_snippet);
+                snippetFunc(window.gtag);
+                 console.log(`[Popup] Conversion event tracked: ${event.name}`);
+            } catch (e) {
+                console.error(`[Popup] Error executing event snippet for "${event.name}":`, e);
+            }
+        } else {
+            console.warn(`[Popup] gtag not found. Could not track event: ${event.name}`);
+        }
+    }, []);
+
+    const handlePopupClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+        e.stopPropagation();
+        if (conversionEvents.length === 0) return;
+        
+        const targetElement = e.target as Element;
+
+        conversionEvents.forEach(event => {
+            if (event.selector && targetElement.closest(event.selector)) {
+                trackGtagConversion(event);
+            }
+        });
+    }, [conversionEvents, trackGtagConversion]);
+    
     useEffect(() => {
         const fetchEvents = async () => {
             const supabase = createClient();
@@ -204,30 +246,6 @@ export function PopupManager({ domainType }: PopupManagerProps) {
         };
         fetchEvents();
     }, []);
-
-    const trackGtagConversion = useCallback((event: ConversionEvent) => {
-        if (typeof window.gtag === 'function') {
-            try {
-                const snippetFunc = new Function('gtag', event.event_snippet);
-                snippetFunc(window.gtag);
-            } catch (e) {
-                console.error(`Error executing event snippet for "${event.name}":`, e);
-            }
-        }
-    }, []);
-
-    const handlePopupClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-        e.stopPropagation(); // Impede que o clique feche o popup
-        if (conversionEvents.length === 0) return;
-        
-        const targetElement = e.target as Element;
-
-        conversionEvents.forEach(event => {
-            if (event.selector && targetElement.closest(event.selector)) {
-                trackGtagConversion(event);
-            }
-        });
-    }, [conversionEvents, trackGtagConversion]);
     // --- End Conversion Tracking Logic ---
 
 
@@ -300,14 +318,14 @@ export function PopupManager({ domainType }: PopupManagerProps) {
 
         if (popup.trigger_type === 'exit_intent') {
             const handleMouseOut = (e: MouseEvent) => {
-                if (e.clientY <= 0 && !hasBeenShown()) {
+                if (e.clientY <= 0 && !isOpen && !hasBeenShown()) {
                     setIsOpen(true);
                 }
             };
             document.addEventListener('mouseout', handleMouseOut);
             return () => document.removeEventListener('mouseout', handleMouseOut);
         }
-    }, [popup, pathname]);
+    }, [popup, pathname, isOpen]);
     
     const getButtonLink = (): string => {
         if (!popup || !popup.button_link) return "#";
