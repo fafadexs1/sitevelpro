@@ -49,10 +49,10 @@ type Plan = {
 const popupSchema = z.object({
   name: z.string().min(1, "O nome do pop-up é obrigatório."),
   plan_id: z.string().nullable().optional(),
-  title: z.string().optional(),
-  content: z.string().optional(),
-  button_text: z.string().optional(),
-  button_link: z.string().optional(),
+  title: z.string().optional().nullable(),
+  content: z.string().optional().nullable(),
+  button_text: z.string().optional().nullable(),
+  button_link: z.string().optional().nullable(),
   display_on: z.enum(['sales_page', 'main_site']),
   trigger_type: z.enum(['delay', 'exit_intent']),
   trigger_value: z.coerce.number().min(0, "O valor do gatilho deve ser positivo."),
@@ -62,7 +62,16 @@ const popupSchema = z.object({
     .optional()
     .refine((file) => !file || (file instanceof File && file.size <= 2 * 1024 * 1024), `Tamanho máximo de 2MB.`)
     .refine((file) => !file || (file instanceof File && ["image/jpeg", "image/png", "image/webp"].includes(file.type)), "Apenas .jpg, .png e .webp."),
+}).refine(data => {
+    // Se plan_id está selecionado, os campos de conteúdo customizado não são necessários.
+    if (data.plan_id) return true;
+    // Se plan_id não está selecionado, pelo menos o título é obrigatório.
+    return !!data.title;
+}, {
+    message: "O título é obrigatório para pop-ups de conteúdo customizado.",
+    path: ["title"],
 });
+
 
 type PopupFormData = z.infer<typeof popupSchema>;
 
@@ -106,7 +115,7 @@ function PopupForm({
     setIsSubmitting(true);
     let imageUrl = popup?.image_url;
 
-    if (data.image_file) {
+    if (data.image_file && !isPlanPopup) {
         const file = data.image_file;
         const filePath = `popup-${Date.now()}.${file.name.split('.').pop()}`;
         const { error: uploadError } = await supabase.storage.from('popup-images').upload(filePath, file, { upsert: true });
@@ -117,18 +126,26 @@ function PopupForm({
         }
         const { data: urlData } = supabase.storage.from('popup-images').getPublicUrl(filePath);
         imageUrl = urlData.publicUrl;
+    } else if (isPlanPopup) {
+        imageUrl = null; // Garante que não haja imagem se for um pop-up de plano
     }
 
-    const popupData = { 
+
+    const popupData: Partial<PopupFormData & { image_url: string | null }> = { 
         ...data, 
         image_url: imageUrl,
-        plan_id: data.plan_id || null,
-        title: isPlanPopup ? null : data.title,
-        content: isPlanPopup ? null : data.content,
-        image_file: isPlanPopup ? null : data.image_file,
-        button_text: isPlanPopup ? null : data.button_text,
-        button_link: isPlanPopup ? null : data.button_link,
     };
+    
+    // Se for um popup de plano, limpa os campos de conteúdo customizado.
+    if(isPlanPopup) {
+        popupData.title = null;
+        popupData.content = null;
+        popupData.button_text = null;
+        popupData.button_link = null;
+        if ('image_file' in popupData) delete (popupData as any).image_file; // Garante que o arquivo não será salvo
+    }
+
+
     delete (popupData as any).image_file;
     
     let error;
@@ -176,23 +193,23 @@ function PopupForm({
 
             <div className={`space-y-4 border-t pt-4 mt-4 ${isPlanPopup ? 'opacity-40 pointer-events-none' : ''}`}>
                 <h3 className="text-sm font-medium text-muted-foreground">Conteúdo Customizado</h3>
-                <FormField control={form.control} name="title" render={({ field }) => (<FormItem><FormLabel>Título</FormLabel><FormControl><Input placeholder="Título que aparece no pop-up" {...field} disabled={isPlanPopup} /></FormControl><FormMessage /></FormItem>)} />
-                <FormField control={form.control} name="content" render={({ field }) => (<FormItem><FormLabel>Conteúdo</FormLabel><FormControl><Textarea placeholder="Descreva a oferta ou mensagem." {...field} disabled={isPlanPopup} /></FormControl><FormMessage /></FormItem>)} />
+                <FormField control={form.control} name="title" render={({ field }) => (<FormItem><FormLabel>Título</FormLabel><FormControl><Input placeholder="Título que aparece no pop-up" {...field} disabled={isPlanPopup} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>)} />
+                <FormField control={form.control} name="content" render={({ field }) => (<FormItem><FormLabel>Conteúdo</FormLabel><FormControl><Textarea placeholder="Descreva a oferta ou mensagem." {...field} disabled={isPlanPopup} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>)} />
 
-                <FormField control={form.control} name="image_file" render={({ field }) => (
+                <FormField control={form.control} name="image_file" render={({ field: { onChange, value, ...rest} }) => (
                     <FormItem>
                         <FormLabel>Imagem (Opcional)</FormLabel>
                         <FormControl>
-                            <Input type="file" accept="image/png, image/jpeg, image/webp" onChange={(e) => field.onChange(e.target.files ? e.target.files[0] : null)} disabled={isPlanPopup}/>
+                            <Input type="file" accept="image/png, image/jpeg, image/webp" onChange={(e) => onChange(e.target.files ? e.target.files[0] : null)} disabled={isPlanPopup} {...rest}/>
                         </FormControl>
-                        {popup?.image_url && !field.value?.name && <div className="mt-2"><p className="text-sm">Atual:</p><Image src={popup.image_url} alt="Preview" width={120} height={67} className="rounded-md border border-border"/></div>}
+                        {popup?.image_url && !value?.name && <div className="mt-2"><p className="text-sm">Atual:</p><Image src={popup.image_url} alt="Preview" width={120} height={67} className="rounded-md border border-border"/></div>}
                         <FormMessage />
                     </FormItem>
                 )}/>
 
                 <div className="grid grid-cols-2 gap-4">
-                    <FormField control={form.control} name="button_text" render={({ field }) => (<FormItem><FormLabel>Texto do Botão</FormLabel><FormControl><Input placeholder="Ex: Aproveitar" {...field} disabled={isPlanPopup}/></FormControl></FormItem>)} />
-                    <FormField control={form.control} name="button_link" render={({ field }) => (<FormItem><FormLabel>Link do Botão</FormLabel><FormControl><Input placeholder="/#planos" {...field} disabled={isPlanPopup}/></FormControl></FormItem>)} />
+                    <FormField control={form.control} name="button_text" render={({ field }) => (<FormItem><FormLabel>Texto do Botão</FormLabel><FormControl><Input placeholder="Ex: Aproveitar" {...field} disabled={isPlanPopup} value={field.value ?? ''}/></FormControl></FormItem>)} />
+                    <FormField control={form.control} name="button_link" render={({ field }) => (<FormItem><FormLabel>Link do Botão</FormLabel><FormControl><Input placeholder="/#planos" {...field} disabled={isPlanPopup} value={field.value ?? ''}/></FormControl></FormItem>)} />
                 </div>
             </div>
 
