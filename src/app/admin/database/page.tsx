@@ -336,6 +336,7 @@ create table if not exists referral_settings (
 create table if not exists popups (
     id uuid default gen_random_uuid() primary key,
     name text not null,
+    plan_id uuid references plans(id) on delete set null,
     title text,
     content text,
     image_url text,
@@ -349,6 +350,20 @@ create table if not exists popups (
     created_at timestamp with time zone default timezone('utc'::text, now()) not null,
     updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
+
+-- Políticas para Popups (Exemplo)
+-- Permite que usuários autenticados gerenciem os popups
+create policy "Allow full access to authenticated users on popups"
+on public.popups for all
+to authenticated
+using (true)
+with check (true);
+
+-- Permite que qualquer pessoa leia os popups
+create policy "Allow public read access on popups"
+on public.popups for select
+to anon, authenticated
+using (true);
 
 
 -- Cria o bucket 'canais' se ele não existir
@@ -521,6 +536,3 @@ WITH CHECK (bucket_id = 'popup-images');
         </>
     );
 };
-
-    
-    
