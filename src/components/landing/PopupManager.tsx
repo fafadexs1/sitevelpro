@@ -10,6 +10,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
+import type { ConversionEvent } from '@/app/admin/google-ads/page';
 
 type Plan = {
   id: string;
@@ -177,176 +178,197 @@ const PlanPopupContent = ({ plan }: { plan: Plan }) => {
     );
 };
 
+declare global {
+    interface Window {
+        gtag?: (...args: any[]) => void;
+    }
+}
+
 export function PopupManager({ domainType }: PopupManagerProps) {
-  const [popup, setPopup] = useState<Popup | null>(null);
-  const [isOpen, setIsOpen] = useState(false);
-  const pathname = usePathname();
+    const [popup, setPopup] = useState<Popup | null>(null);
+    const [isOpen, setIsOpen] = useState(false);
+    const pathname = usePathname();
+    const [conversionEvents, setConversionEvents] = useState<ConversionEvent[]>([]);
 
-  const checkAndSetPopup = useCallback(async () => {
-    if (!domainType) return;
+    // --- Conversion Tracking Logic ---
+    useEffect(() => {
+        const fetchEvents = async () => {
+            const supabase = createClient();
+            const { data, error } = await supabase
+                .from('conversion_events')
+                .select('*')
+                .eq('is_active', true);
+            if (!error) {
+                setConversionEvents(data);
+            }
+        };
+        fetchEvents();
+    }, []);
 
-    // Apenas busca popups se estiver na página inicial
-    if (pathname !== '/') {
-        setPopup(null); // Garante que nenhum popup de uma navegação anterior seja exibido
-        return;
-    }
-
-    const supabase = createClient();
-    const { data: popupData, error } = await supabase
-      .from("popups")
-      .select("*, plans:plan_id(*)")
-      .eq("is_active", true)
-      .eq("display_on", domainType)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .single();
-
-    if (error && error.code !== 'PGRST116') { // PGRST116: no rows found
-        console.error("Popup fetch error:", error);
-    }
-
-    if (popupData) {
-      setPopup(popupData as Popup);
-    }
-  }, [domainType, pathname]);
-
-  useEffect(() => {
-    checkAndSetPopup();
-  }, [pathname, checkAndSetPopup]);
-
-  const handleClose = () => {
-    setIsOpen(false);
-    if (popup) {
-      if (popup.frequency === 'once_per_session') {
-        sessionStorage.setItem(`popup_${popup.id}_shown`, 'true');
-      } else if (popup.frequency === 'once_per_day') {
-        const expiry = new Date();
-        expiry.setDate(expiry.getDate() + 1);
-        localStorage.setItem(`popup_${popup.id}_shown`, expiry.toISOString());
-      }
-    }
-  };
-
-  useEffect(() => {
-    if (!popup || pathname !== '/') return;
-
-    const hasBeenShown = () => {
-      if (popup.frequency === 'once_per_session') {
-        return sessionStorage.getItem(`popup_${popup.id}_shown`) === 'true';
-      }
-      if (popup.frequency === 'once_per_day') {
-        const expiry = localStorage.getItem(`popup_${popup.id}_shown`);
-        if (expiry && new Date(expiry) > new Date()) {
-          return true;
-        }
-        localStorage.removeItem(`popup_${popup.id}_shown`);
-        return false;
-      }
-      return false; // 'always'
-    };
-
-    if (hasBeenShown()) return;
-
-    if (popup.trigger_type === 'delay') {
-      const timer = setTimeout(() => {
-        setIsOpen(true);
-      }, popup.trigger_value * 1000);
-      return () => clearTimeout(timer);
-    }
-
-    if (popup.trigger_type === 'exit_intent') {
-      const handleMouseOut = (e: MouseEvent) => {
-        if (e.clientY <= 0 || e.clientX <= 0 || (e.clientX >= window.innerWidth) || (e.clientY >= window.innerHeight)) {
-            if (!hasBeenShown()) {
-               setIsOpen(true);
+    const trackGtagConversion = useCallback((event: ConversionEvent) => {
+        if (typeof window.gtag === 'function') {
+            try {
+                const snippetFunc = new Function('gtag', event.event_snippet);
+                snippetFunc(window.gtag);
+                console.log(`Conversion event tracked via PopupManager: ${event.name}`);
+            } catch (e) {
+                console.error(`Error executing event snippet for "${event.name}":`, e);
             }
         }
-      };
-      document.addEventListener('mouseout', handleMouseOut);
-      return () => document.removeEventListener('mouseout', handleMouseOut);
-    }
-  }, [popup, pathname]);
+    }, []);
 
-  const getButtonLink = (): string => {
-    if (!popup || !popup.button_link) return "#";
+    const handlePopupClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+        if (conversionEvents.length === 0) return;
+        
+        const targetElement = e.target as Element;
+
+        conversionEvents.forEach(event => {
+            if (event.selector && targetElement.closest(event.selector)) {
+                trackGtagConversion(event);
+            }
+        });
+    }, [conversionEvents, trackGtagConversion]);
+    // --- End Conversion Tracking Logic ---
+
+
+    const checkAndSetPopup = useCallback(async () => {
+        if (!domainType || pathname !== '/') {
+            setPopup(null);
+            return;
+        }
+
+        const supabase = createClient();
+        const { data: popupData, error } = await supabase
+            .from("popups")
+            .select("*, plans!inner(*)")
+            .eq("is_active", true)
+            .eq("display_on", domainType)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .single();
+
+        if (error && error.code !== 'PGRST116') {
+            console.error("Popup fetch error:", error);
+        }
+
+        if (popupData) {
+            setPopup(popupData as Popup);
+        }
+    }, [domainType, pathname]);
+
+    useEffect(() => {
+        checkAndSetPopup();
+    }, [pathname, checkAndSetPopup]);
+
+    const handleClose = () => {
+        setIsOpen(false);
+        if (popup) {
+            if (popup.frequency === 'once_per_session') {
+                sessionStorage.setItem(`popup_${popup.id}_shown`, 'true');
+            } else if (popup.frequency === 'once_per_day') {
+                const expiry = new Date();
+                expiry.setDate(expiry.getDate() + 1);
+                localStorage.setItem(`popup_${popup.id}_shown`, expiry.toISOString());
+            }
+        }
+    };
+
+    useEffect(() => {
+        if (!popup || pathname !== '/') return;
+
+        const hasBeenShown = () => {
+            if (popup.frequency === 'once_per_session') {
+                return sessionStorage.getItem(`popup_${popup.id}_shown`) === 'true';
+            }
+            if (popup.frequency === 'once_per_day') {
+                const expiry = localStorage.getItem(`popup_${popup.id}_shown`);
+                if (expiry && new Date(expiry) > new Date()) {
+                    return true;
+                }
+                localStorage.removeItem(`popup_${popup.id}_shown`);
+                return false;
+            }
+            return false;
+        };
+
+        if (hasBeenShown()) return;
+
+        if (popup.trigger_type === 'delay') {
+            const timer = setTimeout(() => setIsOpen(true), popup.trigger_value * 1000);
+            return () => clearTimeout(timer);
+        }
+
+        if (popup.trigger_type === 'exit_intent') {
+            const handleMouseOut = (e: MouseEvent) => {
+                if (e.clientY <= 0 && !hasBeenShown()) {
+                    setIsOpen(true);
+                }
+            };
+            document.addEventListener('mouseout', handleMouseOut);
+            return () => document.removeEventListener('mouseout', handleMouseOut);
+        }
+    }, [popup, pathname]);
     
-    switch(popup.button_action_type) {
-        case 'whatsapp':
-            const message = popup.button_whatsapp_message ? `?text=${encodeURIComponent(popup.button_whatsapp_message)}` : '';
-            return `https://wa.me/${popup.button_link.replace(/\D/g, '')}${message}`;
-        case 'phone':
-            return `tel:${popup.button_link.replace(/\D/g, '')}`;
-        case 'link':
-        default:
-            return popup.button_link;
-    }
-  };
+    const getButtonLink = (): string => {
+        if (!popup || !popup.button_link) return "#";
+        switch(popup.button_action_type) {
+            case 'whatsapp':
+                const message = popup.button_whatsapp_message ? `?text=${encodeURIComponent(popup.button_whatsapp_message)}` : '';
+                return `https://wa.me/${popup.button_link.replace(/\D/g, '')}${message}`;
+            case 'phone':
+                return `tel:${popup.button_link.replace(/\D/g, '')}`;
+            default:
+                return popup.button_link;
+        }
+    };
 
-  if (!popup) {
-    return null;
-  }
+    if (!popup) return null;
 
-  return (
-    <AnimatePresence>
-      {isOpen && (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4"
-        onClick={handleClose}
-      >
-        <motion.div
-          initial={{ y: 50, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: 50, opacity: 0 }}
-          className="relative w-full max-w-sm rounded-2xl bg-card text-card-foreground shadow-2xl overflow-hidden"
-          onClick={(e) => e.stopPropagation()} // Impede que o clique feche o modal
-        >
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleClose}
-            className="absolute top-3 right-3 z-10 text-muted-foreground hover:text-foreground"
-          >
-            <X className="h-5 w-5" />
-          </Button>
-
-          {popup.plan_id && popup.plans ? (
-            <PlanPopupContent plan={popup.plans}/>
-          ) : (
-            <>
-              {popup.image_url && (
-                <div className="relative w-full aspect-video">
-                  <Image src={popup.image_url} alt={popup.title || 'Popup Image'} layout="fill" objectFit="cover" />
-                </div>
-              )}
-              <div className="p-6 sm:p-8 text-center">
-                {popup.title && (
-                  <h2 className="text-2xl font-bold mb-2">{popup.title}</h2>
-                )}
-                {popup.content && (
-                  <p className="text-muted-foreground mb-6">{popup.content}</p>
-                )}
-                {popup.button_text && popup.button_link && (
-                  <Button 
-                    asChild 
-                    size="lg"
-                    data-track-event="cta_click"
-                    data-track-prop-button-id={`popup-cta-${popup.id}`}
-                    data-track-prop-popup-name={popup.name}
-                  >
-                    <a href={getButtonLink()} target={popup.button_action_type === 'link' ? '_blank' : undefined} rel="noopener noreferrer">
-                        {popup.button_text}
-                    </a>
-                  </Button>
-                )}
-              </div>
-            </>
-          )}
-        </motion.div>
-      </motion.div>
-      )}
-    </AnimatePresence>
-  );
+    return (
+        <AnimatePresence>
+            {isOpen && (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4"
+                    onClick={handleClose}
+                >
+                    <motion.div
+                        initial={{ y: 50, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: 50, opacity: 0 }}
+                        className="relative w-full max-w-sm rounded-2xl bg-card text-card-foreground shadow-2xl overflow-hidden"
+                        onClick={handlePopupClick} // Attach local click handler here
+                    >
+                        <Button variant="ghost" size="icon" onClick={handleClose} className="absolute top-3 right-3 z-10 text-muted-foreground hover:text-foreground">
+                            <X className="h-5 w-5" />
+                        </Button>
+                        {popup.plan_id && popup.plans ? (
+                            <PlanPopupContent plan={popup.plans}/>
+                        ) : (
+                            <>
+                                {popup.image_url && (
+                                    <div className="relative w-full aspect-video">
+                                        <Image src={popup.image_url} alt={popup.title || 'Popup Image'} layout="fill" objectFit="cover" />
+                                    </div>
+                                )}
+                                <div className="p-6 sm:p-8 text-center">
+                                    {popup.title && <h2 className="text-2xl font-bold mb-2">{popup.title}</h2>}
+                                    {popup.content && <p className="text-muted-foreground mb-6">{popup.content}</p>}
+                                    {popup.button_text && popup.button_link && (
+                                        <Button asChild size="lg" data-track-event="cta_click" data-track-prop-button-id={`popup-cta-${popup.id}`}>
+                                            <a href={getButtonLink()} target={popup.button_action_type === 'link' ? '_blank' : undefined} rel="noopener noreferrer">
+                                                {popup.button_text}
+                                            </a>
+                                        </Button>
+                                    )}
+                                </div>
+                            </>
+                        )}
+                    </motion.div>
+                </motion.div>
+            )}
+        </AnimatePresence>
+    );
 }
