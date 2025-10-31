@@ -192,7 +192,6 @@ export default function StatisticsPage() {
         
         setTopPlans(Object.entries(planClickGroups).map(([name, clicks]) => ({ name, clicks })).sort((a, b) => b.clicks.length - a.clicks.length));
 
-
         const combinedFeed: Activity[] = [
             ...(visitsData.map(v => ({ ...v, type: 'visit' as const }))),
             ...(eventsData.map(e => ({ ...e, type: 'event' as const })))
@@ -226,30 +225,24 @@ export default function StatisticsPage() {
     // Supabase Realtime Subscription
     useEffect(() => {
         const supabase = createClient();
-        const channel = supabase
-            .channel('statistics-realtime')
-            .on(
-                'postgres_changes',
-                { event: 'INSERT', schema: 'public', table: 'visits' },
-                () => {
-                    if (dateRange?.from && dateRange?.to) {
-                       fetchData(dateRange.from, dateRange.to, selectedDomain);
-                    }
-                }
-            )
-            .on(
-                'postgres_changes',
-                { event: 'INSERT', schema: 'public', table: 'events' },
-                () => {
-                     if (dateRange?.from && dateRange?.to) {
-                       fetchData(dateRange.from, dateRange.to, selectedDomain);
-                    }
-                }
-            )
+        const handleRealtimeUpdate = (payload: any) => {
+            if (dateRange?.from && dateRange?.to) {
+                // Simple re-fetch on any relevant insert
+                fetchData(dateRange.from, dateRange.to, selectedDomain);
+            }
+        };
+
+        const visitsChannel = supabase.channel('visits-realtime')
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'visits' }, handleRealtimeUpdate)
+            .subscribe();
+            
+        const eventsChannel = supabase.channel('events-realtime')
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'events' }, handleRealtimeUpdate)
             .subscribe();
 
         return () => {
-            supabase.removeChannel(channel);
+            supabase.removeChannel(visitsChannel);
+            supabase.removeChannel(eventsChannel);
         };
     }, [fetchData, dateRange, selectedDomain]);
     
@@ -277,6 +270,20 @@ export default function StatisticsPage() {
         return format(new Date(value), "d MMM", { locale: ptBR });
     };
     
+    const ActivityIcon = ({ type, eventName }: { type: string, eventName?: string }) => {
+        if (type === 'visit') return <Eye className="w-4 h-4 text-muted-foreground" />;
+        if (eventName === 'signup_form_submit') return <Handshake className="w-4 h-4 text-green-500" />;
+        if (eventName === 'cta_click') return <MousePointerClick className="w-4 h-4 text-blue-500" />;
+        return <MousePointerClick className="w-4 h-4 text-muted-foreground" />;
+    };
+
+    const ActivityText = ({ activity }: { activity: Activity }) => {
+        if (activity.type === 'visit') return `Visita em ${activity.pathname}`;
+        if (activity.name === 'signup_form_submit') return `Novo lead assinou!`;
+        if (activity.name === 'cta_click') return `Clique em "${activity.properties.button_id || 'Elemento'}"`;
+        return `Evento: ${activity.name}`;
+    };
+
     const ClicksModalContent = ({ clicks }: { clicks: Event[] }) => {
         const clicksByVisitor = useMemo(() => {
             return clicks.reduce((acc, click) => {
@@ -438,11 +445,11 @@ export default function StatisticsPage() {
                         {activityFeed.map((activity) => (
                             <div key={activity.id} className="flex items-start gap-3">
                                 <div className="grid place-items-center bg-secondary rounded-full w-8 h-8 flex-shrink-0">
-                                    {activity.type === 'visit' ? <Eye className="w-4 h-4 text-muted-foreground" /> : <MousePointerClick className="w-4 h-4 text-muted-foreground"/>}
+                                   <ActivityIcon type={activity.type} eventName={activity.type === 'event' ? activity.name : undefined} />
                                 </div>
                                 <div>
                                     <p className="text-sm font-medium text-foreground">
-                                        {activity.type === 'visit' ? `Visita em ${activity.pathname}` : `Clique em "${activity.properties.button_id || 'Elemento'}"`}
+                                        <ActivityText activity={activity} />
                                     </p>
                                     <p className="text-xs text-muted-foreground">
                                         {formatDistanceToNow(new Date(activity.created_at), { addSuffix: true, locale: ptBR })}
