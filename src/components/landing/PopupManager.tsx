@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -67,11 +68,14 @@ const getFeatureIcon = (feature: string) => {
 const formatBRL = (value: number) =>
   value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
+const generatePlanSlug = (plan: Pick<Plan, 'type' | 'speed'>) => {
+    return `${plan.type}-${plan.speed.replace(/\s+/g, '-').toLowerCase()}`;
+}
 
 const PlanPopupContent = ({ plan }: { plan: Plan }) => {
     const priceBRL = formatBRL(plan.price);
     const firstMonthPriceBRL = plan.first_month_price ? formatBRL(plan.first_month_price) : null;
-    const slug = `${plan.type}-${plan.speed.replace(/\s+/g, '-').toLowerCase()}`;
+    const slug = generatePlanSlug(plan);
     const planName = `${plan.speed}`;
     const hasWhatsapp = !!plan.whatsapp_number;
     const whatsappMessage = plan.whatsapp_message?.replace('{{VELOCIDADE}}', plan.speed) || `Olá, gostaria de mais informações sobre o plano de ${plan.speed}.`;
@@ -86,7 +90,7 @@ const PlanPopupContent = ({ plan }: { plan: Plan }) => {
                             size="lg" 
                             className="w-full mt-6"
                             data-track-event="cta_click"
-                            data-track-prop-button-id={`popup-assinar-${slug}`}
+                            data-track-prop-button-id={`cta-saiba-mais-${slug}`}
                             data-track-prop-plan-name={planName}
                             data-track-prop-plan-price={plan.price}
                          >
@@ -106,7 +110,7 @@ const PlanPopupContent = ({ plan }: { plan: Plan }) => {
                                 variant="default" 
                                 size="lg"
                                 data-track-event="cta_click"
-                                data-track-prop-button-id={`popup-continuar-site-${slug}`}
+                                data-track-prop-button-id={`cta-site-${slug}`}
                                 data-track-prop-plan-name={planName}
                             >
                                 <Link href="/assinar">
@@ -120,7 +124,7 @@ const PlanPopupContent = ({ plan }: { plan: Plan }) => {
                                 size="lg" 
                                 className="border-green-600 text-green-600 hover:bg-green-50 hover:text-green-700"
                                 data-track-event="cta_click"
-                                data-track-prop-button-id={`popup-whatsapp-${slug}`}
+                                data-track-prop-button-id={`cta-whatsapp-${slug}`}
                                 data-track-prop-plan-name={planName}
                             >
                                 <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
@@ -139,7 +143,7 @@ const PlanPopupContent = ({ plan }: { plan: Plan }) => {
                 asChild size="lg" 
                 className="w-full mt-6"
                 data-track-event="cta_click"
-                data-track-prop-button-id={`popup-assinar-${slug}`}
+                data-track-prop-button-id={`cta-site-${slug}`}
                 data-track-prop-plan-name={planName}
                 data-track-prop-plan-price={plan.price}
             >
@@ -234,7 +238,7 @@ export function PopupManager({ domainType }: PopupManagerProps) {
         };
 
         document.addEventListener('click', handler, { capture: true });
-        return () => document.removeEventListener('click', handler, { capture: true });
+        return () => document.removeEventListener('click', handler, { capture: true } as any);
     }, [conversionEvents, trackGtagConversion]);
     // --- End Conversion Tracking Logic ---
     
@@ -344,6 +348,10 @@ export function PopupManager({ domainType }: PopupManagerProps) {
         }
     };
 
+    const handlePopupClick = (e: React.MouseEvent) => {
+      e.stopPropagation();
+    };
+
     if (!popup) return null;
 
     return (
@@ -361,7 +369,7 @@ export function PopupManager({ domainType }: PopupManagerProps) {
                         animate={{ y: 0, opacity: 1 }}
                         exit={{ y: 50, opacity: 0 }}
                         className="relative w-full max-w-sm rounded-2xl bg-card text-card-foreground shadow-2xl overflow-hidden"
-                        onClick={(e) => e.stopPropagation()}
+                        onClick={handlePopupClick}
                     >
                         <Button variant="ghost" size="icon" onClick={handleClose} className="absolute top-3 right-3 z-10 text-muted-foreground hover:text-foreground">
                             <X className="h-5 w-5" />
@@ -379,7 +387,7 @@ export function PopupManager({ domainType }: PopupManagerProps) {
                                     {popup.title && <h2 className="text-2xl font-bold mb-2">{popup.title}</h2>}
                                     {popup.content && <p className="text-muted-foreground mb-6">{popup.content}</p>}
                                     {popup.button_text && popup.button_link && (
-                                        <Button asChild size="lg" data-track-event="cta_click" data-track-prop-button-id={`popup-cta-${popup.id}`}>
+                                        <Button asChild size="lg" data-track-event="cta_click" data-track-prop-button-id={`cta-popup-custom-${popup.id}`}>
                                             <a href={getButtonLink()} target={popup.button_action_type === 'link' ? '_blank' : undefined} rel="noopener noreferrer">
                                                 {popup.button_text}
                                             </a>

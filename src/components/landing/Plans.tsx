@@ -58,9 +58,13 @@ const ICONS: { [key: string]: React.ElementType } = {
 const formatBRL = (value: number) =>
   value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
+const generatePlanSlug = (plan: Pick<Plan, 'type' | 'speed'>) => {
+    return `${plan.type}-${plan.speed.replace(/\s+/g, '-').toLowerCase()}`;
+}
+
 const PlanDetailsModal = ({ plan, children }: { plan: Plan, children: React.ReactNode }) => {
-    const slug = `${plan.type}-${plan.speed.replace(/\s+/g, '-').toLowerCase()}`;
-    const planName = `${plan.speed} MEGA`;
+    const slug = generatePlanSlug(plan);
+    const planName = `${plan.speed}`;
     
     return (
         <Dialog>
@@ -101,7 +105,7 @@ const PlanDetailsModal = ({ plan, children }: { plan: Plan, children: React.Reac
                         size="lg"
                         className="bg-[#03bf03] hover:bg-[#03bf03]/90 text-white font-bold"
                         data-track-event="cta_click"
-                        data-track-prop-button-id={`assinar-modal-plano-${slug}`}
+                        data-track-prop-button-id={`cta-site-${slug}`}
                         data-track-prop-plan-name={planName}
                         data-track-prop-plan-price={plan.price}
                     >
@@ -174,11 +178,11 @@ export function Plans({ city }: PlansProps) {
   const currentPlans = allPlans.filter(p => p.type === planType);
 
   const PlanCard = ({ plan, index }: { plan: Plan, index: number }) => {
-    const slug = `${plan.type}-${plan.speed.replace(/\s+/g, '-').toLowerCase()}`;
+    const slug = generatePlanSlug(plan);
     const planName = `${plan.speed}`;
     const priceBRL = formatBRL(plan.price);
     const firstMonthPriceBRL = plan.first_month_price ? formatBRL(plan.first_month_price) : null;
-    const whatsappMessage = plan.whatsapp_message?.replace('{{VELOCIDADE}}', plan.speed) || `Olá, gostaria de mais informações sobre o plano de ${plan.speed} MEGA.`;
+    const whatsappMessage = plan.whatsapp_message?.replace('{{VELOCIDADE}}', plan.speed) || `Olá, gostaria de mais informações sobre o plano de ${plan.speed}.`;
     const whatsappUrl = `https://wa.me/${plan.whatsapp_number}?text=${encodeURIComponent(whatsappMessage)}`;
 
     return (
@@ -271,7 +275,7 @@ export function Plans({ city }: PlansProps) {
                      <Button id={`plan-cta-saiba-mais-${slug}`}
                         size="lg"
                         data-track-event="cta_click"
-                        data-track-prop-button-id={`saiba-mais-plano-${slug}`}
+                        data-track-prop-button-id={`cta-saiba-mais-${slug}`}
                         data-track-prop-plan-name={planName}
                         data-track-prop-plan-price={plan.price}
                         className="w-full font-bold bg-[#03bf03] hover:bg-[#03bf03]/90 text-white"
@@ -294,7 +298,7 @@ export function Plans({ city }: PlansProps) {
                             size="lg"
                             className="bg-[#03bf03] hover:bg-[#03bf03]/90 text-white font-bold"
                             data-track-event="cta_click"
-                            data-track-prop-button-id={`continuar-site-plano-${slug}`}
+                            data-track-prop-button-id={`cta-site-${slug}`}
                             data-track-prop-plan-name={planName}
                         >
                             <Link href="/assinar">
@@ -309,7 +313,7 @@ export function Plans({ city }: PlansProps) {
                             size="lg"
                             className="border-green-600 text-green-600 hover:bg-green-50 hover:text-green-700"
                             data-track-event="cta_click"
-                            data-track-prop-button-id={`whatsapp-plano-${slug}`}
+                            data-track-prop-button-id={`cta-whatsapp-${slug}`}
                             data-track-prop-plan-name={planName}
                         >
                             <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
