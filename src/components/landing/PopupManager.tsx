@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -38,6 +37,7 @@ type Popup = {
   trigger_value: number;
   frequency: 'once_per_session' | 'once_per_day' | 'always';
   is_active: boolean;
+  plans: Plan | null; // A relação agora é um objeto único, não um array.
 };
 
 interface PopupManagerProps {
@@ -90,7 +90,7 @@ const PlanPopupContent = ({ plan }: { plan: Plan }) => {
                 <div className="text-center">
                     {firstMonthPriceBRL ? (
                         <>
-                            <p className="font-bold text-yellow-600 flex items-center justify-center gap-1"><Star className="w-4 h-4 text-yellow-500 fill-yellow-500"/> 1º MÊS POR</p>
+                            <p className="font-bold text-yellow-600 flex items-center justify-center gap-1"><Star className="w-4 w-4 text-yellow-500 fill-yellow-500"/> 1º MÊS POR</p>
                             <div className="flex items-baseline justify-center gap-1 whitespace-nowrap text-foreground">
                                 <span className="font-bold text-2xl">R$</span>
                                 <span className="font-bold text-4xl">{firstMonthPriceBRL.split(',')[0]}</span>
@@ -116,7 +116,6 @@ const PlanPopupContent = ({ plan }: { plan: Plan }) => {
 
 export function PopupManager({ domainType }: PopupManagerProps) {
   const [popup, setPopup] = useState<Popup | null>(null);
-  const [plan, setPlan] = useState<Plan | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
 
@@ -124,20 +123,22 @@ export function PopupManager({ domainType }: PopupManagerProps) {
     if (!domainType) return;
 
     const supabase = createClient();
-    const { data: popupData } = await supabase
+    // Correção: Usando `plans!inner(*)` para garantir que a relação seja carregada como um objeto único.
+    const { data: popupData, error } = await supabase
       .from("popups")
-      .select("*, plans(*)")
+      .select("*, plans!left(*)") // Usamos !left para não falhar se plan_id for nulo
       .eq("is_active", true)
       .eq("display_on", domainType)
       .order("created_at", { ascending: false })
       .limit(1)
       .single();
 
+    if (error) {
+        console.error("Popup fetch error:", error);
+    }
+
     if (popupData) {
       setPopup(popupData as Popup);
-      if (popupData.plan_id && popupData.plans) {
-          setPlan(popupData.plans as Plan);
-      }
     }
   }, [domainType]);
 
@@ -204,6 +205,7 @@ export function PopupManager({ domainType }: PopupManagerProps) {
 
   return (
     <AnimatePresence>
+      {isOpen && (
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -215,7 +217,7 @@ export function PopupManager({ domainType }: PopupManagerProps) {
           initial={{ y: 50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 50, opacity: 0 }}
-          className="relative w-full max-w-lg rounded-2xl bg-card text-card-foreground shadow-2xl overflow-hidden"
+          className="relative w-full max-w-md rounded-2xl bg-card text-card-foreground shadow-2xl overflow-hidden"
           onClick={(e) => e.stopPropagation()}
         >
           <Button
@@ -227,8 +229,8 @@ export function PopupManager({ domainType }: PopupManagerProps) {
             <X className="h-5 w-5" />
           </Button>
 
-          {popup.plan_id && plan ? (
-            <PlanPopupContent plan={plan}/>
+          {popup.plan_id && popup.plans ? (
+            <PlanPopupContent plan={popup.plans}/>
           ) : (
             <>
               {popup.image_url && (
@@ -253,6 +255,7 @@ export function PopupManager({ domainType }: PopupManagerProps) {
           )}
         </motion.div>
       </motion.div>
+      )}
     </AnimatePresence>
   );
 }
