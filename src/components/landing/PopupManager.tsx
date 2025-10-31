@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -69,7 +68,7 @@ const formatBRL = (value: number) =>
   value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 const generatePlanSlug = (planType: string, planSpeed: string) => {
-    return `${planType}-${planSpeed.replace(/\s+/g, '-').toLowerCase()}`;
+    return `${planType}-${planSpeed.replace(/\s+/g, '').toLowerCase()}`;
 }
 
 const PlanPopupContent = ({ plan }: { plan: Plan }) => {
@@ -114,7 +113,6 @@ const PlanPopupContent = ({ plan }: { plan: Plan }) => {
                                 data-track-event="cta_click"
                                 data-track-prop-button-id={`cta-site-${slug}`}
                                 data-track-prop-plan-name={planName}
-                                data-track-prop-plan-price={plan.price}
                             >
                                 <Link href="/assinar">
                                     Continuar pelo site
@@ -122,7 +120,7 @@ const PlanPopupContent = ({ plan }: { plan: Plan }) => {
                                 </Link>
                             </Button>
                             <Button 
-                                id={`whatsapp-plano-${slug}`}
+                                id={`whatsapp-plano-popup-${slug}`}
                                 asChild 
                                 variant="outline" 
                                 size="lg" 
@@ -130,7 +128,6 @@ const PlanPopupContent = ({ plan }: { plan: Plan }) => {
                                 data-track-event="cta_click"
                                 data-track-prop-button-id={`whatsapp-plano-${slug}`}
                                 data-track-prop-plan-name={planName}
-                                data-track-prop-plan-price={plan.price}
                             >
                                 <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
                                     Falar no WhatsApp
@@ -230,20 +227,20 @@ export function PopupManager({ domainType }: PopupManagerProps) {
     }, []);
     
     useEffect(() => {
-        const handler = (e: MouseEvent) => {
-            if (conversionEvents.length === 0) return;
-            const target = e.target as Element | null;
-            if (!target) return;
+      const handler = (e: MouseEvent) => {
+        if (conversionEvents.length === 0) return;
+        const target = e.target as Element | null;
+        if (!target) return;
 
-            conversionEvents.forEach((event) => {
-                if (event.selector && target.closest(event.selector)) {
-                    trackGtagConversion(event);
-                }
-            });
-        };
+        conversionEvents.forEach((event) => {
+          if (event.selector && target.closest(event.selector)) {
+            trackGtagConversion(event);
+          }
+        });
+      };
 
-        document.addEventListener('click', handler, { capture: true });
-        return () => document.removeEventListener('click', handler, { capture: true } as any);
+      document.addEventListener('click', handler, { capture: true });
+      return () => document.removeEventListener('click', handler, { capture: true } as any);
     }, [conversionEvents, trackGtagConversion]);
     
     useEffect(() => {
@@ -321,7 +318,7 @@ export function PopupManager({ domainType }: PopupManagerProps) {
             return false;
         };
 
-        if (hasBeenShown()) return;
+        if (isOpen || hasBeenShown()) return;
 
         if (popup.trigger_type === 'delay') {
             const timer = setTimeout(() => setIsOpen(true), popup.trigger_value * 1000);
