@@ -67,15 +67,14 @@ const getFeatureIcon = (feature: string) => {
 const formatBRL = (value: number) =>
   value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-const generatePlanSlug = (planType: string, planSpeed: string) => {
-    const speed = planSpeed.replace(/\s+/g, '-').toLowerCase();
-    return `${planType}-${speed}`;
+const generatePlanSlug = (plan: Pick<Plan, 'type' | 'speed'>) => {
+    return `${plan.type}-${plan.speed.replace(/\s+/g, '-').toLowerCase()}`;
 }
 
 const PlanPopupContent = ({ plan }: { plan: Plan }) => {
     const priceBRL = formatBRL(plan.price);
     const firstMonthPriceBRL = plan.first_month_price ? formatBRL(plan.first_month_price) : null;
-    const slug = generatePlanSlug(plan.type, plan.speed);
+    const slug = generatePlanSlug({type: plan.type, speed: plan.speed});
     const planName = `${plan.speed}`;
     const hasWhatsapp = !!plan.whatsapp_number;
     const whatsappMessage = plan.whatsapp_message?.replace('{{VELOCIDADE}}', plan.speed) || `Olá, gostaria de mais informações sobre o plano de ${plan.speed}.`;
@@ -228,20 +227,20 @@ export function PopupManager({ domainType }: PopupManagerProps) {
     }, []);
     
     useEffect(() => {
-      const handler = (e: MouseEvent) => {
-        if (conversionEvents.length === 0) return;
-        const target = e.target as Element | null;
-        if (!target) return;
+        const handler = (e: MouseEvent) => {
+            if (conversionEvents.length === 0) return;
+            const target = e.target as Element | null;
+            if (!target) return;
 
-        conversionEvents.forEach((event) => {
-          if (event.selector && target.closest(event.selector)) {
-            trackGtagConversion(event);
-          }
-        });
-      };
+            conversionEvents.forEach((event) => {
+            if (event.selector && target.closest(event.selector)) {
+                trackGtagConversion(event);
+            }
+            });
+        };
 
-      document.addEventListener('click', handler, { capture: true });
-      return () => document.removeEventListener('click', handler, { capture: true } as any);
+        document.addEventListener('click', handler, { capture: true });
+        return () => document.removeEventListener('click', handler, { capture: true } as any);
     }, [conversionEvents, trackGtagConversion]);
     
     useEffect(() => {
@@ -297,6 +296,8 @@ export function PopupManager({ domainType }: PopupManagerProps) {
                 const expiry = new Date();
                 expiry.setDate(expiry.getDate() + 1);
                 localStorage.setItem(`popup_${popup.id}_shown`, expiry.toISOString());
+            } else if (popup.frequency === 'always') {
+                sessionStorage.setItem(`popup_${popup.id}_closed`, 'true');
             }
         }
     };
@@ -305,6 +306,8 @@ export function PopupManager({ domainType }: PopupManagerProps) {
         if (!popup || pathname !== '/') return;
 
         const hasBeenShown = () => {
+             if (sessionStorage.getItem(`popup_${popup.id}_closed`) === 'true') return true;
+
             if (popup.frequency === 'once_per_session') {
                 return sessionStorage.getItem(`popup_${popup.id}_shown`) === 'true';
             }
