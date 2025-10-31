@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
@@ -107,7 +108,6 @@ function PopupForm({
     const popupData = { 
         ...data, 
         image_url: imageUrl,
-        updated_at: new Date().toISOString()
     };
     delete (popupData as any).image_file;
     
@@ -115,7 +115,7 @@ function PopupForm({
     if (mode === "add") {
       ({ error } = await supabase.from("popups").insert(popupData));
     } else if (mode === "edit" && popup) {
-      ({ error } = await supabase.from("popups").update(popupData).eq("id", popup.id));
+      ({ error } = await supabase.from("popups").update({ ...popupData, updated_at: new Date().toISOString() }).eq("id", popup.id));
     }
 
     if (error) {
@@ -295,3 +295,6 @@ export default function PopupsPage() {
     </>
   );
 };
+
+
+    
