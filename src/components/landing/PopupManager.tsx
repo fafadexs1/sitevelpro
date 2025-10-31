@@ -68,7 +68,7 @@ const PlanPopupContent = ({ plan }: { plan: Plan }) => {
     const firstMonthPriceBRL = plan.first_month_price ? formatBRL(plan.first_month_price) : null;
     
     return (
-        <div className="p-8 text-center">
+        <div className="p-6 sm:p-8 text-center">
             <h2 className="text-xl font-bold mb-1 text-primary">Oferta Especial!</h2>
             <p className="text-muted-foreground mb-4">Confira este plano que separamos para você:</p>
             <div className="rounded-2xl border bg-secondary p-6 text-left">
@@ -236,7 +236,7 @@ export function PopupManager({ domainType }: PopupManagerProps) {
                   <Image src={popup.image_url} alt={popup.title || 'Popup Image'} layout="fill" objectFit="cover" />
                 </div>
               )}
-              <div className="p-8 text-center">
+              <div className="p-6 sm:p-8 text-center">
                 {popup.title && (
                   <h2 className="text-2xl font-bold mb-2">{popup.title}</h2>
                 )}
