@@ -112,6 +112,7 @@ const PlanPopupContent = ({ plan }: { plan: Plan }) => {
                                 data-track-event="cta_click"
                                 data-track-prop-button-id={`cta-site-${slug}`}
                                 data-track-prop-plan-name={planName}
+                                data-track-prop-plan-price={plan.price}
                             >
                                 <Link href="/assinar">
                                     Continuar pelo site
@@ -126,6 +127,7 @@ const PlanPopupContent = ({ plan }: { plan: Plan }) => {
                                 data-track-event="cta_click"
                                 data-track-prop-button-id={`cta-whatsapp-${slug}`}
                                 data-track-prop-plan-name={planName}
+                                data-track-prop-plan-price={plan.price}
                             >
                                 <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
                                     Falar no WhatsApp
@@ -209,7 +211,6 @@ export function PopupManager({ domainType }: PopupManagerProps) {
     const pathname = usePathname();
     const [conversionEvents, setConversionEvents] = useState<ConversionEvent[]>([]);
 
-    // --- Conversion Tracking Logic ---
     const trackGtagConversion = useCallback((event: ConversionEvent) => {
         if (typeof window.gtag === 'function') {
             try {
@@ -240,7 +241,6 @@ export function PopupManager({ domainType }: PopupManagerProps) {
         document.addEventListener('click', handler, { capture: true });
         return () => document.removeEventListener('click', handler, { capture: true } as any);
     }, [conversionEvents, trackGtagConversion]);
-    // --- End Conversion Tracking Logic ---
     
     useEffect(() => {
         const fetchEvents = async () => {
