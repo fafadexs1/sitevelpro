@@ -342,29 +342,28 @@ create table if not exists popups (
     image_url text,
     button_text text,
     button_link text,
-    display_on text default 'sales_page', -- 'sales_page' ou 'main_site'
-    trigger_type text default 'delay', -- 'delay', 'exit_intent'
-    trigger_value integer default 5, -- segundos para 'delay', sensibilidade para 'exit_intent'
-    frequency text default 'once_per_session', -- 'once_per_session', 'once_per_day', 'always'
+    button_action_type text default 'link'::text not null,
+    button_whatsapp_message text,
+    display_on text default 'sales_page' not null,
+    trigger_type text default 'delay' not null,
+    trigger_value integer default 5,
+    frequency text default 'once_per_session' not null,
     is_active boolean default false not null,
     created_at timestamp with time zone default timezone('utc'::text, now()) not null,
     updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
--- Políticas para Popups (Exemplo)
--- Permite que usuários autenticados gerenciem os popups
+-- Políticas para Popups
 create policy "Allow full access to authenticated users on popups"
 on public.popups for all
 to authenticated
 using (true)
 with check (true);
 
--- Permite que qualquer pessoa leia os popups
 create policy "Allow public read access on popups"
 on public.popups for select
 to anon, authenticated
 using (true);
-
 
 -- Cria o bucket 'canais' se ele não existir
 -- As políticas RLS garantem que ele seja público

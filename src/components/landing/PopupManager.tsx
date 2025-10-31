@@ -9,7 +9,6 @@ import { Button } from "../ui/button";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 type Plan = {
   id: string;
@@ -32,12 +31,14 @@ type Popup = {
   image_url: string | null;
   button_text: string | null;
   button_link: string | null;
+  button_action_type: 'link' | 'whatsapp' | 'phone';
+  button_whatsapp_message: string | null;
   display_on: 'sales_page' | 'main_site';
   trigger_type: 'delay' | 'exit_intent';
   trigger_value: number;
   frequency: 'once_per_session' | 'once_per_day' | 'always';
   is_active: boolean;
-  plans: Plan | null; // A relação agora é um objeto único, não um array.
+  plans: Plan | null;
 };
 
 interface PopupManagerProps {
@@ -123,17 +124,16 @@ export function PopupManager({ domainType }: PopupManagerProps) {
     if (!domainType) return;
 
     const supabase = createClient();
-    // Correção: Usando `plans!inner(*)` para garantir que a relação seja carregada como um objeto único.
     const { data: popupData, error } = await supabase
       .from("popups")
-      .select("*, plans!left(*)") // Usamos !left para não falhar se plan_id for nulo
+      .select("*, plans!left(*)")
       .eq("is_active", true)
       .eq("display_on", domainType)
       .order("created_at", { ascending: false })
       .limit(1)
       .single();
 
-    if (error) {
+    if (error && error.code !== 'PGRST116') { // PGRST116: no rows found
         console.error("Popup fetch error:", error);
     }
 
@@ -199,6 +199,21 @@ export function PopupManager({ domainType }: PopupManagerProps) {
     }
   }, [popup]);
 
+  const getButtonLink = (): string => {
+    if (!popup || !popup.button_link) return "#";
+    
+    switch(popup.button_action_type) {
+        case 'whatsapp':
+            const message = popup.button_whatsapp_message ? `?text=${encodeURIComponent(popup.button_whatsapp_message)}` : '';
+            return `https://wa.me/${popup.button_link.replace(/\D/g, '')}${message}`;
+        case 'phone':
+            return `tel:${popup.button_link.replace(/\D/g, '')}`;
+        case 'link':
+        default:
+            return popup.button_link;
+    }
+  };
+
   if (!isOpen || !popup) {
     return null;
   }
@@ -247,7 +262,9 @@ export function PopupManager({ domainType }: PopupManagerProps) {
                 )}
                 {popup.button_text && popup.button_link && (
                   <Button asChild size="lg">
-                    <Link href={popup.button_link}>{popup.button_text}</Link>
+                    <a href={getButtonLink()} target={popup.button_action_type === 'link' ? '_blank' : undefined} rel="noopener noreferrer">
+                        {popup.button_text}
+                    </a>
                   </Button>
                 )}
               </div>

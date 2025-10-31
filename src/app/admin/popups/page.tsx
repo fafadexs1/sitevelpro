@@ -6,7 +6,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { PlusCircle, Trash2, Edit, Loader2, MessageSquare, Upload, Package } from "lucide-react";
+import { PlusCircle, Trash2, Edit, Loader2, MessageSquare, Upload, Package, Link2, Phone, MessageCircle as MessageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -33,6 +33,8 @@ type Popup = {
   image_url: string | null;
   button_text: string | null;
   button_link: string | null;
+  button_action_type: 'link' | 'whatsapp' | 'phone';
+  button_whatsapp_message: string | null;
   display_on: 'sales_page' | 'main_site';
   trigger_type: 'delay' | 'exit_intent';
   trigger_value: number;
@@ -53,6 +55,8 @@ const popupSchema = z.object({
   content: z.string().optional().nullable(),
   button_text: z.string().optional().nullable(),
   button_link: z.string().optional().nullable(),
+  button_action_type: z.enum(['link', 'whatsapp', 'phone']).default('link'),
+  button_whatsapp_message: z.string().optional().nullable(),
   display_on: z.enum(['sales_page', 'main_site']),
   trigger_type: z.enum(['delay', 'exit_intent']),
   trigger_value: z.coerce.number().min(0, "O valor do gatilho deve ser positivo."),
@@ -97,7 +101,11 @@ function PopupForm({
 
   const form = useForm<PopupFormData>({
     resolver: zodResolver(popupSchema),
-    defaultValues: popup ? { ...popup, plan_id: popup.plan_id || null } : {
+    defaultValues: popup ? { 
+        ...popup, 
+        plan_id: popup.plan_id || null, 
+        button_action_type: popup.button_action_type || 'link',
+    } : {
       name: "",
       is_active: true,
       display_on: "sales_page",
@@ -105,11 +113,14 @@ function PopupForm({
       trigger_value: 5,
       frequency: "once_per_session",
       plan_id: null,
+      button_action_type: 'link',
+      button_whatsapp_message: 'Olá, gostaria de saber mais sobre esta oferta!',
     },
   });
 
   const selectedPlanId = form.watch('plan_id');
   const isPlanPopup = !!selectedPlanId;
+  const buttonActionType = form.watch('button_action_type');
 
   const onSubmit = async (data: PopupFormData) => {
     setIsSubmitting(true);
@@ -127,30 +138,29 @@ function PopupForm({
         const { data: urlData } = supabase.storage.from('popup-images').getPublicUrl(filePath);
         imageUrl = urlData.publicUrl;
     } else if (isPlanPopup) {
-        imageUrl = null; // Garante que não haja imagem se for um pop-up de plano
+        imageUrl = null;
     }
 
-
-    const popupData: Partial<PopupFormData & { image_url: string | null }> = { 
+    const popupData: Partial<Popup> = { 
         ...data, 
         image_url: imageUrl,
     };
     
-    // Se for um popup de plano, limpa os campos de conteúdo customizado.
     if(isPlanPopup) {
         popupData.title = null;
         popupData.content = null;
         popupData.button_text = null;
         popupData.button_link = null;
-        if ('image_file' in popupData) delete (popupData as any).image_file; // Garante que o arquivo não será salvo
+        popupData.button_action_type = 'link'; // Reset action type for plan popups
+        popupData.button_whatsapp_message = null;
+        delete (popupData as any).image_file;
     }
-
 
     delete (popupData as any).image_file;
     
     let error;
     if (mode === "add") {
-      ({ error } = await supabase.from("popups").insert(popupData));
+      ({ error } = await supabase.from("popups").insert({ ...popupData, updated_at: new Date().toISOString() }));
     } else if (mode === "edit" && popup) {
       ({ error } = await supabase.from("popups").update({ ...popupData, updated_at: new Date().toISOString() }).eq("id", popup.id));
     }
@@ -206,10 +216,34 @@ function PopupForm({
                         <FormMessage />
                     </FormItem>
                 )}/>
+                
+                <div className="space-y-4 border-t pt-4">
+                    <h4 className="text-sm font-medium text-muted-foreground">Ação do Botão</h4>
+                     <FormField control={form.control} name="button_text" render={({ field }) => (<FormItem><FormLabel>Texto do Botão</FormLabel><FormControl><Input placeholder="Ex: Aproveitar" {...field} disabled={isPlanPopup} value={field.value ?? ''}/></FormControl></FormItem>)} />
 
-                <div className="grid grid-cols-2 gap-4">
-                    <FormField control={form.control} name="button_text" render={({ field }) => (<FormItem><FormLabel>Texto do Botão</FormLabel><FormControl><Input placeholder="Ex: Aproveitar" {...field} disabled={isPlanPopup} value={field.value ?? ''}/></FormControl></FormItem>)} />
-                    <FormField control={form.control} name="button_link" render={({ field }) => (<FormItem><FormLabel>Link do Botão</FormLabel><FormControl><Input placeholder="/#planos" {...field} disabled={isPlanPopup} value={field.value ?? ''}/></FormControl></FormItem>)} />
+                    <div className="grid grid-cols-2 gap-4 items-start">
+                        <FormField control={form.control} name="button_action_type" render={({ field }) => (
+                            <FormItem><FormLabel>Tipo de Ação</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value} disabled={isPlanPopup}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent>
+                                <SelectItem value="link">Abrir um link</SelectItem>
+                                <SelectItem value="whatsapp">Enviar para WhatsApp</SelectItem>
+                                <SelectItem value="phone">Ligar para Telefone</SelectItem>
+                            </SelectContent></Select><FormMessage /></FormItem>
+                        )}/>
+                        <FormField control={form.control} name="button_link" render={({ field }) => (
+                            <FormItem><FormLabel>
+                                {buttonActionType === 'link' && 'URL do Link'}
+                                {buttonActionType === 'whatsapp' && 'Nº do WhatsApp (55...)'}
+                                {buttonActionType === 'phone' && 'Nº do Telefone (0800...)'}
+                            </FormLabel><FormControl><Input placeholder={
+                                buttonActionType === 'link' ? '/#planos' :
+                                buttonActionType === 'whatsapp' ? '5561999998888' : '08001234567'
+                            } {...field} disabled={isPlanPopup} value={field.value ?? ''}/></FormControl></FormItem>
+                        )}/>
+                    </div>
+                     {buttonActionType === 'whatsapp' && (
+                         <FormField control={form.control} name="button_whatsapp_message" render={({ field }) => (<FormItem><FormLabel>Mensagem Padrão (WhatsApp)</FormLabel><FormControl><Textarea placeholder="Mensagem que será preenchida..." {...field} disabled={isPlanPopup} value={field.value ?? ''}/></FormControl></FormItem>)} />
+                     )}
                 </div>
             </div>
 
