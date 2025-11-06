@@ -97,6 +97,7 @@ create policy "Enable read access for own invoices" on public.invoices
 -- Cria a tabela de slides do herói
 create table if not exists hero_slides (
   id uuid default gen_random_uuid() primary key,
+  slide_type text default 'content'::text not null,
   pre_title text,
   title_regular text,
   title_highlighted text,

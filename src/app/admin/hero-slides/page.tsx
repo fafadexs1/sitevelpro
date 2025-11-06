@@ -59,12 +59,15 @@ import { createClient } from "@/utils/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
 import { Slider } from "@/components/ui/slider";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 
 // ==================================
 // Tipagem e Schema
 // ==================================
 type HeroSlide = {
   id: string;
+  slide_type: 'content' | 'image_only';
   pre_title?: string;
   title_regular?: string;
   title_highlighted?: string;
@@ -83,8 +86,9 @@ type HeroSlide = {
 };
 
 const slideSchema = z.object({
+  slide_type: z.enum(['content', 'image_only']).default('content'),
   pre_title: z.string().optional(),
-  title_regular: z.string().min(1, "O título é obrigatório."),
+  title_regular: z.string().optional(),
   title_highlighted: z.string().optional(),
   subtitle: z.string().optional(),
   image_opacity: z.number().min(0).max(100).default(30),
@@ -104,6 +108,14 @@ const slideSchema = z.object({
     .optional()
     .refine((file) => !file || (file instanceof File && file.size <= 5 * 1024 * 1024), `Tamanho máximo de 5MB.`)
     .refine((file) => !file || (file instanceof File && ["image/jpeg", "image/png", "image/webp"].includes(file.type)), "Apenas .jpg, .png e .webp."),
+}).refine(data => {
+    if (data.slide_type === 'content') {
+        return !!data.title_regular;
+    }
+    return true;
+}, {
+    message: "O título é obrigatório para slides do tipo 'Conteúdo'.",
+    path: ["title_regular"],
 });
 type SlideFormData = z.infer<typeof slideSchema>;
 
@@ -128,10 +140,11 @@ function SlideForm({
 
   const form = useForm<SlideFormData>({
     resolver: zodResolver(slideSchema),
-    defaultValues: slide ? { ...slide, image_opacity: slide.image_opacity ?? 30 } : { is_active: true, sort_order: 0, image_opacity: 30 },
+    defaultValues: slide ? { ...slide, image_opacity: slide.image_opacity ?? 30, slide_type: slide.slide_type || 'content' } : { is_active: true, sort_order: 0, image_opacity: 30, slide_type: 'content' },
   });
 
   const opacityValue = form.watch("image_opacity");
+  const slideType = form.watch("slide_type");
 
   const onSubmit = async (data: SlideFormData) => {
     setIsSubmitting(true);
@@ -199,12 +212,37 @@ function SlideForm({
         </DialogHeader>
 
         <div className="max-h-[70vh] overflow-y-auto space-y-4 p-1 pr-4">
-            <FormField control={form.control} name="title_regular" render={({ field }) => (<FormItem><FormLabel>Título Principal</FormLabel><FormControl><Input placeholder="Internet para tudo que importa" {...field} /></FormControl><FormMessage /></FormItem>)} />
-            <div className="grid grid-cols-2 gap-4">
-              <FormField control={form.control} name="title_highlighted" render={({ field }) => (<FormItem><FormLabel>Título em Destaque</FormLabel><FormControl><Input placeholder="ultrarrápida" {...field} /></FormControl><FormMessage /></FormItem>)} />
-              <FormField control={form.control} name="pre_title" render={({ field }) => (<FormItem><FormLabel>Pré-título</FormLabel><FormControl><Input placeholder="Nova geração: Wi-Fi 6" {...field} /></FormControl><FormMessage /></FormItem>)} />
+            <FormField
+                control={form.control}
+                name="slide_type"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Tipo de Slide</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Selecione o tipo" />
+                        </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                            <SelectItem value="content">Conteúdo</SelectItem>
+                            <SelectItem value="image_only">Imagem Pura</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">"Conteúdo" tem texto e botões sobre a imagem. "Imagem Pura" mostra apenas a imagem.</p>
+                    <FormMessage />
+                    </FormItem>
+                )}
+            />
+
+            <div className={cn("space-y-4", slideType === 'image_only' && 'opacity-40 pointer-events-none')}>
+                <FormField control={form.control} name="title_regular" render={({ field }) => (<FormItem><FormLabel>Título Principal</FormLabel><FormControl><Input placeholder="Internet para tudo que importa" {...field} disabled={slideType === 'image_only'}/></FormControl><FormMessage /></FormItem>)} />
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField control={form.control} name="title_highlighted" render={({ field }) => (<FormItem><FormLabel>Título em Destaque</FormLabel><FormControl><Input placeholder="ultrarrápida" {...field} disabled={slideType === 'image_only'}/></FormControl><FormMessage /></FormItem>)} />
+                  <FormField control={form.control} name="pre_title" render={({ field }) => (<FormItem><FormLabel>Pré-título</FormLabel><FormControl><Input placeholder="Nova geração: Wi-Fi 6" {...field} disabled={slideType === 'image_only'}/></FormControl><FormMessage /></FormItem>)} />
+                </div>
+                <FormField control={form.control} name="subtitle" render={({ field }) => (<FormItem><FormLabel>Subtítulo</FormLabel><FormControl><Textarea placeholder="Planos estáveis, latência baixíssima..." {...field} disabled={slideType === 'image_only'}/></FormControl><FormMessage /></FormItem>)} />
             </div>
-            <FormField control={form.control} name="subtitle" render={({ field }) => (<FormItem><FormLabel>Subtítulo</FormLabel><FormControl><Textarea placeholder="Planos estáveis, latência baixíssima..." {...field} /></FormControl><FormMessage /></FormItem>)} />
             
             <div className="grid md:grid-cols-2 gap-6 pt-4 border-t">
               <FormField control={form.control} name="image_file" render={({ field }) => (
@@ -241,35 +279,42 @@ function SlideForm({
               )}/>
             </div>
 
-             <FormField
-                control={form.control}
-                name="image_opacity"
-                render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Opacidade da Imagem de Fundo ({opacityValue}%)</FormLabel>
-                        <FormControl>
-                            <Slider
-                                defaultValue={[field.value]}
-                                onValueChange={(value) => field.onChange(value[0])}
-                                max={100}
-                                step={1}
-                            />
-                        </FormControl>
-                    </FormItem>
-                )}
-            />
-             <div className="grid grid-cols-2 gap-4">
-                <FormField control={form.control} name="button_primary_text" render={({ field }) => (<FormItem><FormLabel>Botão Primário (Texto)</FormLabel><FormControl><Input placeholder="Conhecer planos" {...field} /></FormControl></FormItem>)} />
-                <FormField control={form.control} name="button_primary_link" render={({ field }) => (<FormItem><FormLabel>Botão Primário (Link)</FormLabel><FormControl><Input placeholder="#planos" {...field} /></FormControl></FormItem>)} />
+             <div className={cn(slideType === 'image_only' && 'opacity-40 pointer-events-none')}>
+                <FormField
+                    control={form.control}
+                    name="image_opacity"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Opacidade da Imagem de Fundo ({opacityValue}%)</FormLabel>
+                            <FormControl>
+                                <Slider
+                                    defaultValue={[field.value]}
+                                    onValueChange={(value) => field.onChange(value[0])}
+                                    max={100}
+                                    step={1}
+                                    disabled={slideType === 'image_only'}
+                                />
+                            </FormControl>
+                        </FormItem>
+                    )}
+                />
+            </div>
+            
+             <div className={cn("space-y-4", slideType === 'image_only' && 'opacity-40 pointer-events-none')}>
+                 <div className="grid grid-cols-2 gap-4">
+                    <FormField control={form.control} name="button_primary_text" render={({ field }) => (<FormItem><FormLabel>Botão Primário (Texto)</FormLabel><FormControl><Input placeholder="Conhecer planos" {...field} disabled={slideType === 'image_only'}/></FormControl></FormItem>)} />
+                    <FormField control={form.control} name="button_primary_link" render={({ field }) => (<FormItem><FormLabel>Botão Primário (Link)</FormLabel><FormControl><Input placeholder="#planos" {...field} /></FormControl></FormItem>)} />
+                 </div>
+                 <div className="grid grid-cols-2 gap-4">
+                    <FormField control={form.control} name="button_secondary_text" render={({ field }) => (<FormItem><FormLabel>Botão Secundário (Texto)</FormLabel><FormControl><Input placeholder="Ver vantagens" {...field} disabled={slideType === 'image_only'}/></FormControl></FormItem>)} />
+                    <FormField control={form.control} name="button_secondary_link" render={({ field }) => (<FormItem><FormLabel>Botão Secundário (Link)</FormLabel><FormControl><Input placeholder="#vantagens" {...field} disabled={slideType === 'image_only'}/></FormControl></FormItem>)} />
+                 </div>
+                 <div className="grid grid-cols-2 gap-4">
+                    <FormField control={form.control} name="feature_1_text" render={({ field }) => (<FormItem><FormLabel>Benefício 1</FormLabel><FormControl><Input placeholder="Garantia de satisfação" {...field} disabled={slideType === 'image_only'}/></FormControl></FormItem>)} />
+                    <FormField control={form.control} name="feature_2_text" render={({ field }) => (<FormItem><FormLabel>Benefício 2</FormLabel><FormControl><Input placeholder="Latência baixíssima" {...field} disabled={slideType === 'image_only'}/></FormControl></FormItem>)} />
+                 </div>
              </div>
-             <div className="grid grid-cols-2 gap-4">
-                <FormField control={form.control} name="button_secondary_text" render={({ field }) => (<FormItem><FormLabel>Botão Secundário (Texto)</FormLabel><FormControl><Input placeholder="Ver vantagens" {...field} /></FormControl></FormItem>)} />
-                <FormField control={form.control} name="button_secondary_link" render={({ field }) => (<FormItem><FormLabel>Botão Secundário (Link)</FormLabel><FormControl><Input placeholder="#vantagens" {...field} /></FormControl></FormItem>)} />
-             </div>
-             <div className="grid grid-cols-2 gap-4">
-                <FormField control={form.control} name="feature_1_text" render={({ field }) => (<FormItem><FormLabel>Benefício 1</FormLabel><FormControl><Input placeholder="Garantia de satisfação" {...field} /></FormControl></FormItem>)} />
-                <FormField control={form.control} name="feature_2_text" render={({ field }) => (<FormItem><FormLabel>Benefício 2</FormLabel><FormControl><Input placeholder="Latência baixíssima" {...field} /></FormControl></FormItem>)} />
-             </div>
+
              <div className="grid grid-cols-2 gap-4">
                 <FormField control={form.control} name="sort_order" render={({ field }) => (<FormItem><FormLabel>Ordem</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
                 <FormField control={form.control} name="is_active" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 mt-4"><FormLabel>Ativo</FormLabel><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)}/>
@@ -365,18 +410,20 @@ export default function HeroSlidesPage() {
                         <TableHead className="w-12"></TableHead>
                         <TableHead className="w-24">Status</TableHead>
                         <TableHead>Título</TableHead>
+                        <TableHead>Tipo</TableHead>
                         <TableHead className="text-right">Ações</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
                 {slides.length === 0 ? (
-                    <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground h-24">Nenhum slide cadastrado.</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground h-24">Nenhum slide cadastrado.</TableCell></TableRow>
                 ) : (
                     slides.map((slide) => (
                     <TableRow key={slide.id}>
                         <TableCell><GripVertical className="h-5 w-5 text-muted-foreground"/></TableCell>
                         <TableCell className="text-foreground">{slide.is_active ? "Ativo" : "Inativo"}</TableCell>
-                        <TableCell className="font-medium text-foreground">{slide.title_regular}</TableCell>
+                        <TableCell className="font-medium text-foreground">{slide.title_regular || '(Imagem Pura)'}</TableCell>
+                        <TableCell className="text-muted-foreground">{slide.slide_type === 'image_only' ? 'Imagem Pura' : 'Conteúdo'}</TableCell>
                         <TableCell className="text-right">
                         <Button variant="ghost" size="sm" className="mr-2" onClick={() => { setEditingSlide(slide); setIsModalOpen(true);}}>
                             <Edit className="h-4 w-4" />
