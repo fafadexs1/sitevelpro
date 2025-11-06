@@ -383,9 +383,7 @@ export function PopupManager({ domainType }: PopupManagerProps) {
                         className="relative w-full max-w-sm rounded-2xl bg-card text-card-foreground shadow-2xl overflow-hidden"
                         onClick={handlePopupClick}
                     >
-                        <Button variant="ghost" size="icon" onClick={handleClose} className="absolute top-3 right-3 z-10 text-muted-foreground hover:text-foreground">
-                            <X className="h-5 w-5" />
-                        </Button>
+                        
                         {popup.plan_id && popup.plans ? (
                             <PlanPopupContent plan={popup.plans}/>
                         ) : (
@@ -408,6 +406,11 @@ export function PopupManager({ domainType }: PopupManagerProps) {
                                 </div>
                             </>
                         )}
+                        <div className="px-6 pb-6 text-center">
+                            <Button variant="destructive" size="sm" onClick={handleClose}>
+                                Fechar
+                            </Button>
+                        </div>
                     </motion.div>
                 </motion.div>
             )}
