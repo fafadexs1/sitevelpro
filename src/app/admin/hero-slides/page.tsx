@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
@@ -67,36 +68,36 @@ import { cn } from "@/lib/utils";
 type HeroSlide = {
   id: string;
   slide_type: 'content' | 'image_only';
-  pre_title?: string;
-  title_regular?: string;
-  title_highlighted?: string;
-  subtitle?: string;
-  image_url?: string;
-  image_url_mobile?: string;
-  image_opacity?: number;
-  button_primary_text?: string;
-  button_primary_link?: string;
-  button_secondary_text?: string;
-  button_secondary_link?: string;
-  feature_1_text?: string;
-  feature_2_text?: string;
+  pre_title?: string | null;
+  title_regular?: string | null;
+  title_highlighted?: string | null;
+  subtitle?: string | null;
+  image_url?: string | null;
+  image_url_mobile?: string | null;
+  image_opacity?: number | null;
+  button_primary_text?: string | null;
+  button_primary_link?: string | null;
+  button_secondary_text?: string | null;
+  button_secondary_link?: string | null;
+  feature_1_text?: string | null;
+  feature_2_text?: string | null;
   is_active: boolean;
   sort_order: number;
 };
 
 const slideSchema = z.object({
   slide_type: z.enum(['content', 'image_only']).default('content'),
-  pre_title: z.string().optional(),
-  title_regular: z.string().optional(),
-  title_highlighted: z.string().optional(),
-  subtitle: z.string().optional(),
+  pre_title: z.string().optional().nullable(),
+  title_regular: z.string().optional().nullable(),
+  title_highlighted: z.string().optional().nullable(),
+  subtitle: z.string().optional().nullable(),
   image_opacity: z.number().min(0).max(100).default(30),
-  button_primary_text: z.string().optional(),
-  button_primary_link: z.string().optional(),
-  button_secondary_text: z.string().optional(),
-  button_secondary_link: z.string().optional(),
-  feature_1_text: z.string().optional(),
-  feature_2_text: z.string().optional(),
+  button_primary_text: z.string().optional().nullable(),
+  button_primary_link: z.string().optional().nullable(),
+  button_secondary_text: z.string().optional().nullable(),
+  button_secondary_link: z.string().optional().nullable(),
+  feature_1_text: z.string().optional().nullable(),
+  feature_2_text: z.string().optional().nullable(),
   is_active: z.boolean().default(true),
   sort_order: z.coerce.number().default(0),
   image_file: z.any()
@@ -139,7 +140,21 @@ function SlideForm({
 
   const form = useForm<SlideFormData>({
     resolver: zodResolver(slideSchema),
-    defaultValues: slide ? { ...slide, image_opacity: slide.image_opacity ?? 30, slide_type: slide.slide_type || 'content' } : { is_active: true, sort_order: 0, image_opacity: 30, slide_type: 'content' },
+    defaultValues: slide ? {
+        ...slide,
+        pre_title: slide.pre_title ?? "",
+        title_regular: slide.title_regular ?? "",
+        title_highlighted: slide.title_highlighted ?? "",
+        subtitle: slide.subtitle ?? "",
+        image_opacity: slide.image_opacity ?? 30,
+        button_primary_text: slide.button_primary_text ?? "",
+        button_primary_link: slide.button_primary_link ?? "",
+        button_secondary_text: slide.button_secondary_text ?? "",
+        button_secondary_link: slide.button_secondary_link ?? "",
+        feature_1_text: slide.feature_1_text ?? "",
+        feature_2_text: slide.feature_2_text ?? "",
+        slide_type: slide.slide_type || 'content'
+    } : { is_active: true, sort_order: 0, image_opacity: 30, slide_type: 'content' },
   });
 
   const opacityValue = form.watch("image_opacity");
@@ -235,12 +250,12 @@ function SlideForm({
             />
 
             <div className={cn("space-y-4", slideType === 'image_only' && 'opacity-40 pointer-events-none')}>
-                <FormField control={form.control} name="title_regular" render={({ field }) => (<FormItem><FormLabel>Título Principal</FormLabel><FormControl><Input placeholder="Internet para tudo que importa" {...field} disabled={slideType === 'image_only'}/></FormControl><FormMessage /></FormItem>)} />
+                <FormField control={form.control} name="title_regular" render={({ field }) => (<FormItem><FormLabel>Título Principal</FormLabel><FormControl><Input placeholder="Internet para tudo que importa" {...field} value={field.value ?? ''} disabled={slideType === 'image_only'}/></FormControl><FormMessage /></FormItem>)} />
                 <div className="grid grid-cols-2 gap-4">
-                  <FormField control={form.control} name="title_highlighted" render={({ field }) => (<FormItem><FormLabel>Título em Destaque</FormLabel><FormControl><Input placeholder="ultrarrápida" {...field} disabled={slideType === 'image_only'}/></FormControl><FormMessage /></FormItem>)} />
-                  <FormField control={form.control} name="pre_title" render={({ field }) => (<FormItem><FormLabel>Pré-título</FormLabel><FormControl><Input placeholder="Nova geração: Wi-Fi 6" {...field} disabled={slideType === 'image_only'}/></FormControl><FormMessage /></FormItem>)} />
+                  <FormField control={form.control} name="title_highlighted" render={({ field }) => (<FormItem><FormLabel>Título em Destaque</FormLabel><FormControl><Input placeholder="ultrarrápida" {...field} value={field.value ?? ''} disabled={slideType === 'image_only'}/></FormControl><FormMessage /></FormItem>)} />
+                  <FormField control={form.control} name="pre_title" render={({ field }) => (<FormItem><FormLabel>Pré-título</FormLabel><FormControl><Input placeholder="Nova geração: Wi-Fi 6" {...field} value={field.value ?? ''} disabled={slideType === 'image_only'}/></FormControl><FormMessage /></FormItem>)} />
                 </div>
-                <FormField control={form.control} name="subtitle" render={({ field }) => (<FormItem><FormLabel>Subtítulo</FormLabel><FormControl><Textarea placeholder="Planos estáveis, latência baixíssima..." {...field} disabled={slideType === 'image_only'}/></FormControl><FormMessage /></FormItem>)} />
+                <FormField control={form.control} name="subtitle" render={({ field }) => (<FormItem><FormLabel>Subtítulo</FormLabel><FormControl><Textarea placeholder="Planos estáveis, latência baixíssima..." {...field} value={field.value ?? ''} disabled={slideType === 'image_only'}/></FormControl><FormMessage /></FormItem>)} />
             </div>
             
             <div className="grid md:grid-cols-2 gap-6 pt-4 border-t">
@@ -300,16 +315,16 @@ function SlideForm({
             
              <div className={cn("space-y-4", slideType === 'image_only' && 'opacity-40 pointer-events-none')}>
                  <div className="grid grid-cols-2 gap-4">
-                    <FormField control={form.control} name="button_primary_text" render={({ field }) => (<FormItem><FormLabel>Botão Primário (Texto)</FormLabel><FormControl><Input placeholder="Conhecer planos" {...field} disabled={slideType === 'image_only'}/></FormControl></FormItem>)} />
-                    <FormField control={form.control} name="button_primary_link" render={({ field }) => (<FormItem><FormLabel>Botão Primário (Link)</FormLabel><FormControl><Input placeholder="#planos" {...field} /></FormControl></FormItem>)} />
+                    <FormField control={form.control} name="button_primary_text" render={({ field }) => (<FormItem><FormLabel>Botão Primário (Texto)</FormLabel><FormControl><Input placeholder="Conhecer planos" {...field} value={field.value ?? ''} disabled={slideType === 'image_only'}/></FormControl></FormItem>)} />
+                    <FormField control={form.control} name="button_primary_link" render={({ field }) => (<FormItem><FormLabel>Botão Primário (Link)</FormLabel><FormControl><Input placeholder="#planos" {...field} value={field.value ?? ''} /></FormControl></FormItem>)} />
                  </div>
                  <div className="grid grid-cols-2 gap-4">
-                    <FormField control={form.control} name="button_secondary_text" render={({ field }) => (<FormItem><FormLabel>Botão Secundário (Texto)</FormLabel><FormControl><Input placeholder="Ver vantagens" {...field} disabled={slideType === 'image_only'}/></FormControl></FormItem>)} />
-                    <FormField control={form.control} name="button_secondary_link" render={({ field }) => (<FormItem><FormLabel>Botão Secundário (Link)</FormLabel><FormControl><Input placeholder="#vantagens" {...field} disabled={slideType === 'image_only'}/></FormControl></FormItem>)} />
+                    <FormField control={form.control} name="button_secondary_text" render={({ field }) => (<FormItem><FormLabel>Botão Secundário (Texto)</FormLabel><FormControl><Input placeholder="Ver vantagens" {...field} value={field.value ?? ''} disabled={slideType === 'image_only'}/></FormControl></FormItem>)} />
+                    <FormField control={form.control} name="button_secondary_link" render={({ field }) => (<FormItem><FormLabel>Botão Secundário (Link)</FormLabel><FormControl><Input placeholder="#vantagens" {...field} value={field.value ?? ''} disabled={slideType === 'image_only'}/></FormControl></FormItem>)} />
                  </div>
                  <div className="grid grid-cols-2 gap-4">
-                    <FormField control={form.control} name="feature_1_text" render={({ field }) => (<FormItem><FormLabel>Benefício 1</FormLabel><FormControl><Input placeholder="Garantia de satisfação" {...field} disabled={slideType === 'image_only'}/></FormControl></FormItem>)} />
-                    <FormField control={form.control} name="feature_2_text" render={({ field }) => (<FormItem><FormLabel>Benefício 2</FormLabel><FormControl><Input placeholder="Latência baixíssima" {...field} disabled={slideType === 'image_only'}/></FormControl></FormItem>)} />
+                    <FormField control={form.control} name="feature_1_text" render={({ field }) => (<FormItem><FormLabel>Benefício 1</FormLabel><FormControl><Input placeholder="Garantia de satisfação" {...field} value={field.value ?? ''} disabled={slideType === 'image_only'}/></FormControl></FormItem>)} />
+                    <FormField control={form.control} name="feature_2_text" render={({ field }) => (<FormItem><FormLabel>Benefício 2</FormLabel><FormControl><Input placeholder="Latência baixíssima" {...field} value={field.value ?? ''} disabled={slideType === 'image_only'}/></FormControl></FormItem>)} />
                  </div>
              </div>
 
