@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
@@ -108,14 +107,14 @@ const slideSchema = z.object({
     .optional()
     .refine((file) => !file || (file instanceof File && file.size <= 5 * 1024 * 1024), `Tamanho máximo de 5MB.`)
     .refine((file) => !file || (file instanceof File && ["image/jpeg", "image/png", "image/webp"].includes(file.type)), "Apenas .jpg, .png e .webp."),
-}).refine(data => {
-    if (data.slide_type === 'content') {
-        return !!data.title_regular;
+}).superRefine((data, ctx) => {
+    if (data.slide_type === 'content' && !data.title_regular) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "O título é obrigatório para slides do tipo 'Conteúdo'.",
+            path: ["title_regular"],
+        });
     }
-    return true;
-}, {
-    message: "O título é obrigatório para slides do tipo 'Conteúdo'.",
-    path: ["title_regular"],
 });
 type SlideFormData = z.infer<typeof slideSchema>;
 
@@ -279,7 +278,7 @@ function SlideForm({
               )}/>
             </div>
 
-             <div className={cn(slideType === 'image_only' && 'opacity-40 pointer-events-none')}>
+             <div>
                 <FormField
                     control={form.control}
                     name="image_opacity"
@@ -292,7 +291,6 @@ function SlideForm({
                                     onValueChange={(value) => field.onChange(value[0])}
                                     max={100}
                                     step={1}
-                                    disabled={slideType === 'image_only'}
                                 />
                             </FormControl>
                         </FormItem>
