@@ -11,7 +11,7 @@ export function Footer() {
   }, []);
 
   return (
-    <footer className="border-t border-border bg-secondary py-10 text-sm">
+    <footer className="border-t border-border/40 bg-background/40 backdrop-blur-md py-10 text-sm">
       <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 text-muted-foreground sm:flex-row sm:px-6 lg:px-8">
         <p>© {year || new Date().getFullYear()} Velpro Telecom — Todos os direitos reservados.</p>
         <div className="flex items-center gap-5">

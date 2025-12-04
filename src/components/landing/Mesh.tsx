@@ -21,7 +21,7 @@ function DesktopView() {
     }, []);
 
     if (!isMounted) {
-        return <div className="relative w-full aspect-square max-w-xl mx-auto" />; 
+        return <div className="relative w-full aspect-square max-w-xl mx-auto" />;
     }
 
     const radius = 150;
@@ -35,7 +35,7 @@ function DesktopView() {
                 strokeWidth: 1.5,
                 initial: { pathLength: 0 },
                 animate: { pathLength: [0, 1, 0] },
-                transition: { 
+                transition: {
                     duration: 2,
                     ease: "easeInOut",
                     repeat: Infinity,
@@ -52,7 +52,7 @@ function DesktopView() {
 
         return (
             <>
-                 {/* Inner lines */}
+                {/* Inner lines */}
                 {devices.map((_, i) => (
                     <motion.line
                         key={`inner-line-${i}-${isAnimated}`}
@@ -63,7 +63,7 @@ function DesktopView() {
                         transition={isAnimated ? { ...lineProps.transition, delay: i * 0.3 } : { ...lineProps.transition, delay: i * 0.1 }}
                     />
                 ))}
-                 {/* Outer lines */}
+                {/* Outer lines */}
                 {devices.map((_, i) => (
                     <motion.line
                         key={`outer-line-${i}-${isAnimated}`}
@@ -72,7 +72,7 @@ function DesktopView() {
                         x2={200 + radius * Math.cos((i + 1) * 2 * Math.PI / devices.length)}
                         y2={200 + radius * Math.sin((i + 1) * 2 * Math.PI / devices.length)}
                         {...lineProps}
-                         transition={isAnimated ? { ...lineProps.transition, delay: 0.5 + i * 0.3 } : { ...lineProps.transition, delay: 0.5 + i * 0.1 }}
+                        transition={isAnimated ? { ...lineProps.transition, delay: 0.5 + i * 0.3 } : { ...lineProps.transition, delay: 0.5 + i * 0.1 }}
                     />
                 ))}
             </>
@@ -83,23 +83,23 @@ function DesktopView() {
         <div className="relative w-full aspect-square max-w-xl mx-auto">
             <div className="absolute inset-0 grid place-items-center">
                 <div className="w-32 h-32 rounded-full bg-primary/20 flex flex-col items-center justify-center text-center p-2 border border-primary/30">
-                    <Router className="w-10 h-10 text-primary"/>
+                    <Router className="w-10 h-10 text-primary" />
                     <p className="text-sm mt-1 text-primary">Seu Wi-Fi</p>
                 </div>
             </div>
-           
-            <svg className="absolute w-full h-full opacity-30" viewBox="0 0 400 400" style={{top: '50%', left: '50%', transform: 'translate(-50%, -50%)', maxWidth: '400px'}}>
+
+            <svg className="absolute w-full h-full opacity-30" viewBox="0 0 400 400" style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)', maxWidth: '400px' }}>
                 {renderLines(false)}
             </svg>
-             <svg className="absolute w-full h-full" viewBox="0 0 400 400" style={{top: '50%', left: '50%', transform: 'translate(-50%, -50%)', maxWidth: '400px'}}>
+            <svg className="absolute w-full h-full" viewBox="0 0 400 400" style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)', maxWidth: '400px' }}>
                 {renderLines(true)}
             </svg>
 
-             <div className="absolute w-full h-full top-0 left-0">
+            <div className="absolute w-full h-full top-0 left-0">
                 {devices.map(({ icon: Icon }, i) => (
                     <motion.div
                         key={i}
-                        className="absolute w-14 h-14 bg-card border border-border rounded-full grid place-items-center"
+                        className="absolute w-14 h-14 bg-card/60 backdrop-blur-sm border border-border/50 rounded-full grid place-items-center shadow-lg"
                         style={{
                             top: `calc(50% - ${deviceIconOffset}px + ${radius * Math.sin(i * 2 * Math.PI / devices.length)}px)`,
                             left: `calc(50% - ${deviceIconOffset}px + ${radius * Math.cos(i * 2 * Math.PI / devices.length)}px)`,
@@ -123,12 +123,12 @@ export function Mesh() {
                 <div className="grid lg:grid-cols-2 gap-12 items-center">
                     <div>
                         <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-                           Sinal forte e estável em todos os cantos da casa
+                            Sinal forte e estável em todos os cantos da casa
                         </h2>
                         <p className="mt-4 text-muted-foreground">
-                           Com a tecnologia Mesh, criamos uma rede unificada e inteligente que cobre todos os ambientes, eliminando pontos cegos e garantindo a melhor conexão para todos os seus dispositivos, não importa onde você esteja.
+                            Com a tecnologia Mesh, criamos uma rede unificada e inteligente que cobre todos os ambientes, eliminando pontos cegos e garantindo a melhor conexão para todos os seus dispositivos, não importa onde você esteja.
                         </p>
-                        <a 
+                        <a
                             id="mesh-cta-planos"
                             href="#planos"
                             className="mt-8 inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90"

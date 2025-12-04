@@ -21,15 +21,27 @@ const Footer = dynamic(() => import('@/components/landing/Footer').then(mod => m
 
 
 export default async function Home() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: cities } = await supabase.from('cities').select('name, slug').order('name');
+
+  const { data: slides } = await supabase
+    .from('hero_slides')
+    .select('*')
+    .eq('is_active', true)
+    .order('sort_order', { ascending: true });
+
+  const { data: plans } = await supabase
+    .from('plans')
+    .select('*')
+    .order('sort_order', { ascending: true })
+    .order('price', { ascending: true });
 
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Header />
       <main>
-        <Hero />
-        <Plans />
+        <Hero slides={slides || []} />
+        <Plans plans={plans || []} />
         <CdnHighlight />
         <Coverage cities={cities || []} />
         <Advantages />

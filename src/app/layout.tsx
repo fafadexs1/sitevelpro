@@ -8,6 +8,7 @@ import { createClient } from '@/utils/supabase/server';
 import React from 'react';
 import Script from 'next/script';
 import { ConditionalLayoutElements } from '@/components/ConditionalLayoutElements';
+import { ChristmasTheme } from '@/components/themes/ChristmasTheme';
 import { cn } from '@/lib/utils';
 
 export const revalidate = 0;
@@ -20,47 +21,47 @@ const inter = Inter({
 
 // --- Data loaders (server) ---
 async function getThemeAndSeoSettings() {
-    try {
-        const supabase = createClient();
-        
-        // Busca as configurações de SEO globais
-        const { data: seoData, error: seoError } = await supabase
-            .from('seo_settings')
-            .select('site_title, site_description, og_image_url, favicon_url, allow_indexing, updated_at')
-            .single();
+  try {
+    const supabase = await createClient();
 
-        if (seoError && seoError.code !== 'PGRST116') {
-             console.error('Erro ao buscar seo_settings do Supabase:', seoError);
-        }
-        
-        // Busca as configurações de tema
-        const { data: themeData, error: themeError } = await supabase
-            .from('system_settings')
-            .select('key, value')
-            .eq('key', 'commemorative_theme_enabled');
+    // Busca as configurações de SEO globais
+    const { data: seoData, error: seoError } = await supabase
+      .from('seo_settings')
+      .select('site_title, site_description, og_image_url, favicon_url, allow_indexing, updated_at')
+      .single();
 
-        if (themeError) {
-             console.error('Erro ao buscar theme_settings do Supabase:', themeError);
-        }
-
-        const seo = {
-            site_title: seoData?.site_title || 'Velpro Telecom',
-            site_description: seoData?.site_description || 'Internet ultrarrápida para tudo que importa.',
-            og_image_url: seoData?.og_image_url || null,
-            favicon_url: seoData?.favicon_url || null,
-            allow_indexing: seoData?.allow_indexing ?? true,
-            favicon_updated_at: seoData?.updated_at ?? new Date().toISOString(),
-        };
-
-        const theme = {
-            commemorative_enabled: themeData?.[0]?.value === 'true'
-        };
-
-        return { seo, theme };
-    } catch (e) {
-        console.error("[LOG] Exceção crítica na função getThemeAndSeoSettings:", e);
-        return { seo: null, theme: null };
+    if (seoError && seoError.code !== 'PGRST116') {
+      console.error('Erro ao buscar seo_settings do Supabase:', seoError);
     }
+
+    // Busca as configurações de tema
+    const { data: themeData, error: themeError } = await supabase
+      .from('system_settings')
+      .select('key, value')
+      .eq('key', 'commemorative_theme_enabled');
+
+    if (themeError) {
+      console.error('Erro ao buscar theme_settings do Supabase:', themeError);
+    }
+
+    const seo = {
+      site_title: seoData?.site_title || 'Velpro Telecom',
+      site_description: seoData?.site_description || 'Internet ultrarrápida para tudo que importa.',
+      og_image_url: seoData?.og_image_url || null,
+      favicon_url: seoData?.favicon_url || null,
+      allow_indexing: seoData?.allow_indexing ?? true,
+      favicon_updated_at: seoData?.updated_at ?? new Date().toISOString(),
+    };
+
+    const theme = {
+      commemorative_enabled: themeData?.[0]?.value === 'true'
+    };
+
+    return { seo, theme };
+  } catch (e) {
+    console.error("[LOG] Exceção crítica na função getThemeAndSeoSettings:", e);
+    return { seo: null, theme: null };
+  }
 }
 
 
@@ -94,7 +95,7 @@ export async function generateMetadata(
       description,
       images: ogImage ? [ogImage] : [],
     },
-     robots: {
+    robots: {
       index: allowIndexing,
       follow: allowIndexing,
       googleBot: {
@@ -112,12 +113,12 @@ export default async function RootLayout({
   const { seo: settings, theme } = await getThemeAndSeoSettings();
 
   // Construção da URL do Favicon com cache-busting
-  const faviconUrl = settings?.favicon_url 
-    ? `${settings.favicon_url}?v=${new Date(settings.favicon_updated_at).getTime()}` 
+  const faviconUrl = settings?.favicon_url
+    ? `${settings.favicon_url}?v=${new Date(settings.favicon_updated_at).getTime()}`
     : null;
 
   return (
-    <html lang="pt-BR" className={cn(inter.variable, theme?.commemorative_enabled && "theme-halloween")} suppressHydrationWarning>
+    <html lang="pt-BR" className={cn(inter.variable)} suppressHydrationWarning>
       <head>
         {faviconUrl && <link rel="icon" href={faviconUrl} type="image/png" sizes="any" />}
         <Script id="google-consent-mode" strategy="beforeInteractive">
@@ -136,6 +137,7 @@ export default async function RootLayout({
         </Script>
       </head>
       <body className="font-body antialiased" suppressHydrationWarning>
+        {theme?.commemorative_enabled && <ChristmasTheme />}
         {children}
 
         <Toaster />

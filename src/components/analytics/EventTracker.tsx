@@ -1,13 +1,15 @@
 
 "use client";
 
-import { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
 
 const VISITOR_ID_KEY = 'velpro_visitor_id';
 
 export function EventTracker() {
     const pathname = usePathname();
+
+    const lastTrackedRef = React.useRef<Record<string, number>>({});
 
     const trackEvent = useCallback(async (eventName: string, properties: Record<string, any>) => {
         const visitorId = localStorage.getItem(VISITOR_ID_KEY);
@@ -17,6 +19,17 @@ export function EventTracker() {
         if (pathname.startsWith('/admin') || pathname.startsWith('/colaborador') || pathname.startsWith('/colaboracao')) {
             return;
         }
+
+        // Throttling: Prevent duplicate events within 2 seconds
+        const eventKey = `${eventName}-${JSON.stringify(properties)}`;
+        const now = Date.now();
+        const lastTime = lastTrackedRef.current[eventKey] || 0;
+
+        if (now - lastTime < 2000) {
+            return; // Ignore if tracked recently
+        }
+
+        lastTrackedRef.current[eventKey] = now;
 
         try {
             await fetch('/api/track-event', {
@@ -53,11 +66,11 @@ export function EventTracker() {
                         properties[propName] = attr.value;
                     }
                 }
-                
+
                 trackEvent(eventName, properties);
             }
         };
-        
+
         // Adiciona um único listener no documento
         document.addEventListener('click', handleClick);
 

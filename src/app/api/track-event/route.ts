@@ -11,7 +11,7 @@ export async function POST(request: Request) {
             return new NextResponse('Missing required fields', { status: 400 });
         }
 
-        const supabase = createClient();
+        const supabase = await createClient();
 
         const { error } = await supabase.from('events').insert({
             visitor_id: visitorId,

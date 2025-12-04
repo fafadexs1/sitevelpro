@@ -8,13 +8,13 @@ import { Calendar, Tag } from "lucide-react";
 import type { Metadata } from 'next';
 
 type Post = {
-    id: string;
-    title: string;
-    slug: string;
-    excerpt: string | null;
-    cover_image_url: string | null;
-    published_at: string | null;
-    author_name: string | null;
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string | null;
+  cover_image_url: string | null;
+  published_at: string | null;
+  author_name: string | null;
 };
 
 export const metadata: Metadata = {
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 };
 
 export default async function BlogListPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: posts, error } = await supabase
     .from('posts')
     .select('id, title, slug, excerpt, cover_image_url, published_at, author_name')
@@ -55,27 +55,27 @@ export default async function BlogListPage() {
                 posts.map((post) => (
                   <Link key={post.id} href={`/blog/${post.slug}`} className="group grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
                     {post.cover_image_url && (
-                        <div className="md:col-span-1 aspect-video overflow-hidden rounded-2xl border border-border">
-                             <Image
-                                src={post.cover_image_url}
-                                alt={post.title}
-                                width={400}
-                                height={225}
-                                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                            />
-                        </div>
+                      <div className="md:col-span-1 aspect-video overflow-hidden rounded-2xl border border-border">
+                        <Image
+                          src={post.cover_image_url}
+                          alt={post.title}
+                          width={400}
+                          height={225}
+                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                      </div>
                     )}
                     <div className={post.cover_image_url ? "md:col-span-2" : "md:col-span-3"}>
-                        <h2 className="text-2xl sm:text-3xl font-bold text-foreground group-hover:text-primary transition-colors">{post.title}</h2>
-                        <div className="flex items-center gap-4 text-xs text-muted-foreground mt-3 mb-4">
-                            {post.published_at && (
-                                <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5"/> {new Date(post.published_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}</span>
-                            )}
-                            {post.author_name && (
-                                <span>por <strong>{post.author_name}</strong></span>
-                            )}
-                        </div>
-                        <p className="text-muted-foreground leading-relaxed line-clamp-3">{post.excerpt}</p>
+                      <h2 className="text-2xl sm:text-3xl font-bold text-foreground group-hover:text-primary transition-colors">{post.title}</h2>
+                      <div className="flex items-center gap-4 text-xs text-muted-foreground mt-3 mb-4">
+                        {post.published_at && (
+                          <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" /> {new Date(post.published_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}</span>
+                        )}
+                        {post.author_name && (
+                          <span>por <strong>{post.author_name}</strong></span>
+                        )}
+                      </div>
+                      <p className="text-muted-foreground leading-relaxed line-clamp-3">{post.excerpt}</p>
                     </div>
                   </Link>
                 ))

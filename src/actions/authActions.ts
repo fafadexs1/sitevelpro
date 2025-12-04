@@ -11,10 +11,10 @@ type ApiResponse = {
     message?: string;
 };
 
-export async function loginWithApi(cpfcnpj: string, senha: string):Promise<{ success: boolean; error: string | null; }> {
+export async function loginWithApi(cpfcnpj: string, senha: string): Promise<{ success: boolean; error: string | null; }> {
     try {
-        const supabase = createClient();
-        
+        const supabase = await createClient();
+
         // 1. Busca a URL da API do banco de dados
         const { data: apiUrlData, error: apiUrlError } = await supabase
             .from('system_settings')
@@ -32,7 +32,7 @@ export async function loginWithApi(cpfcnpj: string, senha: string):Promise<{ suc
         const formData = new FormData();
         formData.append('cpfcnpj', cpfcnpj);
         formData.append('senha', senha);
-        
+
         // Chamada à API externa
         const response = await fetch(externalApiUrl, {
             method: 'POST',
@@ -82,7 +82,7 @@ export async function loginWithApi(cpfcnpj: string, senha: string):Promise<{ suc
                 .from('clientes')
                 .update({ contratos: data.contratos })
                 .eq('id', existingClient.id);
-            
+
             if (updateError) {
                 throw new Error(`Erro ao atualizar contratos: ${updateError.message}`);
             }
@@ -103,15 +103,15 @@ export async function loginWithApi(cpfcnpj: string, senha: string):Promise<{ suc
                     { password: senha }
                 );
                 if (updateUserError) {
-                     throw new Error(`Falha ao atualizar senha do usuário: ${updateUserError.message}`);
+                    throw new Error(`Falha ao atualizar senha do usuário: ${updateUserError.message}`);
                 }
                 // Tenta logar novamente com a nova senha
-                 const { error: retrySignInError } = await supabase.auth.signInWithPassword({
+                const { error: retrySignInError } = await supabase.auth.signInWithPassword({
                     email: email,
                     password: senha,
                 });
-                if(retrySignInError) {
-                     throw new Error(`Falha ao fazer login após atualizar senha: ${retrySignInError.message}`);
+                if (retrySignInError) {
+                    throw new Error(`Falha ao fazer login após atualizar senha: ${retrySignInError.message}`);
                 }
             }
         } else {
@@ -126,16 +126,16 @@ export async function loginWithApi(cpfcnpj: string, senha: string):Promise<{ suc
                     email_confirm: true, // Auto-confirma o email
                 }
             });
-            
+
             if (signUpError && signUpError.message.includes('User already registered')) {
                 // Caso especial: o usuário existe no Auth, mas não na tabela 'clientes'.
                 // Isso pode acontecer se a inserção na tabela 'clientes' falhou em uma tentativa anterior.
                 // Nesse caso, não precisamos criar o usuário, apenas prosseguir para inserir na tabela.
                 const { data: existingUser, error: getUserError } = await supabase.auth.admin.getUserByEmail(email);
                 if (getUserError || !existingUser.user) {
-                     throw new Error(`Erro ao recuperar usuário existente: ${getUserError?.message}`);
+                    throw new Error(`Erro ao recuperar usuário existente: ${getUserError?.message}`);
                 }
-                 const { error: insertError } = await supabase
+                const { error: insertError } = await supabase
                     .from('clientes')
                     .insert({
                         user_id: existingUser.user.id,
@@ -147,7 +147,7 @@ export async function loginWithApi(cpfcnpj: string, senha: string):Promise<{ suc
                 if (insertError) {
                     throw new Error(`Erro ao inserir cliente pré-existente: ${insertError.message}`);
                 }
-                 await supabase.auth.signInWithPassword({ email: email, password: senha });
+                await supabase.auth.signInWithPassword({ email: email, password: senha });
 
             } else if (signUpError || !newUser.user) {
                 throw new Error(`Erro ao criar novo usuário: ${signUpError?.message}`);
@@ -160,7 +160,7 @@ export async function loginWithApi(cpfcnpj: string, senha: string):Promise<{ suc
                         contratos: data.contratos,
                         selected_contract_id: String(data.contratos[0]?.contrato)
                     });
-                
+
                 if (insertError) {
                     // Se falhar, deleta o usuário criado no Auth para evitar inconsistência
                     await supabase.auth.admin.deleteUser(newUser.user.id);

@@ -13,7 +13,7 @@ const cdnLogos = [
 export function CdnHighlight() {
   return (
     <section className="cdn-highlight-section">
-      <div className="cdn-container">
+      <div className="cdn-container relative z-10 rounded-3xl border border-white/10 bg-white/5 p-8 backdrop-blur-sm md:p-12">
         <h3 className="cdn-title">Conteúdo mais perto de você.</h3>
         <p className="cdn-subtitle">Nossa rede é integrada às principais CDNs globais para menor latência e vídeos sem travar.</p>
 

@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Label } from "@/components/ui/label";
 
 type ThemeSettings = {
-  commemorative_theme_enabled: boolean;
+    commemorative_theme_enabled: boolean;
 };
 
 export default function ThemesPage() {
@@ -70,13 +70,13 @@ export default function ThemesPage() {
 
             {loading ? (
                 <div className="flex justify-center items-center py-16">
-                    <Loader2 className="w-8 h-8 animate-spin text-primary"/>
+                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
                 </div>
             ) : (
                 <div className="grid gap-8 md:grid-cols-2">
                     <Card>
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-2"><Sparkles className="text-primary"/> Temas Sazonais</CardTitle>
+                            <CardTitle className="flex items-center gap-2"><Sparkles className="text-primary" /> Temas Sazonais</CardTitle>
                             <CardDescription>Ative temas especiais para datas comemorativas como Halloween, Natal, etc.</CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -86,7 +86,7 @@ export default function ThemesPage() {
                                         Tema Comemorativo
                                     </Label>
                                     <p className="text-sm text-muted-foreground">
-                                        Atualmente: <span className="font-semibold">Halloween</span>.
+                                        Atualmente: <span className="font-semibold text-red-500">Natal 🎄</span>.
                                     </p>
                                 </div>
                                 <Switch
@@ -100,9 +100,9 @@ export default function ThemesPage() {
                     </Card>
 
                     <Card className="border-dashed">
-                         <CardHeader>
-                            <CardTitle className="flex items-center gap-2 text-muted-foreground"><Brush/> Paleta de Cores</CardTitle>
-                             <CardDescription>Personalize as cores primárias e de fundo do seu site.</CardDescription>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2 text-muted-foreground"><Brush /> Paleta de Cores</CardTitle>
+                            <CardDescription>Personalize as cores primárias e de fundo do seu site.</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <div className="text-center text-sm text-muted-foreground py-8">

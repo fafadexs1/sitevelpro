@@ -10,7 +10,7 @@ type ApiResponse = {
 };
 
 export async function getWorkOrders(contractId: number, year: number): Promise<{ success: boolean; data: any[] | null; error: string | null; }> {
-    const supabase = createClient();
+    const supabase = await createClient();
     try {
         const { data: settingsData, error: settingsError } = await supabase
             .from('system_settings')
@@ -49,7 +49,7 @@ export async function getWorkOrders(contractId: number, year: number): Promise<{
                 data_cadastro_fim: endDate,
             }),
         });
-        
+
         if (!response.ok) {
             const errorText = await response.text();
             throw new Error(`Erro na API externa de O.S.: ${response.status} ${response.statusText}. Resposta: ${errorText}`);
@@ -66,24 +66,24 @@ export async function getWorkOrders(contractId: number, year: number): Promise<{
                 .single();
 
             if (fetchError && fetchError.code !== 'PGRST116') {
-                 console.error("Erro ao buscar O.S. existentes:", fetchError.message);
+                console.error("Erro ao buscar O.S. existentes:", fetchError.message);
             }
-            
+
             const existingOrders = (existingData?.orders as any[]) || [];
 
             // Remove ordens do ano que estamos atualizando e também remove duplicatas baseadas no ID
             const newOrderIds = new Set(workOrders.map(wo => wo.id));
             const otherYearsOrders = existingOrders.filter(wo => {
-                 const orderYear = new Date(wo.data_cadastro).getFullYear();
-                 return orderYear !== year && !newOrderIds.has(wo.id);
+                const orderYear = new Date(wo.data_cadastro).getFullYear();
+                return orderYear !== year && !newOrderIds.has(wo.id);
             });
-            
+
             const updatedOrders = [...otherYearsOrders, ...workOrders];
 
             const { error: upsertError } = await supabase
                 .from('work_orders')
-                .upsert({ 
-                    contract_id: String(contractId), 
+                .upsert({
+                    contract_id: String(contractId),
                     orders: updatedOrders,
                     fetched_at: new Date().toISOString()
                 }, { onConflict: 'contract_id' });
@@ -105,7 +105,7 @@ export async function getWorkOrders(contractId: number, year: number): Promise<{
             .single();
 
         const cachedYearData = (cachedData?.orders as any[] | null)?.filter(wo => new Date(wo.data_cadastro).getFullYear() === year);
-            
+
         return { success: false, data: cachedYearData || null, error: e.message || "Ocorreu um erro inesperado ao buscar as ordens de serviço." };
     }
 }

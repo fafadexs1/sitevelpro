@@ -9,7 +9,7 @@ type ApiResponse = {
 };
 
 export async function getInvoices(contractId: number, year: number): Promise<{ success: boolean; data: any[] | null; error: string | null; }> {
-    const supabase = createClient();
+    const supabase = await createClient();
     try {
         const { data: settingsData, error: settingsError } = await supabase
             .from('system_settings')
@@ -48,7 +48,7 @@ export async function getInvoices(contractId: number, year: number): Promise<{ s
                 data_cadastro_fim: endDate,
             }),
         });
-        
+
         if (!response.ok) {
             const errorText = await response.text();
             throw new Error(`Erro na API externa de faturas: ${response.status} ${response.statusText}. Resposta: ${errorText}`);
@@ -63,13 +63,13 @@ export async function getInvoices(contractId: number, year: number): Promise<{ s
                 .select('invoices_data')
                 .eq('contract_id', String(contractId))
                 .single();
-            
+
             if (fetchError && fetchError.code !== 'PGRST116') {
-                 console.error("Erro ao buscar faturas existentes:", fetchError.message);
+                console.error("Erro ao buscar faturas existentes:", fetchError.message);
             }
 
             const existingInvoices = (existingData?.invoices_data as any[]) || [];
-            
+
             // Remove faturas do ano que estamos atualizando e também remove duplicatas baseadas no ID
             const newInvoiceIds = new Set(invoices.map(inv => inv.id));
             const otherYearsInvoices = existingInvoices.filter(inv => {
@@ -82,8 +82,8 @@ export async function getInvoices(contractId: number, year: number): Promise<{ s
 
             const { error: upsertError } = await supabase
                 .from('invoices')
-                .upsert({ 
-                    contract_id: String(contractId), 
+                .upsert({
+                    contract_id: String(contractId),
                     invoices_data: updatedInvoices,
                     fetched_at: new Date().toISOString()
                 }, { onConflict: 'contract_id' });

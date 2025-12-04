@@ -19,11 +19,11 @@ async function PostCard({ post, index }: { post: Post, index: number }) {
         <Link href={`/blog/${post.slug}`} className="group block rounded-2xl border border-border bg-card overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-1">
             {post.cover_image_url && (
                 <div className="aspect-video overflow-hidden">
-                    <Image 
-                        src={post.cover_image_url} 
-                        alt={post.title} 
-                        width={400} 
-                        height={225} 
+                    <Image
+                        src={post.cover_image_url}
+                        alt={post.title}
+                        width={400}
+                        height={225}
                         className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />
                 </div>
@@ -31,7 +31,7 @@ async function PostCard({ post, index }: { post: Post, index: number }) {
             <div className="p-6">
                 {post.published_at && (
                     <p className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
-                        <Calendar className="w-3.5 h-3.5"/>
+                        <Calendar className="w-3.5 h-3.5" />
                         {new Date(post.published_at).toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' })}
                     </p>
                 )}
@@ -43,7 +43,7 @@ async function PostCard({ post, index }: { post: Post, index: number }) {
 }
 
 export default async function BlogSection() {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data: posts, error } = await supabase
         .from('posts')
         .select('id, title, slug, excerpt, cover_image_url, published_at')

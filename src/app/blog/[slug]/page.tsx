@@ -15,17 +15,17 @@ type PageProps = {
 
 // Helper para criar um cliente Supabase seguro para build
 function createBuildTimeClient() {
-    return createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        {
-          cookies: {
-            get(name: string) { return undefined; },
-            set(name: string, value: string, options: CookieOptions) {},
-            remove(name: string, options: CookieOptions) {},
-          },
-        }
-    );
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) { return undefined; },
+        set(name: string, value: string, options: CookieOptions) { },
+        remove(name: string, options: CookieOptions) { },
+      },
+    }
+  );
 }
 
 // --- Metadata Generation ---
@@ -54,17 +54,17 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       type: 'article',
     },
     twitter: {
-        card: 'summary_large_image',
-        title: post.meta_title || post.title,
-        description: post.meta_description || undefined,
-        images: post.cover_image_url ? [post.cover_image_url] : [],
+      card: 'summary_large_image',
+      title: post.meta_title || post.title,
+      description: post.meta_description || undefined,
+      images: post.cover_image_url ? [post.cover_image_url] : [],
     }
   };
 }
 
 
 export default async function BlogPostPage({ params }: PageProps) {
-  const supabase = createServerClientUtil(); // Usa o cliente padrão para runtime
+  const supabase = await createServerClientUtil(); // Usa o cliente padrão para runtime
   const { data: post } = await supabase
     .from('posts')
     .select('*')
@@ -118,13 +118,13 @@ export default async function BlogPostPage({ params }: PageProps) {
               </div>
             </div>
           </header>
-          
+
           <div className="py-16 sm:py-24 bg-background">
             <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-                <div
-                  className="prose prose-lg dark:prose-invert max-w-none text-foreground/90"
-                  dangerouslySetInnerHTML={{ __html: post.content || '' }}
-                />
+              <div
+                className="prose prose-lg dark:prose-invert max-w-none text-foreground/90"
+                dangerouslySetInnerHTML={{ __html: post.content || '' }}
+              />
             </div>
           </div>
         </article>
@@ -136,18 +136,18 @@ export default async function BlogPostPage({ params }: PageProps) {
 
 // --- Static Path Generation ---
 export async function generateStaticParams() {
-    try {
-        const supabase = createBuildTimeClient();
-        const { data: posts } = await supabase
-            .from('posts')
-            .select('slug')
-            .eq('is_published', true);
+  try {
+    const supabase = createBuildTimeClient();
+    const { data: posts } = await supabase
+      .from('posts')
+      .select('slug')
+      .eq('is_published', true);
 
-        return posts?.map(post => ({
-            slug: post.slug,
-        })) || [];
-    } catch (error) {
-        console.error('Exception in generateStaticParams for blog posts:', error);
-        return [];
-    }
+    return posts?.map(post => ({
+      slug: post.slug,
+    })) || [];
+  } catch (error) {
+    console.error('Exception in generateStaticParams for blog posts:', error);
+    return [];
+  }
 }
