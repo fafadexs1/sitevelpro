@@ -23,7 +23,7 @@ export type GeneratedArticle = z.infer<typeof GeneratedArticleSchema>;
 
 
 async function getAiSettings() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from('system_settings')
     .select('key, value')
@@ -33,11 +33,11 @@ async function getAiSettings() {
     console.error('Error fetching AI settings:', error);
     throw new Error("Could not retrieve AI settings from the database.");
   }
-  
+
   const settingsMap = new Map(data.map(item => [item.key, item.value]));
   const apiKey = settingsMap.get('GEMINI_API_KEY');
-  const modelName = settingsMap.get('GEMINI_MODEL') || 'gemini-1.5-flash-latest';
-  
+  const modelName = (settingsMap.get('GEMINI_MODEL') as string) || 'gemini-1.5-flash-latest';
+
   if (!apiKey) {
     throw new Error('GEMINI_API_KEY is not configured in the system settings.');
   }
@@ -55,10 +55,10 @@ export async function generateArticle(input: ArticleTopic): Promise<GeneratedArt
   const { apiKey, modelName } = await getAiSettings();
 
   const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({ 
+  const model = genAI.getGenerativeModel({
     model: modelName,
     generationConfig: {
-        responseMimeType: "application/json",
+      responseMimeType: "application/json",
     }
   });
 
@@ -108,7 +108,7 @@ export async function generateArticle(input: ArticleTopic): Promise<GeneratedArt
     console.error("Error generating article with Gemini:", error);
     // Forward a more user-friendly error message
     if (error.message.includes('SAFETY')) {
-        throw new Error('The content could not be generated due to safety settings. Please try a different topic.');
+      throw new Error('The content could not be generated due to safety settings. Please try a different topic.');
     }
     throw new Error(error.message || 'An unknown error occurred while generating the article.');
   }

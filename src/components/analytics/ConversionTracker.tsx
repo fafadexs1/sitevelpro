@@ -3,7 +3,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/utils/supabase/client';
-import type { ConversionEvent } from '@/app/admin/google-ads/page';
+import { ConversionEvent } from '@/types/admin';
 
 declare global {
     interface Window {
@@ -43,7 +43,7 @@ export function ConversionTracker() {
                 console.error(`Error executing event snippet for "${event.name}":`, e);
             }
         } else {
-             console.warn(`gtag not found. Could not track event: ${event.name}`);
+            console.warn(`gtag not found. Could not track event: ${event.name}`);
         }
     }, []);
 
@@ -57,15 +57,15 @@ export function ConversionTracker() {
                 }
             });
         };
-        
+
         const handleFormSubmit = (e: Event) => {
-             events.forEach(event => {
+            events.forEach(event => {
                 if (event.selector && (e.target as Element).matches(event.selector)) {
                     trackEvent(event);
                 }
             });
         }
-        
+
         // We listen on the document to capture all relevant events.
         document.addEventListener('click', handleClick);
         document.addEventListener('submit', handleFormSubmit);

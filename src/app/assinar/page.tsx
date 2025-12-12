@@ -42,14 +42,28 @@ const stepSchemas = [
     latitude: z.number().optional(),
     longitude: z.number().optional(),
   }).refine(data => data.dontKnowCep || (data.cep && data.cep.length >= 8), {
-      message: "CEP inválido",
-      path: ["cep"],
+    message: "CEP inválido",
+    path: ["cep"],
   }),
   // Etapa 3: Confirmação (sem validação, apenas exibição)
   z.object({}),
 ];
 
-type FormData = z.infer<typeof stepSchemas[0]> & z.infer<typeof stepSchemas[1]>;
+type FormData = {
+  fullName: string;
+  email: string;
+  phone: string;
+  dontKnowCep?: boolean;
+  cep: string;
+  street: string;
+  number: string;
+  complement?: string;
+  neighborhood: string;
+  city: string;
+  state: string;
+  latitude?: number;
+  longitude?: number;
+};
 
 // Tipos para API do IBGE
 interface UF { id: number; sigla: string; nome: string; }
@@ -65,9 +79,8 @@ const StepIndicator = ({ currentStep, totalSteps }: { currentStep: number; total
     {[...Array(totalSteps)].map((_, i) => (
       <div
         key={i}
-        className={`w-12 h-2 rounded-full transition-colors ${
-          i < currentStep ? "bg-primary" : "bg-secondary"
-        }`}
+        className={`w-12 h-2 rounded-full transition-colors ${i < currentStep ? "bg-primary" : "bg-secondary"
+          }`}
       />
     ))}
   </div>
@@ -91,7 +104,7 @@ const FormNavigation = ({ currentStep, totalSteps, goBack, isSubmitting }: { cur
         <Loader2 className="h-4 w-4 animate-spin" />
       ) : (
         <>
-         {currentStep === totalSteps ? "Confirmar Assinatura" : "Próximo"}
+          {currentStep === totalSteps ? "Confirmar Assinatura" : "Próximo"}
           <ArrowRight className="h-4 w-4 ml-2" />
         </>
       )}
@@ -105,142 +118,142 @@ const FormNavigation = ({ currentStep, totalSteps, goBack, isSubmitting }: { cur
 // =====================================================
 
 const Step1 = () => (
-    <>
-      <FormField name="fullName" render={({ field }) => (
+  <>
+    <FormField name="fullName" render={({ field }) => (
+      <FormItem>
+        <FormLabel>Nome Completo</FormLabel>
+        <FormControl>
+          <div className="relative">
+            <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input id="signup-fullname" placeholder="Seu nome" {...field} className="pl-9" />
+          </div>
+        </FormControl>
+        <FormMessage />
+      </FormItem>
+    )} />
+    <div className="grid md:grid-cols-2 gap-4">
+      <FormField name="email" render={({ field }) => (
         <FormItem>
-          <FormLabel>Nome Completo</FormLabel>
+          <FormLabel>E-mail</FormLabel>
           <FormControl>
             <div className="relative">
-              <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input id="signup-fullname" placeholder="Seu nome" {...field} className="pl-9" />
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input id="signup-email" placeholder="seu@email.com" {...field} className="pl-9" />
             </div>
           </FormControl>
           <FormMessage />
         </FormItem>
       )} />
-      <div className="grid md:grid-cols-2 gap-4">
-        <FormField name="email" render={({ field }) => (
-          <FormItem>
-            <FormLabel>E-mail</FormLabel>
-            <FormControl>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input id="signup-email" placeholder="seu@email.com" {...field} className="pl-9" />
-              </div>
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )} />
-        <FormField name="phone" render={({ field }) => (
-          <FormItem>
-            <FormLabel>Telefone</FormLabel>
-            <FormControl>
-              <div className="relative">
-                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input id="signup-phone" placeholder="(00) 00000-0000" {...field} className="pl-9" />
-              </div>
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )} />
-      </div>
-    </>
+      <FormField name="phone" render={({ field }) => (
+        <FormItem>
+          <FormLabel>Telefone</FormLabel>
+          <FormControl>
+            <div className="relative">
+              <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input id="signup-phone" placeholder="(00) 00000-0000" {...field} className="pl-9" />
+            </div>
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )} />
+    </div>
+  </>
 );
 
 const Step2 = ({ form }: { form: any }) => {
-    const [loadingCep, setLoadingCep] = useState(false);
-    const [loadingLocation, setLoadingLocation] = useState(false);
-    const { toast } = useToast();
-    const dontKnowCep = useWatch({ control: form.control, name: "dontKnowCep" });
+  const [loadingCep, setLoadingCep] = useState(false);
+  const [loadingLocation, setLoadingLocation] = useState(false);
+  const { toast } = useToast();
+  const dontKnowCep = useWatch({ control: form.control, name: "dontKnowCep" });
 
-    const [ufs, setUfs] = useState<UF[]>([]);
-    const [cities, setCities] = useState<City[]>([]);
-    const [loadingUfs, setLoadingUfs] = useState(false);
-    const [loadingCities, setLoadingCities] = useState(false);
+  const [ufs, setUfs] = useState<UF[]>([]);
+  const [cities, setCities] = useState<City[]>([]);
+  const [loadingUfs, setLoadingUfs] = useState(false);
+  const [loadingCities, setLoadingCities] = useState(false);
 
-    const selectedUf = useWatch({ control: form.control, name: 'state' });
+  const selectedUf = useWatch({ control: form.control, name: 'state' });
 
-    useEffect(() => {
-        setLoadingUfs(true);
-        fetch('https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome')
-          .then(res => res.json())
-          .then(data => { setUfs(data); })
-          .catch(() => toast({ variant: "destructive", title: "Erro", description: "Não foi possível carregar os estados."}))
-          .finally(() => setLoadingUfs(false));
-    }, [toast]);
-    
-    useEffect(() => {
-        if (!selectedUf) return;
-        setLoadingCities(true);
-        form.setValue('city', '');
-        fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${selectedUf}/municipios`)
-          .then(res => res.json())
-          .then(data => { setCities(data); })
-          .catch(() => toast({ variant: "destructive", title: "Erro", description: "Não foi possível carregar as cidades."}))
-          .finally(() => setLoadingCities(false));
-    }, [selectedUf, form, toast]);
+  useEffect(() => {
+    setLoadingUfs(true);
+    fetch('https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome')
+      .then(res => res.json())
+      .then(data => { setUfs(data); })
+      .catch(() => toast({ variant: "destructive", title: "Erro", description: "Não foi possível carregar os estados." }))
+      .finally(() => setLoadingUfs(false));
+  }, [toast]);
+
+  useEffect(() => {
+    if (!selectedUf) return;
+    setLoadingCities(true);
+    form.setValue('city', '');
+    fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${selectedUf}/municipios`)
+      .then(res => res.json())
+      .then(data => { setCities(data); })
+      .catch(() => toast({ variant: "destructive", title: "Erro", description: "Não foi possível carregar as cidades." }))
+      .finally(() => setLoadingCities(false));
+  }, [selectedUf, form, toast]);
 
 
-    const handleCepLookup = async () => {
-        const cep = form.getValues("cep").replace(/\D/g, "");
-        if (cep.length !== 8) {
-          form.setError("cep", { message: "CEP inválido." });
-          return;
+  const handleCepLookup = async () => {
+    const cep = form.getValues("cep").replace(/\D/g, "");
+    if (cep.length !== 8) {
+      form.setError("cep", { message: "CEP inválido." });
+      return;
+    }
+    setLoadingCep(true);
+    try {
+      const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+      if (!response.ok) throw new Error();
+      const data = await response.json();
+      if (data.erro) throw new Error("CEP não encontrado.");
+
+      form.setValue("street", data.logradouro, { shouldValidate: true });
+      form.setValue("neighborhood", data.bairro, { shouldValidate: true });
+      form.setValue("city", data.localidade, { shouldValidate: true });
+      form.setValue("state", data.uf, { shouldValidate: true });
+    } catch (error) {
+      form.setError("cep", { message: "CEP não encontrado." });
+    } finally {
+      setLoadingCep(false);
+    }
+  };
+
+  const handleGeolocation = () => {
+    if (window.location.protocol !== 'https:') {
+      toast({ variant: "destructive", title: "Conexão não segura", description: "A geolocalização só pode ser usada em uma conexão HTTPS." });
+      return;
+    }
+
+    if (!navigator.geolocation) {
+      toast({ variant: "destructive", title: "Erro", description: "Geolocalização não é suportada por este navegador." });
+      return;
+    }
+    setLoadingLocation(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        form.setValue("latitude", latitude, { shouldValidate: true });
+        form.setValue("longitude", longitude, { shouldValidate: true });
+        toast({ title: "Sucesso!", description: `Localização obtida: Lat ${latitude.toFixed(4)}, Lon ${longitude.toFixed(4)}` });
+        setLoadingLocation(false);
+      },
+      (error) => {
+        let errorMessage = "Ocorreu um erro ao obter a localização.";
+        if (error.code === error.PERMISSION_DENIED) {
+          errorMessage = "Permissão de localização negada. Por favor, habilite nas configurações do seu navegador.";
+        } else if (error.code === error.POSITION_UNAVAILABLE) {
+          errorMessage = "Informação de localização não está disponível.";
+        } else if (error.code === error.TIMEOUT) {
+          errorMessage = "A requisição de localização expirou.";
         }
-        setLoadingCep(true);
-        try {
-            const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-            if(!response.ok) throw new Error();
-            const data = await response.json();
-            if(data.erro) throw new Error("CEP não encontrado.");
+        toast({ variant: "destructive", title: "Erro de Localização", description: errorMessage });
+        setLoadingLocation(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  };
 
-            form.setValue("street", data.logradouro, { shouldValidate: true });
-            form.setValue("neighborhood", data.bairro, { shouldValidate: true });
-            form.setValue("city", data.localidade, { shouldValidate: true });
-            form.setValue("state", data.uf, { shouldValidate: true });
-        } catch (error) {
-            form.setError("cep", { message: "CEP não encontrado." });
-        } finally {
-            setLoadingCep(false);
-        }
-    };
-    
-    const handleGeolocation = () => {
-        if (window.location.protocol !== 'https:') {
-            toast({ variant: "destructive", title: "Conexão não segura", description: "A geolocalização só pode ser usada em uma conexão HTTPS." });
-            return;
-        }
-        
-        if (!navigator.geolocation) {
-            toast({ variant: "destructive", title: "Erro", description: "Geolocalização não é suportada por este navegador."});
-            return;
-        }
-        setLoadingLocation(true);
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                const { latitude, longitude } = position.coords;
-                form.setValue("latitude", latitude, { shouldValidate: true });
-                form.setValue("longitude", longitude, { shouldValidate: true });
-                toast({ title: "Sucesso!", description: `Localização obtida: Lat ${latitude.toFixed(4)}, Lon ${longitude.toFixed(4)}` });
-                setLoadingLocation(false);
-            },
-            (error) => {
-                let errorMessage = "Ocorreu um erro ao obter a localização.";
-                if (error.code === error.PERMISSION_DENIED) {
-                    errorMessage = "Permissão de localização negada. Por favor, habilite nas configurações do seu navegador.";
-                } else if (error.code === error.POSITION_UNAVAILABLE) {
-                    errorMessage = "Informação de localização não está disponível.";
-                } else if (error.code === error.TIMEOUT) {
-                    errorMessage = "A requisição de localização expirou.";
-                }
-                toast({ variant: "destructive", title: "Erro de Localização", description: errorMessage });
-                setLoadingLocation(false);
-            },
-            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-        );
-    };
-
-    return (
+  return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
         <div className="md:col-span-1">
@@ -264,153 +277,153 @@ const Step2 = ({ form }: { form: any }) => {
           />
         </div>
         <div className="md:col-span-2">
-            <FormField name="street" render={({ field }) => (
-              <FormItem>
-                <FormLabel>Rua</FormLabel>
-                <FormControl><Input id="signup-street" placeholder="Sua rua" {...field} /></FormControl>
-                <FormMessage />
-              </FormItem>
-            )} />
+          <FormField name="street" render={({ field }) => (
+            <FormItem>
+              <FormLabel>Rua</FormLabel>
+              <FormControl><Input id="signup-street" placeholder="Sua rua" {...field} /></FormControl>
+              <FormMessage />
+            </FormItem>
+          )} />
         </div>
       </div>
       <FormField
-          control={form.control}
-          name="dontKnowCep"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-center gap-x-2 space-y-0 mt-2 mb-4">
-              <FormControl>
+        control={form.control}
+        name="dontKnowCep"
+        render={({ field }) => (
+          <FormItem className="flex flex-row items-center gap-x-2 space-y-0 mt-2 mb-4">
+            <FormControl>
               <Checkbox
-                  id="signup-no-cep"
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
+                id="signup-no-cep"
+                checked={field.value}
+                onCheckedChange={field.onChange}
               />
-              </FormControl>
-              <FormLabel className="cursor-pointer font-normal text-sm">Não sei meu CEP</FormLabel>
-            </FormItem>
-          )}
+            </FormControl>
+            <FormLabel className="cursor-pointer font-normal text-sm">Não sei meu CEP</FormLabel>
+          </FormItem>
+        )}
       />
-        <div className="grid md:grid-cols-3 gap-4">
-            <FormField name="number" render={({ field }) => (
-                <FormItem>
-                <FormLabel>Número</FormLabel>
-                <FormControl><Input id="signup-number" placeholder="123" {...field} /></FormControl>
-                <FormMessage />
-                </FormItem>
-            )} />
-            <FormField name="complement" render={({ field }) => (
-                <FormItem className="md:col-span-2">
-                <FormLabel>Complemento <span className="text-muted-foreground">(opcional)</span></FormLabel>
-                <FormControl><Input id="signup-complement" placeholder="Apto, bloco, etc." {...field} /></FormControl>
-                <FormMessage />
-                </FormItem>
-            )} />
+      <div className="grid md:grid-cols-3 gap-4">
+        <FormField name="number" render={({ field }) => (
+          <FormItem>
+            <FormLabel>Número</FormLabel>
+            <FormControl><Input id="signup-number" placeholder="123" {...field} /></FormControl>
+            <FormMessage />
+          </FormItem>
+        )} />
+        <FormField name="complement" render={({ field }) => (
+          <FormItem className="md:col-span-2">
+            <FormLabel>Complemento <span className="text-muted-foreground">(opcional)</span></FormLabel>
+            <FormControl><Input id="signup-complement" placeholder="Apto, bloco, etc." {...field} /></FormControl>
+            <FormMessage />
+          </FormItem>
+        )} />
+      </div>
+      <div className="grid md:grid-cols-3 gap-4">
+        <FormField name="neighborhood" render={({ field }) => (
+          <FormItem>
+            <FormLabel>Bairro</FormLabel>
+            <FormControl><Input id="signup-neighborhood" placeholder="Seu bairro" {...field} /></FormControl>
+            <FormMessage />
+          </FormItem>
+        )} />
+        <FormField name="state" render={({ field }) => (
+          <FormItem>
+            <FormLabel>Estado</FormLabel>
+            <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+              <FormControl>
+                <SelectTrigger id="signup-state" disabled={loadingUfs}>
+                  <SelectValue placeholder={loadingUfs ? "Carregando..." : "Selecione o estado"} />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                {ufs.map(uf => <SelectItem key={uf.id} value={uf.sigla}>{uf.nome}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <FormMessage />
+          </FormItem>
+        )} />
+        <FormField name="city" render={({ field }) => (
+          <FormItem>
+            <FormLabel>Cidade</FormLabel>
+            <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} disabled={!selectedUf || loadingCities}>
+              <FormControl>
+                <SelectTrigger id="signup-city" disabled={!selectedUf || loadingCities}>
+                  <SelectValue placeholder={!selectedUf ? "Selecione um estado" : loadingCities ? "Carregando..." : "Selecione a cidade"} />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                {cities.map(city => <SelectItem key={city.id} value={city.nome}>{city.nome}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <FormMessage />
+          </FormItem>
+        )} />
+      </div>
+      <div className="mt-4 pt-4 border-t border-border">
+        <FormLabel>Localização Precisa (Opcional)</FormLabel>
+        <div className="flex items-center gap-4 mt-2">
+          <Button id="signup-geolocation" type="button" variant="outline" onClick={handleGeolocation} disabled={loadingLocation}>
+            {loadingLocation ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <LocateFixed className="h-4 w-4 mr-2" />}
+            Usar minha localização
+          </Button>
+          <div className="text-xs text-muted-foreground">
+            <p>Latitude: {form.getValues("latitude")?.toFixed(5) || "--"}</p>
+            <p>Longitude: {form.getValues("longitude")?.toFixed(5) || "--"}</p>
+          </div>
         </div>
-        <div className="grid md:grid-cols-3 gap-4">
-            <FormField name="neighborhood" render={({ field }) => (
-                <FormItem>
-                <FormLabel>Bairro</FormLabel>
-                <FormControl><Input id="signup-neighborhood" placeholder="Seu bairro" {...field} /></FormControl>
-                <FormMessage />
-                </FormItem>
-            )} />
-            <FormField name="state" render={({ field }) => (
-                <FormItem>
-                <FormLabel>Estado</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
-                  <FormControl>
-                    <SelectTrigger id="signup-state" disabled={loadingUfs}>
-                      <SelectValue placeholder={loadingUfs ? "Carregando..." : "Selecione o estado"}/>
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {ufs.map(uf => <SelectItem key={uf.id} value={uf.sigla}>{uf.nome}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-                </FormItem>
-            )} />
-            <FormField name="city" render={({ field }) => (
-                <FormItem>
-                <FormLabel>Cidade</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} disabled={!selectedUf || loadingCities}>
-                    <FormControl>
-                        <SelectTrigger id="signup-city" disabled={!selectedUf || loadingCities}>
-                            <SelectValue placeholder={!selectedUf ? "Selecione um estado" : loadingCities ? "Carregando..." : "Selecione a cidade"} />
-                        </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                        {cities.map(city => <SelectItem key={city.id} value={city.nome}>{city.nome}</SelectItem>)}
-                    </SelectContent>
-                </Select>
-                <FormMessage />
-                </FormItem>
-            )} />
-        </div>
-        <div className="mt-4 pt-4 border-t border-border">
-            <FormLabel>Localização Precisa (Opcional)</FormLabel>
-            <div className="flex items-center gap-4 mt-2">
-                <Button id="signup-geolocation" type="button" variant="outline" onClick={handleGeolocation} disabled={loadingLocation}>
-                    {loadingLocation ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <LocateFixed className="h-4 w-4 mr-2" />}
-                    Usar minha localização
-                </Button>
-                <div className="text-xs text-muted-foreground">
-                    <p>Latitude: {form.getValues("latitude")?.toFixed(5) || "--"}</p>
-                    <p>Longitude: {form.getValues("longitude")?.toFixed(5) || "--"}</p>
-                </div>
-            </div>
-            <FormField name="latitude" render={({ field }) => (<FormItem><FormControl><Input type="hidden" {...field} /></FormControl></FormItem>)} />
-            <FormField name="longitude" render={({ field }) => (<FormItem><FormControl><Input type="hidden" {...field} /></FormControl></FormItem>)} />
-            <p className="text-xs text-muted-foreground mt-2">Ajuda a agilizar a verificação de viabilidade técnica.</p>
-        </div>
+        <FormField name="latitude" render={({ field }) => (<FormItem><FormControl><Input type="hidden" {...field} /></FormControl></FormItem>)} />
+        <FormField name="longitude" render={({ field }) => (<FormItem><FormControl><Input type="hidden" {...field} /></FormControl></FormItem>)} />
+        <p className="text-xs text-muted-foreground mt-2">Ajuda a agilizar a verificação de viabilidade técnica.</p>
+      </div>
     </>
-    );
+  );
 };
 
 const Step3 = ({ data }: { data: FormData }) => (
-    <div>
-        <h3 className="text-lg font-semibold mb-4 border-b border-border pb-2">Confirme seus dados</h3>
-        <div className="space-y-4 text-sm">
-            <div>
-                <p className="font-semibold text-muted-foreground">Dados Pessoais</p>
-                <div className="p-4 rounded-xl bg-secondary border mt-2 space-y-2">
-                    <p><strong>Nome:</strong> {data.fullName}</p>
-                    <p><strong>Email:</strong> {data.email}</p>
-                    <p><strong>Telefone:</strong> {data.phone}</p>
-                </div>
-            </div>
-            <div>
-                <p className="font-semibold text-muted-foreground">Endereço de Instalação</p>
-                <div className="p-4 rounded-xl bg-secondary border mt-2 space-y-2">
-                    <p>{data.street}, {data.number} {data.complement && `- ${data.complement}`}</p>
-                    <p>{data.neighborhood}, {data.city} - {data.state}</p>
-                    {!data.dontKnowCep && <p><strong>CEP:</strong> {data.cep}</p>}
-                    {data.latitude && data.longitude && (
-                        <p><strong>Localização:</strong> Lat: {data.latitude.toFixed(5)}, Lon: {data.longitude.toFixed(5)}</p>
-                    )}
-                </div>
-            </div>
+  <div>
+    <h3 className="text-lg font-semibold mb-4 border-b border-border pb-2">Confirme seus dados</h3>
+    <div className="space-y-4 text-sm">
+      <div>
+        <p className="font-semibold text-muted-foreground">Dados Pessoais</p>
+        <div className="p-4 rounded-xl bg-secondary border mt-2 space-y-2">
+          <p><strong>Nome:</strong> {data.fullName}</p>
+          <p><strong>Email:</strong> {data.email}</p>
+          <p><strong>Telefone:</strong> {data.phone}</p>
         </div>
+      </div>
+      <div>
+        <p className="font-semibold text-muted-foreground">Endereço de Instalação</p>
+        <div className="p-4 rounded-xl bg-secondary border mt-2 space-y-2">
+          <p>{data.street}, {data.number} {data.complement && `- ${data.complement}`}</p>
+          <p>{data.neighborhood}, {data.city} - {data.state}</p>
+          {!data.dontKnowCep && <p><strong>CEP:</strong> {data.cep}</p>}
+          {data.latitude && data.longitude && (
+            <p><strong>Localização:</strong> Lat: {data.latitude.toFixed(5)}, Lon: {data.longitude.toFixed(5)}</p>
+          )}
+        </div>
+      </div>
     </div>
+  </div>
 );
 
 
 const SuccessScreen = () => (
-    <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="text-center p-8"
-    >
-        <div className="mx-auto w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mb-4">
-            <Check className="w-8 h-8 text-primary" />
-        </div>
-        <h2 className="text-3xl font-bold text-foreground">Solicitação enviada!</h2>
-        <p className="text-muted-foreground mt-2 max-w-md mx-auto">
-            Sua solicitação de assinatura foi enviada com sucesso. Em breve, nossa equipe entrará em contato para agendar a instalação.
-        </p>
-        <Button asChild className="mt-8" id="signup-success-back">
-            <Link href="/">Voltar para o início</Link>
-        </Button>
-    </motion.div>
+  <motion.div
+    initial={{ opacity: 0, scale: 0.95 }}
+    animate={{ opacity: 1, scale: 1 }}
+    className="text-center p-8"
+  >
+    <div className="mx-auto w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mb-4">
+      <Check className="w-8 h-8 text-primary" />
+    </div>
+    <h2 className="text-3xl font-bold text-foreground">Solicitação enviada!</h2>
+    <p className="text-muted-foreground mt-2 max-w-md mx-auto">
+      Sua solicitação de assinatura foi enviada com sucesso. Em breve, nossa equipe entrará em contato para agendar a instalação.
+    </p>
+    <Button asChild className="mt-8" id="signup-success-back">
+      <Link href="/">Voltar para o início</Link>
+    </Button>
+  </motion.div>
 );
 
 // =====================================================
@@ -450,19 +463,19 @@ export default function SignupPage() {
     if (!visitorId) return;
 
     try {
-        await fetch('/api/track-event', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                visitorId,
-                hostname: window.location.hostname,
-                pathname: window.location.pathname,
-                eventName,
-                properties,
-            }),
-        });
+      await fetch('/api/track-event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          visitorId,
+          hostname: window.location.hostname,
+          pathname: window.location.pathname,
+          eventName,
+          properties,
+        }),
+      });
     } catch (error) {
-        console.error('Failed to track event:', error);
+      console.error('Failed to track event:', error);
     }
   };
 
@@ -503,7 +516,7 @@ export default function SignupPage() {
       setCurrentStep(currentStep - 1);
     }
   };
-  
+
   const stepHeaders = [
     { title: "Seus Dados de Contato", description: "Para mantermos você informado sobre a instalação." },
     { title: "Endereço de Instalação", description: "Onde você quer sua nova conexão ultrarrápida?" },
@@ -512,7 +525,7 @@ export default function SignupPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
-       <header className="py-4 px-6 border-b border-border bg-card">
+      <header className="py-4 px-6 border-b border-border bg-card">
         <Link href="/" className="flex items-center gap-3 w-fit">
           <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-primary to-green-400 text-white shadow-lg shadow-primary/20">
             <Wifi className="h-5 w-5" />
@@ -528,33 +541,33 @@ export default function SignupPage() {
         <div className="w-full max-w-3xl mx-auto rounded-3xl border border-border bg-card text-card-foreground p-6 md:p-8 shadow-xl">
           {isSuccess ? <SuccessScreen /> : (
             <>
-            <FormProvider {...methods}>
-              <form onSubmit={methods.handleSubmit(goNext)} className="space-y-6" data-lead-form="true">
-                <StepIndicator currentStep={currentStep} totalSteps={totalSteps} />
-                <FormHeader 
-                    title={stepHeaders[currentStep-1].title} 
-                    description={stepHeaders[currentStep-1].description} 
-                />
-                
-                <AnimatePresence mode="wait">
+              <FormProvider {...methods}>
+                <form onSubmit={methods.handleSubmit(goNext)} className="space-y-6" data-lead-form="true">
+                  <StepIndicator currentStep={currentStep} totalSteps={totalSteps} />
+                  <FormHeader
+                    title={stepHeaders[currentStep - 1].title}
+                    description={stepHeaders[currentStep - 1].description}
+                  />
+
+                  <AnimatePresence mode="wait">
                     <motion.div
-                        key={currentStep}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: 20 }}
-                        transition={{ duration: 0.3 }}
+                      key={currentStep}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 20 }}
+                      transition={{ duration: 0.3 }}
                     >
-                        {currentStep === 1 && <Step1 />}
-                        {currentStep === 2 && <Step2 form={methods} />}
-                        {currentStep === 3 && <Step3 data={formData as FormData} />}
+                      {currentStep === 1 && <Step1 />}
+                      {currentStep === 2 && <Step2 form={methods} />}
+                      {currentStep === 3 && <Step3 data={formData as FormData} />}
                     </motion.div>
-                </AnimatePresence>
-                
-                <FormNavigation currentStep={currentStep} totalSteps={totalSteps} goBack={goBack} isSubmitting={isSubmitting} />
-              </form>
-            </FormProvider>
-             <p className="text-center text-xs text-muted-foreground mt-6">Seus dados estão seguros conosco.</p>
-             </>
+                  </AnimatePresence>
+
+                  <FormNavigation currentStep={currentStep} totalSteps={totalSteps} goBack={goBack} isSubmitting={isSubmitting} />
+                </form>
+              </FormProvider>
+              <p className="text-center text-xs text-muted-foreground mt-6">Seus dados estão seguros conosco.</p>
+            </>
           )}
         </div>
       </main>
@@ -562,4 +575,3 @@ export default function SignupPage() {
   );
 }
 
-    

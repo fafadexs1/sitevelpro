@@ -4,24 +4,24 @@ import { type NextRequest, NextResponse } from 'next/server';
 
 // Helper para escapar caracteres XML
 function escapeXml(unsafe: string): string {
-    return unsafe.replace(/[<>&'"]/g, function (c) {
-        switch (c) {
-            case '<': return '&lt;';
-            case '>': return '&gt;';
-            case '&': return '&amp;';
-            case '\'': return '&apos;';
-            case '"': return '&quot;';
-            default: return c;
-        }
-    });
+  return unsafe.replace(/[<>&'"]/g, function (c) {
+    switch (c) {
+      case '<': return '&lt;';
+      case '>': return '&gt;';
+      case '&': return '&amp;';
+      case '\'': return '&apos;';
+      case '"': return '&quot;';
+      default: return c;
+    }
+  });
 }
 
 export async function GET(request: NextRequest) {
   const protocol = request.headers.get('x-forwarded-proto') ?? 'http';
   const host = request.headers.get('host');
   const siteUrl = `${protocol}://${host}`;
-  
-  const supabase = createClient();
+
+  const supabase = await createClient();
 
   const routes: { url: string; lastModified: Date; priority: number }[] = [];
 
@@ -45,43 +45,43 @@ export async function GET(request: NextRequest) {
   // 2. Rotas Dinâmicas de SEO
   try {
     const { data: allRules, error: rulesError } = await supabase
-        .from('dynamic_seo_rules')
-        .select('slug_pattern, allow_indexing')
-        .eq('allow_indexing', true);
+      .from('dynamic_seo_rules')
+      .select('slug_pattern, allow_indexing')
+      .eq('allow_indexing', true);
 
     if (rulesError) throw rulesError;
 
     if (allRules) {
-        const rulesWithVariable = allRules.filter(rule => rule.slug_pattern.includes('{cidade}'));
-        const rulesWithoutVariable = allRules.filter(rule => !rule.slug_pattern.includes('{'));
+      const rulesWithVariable = allRules.filter(rule => rule.slug_pattern.includes('{cidade}'));
+      const rulesWithoutVariable = allRules.filter(rule => !rule.slug_pattern.includes('{'));
 
-        if (rulesWithVariable.length > 0) {
-            const { data: cities, error: citiesError } = await supabase.from('cities').select('slug');
-            if (citiesError) throw citiesError;
+      if (rulesWithVariable.length > 0) {
+        const { data: cities, error: citiesError } = await supabase.from('cities').select('slug');
+        if (citiesError) throw citiesError;
 
-            if (cities) {
-                for (const rule of rulesWithVariable) {
-                    for (const city of cities) {
-                        routes.push({
-                            url: `${siteUrl}${rule.slug_pattern.replace('{cidade}', city.slug)}`,
-                            lastModified: new Date(),
-                            priority: 0.7,
-                        });
-                    }
-                }
-            }
-        }
-        
-        for (const rule of rulesWithoutVariable) {
-             routes.push({
-                url: `${siteUrl}${rule.slug_pattern}`,
+        if (cities) {
+          for (const rule of rulesWithVariable) {
+            for (const city of cities) {
+              routes.push({
+                url: `${siteUrl}${rule.slug_pattern.replace('{cidade}', city.slug)}`,
                 lastModified: new Date(),
-                priority: 0.6,
-            });
+                priority: 0.7,
+              });
+            }
+          }
         }
+      }
+
+      for (const rule of rulesWithoutVariable) {
+        routes.push({
+          url: `${siteUrl}${rule.slug_pattern}`,
+          lastModified: new Date(),
+          priority: 0.6,
+        });
+      }
     }
   } catch (error) {
-     console.error("Sitemap: Erro ao processar regras de SEO dinâmicas:", error);
+    console.error("Sitemap: Erro ao processar regras de SEO dinâmicas:", error);
   }
 
   // 3. Rotas de Blog

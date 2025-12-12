@@ -1,7 +1,8 @@
 
 import { Header } from "@/components/landing/Header";
 import { Hero, type HeroSlide } from "@/components/landing/Hero";
-import { Plans, type Plan } from "@/components/landing/Plans";
+import { Plans } from "@/components/landing/Plans";
+import { type Plan } from "@/components/shared/PlanDetailsSheet";
 import { Coverage } from "@/components/landing/Coverage";
 import { Advantages } from "@/components/landing/Advantages";
 import { Mesh } from "@/components/landing/Mesh";

@@ -32,7 +32,7 @@ function DynamicLogo() {
         .select('value')
         .eq('key', 'company_logo_url')
         .single();
-      
+
       if (data?.value) {
         setLogoUrl(data.value);
       }
@@ -60,7 +60,7 @@ function DynamicLogo() {
 // Dashboard with Multi-Contracts + Top Menu Tabs
 // =====================================================
 const TABS = [
-  { key: "overview", label: "Visão Geral", href: "/cliente"},
+  { key: "overview", label: "Visão Geral", href: "/cliente" },
   { key: "tickets", label: "Chamados", href: "/cliente/chamados" },
   { key: "invoices", label: "Faturas", href: "/cliente/faturas" },
   { key: "traffic", label: "Tráfego", href: "/cliente/trafego" },
@@ -80,17 +80,17 @@ export function Dashboard({ children }: { children: React.ReactNode }) {
     await supabase.auth.signOut();
     router.refresh(); // Força o layout a reavaliar o estado de login
   };
-    
+
   if (!contract || !contracts || contracts.length === 0) {
-      return <div className="flex min-h-screen items-center justify-center text-center p-4">
-          <div>
-            <p className="font-semibold">Nenhum contrato encontrado.</p>
-            <p className="text-sm text-muted-foreground">Não foi possível carregar os dados dos seus contratos. Por favor, tente novamente mais tarde.</p>
-            <Button onClick={handleLogout} variant="outline" className="mt-4">Sair</Button>
-          </div>
-      </div>;
+    return <div className="flex min-h-screen items-center justify-center text-center p-4">
+      <div>
+        <p className="font-semibold">Nenhum contrato encontrado.</p>
+        <p className="text-sm text-muted-foreground">Não foi possível carregar os dados dos seus contratos. Por favor, tente novamente mais tarde.</p>
+        <Button onClick={handleLogout} variant="outline" className="mt-4">Sair</Button>
+      </div>
+    </div>;
   }
-  
+
   const activeTab = TABS.find(t => t.href === pathname)?.key || 'overview';
 
   return (
@@ -120,9 +120,9 @@ export function Dashboard({ children }: { children: React.ReactNode }) {
                 <span className="text-card-foreground">Olá, Você</span>
               </div>
             </div>
-             <Button id="dashboard-logout" onClick={handleLogout} variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
-                <LogOut className="h-4 w-4 mr-1"/>
-                Sair
+            <Button id="dashboard-logout" onClick={handleLogout} variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+              <LogOut className="h-4 w-4 mr-1" />
+              Sair
             </Button>
           </div>
         </div>
@@ -136,7 +136,7 @@ export function Dashboard({ children }: { children: React.ReactNode }) {
                 href={t.href}
                 className={`flex-shrink-0 whitespace-nowrap rounded-lg px-3 py-1.5 text-sm transition-colors flex items-center gap-1.5 ${activeTab === t.key ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"}`}
               >
-                {t.icon && <t.icon className="h-4 w-4" />}
+                {'icon' in t && t.icon && <t.icon className="h-4 w-4" />}
                 {t.label}
               </Link>
             ))}
@@ -162,8 +162,8 @@ export function Dashboard({ children }: { children: React.ReactNode }) {
               </div>
               <div className="mt-3 flex justify-end gap-2">
                 <button id="pix-modal-copy" onClick={() => {
-                  if(pixModal.code) navigator.clipboard?.writeText(pixModal.code)
-                  toast({title: "Copiado!", description: "O código PIX foi copiado para a área de transferência."});
+                  if (pixModal.code) navigator.clipboard?.writeText(pixModal.code)
+                  toast({ title: "Copiado!", description: "O código PIX foi copiado para a área de transferência." });
                 }} className="inline-flex items-center gap-2 rounded-lg border border-border px-3 py-1.5 text-sm hover:bg-accent">
                   <Copy className="h-4 w-4" /> Copiar
                 </button>

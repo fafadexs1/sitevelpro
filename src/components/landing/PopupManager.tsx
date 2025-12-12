@@ -10,39 +10,39 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
-import type { ConversionEvent } from '@/app/admin/google-ads/page';
+import { ConversionEvent } from '@/types/admin';
 
 type Plan = {
-  id: string;
-  type: 'residencial' | 'empresarial';
-  speed: string;
-  upload_speed: string | null;
-  download_speed: string | null;
-  price: number;
-  original_price: number | null;
-  first_month_price: number | null;
-  features: string[] | null;
-  whatsapp_number: string | null;
-  whatsapp_message: string | null;
+    id: string;
+    type: 'residencial' | 'empresarial';
+    speed: string;
+    upload_speed: string | null;
+    download_speed: string | null;
+    price: number;
+    original_price: number | null;
+    first_month_price: number | null;
+    features: string[] | null;
+    whatsapp_number: string | null;
+    whatsapp_message: string | null;
 };
 
 type Popup = {
-  id: string;
-  name: string;
-  plan_id: string | null;
-  title: string | null;
-  content: string | null;
-  image_url: string | null;
-  button_text: string | null;
-  button_link: string | null;
-  button_action_type: 'link' | 'whatsapp' | 'phone';
-  button_whatsapp_message: string | null;
-  display_on: 'sales_page' | 'main_site';
-  trigger_type: 'delay' | 'exit_intent';
-  trigger_value: number;
-  frequency: 'once_per_session' | 'once_per_day' | 'always';
-  is_active: boolean;
-  plans: Plan | null;
+    id: string;
+    name: string;
+    plan_id: string | null;
+    title: string | null;
+    content: string | null;
+    image_url: string | null;
+    button_text: string | null;
+    button_link: string | null;
+    button_action_type: 'link' | 'whatsapp' | 'phone';
+    button_whatsapp_message: string | null;
+    display_on: 'sales_page' | 'main_site';
+    trigger_type: 'delay' | 'exit_intent';
+    trigger_value: number;
+    frequency: 'once_per_session' | 'once_per_day' | 'always';
+    is_active: boolean;
+    plans: Plan | null;
 };
 
 interface PopupManagerProps {
@@ -50,10 +50,10 @@ interface PopupManagerProps {
 }
 
 const ICONS: { [key: string]: React.ElementType } = {
-  check: Check,
-  wifi: Wifi,
-  upload: Upload,
-  download: Download,
+    check: Check,
+    wifi: Wifi,
+    upload: Upload,
+    download: Download,
 };
 
 const getFeatureIcon = (feature: string) => {
@@ -65,7 +65,7 @@ const getFeatureIcon = (feature: string) => {
 };
 
 const formatBRL = (value: number) =>
-  value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 const generatePlanSlug = (plan: Pick<Plan, 'type' | 'speed'>) => {
     return `${plan.type}-${plan.speed.replace(/\s+/g, '-').toLowerCase()}`;
@@ -74,7 +74,7 @@ const generatePlanSlug = (plan: Pick<Plan, 'type' | 'speed'>) => {
 const PlanPopupContent = ({ plan }: { plan: Plan }) => {
     const priceBRL = formatBRL(plan.price);
     const firstMonthPriceBRL = plan.first_month_price ? formatBRL(plan.first_month_price) : null;
-    const slug = generatePlanSlug({type: plan.type, speed: plan.speed});
+    const slug = generatePlanSlug({ type: plan.type, speed: plan.speed });
     const planName = `${plan.speed}`;
     const hasWhatsapp = !!plan.whatsapp_number;
     const whatsappMessage = plan.whatsapp_message?.replace('{{VELOCIDADE}}', plan.speed) || `Olá, gostaria de mais informações sobre o plano de ${plan.speed}.`;
@@ -85,15 +85,15 @@ const PlanPopupContent = ({ plan }: { plan: Plan }) => {
             return (
                 <Dialog>
                     <DialogTrigger asChild>
-                         <Button 
+                        <Button
                             id={`popup-cta-saiba-mais-${slug}`}
-                            size="lg" 
+                            size="lg"
                             className="w-full mt-6"
                             data-track-event="cta_click"
                             data-track-prop-button-id={`cta-saiba-mais-${slug}`}
                             data-track-prop-plan-name={planName}
                             data-track-prop-plan-price={plan.price}
-                         >
+                        >
                             Assinar Agora <ArrowRight className="ml-2 h-4 w-4" />
                         </Button>
                     </DialogTrigger>
@@ -105,10 +105,10 @@ const PlanPopupContent = ({ plan }: { plan: Plan }) => {
                             </DialogDescription>
                         </DialogHeader>
                         <div className="flex flex-col gap-3 pt-4">
-                             <Button 
+                            <Button
                                 id={`cta-site-${slug}`}
-                                asChild 
-                                variant="default" 
+                                asChild
+                                variant="default"
                                 size="lg"
                                 data-track-event="cta_click"
                                 data-track-prop-button-id={`cta-site-${slug}`}
@@ -116,14 +116,14 @@ const PlanPopupContent = ({ plan }: { plan: Plan }) => {
                             >
                                 <Link href="/assinar">
                                     Continuar pelo site
-                                    <ArrowRight className="ml-2 h-4 w-4"/>
+                                    <ArrowRight className="ml-2 h-4 w-4" />
                                 </Link>
                             </Button>
-                            <Button 
+                            <Button
                                 id={`whatsapp-plano-${slug}`}
-                                asChild 
-                                variant="outline" 
-                                size="lg" 
+                                asChild
+                                variant="outline"
+                                size="lg"
                                 className="border-green-600 text-green-600 hover:bg-green-50 hover:text-green-700"
                                 data-track-event="cta_click"
                                 data-track-prop-button-id={`whatsapp-plano-${slug}`}
@@ -131,7 +131,7 @@ const PlanPopupContent = ({ plan }: { plan: Plan }) => {
                             >
                                 <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
                                     Falar no WhatsApp
-                                    <Smartphone className="ml-2 h-4 w-4"/>
+                                    <Smartphone className="ml-2 h-4 w-4" />
                                 </a>
                             </Button>
                         </div>
@@ -141,8 +141,8 @@ const PlanPopupContent = ({ plan }: { plan: Plan }) => {
         }
 
         return (
-            <Button 
-                asChild size="lg" 
+            <Button
+                asChild size="lg"
                 className="w-full mt-6"
                 id={`popup-cta-site-${slug}`}
                 data-track-event="cta_click"
@@ -166,19 +166,19 @@ const PlanPopupContent = ({ plan }: { plan: Plan }) => {
                 </div>
                 <ul className="mb-6 space-y-2">
                     {(plan.features ?? []).map((feature, i) => {
-                    const { Icon, text } = getFeatureIcon(feature);
-                    return (
-                        <li key={i} className="flex items-center gap-3 text-sm">
-                        <Icon className="h-4 w-4 text-primary" />
-                        <span className="text-muted-foreground">{text}</span>
-                        </li>
-                    );
+                        const { Icon, text } = getFeatureIcon(feature);
+                        return (
+                            <li key={i} className="flex items-center gap-3 text-sm">
+                                <Icon className="h-4 w-4 text-primary" />
+                                <span className="text-muted-foreground">{text}</span>
+                            </li>
+                        );
                     })}
                 </ul>
                 <div className="text-center">
                     {firstMonthPriceBRL ? (
                         <>
-                            <p className="font-bold text-yellow-600 flex items-center justify-center gap-1"><Star className="w-4 w-4 text-yellow-500 fill-yellow-500"/> 1º MÊS POR</p>
+                            <p className="font-bold text-yellow-600 flex items-center justify-center gap-1"><Star className="w-4 w-4 text-yellow-500 fill-yellow-500" /> 1º MÊS POR</p>
                             <div className="flex items-baseline justify-center gap-1 whitespace-nowrap text-foreground">
                                 <span className="font-bold text-2xl">R$</span>
                                 <span className="font-bold text-4xl">{firstMonthPriceBRL.split(',')[0]}</span>
@@ -217,7 +217,7 @@ export function PopupManager({ domainType }: PopupManagerProps) {
             try {
                 const snippetFunc = new Function('gtag', event.event_snippet);
                 snippetFunc(window.gtag);
-                 console.log(`[Popup] Conversion event tracked: ${event.name}`);
+                console.log(`[Popup] Conversion event tracked: ${event.name}`);
             } catch (e) {
                 console.error(`[Popup] Error executing event snippet for "${event.name}":`, e);
             }
@@ -225,7 +225,7 @@ export function PopupManager({ domainType }: PopupManagerProps) {
             console.warn(`[Popup] gtag not found. Could not track event: ${event.name}`);
         }
     }, []);
-    
+
     useEffect(() => {
         const handler = (e: MouseEvent) => {
             if (conversionEvents.length === 0) return;
@@ -233,16 +233,16 @@ export function PopupManager({ domainType }: PopupManagerProps) {
             if (!target) return;
 
             conversionEvents.forEach((event) => {
-            if (event.selector && target.closest(event.selector)) {
-                trackGtagConversion(event);
-            }
+                if (event.selector && target.closest(event.selector)) {
+                    trackGtagConversion(event);
+                }
             });
         };
 
         document.addEventListener('click', handler, { capture: true });
         return () => document.removeEventListener('click', handler, { capture: true } as any);
     }, [conversionEvents, trackGtagConversion]);
-    
+
     useEffect(() => {
         const fetchEvents = async () => {
             const supabase = createClient();
@@ -306,7 +306,7 @@ export function PopupManager({ domainType }: PopupManagerProps) {
         if (!popup || pathname !== '/') return;
 
         const hasBeenShown = () => {
-             if (sessionStorage.getItem(`popup_${popup.id}_closed`) === 'true') return true;
+            if (sessionStorage.getItem(`popup_${popup.id}_closed`) === 'true') return true;
 
             if (popup.frequency === 'once_per_session') {
                 return sessionStorage.getItem(`popup_${popup.id}_shown`) === 'true';
@@ -340,16 +340,16 @@ export function PopupManager({ domainType }: PopupManagerProps) {
         } else if (popup.trigger_type === 'exit_intent') {
             document.addEventListener('mouseout', handleMouseOut);
         }
-        
+
         return () => {
             clearTimeout(timer);
             document.removeEventListener('mouseout', handleMouseOut);
         };
     }, [popup, pathname, isOpen]);
-    
+
     const getButtonLink = (): string => {
         if (!popup || !popup.button_link) return "#";
-        switch(popup.button_action_type) {
+        switch (popup.button_action_type) {
             case 'whatsapp':
                 const message = popup.button_whatsapp_message ? `?text=${encodeURIComponent(popup.button_whatsapp_message)}` : '';
                 return `https://wa.me/${popup.button_link.replace(/\D/g, '')}${message}`;
@@ -361,7 +361,7 @@ export function PopupManager({ domainType }: PopupManagerProps) {
     };
 
     const handlePopupClick = (e: React.MouseEvent) => {
-      e.stopPropagation();
+        e.stopPropagation();
     };
 
     if (!popup) return null;
@@ -383,9 +383,9 @@ export function PopupManager({ domainType }: PopupManagerProps) {
                         className="relative w-full max-w-sm rounded-2xl bg-card text-card-foreground shadow-2xl overflow-hidden"
                         onClick={handlePopupClick}
                     >
-                        
+
                         {popup.plan_id && popup.plans ? (
-                            <PlanPopupContent plan={popup.plans}/>
+                            <PlanPopupContent plan={popup.plans} />
                         ) : (
                             <>
                                 {popup.image_url && (

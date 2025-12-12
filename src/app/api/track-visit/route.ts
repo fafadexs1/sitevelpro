@@ -4,7 +4,15 @@ import { createClient } from '@/utils/supabase/server';
 
 export async function POST(request: Request) {
     try {
-        const body = await request.json();
+        const text = await request.text();
+        if (!text) return new NextResponse('Empty Body', { status: 400 });
+
+        let body;
+        try {
+            body = JSON.parse(text);
+        } catch {
+            return new NextResponse('Invalid JSON', { status: 400 });
+        }
         const { visitorId, hostname, pathname, isNewVisitor } = body;
 
         if (!visitorId || !pathname || !hostname) {

@@ -20,43 +20,27 @@ import { createClient } from "@/utils/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TrackingTag, ConversionEvent } from "@/types/admin";
 
 // ==================================
 // Tipagem e Schemas
 // ==================================
-export type TrackingTag = {
-  id: string;
-  name: string;
-  script_content: string;
-  placement: 'head_start' | 'body_start' | 'body_end';
-  is_active: boolean;
-  created_at: string;
-};
 
 const tagSchema = z.object({
-  name: z.string().min(1, "O nome da tag é obrigatório."),
-  script_content: z.string().min(1, "O conteúdo do script é obrigatório."),
-  placement: z.enum(['head_start', 'body_start', 'body_end'], { required_error: "A posição é obrigatória." }),
-  is_active: z.boolean().default(true),
+    name: z.string().min(1, "O nome da tag é obrigatório."),
+    script_content: z.string().min(1, "O conteúdo do script é obrigatório."),
+    placement: z.enum(['head_start', 'body_start', 'body_end'], { required_error: "A posição é obrigatória." }),
+    is_active: z.boolean().default(true),
 });
 
 type TagFormData = z.infer<typeof tagSchema>;
 
-export type ConversionEvent = {
-  id: string;
-  name: string;
-  type: 'standard' | 'custom';
-  selector: string | null;
-  event_snippet: string;
-  is_active: boolean;
-};
-
 const eventSchema = z.object({
-  name: z.string().min(1, "O nome do evento é obrigatório."),
-  type: z.enum(['standard', 'custom']),
-  selector: z.string().optional(),
-  event_snippet: z.string().min(1, "O snippet do evento é obrigatório."),
-  is_active: z.boolean().default(true),
+    name: z.string().min(1, "O nome do evento é obrigatório."),
+    type: z.enum(['standard', 'custom']),
+    selector: z.string().optional(),
+    event_snippet: z.string().min(1, "O snippet do evento é obrigatório."),
+    is_active: z.boolean().default(true),
 }).refine(data => data.type !== 'custom' || (data.selector && data.selector.length > 0), {
     message: "O seletor CSS é obrigatório para eventos customizados.",
     path: ["selector"],
@@ -108,16 +92,16 @@ function TagForm({ onSave, onOpenChange, tag }: { onSave: () => void, onOpenChan
         }
         setIsSubmitting(false);
     };
-    
+
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 <DialogHeader>
                     <DialogTitle>{mode === 'add' ? 'Adicionar Nova Tag' : 'Editar Tag'}</DialogTitle>
                 </DialogHeader>
-                 <div className="max-h-[65vh] space-y-4 overflow-y-auto p-1 pr-4">
-                    <FormField control={form.control} name="name" render={({ field }) => ( <FormItem> <FormLabel>Nome da Tag</FormLabel> <FormControl><Input id="tag-form-name" placeholder="Ex: Google Analytics 4" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-                    <FormField control={form.control} name="script_content" render={({ field }) => ( <FormItem> <FormLabel>Conteúdo do Script</FormLabel> <FormControl><Textarea id="tag-form-script" placeholder="Cole o código da tag aqui, incluindo as tags <script>...</script>" {...field} rows={6} /></FormControl> <FormMessage /> </FormItem> )}/>
+                <div className="max-h-[65vh] space-y-4 overflow-y-auto p-1 pr-4">
+                    <FormField control={form.control} name="name" render={({ field }) => (<FormItem> <FormLabel>Nome da Tag</FormLabel> <FormControl><Input id="tag-form-name" placeholder="Ex: Google Analytics 4" {...field} /></FormControl> <FormMessage /> </FormItem>)} />
+                    <FormField control={form.control} name="script_content" render={({ field }) => (<FormItem> <FormLabel>Conteúdo do Script</FormLabel> <FormControl><Textarea id="tag-form-script" placeholder="Cole o código da tag aqui, incluindo as tags <script>...</script>" {...field} rows={6} /></FormControl> <FormMessage /> </FormItem>)} />
                     <FormField control={form.control} name="placement" render={({ field }) => (
                         <FormItem>
                             <FormLabel>Posição da Tag</FormLabel>
@@ -194,9 +178,9 @@ function EventForm({ onSave, onOpenChange, event }: { onSave: () => void, onOpen
                     <DialogTitle>{mode === 'add' ? 'Adicionar Evento Customizado' : 'Editar Evento'}</DialogTitle>
                 </DialogHeader>
                 <div className="max-h-[65vh] space-y-4 overflow-y-auto p-1 pr-4">
-                    <FormField control={form.control} name="name" render={({ field }) => ( <FormItem> <FormLabel>Nome do Evento</FormLabel> <FormControl><Input id="event-form-name" placeholder="Ex: Clique no botão Assinar" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-                    <FormField control={form.control} name="selector" render={({ field }) => ( <FormItem> <FormLabel>Seletor CSS</FormLabel> <FormControl><Input id="event-form-selector" placeholder="#botao-assinar ou .btn-primary" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-                    <FormField control={form.control} name="event_snippet" render={({ field }) => ( <FormItem> <FormLabel>Snippet do Evento</FormLabel> <FormControl><Textarea id="event-form-snippet" placeholder="gtag('event', 'conversion', ...)" {...field} rows={4} /></FormControl> <FormMessage /> </FormItem> )}/>
+                    <FormField control={form.control} name="name" render={({ field }) => (<FormItem> <FormLabel>Nome do Evento</FormLabel> <FormControl><Input id="event-form-name" placeholder="Ex: Clique no botão Assinar" {...field} /></FormControl> <FormMessage /> </FormItem>)} />
+                    <FormField control={form.control} name="selector" render={({ field }) => (<FormItem> <FormLabel>Seletor CSS</FormLabel> <FormControl><Input id="event-form-selector" placeholder="#botao-assinar ou .btn-primary" {...field} /></FormControl> <FormMessage /> </FormItem>)} />
+                    <FormField control={form.control} name="event_snippet" render={({ field }) => (<FormItem> <FormLabel>Snippet do Evento</FormLabel> <FormControl><Textarea id="event-form-snippet" placeholder="gtag('event', 'conversion', ...)" {...field} rows={4} /></FormControl> <FormMessage /> </FormItem>)} />
                     <FormField control={form.control} name="is_active" render={({ field }) => (
                         <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
                             <FormLabel>Ativo</FormLabel>
@@ -220,7 +204,7 @@ function EventForm({ onSave, onOpenChange, event }: { onSave: () => void, onOpen
 function TagsManager() {
     const { toast } = useToast();
     const supabase = createClient();
-    
+
     const [tags, setTags] = useState<TrackingTag[]>([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -246,7 +230,7 @@ function TagsManager() {
         setEditingTag(null);
         fetchTags();
     };
-    
+
     const handleDelete = async (tagId: string) => {
         const { error } = await supabase.from('tracking_tags').delete().eq('id', tagId);
         if (error) {
@@ -256,13 +240,13 @@ function TagsManager() {
             fetchTags();
         }
     }
-    
+
     const handleToggleActive = async (tag: TrackingTag) => {
         const { error } = await supabase
             .from('tracking_tags')
             .update({ is_active: !tag.is_active })
             .eq('id', tag.id);
-        
+
         if (error) {
             toast({ variant: 'destructive', title: 'Erro', description: 'Não foi possível alterar o status da tag.' });
         } else {
@@ -278,20 +262,20 @@ function TagsManager() {
                     Adicione scripts como Google Analytics, Meta Pixel, etc. As tags ativas serão injetadas automaticamente nas páginas do seu site, no local que você definir.
                 </p>
                 <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-                  <DialogTrigger asChild>
-                    <Button id="new-tag-button" onClick={() => { setEditingTag(null); }}><PlusCircle className="mr-2 h-4 w-4" /> Nova Tag</Button>
-                  </DialogTrigger>
-                  <DialogContent className="bg-card text-card-foreground sm:max-w-2xl">
-                      <TagForm onSave={handleSave} onOpenChange={setIsModalOpen} tag={editingTag} />
-                  </DialogContent>
+                    <DialogTrigger asChild>
+                        <Button id="new-tag-button" onClick={() => { setEditingTag(null); }}><PlusCircle className="mr-2 h-4 w-4" /> Nova Tag</Button>
+                    </DialogTrigger>
+                    <DialogContent className="bg-card text-card-foreground sm:max-w-2xl">
+                        <TagForm onSave={handleSave} onOpenChange={setIsModalOpen} tag={editingTag} />
+                    </DialogContent>
                 </Dialog>
             </div>
-            
+
             {loading ? (
                 <div className="flex items-center justify-center p-8"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
             ) : tags.length === 0 ? (
                 <div className="flex flex-col items-center justify-center text-center py-16 px-4 rounded-xl border-2 border-dashed border-border bg-secondary">
-                    <Tag className="w-12 h-12 text-muted-foreground mb-4"/>
+                    <Tag className="w-12 h-12 text-muted-foreground mb-4" />
                     <h3 className="text-lg font-semibold text-foreground">Nenhuma tag criada ainda</h3>
                     <p className="text-sm text-muted-foreground max-w-sm mx-auto">Clique em "Nova Tag" para adicionar seu primeiro script de rastreamento e começar a coletar dados.</p>
                 </div>
@@ -301,16 +285,16 @@ function TagsManager() {
                         <Card key={tag.id} className="flex flex-col">
                             <CardHeader className="flex-row items-center justify-between">
                                 <CardTitle className="flex items-center gap-2 text-lg">
-                                    <Tag className="w-5 h-5 text-primary"/>
+                                    <Tag className="w-5 h-5 text-primary" />
                                     {tag.name}
                                 </CardTitle>
                                 <Switch id={`toggle-tag-${tag.id}`} checked={tag.is_active} onCheckedChange={() => handleToggleActive(tag)} aria-label={`Ativar/desativar tag ${tag.name}`} />
                             </CardHeader>
                             <CardContent className="flex-grow space-y-3">
-                                 <Badge variant="secondary" className="font-mono text-xs">{tag.placement}</Badge>
-                                 <p className="text-xs text-muted-foreground line-clamp-2 font-mono bg-secondary p-2 rounded-md border border-border">
+                                <Badge variant="secondary" className="font-mono text-xs">{tag.placement}</Badge>
+                                <p className="text-xs text-muted-foreground line-clamp-2 font-mono bg-secondary p-2 rounded-md border border-border">
                                     {tag.script_content}
-                                 </p>
+                                </p>
                             </CardContent>
                             <CardFooter className="flex justify-end gap-2 border-t pt-4">
                                 <Button id={`edit-tag-${tag.id}`} variant="ghost" size="sm" onClick={() => { setEditingTag(tag); setIsModalOpen(true); }}>
@@ -370,7 +354,7 @@ function ConversionMappingManager() {
             fetchEvents();
         }
     };
-    
+
     const handleDelete = async (eventId: string) => {
         const { error } = await supabase.from('conversion_events').delete().eq('id', eventId);
         if (error) {
@@ -380,7 +364,7 @@ function ConversionMappingManager() {
             fetchEvents();
         }
     }
-    
+
     const standardEvents = events.filter(e => e.type === 'standard');
     const customEvents = events.filter(e => e.type === 'custom');
 
@@ -402,13 +386,13 @@ function ConversionMappingManager() {
                         STANDARD_CONVERSIONS.map(stdEvent => {
                             const dbEvent = standardEvents.find(e => e.selector === stdEvent.selector);
                             const isActive = dbEvent?.is_active ?? false;
-                            
+
                             const handleToggleStandard = async () => {
                                 let error;
                                 if (dbEvent) {
-                                    ({error} = await supabase.from('conversion_events').update({is_active: !dbEvent.is_active}).eq('id', dbEvent.id));
+                                    ({ error } = await supabase.from('conversion_events').update({ is_active: !dbEvent.is_active }).eq('id', dbEvent.id));
                                 } else {
-                                    ({error} = await supabase.from('conversion_events').insert({...stdEvent, is_active: true}));
+                                    ({ error } = await supabase.from('conversion_events').insert({ ...stdEvent, is_active: true }));
                                 }
 
                                 if (error) {
@@ -418,7 +402,7 @@ function ConversionMappingManager() {
                                     fetchEvents();
                                 }
                             }
-                            
+
                             return (
                                 <div key={stdEvent.name} className="flex items-center justify-between rounded-lg border border-border p-4">
                                     <div>
@@ -439,43 +423,43 @@ function ConversionMappingManager() {
                     <CardDescription>Crie eventos de conversão para ações específicas, como cliques em botões.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                     <div className="flex justify-end">
+                    <div className="flex justify-end">
                         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
                             <DialogTrigger asChild>
                                 <Button id="new-custom-event" onClick={() => { setEditingEvent(null); }}><PlusCircle className="mr-2 h-4 w-4" /> Novo Evento Customizado</Button>
                             </DialogTrigger>
-                             <DialogContent className="bg-card text-card-foreground sm:max-w-2xl">
+                            <DialogContent className="bg-card text-card-foreground sm:max-w-2xl">
                                 <EventForm onSave={handleSave} onOpenChange={setIsModalOpen} event={editingEvent} />
                             </DialogContent>
                         </Dialog>
-                     </div>
-                      {loading ? <div className="flex justify-center p-8"><Loader2 className="h-6 w-6 animate-spin" /></div> :
+                    </div>
+                    {loading ? <div className="flex justify-center p-8"><Loader2 className="h-6 w-6 animate-spin" /></div> :
                         customEvents.length === 0 ? <p className="text-sm text-muted-foreground text-center py-8">Nenhum evento customizado criado.</p> :
-                        customEvents.map(event => (
-                            <div key={event.id} className="flex items-center justify-between rounded-lg border border-border p-4">
-                               <div>
-                                   <p className="font-medium text-foreground">{event.name}</p>
-                                   <p className="text-xs text-muted-foreground font-mono">Seletor: {event.selector}</p>
-                               </div>
-                               <div className="flex items-center gap-4">
-                                   <Switch id={`toggle-custom-event-${event.id}`} checked={event.is_active} onCheckedChange={() => handleToggleActive(event)} />
-                                   <Button id={`edit-custom-event-${event.id}`} variant="ghost" size="sm" onClick={() => { setEditingEvent(event); setIsModalOpen(true); }}><Edit className="h-4 w-4 mr-2"/>Editar</Button>
-                                   <AlertDialog>
-                                        <AlertDialogTrigger asChild>
-                                            <Button id={`delete-event-trigger-${event.id}`} variant="destructive" size="sm"><Trash2 className="h-4 w-4" /></Button>
-                                        </AlertDialogTrigger>
-                                        <AlertDialogContent className="bg-card text-card-foreground">
-                                            <AlertDialogHeader><AlertDialogTitle>Tem certeza?</AlertDialogTitle><AlertDialogDescription>Isso irá apagar permanentemente o evento de conversão.</AlertDialogDescription></AlertDialogHeader>
-                                            <AlertDialogFooter>
-                                                <AlertDialogCancel id={`delete-event-cancel-${event.id}`}>Cancelar</AlertDialogCancel>
-                                                <AlertDialogAction id={`delete-event-confirm-${event.id}`} onClick={() => handleDelete(event.id)}>Continuar</AlertDialogAction>
-                                            </AlertDialogFooter>
-                                        </AlertDialogContent>
-                                    </AlertDialog>
-                               </div>
-                            </div>
-                        ))
-                      }
+                            customEvents.map(event => (
+                                <div key={event.id} className="flex items-center justify-between rounded-lg border border-border p-4">
+                                    <div>
+                                        <p className="font-medium text-foreground">{event.name}</p>
+                                        <p className="text-xs text-muted-foreground font-mono">Seletor: {event.selector}</p>
+                                    </div>
+                                    <div className="flex items-center gap-4">
+                                        <Switch id={`toggle-custom-event-${event.id}`} checked={event.is_active} onCheckedChange={() => handleToggleActive(event)} />
+                                        <Button id={`edit-custom-event-${event.id}`} variant="ghost" size="sm" onClick={() => { setEditingEvent(event); setIsModalOpen(true); }}><Edit className="h-4 w-4 mr-2" />Editar</Button>
+                                        <AlertDialog>
+                                            <AlertDialogTrigger asChild>
+                                                <Button id={`delete-event-trigger-${event.id}`} variant="destructive" size="sm"><Trash2 className="h-4 w-4" /></Button>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent className="bg-card text-card-foreground">
+                                                <AlertDialogHeader><AlertDialogTitle>Tem certeza?</AlertDialogTitle><AlertDialogDescription>Isso irá apagar permanentemente o evento de conversão.</AlertDialogDescription></AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                    <AlertDialogCancel id={`delete-event-cancel-${event.id}`}>Cancelar</AlertDialogCancel>
+                                                    <AlertDialogAction id={`delete-event-confirm-${event.id}`} onClick={() => handleDelete(event.id)}>Continuar</AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
+                                    </div>
+                                </div>
+                            ))
+                    }
                 </CardContent>
             </Card>
         </div>
@@ -494,11 +478,11 @@ export function GoogleAdsManager() {
                     <p className="text-muted-foreground">Adicione scripts de marketing e meça os resultados de suas campanhas.</p>
                 </div>
             </header>
-            
+
             <Tabs defaultValue="tags" className="w-full">
                 <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="tags" id="tags-tab"><Tag className="mr-2"/>Gerenciador de Tags</TabsTrigger>
-                    <TabsTrigger value="conversions" id="conversions-tab"><Terminal className="mr-2"/>Mapeamento de Conversões</TabsTrigger>
+                    <TabsTrigger value="tags" id="tags-tab"><Tag className="mr-2" />Gerenciador de Tags</TabsTrigger>
+                    <TabsTrigger value="conversions" id="conversions-tab"><Terminal className="mr-2" />Mapeamento de Conversões</TabsTrigger>
                 </TabsList>
                 <TabsContent value="tags" className="mt-6">
                     <TagsManager />
@@ -511,4 +495,3 @@ export function GoogleAdsManager() {
     );
 }
 
-    

@@ -10,7 +10,7 @@ import React from 'react';
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 
 type PageProps = {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 };
 
 // Helper para criar um cliente Supabase seguro para build
@@ -30,11 +30,12 @@ function createBuildTimeClient() {
 
 // --- Metadata Generation ---
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params;
   const supabase = createBuildTimeClient();
   const { data: post } = await supabase
     .from('posts')
     .select('title, meta_title, meta_description, cover_image_url')
-    .eq('slug', params.slug)
+    .eq('slug', slug)
     .eq('is_published', true)
     .single();
 
@@ -64,11 +65,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 
 export default async function BlogPostPage({ params }: PageProps) {
+  const { slug } = await params;
   const supabase = await createServerClientUtil(); // Usa o cliente padrão para runtime
   const { data: post } = await supabase
     .from('posts')
     .select('*')
-    .eq('slug', params.slug)
+    .eq('slug', slug)
     .eq('is_published', true)
     .single();
 

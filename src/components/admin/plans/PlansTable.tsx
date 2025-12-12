@@ -40,7 +40,7 @@ export function PlansTable({
     onDeletePlan,
 }: {
     plans: Plan[];
-    setPlans: React.Dispatch<React.SetStateAction<Plan[]>>;
+    setPlans: (plans: Plan[]) => void;
     onEditPlan: (plan: Plan) => void;
     onDeletePlan: (planId: string) => void;
 }) {

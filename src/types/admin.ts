@@ -24,3 +24,21 @@ export type TvChannel = {
     logo_url: string;
     created_at: string;
 };
+
+export type TrackingTag = {
+    id: string;
+    name: string;
+    script_content: string;
+    placement: 'head_start' | 'body_start' | 'body_end';
+    is_active: boolean;
+    created_at: string;
+};
+
+export type ConversionEvent = {
+    id: string;
+    name: string;
+    type: 'standard' | 'custom';
+    selector: string | null;
+    event_snippet: string;
+    is_active: boolean;
+};

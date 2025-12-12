@@ -123,22 +123,27 @@ export async function loginWithApi(cpfcnpj: string, senha: string): Promise<{ su
                     data: {
                         is_client: true,
                     },
-                    email_confirm: true, // Auto-confirma o email
-                }
+                },
             });
 
             if (signUpError && signUpError.message.includes('User already registered')) {
                 // Caso especial: o usuário existe no Auth, mas não na tabela 'clientes'.
                 // Isso pode acontecer se a inserção na tabela 'clientes' falhou em uma tentativa anterior.
                 // Nesse caso, não precisamos criar o usuário, apenas prosseguir para inserir na tabela.
-                const { data: existingUser, error: getUserError } = await supabase.auth.admin.getUserByEmail(email);
-                if (getUserError || !existingUser.user) {
-                    throw new Error(`Erro ao recuperar usuário existente: ${getUserError?.message}`);
+                // Tenta logar para obter os dados do usuário, já que ele existe no Auth
+                const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: senha,
+                });
+
+                if (signInError || !signInData.user) {
+                    throw new Error(`Erro ao recuperar usuário existente: ${signInError?.message}`);
                 }
+
                 const { error: insertError } = await supabase
                     .from('clientes')
                     .insert({
-                        user_id: existingUser.user.id,
+                        user_id: signInData.user.id,
                         cpf_cnpj: cleanCpfCnpj,
                         contratos: data.contratos,
                         selected_contract_id: String(data.contratos[0]?.contrato)
