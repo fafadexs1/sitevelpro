@@ -92,21 +92,32 @@ export function ChristmasTheme() {
         };
     }, []);
 
+    const [isVisible, setIsVisible] = React.useState(false);
     const [isShaking, setIsShaking] = React.useState(false);
     const [showTooltip, setShowTooltip] = React.useState(false);
 
-    // Periodic Shake and Message Logic
+    // Periodic Visibility Logic
     useEffect(() => {
-        const interval = setInterval(() => {
+        const showCycle = () => {
+            setIsVisible(true);
             setIsShaking(true);
             setShowTooltip(true);
 
-            // Stop shaking after 1s
-            setTimeout(() => setIsShaking(false), 1000);
+            // Stop shaking after 1.5s
+            setTimeout(() => setIsShaking(false), 1500);
 
-            // Hide tooltip after 4s
-            setTimeout(() => setShowTooltip(false), 4000);
-        }, 10000); // Every 10 seconds
+            // Hide tooltip/santa after 6s
+            setTimeout(() => {
+                setShowTooltip(false);
+                setIsVisible(false);
+            }, 6000);
+        };
+
+        // Run immediately on mount
+        showCycle();
+
+        // Run every 50 seconds
+        const interval = setInterval(showCycle, 50000);
 
         return () => clearInterval(interval);
     }, []);
@@ -120,20 +131,14 @@ export function ChristmasTheme() {
                 style={{ pointerEvents: 'none' }}
             />
 
-            {/* CSS Christmas Lights - Lightweight & Animated */}
-            <div className="fixed top-0 left-0 w-full z-[40] pointer-events-none flex justify-center overflow-hidden" style={{ height: '40px' }}>
-                <ul className="christmas-lights whitespace-nowrap">
-                    {Array.from({ length: 40 }).map((_, i) => (
-                        <li key={i} className={i % 2 === 0 ? 'even' : 'odd'}></li>
-                    ))}
-                </ul>
-            </div>
-
             {/* Santa Hat on Bottom Left */}
             <motion.div
-                initial={{ y: 100, opacity: 0 }}
-                animate={isShaking ? { y: 0, opacity: 1, rotate: [0, -10, 10, -10, 10, 0] } : { y: 0, opacity: 1 }}
-                transition={{ duration: 0.5 }}
+                initial={{ y: 200, opacity: 0 }}
+                animate={isVisible ?
+                    (isShaking ? { y: 0, opacity: 1, rotate: [0, -10, 10, -10, 10, 0] } : { y: 0, opacity: 1 })
+                    : { y: 200, opacity: 0 }
+                }
+                transition={{ duration: 0.8, type: "spring", bounce: 0.4 }}
                 className="fixed bottom-4 left-4 md:bottom-6 md:left-6 z-[60] block pointer-events-auto"
             >
                 <div className="relative group cursor-pointer" onClick={() => setShowTooltip(!showTooltip)}>
@@ -146,87 +151,10 @@ export function ChristmasTheme() {
                 </div>
             </motion.div>
 
+
             <style jsx>{`
-                .christmas-lights {
-                    text-align: center;
-                    white-space: nowrap;
-                    overflow: hidden;
-                    position: absolute;
-                    top: -10px; /* Pull up slightly to not block menu */
-                    width: 100%;
-                    margin: 0;
-                    padding: 0;
-                    pointer-events: none;
-                    display: flex;
-                    justify-content: center;
-                }
 
-                .christmas-lights li {
-                    position: relative;
-                    list-style: none;
-                    margin: 0 12px; /* Spacing between lights */
-                    padding: 0;
-                    display: inline-block;
-                    width: 12px;
-                    height: 20px;
-                    border-radius: 50%;
-                    top: 10px;
-                    background: #fff;
-                    animation-name: flash;
-                    animation-duration: 2s;
-                    animation-iteration-count: infinite;
-                    animation-fill-mode: both;
-                }
-
-                /* Wire */
-                .christmas-lights li:before {
-                    content: "";
-                    position: absolute;
-                    background: transparent;
-                    width: 30px; /* Wire length */
-                    height: 10px;
-                    border-radius: 50%;
-                    top: -8px;
-                    left: -15px;
-                    border-bottom: 2px solid #222; /* The wire */
-                    z-index: -1;
-                }
-
-                /* Colors and Delays */
-                .christmas-lights li:nth-child(4n+1) {
-                    background: #ff3333; /* Red */
-                    box-shadow: 0 2px 10px rgba(255, 51, 51, 0.5);
-                    animation-delay: 0s;
-                }
-                .christmas-lights li:nth-child(4n+2) {
-                    background: #33ff33; /* Green */
-                    box-shadow: 0 2px 10px rgba(51, 255, 51, 0.5);
-                    animation-delay: 0.5s;
-                }
-                .christmas-lights li:nth-child(4n+3) {
-                    background: #ffff33; /* Yellow */
-                    box-shadow: 0 2px 10px rgba(255, 255, 51, 0.5);
-                    animation-delay: 1s;
-                }
-                .christmas-lights li:nth-child(4n+4) {
-                    background: #3333ff; /* Blue */
-                    box-shadow: 0 2px 10px rgba(51, 51, 255, 0.5);
-                    animation-delay: 1.5s;
-                }
-
-                @keyframes flash {
-                    0%, 100% {
-                        opacity: 1;
-                        transform: scale(1);
-                        filter: brightness(1.2);
-                    }
-                    50% {
-                        opacity: 0.4;
-                        transform: scale(0.9);
-                        filter: brightness(0.8);
-                    }
-                }
             `}</style>
-        </div>
+        </div >
     );
 }

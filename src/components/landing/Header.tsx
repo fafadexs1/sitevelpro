@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
+import { TopBar } from "./TopBar";
 
 type DomainType = 'main_site' | 'sales_page';
 
@@ -204,8 +205,9 @@ export function Header() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-border/40 bg-background/60 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+      <header className="sticky top-0 z-40 flex flex-col border-b border-border/40 bg-background/60 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <TopBar />
+        <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
           <a id="nav-logo" href="/" className="group flex items-center gap-3">
             <DynamicLogo />
             <div>
