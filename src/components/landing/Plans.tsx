@@ -4,7 +4,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Wifi, Upload, Download, Tv, Smartphone, Check, Loader2, PlusCircle, Gauge, X, Star, ArrowRight } from "lucide-react";
+import { Wifi, Upload, Download, Tv, Smartphone, Check, Loader2, PlusCircle, Gauge, X, Star, ArrowRight, Server, Globe, Shield, Phone } from "lucide-react";
 import Link from 'next/link';
 import {
   Carousel,
@@ -16,8 +16,16 @@ import {
   CarouselApi,
 } from "@/components/ui/carousel";
 import { Button } from "@/components/ui/button";
-import { createClient } from "@/utils/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose, DialogDescription } from "@/components/ui/dialog";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { ChannelLogos } from "./ChannelLogos";
@@ -62,58 +70,281 @@ const generatePlanSlug = (plan: Pick<Plan, 'type' | 'speed'>) => {
   return `${plan.type}-${plan.speed.replace(/\s+/g, '-').toLowerCase()}`;
 }
 
-const PlanDetailsModal = ({ plan, children }: { plan: Plan, children: React.ReactNode }) => {
-  const slug = generatePlanSlug(plan);
-  const planName = `${plan.speed}`;
+// Hardcoded Enterprise Plans to match BusinessPlans.tsx
+const ENTERPRISE_PLANS: Plan[] = [
+  {
+    id: 'ent-500',
+    type: 'empresarial',
+    speed: '500 MEGA',
+    upload_speed: null,
+    download_speed: null,
+    price: 99.90,
+    original_price: 109.90,
+    first_month_price: null,
+    features: ["Wifi 6 Up", "Instalação grátis", "Suporte Prioritário"],
+    highlight: false,
+    has_tv: false,
+    featured_channel_ids: [],
+    whatsapp_number: '5508003810404',
+    whatsapp_message: 'Olá! Tenho interesse no plano Empresarial de 500 MEGA.',
+    conditions: null
+  },
+  {
+    id: 'ent-700',
+    type: 'empresarial',
+    speed: '700 MEGA',
+    upload_speed: null,
+    download_speed: null,
+    price: 129.90,
+    original_price: 139.90,
+    first_month_price: null,
+    features: ["Wifi 6 Up", "Instalação grátis", "Suporte Premium 24/7", "IP Dinâmico"],
+    highlight: true,
+    has_tv: false,
+    featured_channel_ids: [],
+    whatsapp_number: '5508003810404',
+    whatsapp_message: 'Olá! Tenho interesse no plano Empresarial de 700 MEGA.',
+    conditions: null
+  },
+  {
+    id: 'ent-900',
+    type: 'empresarial',
+    speed: '900 MEGA',
+    upload_speed: null,
+    download_speed: null,
+    price: 169.90,
+    original_price: 179.90,
+    first_month_price: null,
+    features: ["Wifi 6 Up", "Instalação grátis", "SLA Garantido", "Gestor de Conta"],
+    highlight: false,
+    has_tv: false,
+    featured_channel_ids: [],
+    whatsapp_number: '5508003810404',
+    whatsapp_message: 'Olá! Tenho interesse no plano Empresarial de 900 MEGA.',
+    conditions: null
+  }
+];
+
+const addons = [
+  { name: "IP Fixo", price: "50,00", icon: Server }, // Using Server as placeholder for Globe/Zap/Shield if imports unavailable
+  { name: "Upload 50%", price: "9,90", icon: Upload },
+  { name: "Filtro de Conteúdo", price: "9,90", icon: Shield },
+  { name: "Garantia de Banda Monitorada", price: "Consulte", icon: Server },
+];
+
+const PlanDetailsSheet = ({ plan, children }: { plan: Plan, children: React.ReactNode }) => {
+  const isEmpresarial = plan.type === 'empresarial';
+  const bgColor = isEmpresarial ? "bg-neutral-950" : "bg-white";
+  const textColor = isEmpresarial ? "text-white" : "text-neutral-900";
+  const subTextColor = isEmpresarial ? "text-neutral-400" : "text-neutral-500";
+  const borderColor = isEmpresarial ? "border-white/5" : "border-neutral-200";
+  const cardBg = isEmpresarial ? "bg-neutral-900/50 border-white/5" : "bg-neutral-50 border-neutral-100";
+
+  const [selectedAddons, setSelectedAddons] = useState<string[]>([]);
+
+  // Toggle addon selection
+  const toggleAddon = (addonName: string) => {
+    setSelectedAddons(prev =>
+      prev.includes(addonName)
+        ? prev.filter(a => a !== addonName)
+        : [...prev, addonName]
+    );
+  };
+
+  // Generate WhatsApp Link with Addons
+  const getWhatsappLink = () => {
+    let message = plan.whatsapp_message || '';
+
+    if (isEmpresarial && selectedAddons.length > 0) {
+      message += `\n\nTenho interesse também nos adicionais:\n${selectedAddons.map(a => `- ${a}`).join('\n')}`;
+    }
+
+    return `https://wa.me/${plan.whatsapp_number}?text=${encodeURIComponent(message)}`;
+  };
+
+  // Helper to format the condition text
+  const formatConditions = (text: string) => {
+    // Split by common dividers used in legal text
+    return text.split(/(?<=[.!?])\s+(?=[A-Z])|(?=📌)|(?=♦)|(?=•)|(?=Obs:)/g).map((part, index) => {
+      const trimmed = part.trim();
+      if (!trimmed) return null;
+      return (
+        <p key={index} className={`mb-1.5 ${trimmed.length < 50 ? 'font-medium' : ''}`}>
+          {trimmed}
+        </p>
+      );
+    });
+  };
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="max-w-2xl w-full bg-white text-neutral-800 p-0">
-        <DialogHeader className="p-6">
-          <p className="text-sm text-neutral-500">INTERNET FIBRA</p>
-          <DialogTitle className="text-3xl font-extrabold text-neutral-900">{planName}</DialogTitle>
-        </DialogHeader>
+    <Sheet>
+      <SheetTrigger asChild>{children}</SheetTrigger>
+      <SheetContent className={`w-[400px] sm:w-[540px] border-l ${borderColor} ${bgColor} ${textColor} overflow-y-auto z-[9999] p-0 flex flex-col h-full`}>
+        <SheetHeader className="p-6 pb-2 text-left shrink-0">
+          <SheetTitle className={`text-xl font-bold flex items-center gap-2 ${textColor}`}>
+            Detalhes do Plano
+          </SheetTitle>
+        </SheetHeader>
 
-        <div className="px-6 pb-28 max-h-[60vh] overflow-y-auto">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
-            {plan.features?.map(feat => {
-              const { Icon, text } = getFeatureIcon(feat);
-              return <div key={text} className="flex items-center gap-2 text-neutral-600"><Icon className="text-green-600" />{text}</div>
-            })}
-            {plan.download_speed && <div className="flex items-center gap-2 text-neutral-600"><Download className="text-green-600" /> Download {plan.download_speed}</div>}
-            {plan.upload_speed && <div className="flex items-center gap-2 text-neutral-600"><Upload className="text-green-600" /> Upload {plan.upload_speed}</div>}
+        <div className="flex-1 overflow-y-auto p-6 pt-0 space-y-4">
+          {/* Main Card - Compact */}
+          <div className={`p-5 rounded-2xl border ${cardBg} relative overflow-hidden shrink-0`}>
+            <div className="absolute top-0 right-0 p-4 opacity-[0.03]">
+              <Wifi className={`w-24 h-24 ${isEmpresarial ? 'text-white' : 'text-neutral-900'}`} />
+            </div>
+            <div className="flex flex-col gap-0.5 mb-4 relative z-10">
+              <span className="text-xs text-green-500 font-bold tracking-wider uppercase">Plano Selecionado</span>
+              <h3 className={`text-4xl font-black ${textColor}`}>{plan.speed.replace(/\D/g, '')} MEGA</h3>
+            </div>
+
+            <Separator className={`${isEmpresarial ? 'bg-white/5' : 'bg-neutral-200'} my-4`} />
+
+            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 relative z-10">
+              {plan.features?.map(f => {
+                const { Icon, text } = getFeatureIcon(f);
+                return (
+                  <li key={f} className={`flex items-center gap-2 text-sm ${isEmpresarial ? 'text-neutral-300' : 'text-neutral-600'}`}>
+                    <Icon className="w-4 h-4 text-green-500 shrink-0" />
+                    <span className="line-clamp-1">{text}</span>
+                  </li>
+                );
+              })}
+              <li className={`flex items-center gap-2 text-sm ${isEmpresarial ? 'text-neutral-300' : 'text-neutral-600'}`}>
+                <Check className="w-4 h-4 text-green-500 shrink-0" />
+                <span className="line-clamp-1">Link 100% Fibra Óptica</span>
+              </li>
+              {!isEmpresarial && plan.download_speed && (
+                <li className="flex items-center gap-2 text-sm text-neutral-600">
+                  <Download className="w-4 h-4 text-green-500 shrink-0" />
+                  <span className="line-clamp-1">Download {plan.download_speed}</span>
+                </li>
+              )}
+              {!isEmpresarial && plan.upload_speed && (
+                <li className="flex items-center gap-2 text-sm text-neutral-600">
+                  <Upload className="w-4 h-4 text-green-500 shrink-0" />
+                  <span className="line-clamp-1">Upload {plan.upload_speed}</span>
+                </li>
+              )}
+            </ul>
+
+            <div className={`mt-4 pt-4 border-t ${isEmpresarial ? 'border-white/5' : 'border-neutral-200'} flex flex-col gap-1`}>
+              {plan.first_month_price ? (
+                <div className="flex flex-col items-center justify-center py-2">
+                  <div className="flex items-center gap-1.5 mb-1 bg-yellow-400/10 px-3 py-1 rounded-full border border-yellow-400/20">
+                    <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />
+                    <span className="text-xs font-bold text-yellow-600 uppercase tracking-wide">1º Mês Por</span>
+                  </div>
+                  <div className={`text-4xl font-black ${textColor} leading-tight`}>
+                    R$ {formatBRL(plan.first_month_price)}
+                  </div>
+                  <div className={`text-xs ${subTextColor} mt-1 font-medium`}>
+                    Após, R$ {formatBRL(plan.price)}/mês
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between w-full py-1">
+                  <div className={`text-sm font-medium ${subTextColor}`}>Mensalidade</div>
+                  <div className="flex flex-col items-end">
+                    {plan.original_price && (
+                      <span className={`text-xs line-through ${subTextColor}`}>
+                        De R$ {formatBRL(plan.original_price)}
+                      </span>
+                    )}
+                    <div className={`text-3xl font-black ${textColor} leading-none`}>
+                      R$ {formatBRL(plan.price)}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
+          {isEmpresarial && (
+            <div className="shrink-0">
+              <h4 className={`text-sm font-bold mb-3 flex items-center gap-2 ${textColor}`}>
+                Adicionais (Selecione)
+              </h4>
+              <div className="flex flex-col gap-2">
+                {addons.map((addon) => {
+                  const isSelected = selectedAddons.includes(addon.name);
+                  return (
+                    <div
+                      key={addon.name}
+                      onClick={() => toggleAddon(addon.name)}
+                      className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all duration-200
+                        ${isSelected
+                          ? 'bg-green-500/10 border-green-500/50'
+                          : `${isEmpresarial ? 'border-white/5 bg-white/[0.02] hover:bg-white/[0.05]' : 'border-neutral-200'}`
+                        }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors
+                          ${isSelected ? 'bg-green-500 border-green-500' : 'border-neutral-600'}`}>
+                          {isSelected && <Check className="w-3.5 h-3.5 text-white" />}
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className={`p-1.5 rounded-md ${isEmpresarial ? 'bg-neutral-900' : 'bg-neutral-100'} text-green-500`}>
+                            <addon.icon className="w-4 h-4" />
+                          </div>
+                          <p className={`text-sm font-medium ${isSelected ? 'text-green-500' : textColor}`}>{addon.name}</p>
+                        </div>
+                      </div>
+                      <span className={`text-sm font-semibold ${isSelected ? 'text-green-500' : 'text-neutral-500'}`}>
+                        {addon.price === 'Consulte' ? 'Consulte' : `+ ${addon.price}`}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Conditions Section - Scrollable if needed */}
           {plan.conditions && (
-            <div className="mt-6 pt-6 border-t">
-              <h4 className="font-semibold text-neutral-800">Velocidade da oferta</h4>
-              <p className="text-xs text-neutral-500 mt-1">{plan.conditions}</p>
+            <div className={`p-3 rounded-xl border ${isEmpresarial ? 'border-white/5 bg-white/[0.02]' : 'border-neutral-100 bg-neutral-50'}`}>
+              <h4 className={`font-semibold text-xs mb-2 ${textColor} flex items-center gap-2 uppercase tracking-wider opacity-80`}>
+                <div className="w-1 h-3 bg-green-500 rounded-full" />
+                Condições da Oferta
+              </h4>
+              <div className={`text-[11px] leading-relaxed ${subTextColor} space-y-1`}>
+                {formatConditions(plan.conditions)}
+              </div>
             </div>
           )}
         </div>
 
-        <div className="absolute bottom-0 left-0 right-0 p-6 bg-neutral-50 border-t flex items-center justify-between">
-          <div>
-            <span className="text-neutral-900 font-bold text-3xl">
-              R$ {formatBRL(plan.price)}
-            </span>
-            <span className="text-neutral-500 ml-2">/mês</span>
+        {/* Footer Actions - Fixed at bottom */}
+        <div className={`p-6 pt-2 mt-auto border-t ${isEmpresarial ? 'border-white/5' : 'border-neutral-100'} bg-transparent sm:bg-transparent`}>
+          <div className="space-y-2">
+            {!isEmpresarial ? (
+              <Button className="w-full h-12 text-base font-bold bg-green-600 hover:bg-green-700 text-white rounded-xl shadow-md transition-all" asChild>
+                <Link href="/assinar">
+                  Contratar pelo Site
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            ) : (
+              <Button className="w-full h-12 text-base font-bold bg-green-600 hover:bg-green-500 text-white rounded-xl shadow-lg transition-all" asChild>
+                <a href={getWhatsappLink()} target="_blank" rel="noopener noreferrer">
+                  <Phone className="w-4 h-4 mr-2" />
+                  Contratar Agora
+                  {selectedAddons.length > 0 && <span className="ml-1 text-xs font-normal opacity-80">({selectedAddons.length} opcionais)</span>}
+                </a>
+              </Button>
+            )}
+
+            {!isEmpresarial && (
+              <Button variant="outline" className={`w-full h-10 text-sm font-semibold ${textColor} border-border hover:bg-neutral-100`} asChild>
+                <a href={`https://wa.me/${plan.whatsapp_number || '5508003810404'}?text=${encodeURIComponent(plan.whatsapp_message || 'Olá, tenho interesse neste plano.')}`} target="_blank" rel="noopener noreferrer">
+                  <Smartphone className="w-4 h-4 mr-2" />
+                  Falar no WhatsApp
+                </a>
+              </Button>
+            )}
           </div>
-          <Button id={`plan-modal-cta-assinar-${slug}`}
-            asChild
-            size="lg"
-            className="bg-[#03bf03] hover:bg-[#03bf03]/90 text-white font-bold"
-            data-track-event="cta_click"
-            data-track-prop-button-id={`cta-site-${slug}`}
-            data-track-prop-plan-name={planName}
-            data-track-prop-plan-price={plan.price}
-          >
-            <Link href="/assinar">Aproveitar oferta</Link>
-          </Button>
         </div>
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   )
 }
 
@@ -129,40 +360,12 @@ const getFeatureIcon = (feature: string) => {
   };
 };
 
-const PlanSkeleton = () => (
-  <div className="relative flex h-full flex-col rounded-2xl p-6 shadow-lg bg-card border">
-    <div className="flex-grow pt-4">
-      <div className="text-center">
-        <Skeleton className="h-4 w-24 mx-auto" />
-        <div className="mt-4">
-          <Skeleton className="h-12 w-32 mx-auto" />
-        </div>
-        <Skeleton className="h-1 w-12 mx-auto mt-3" />
-      </div>
-      <div className="my-6 space-y-3 flex flex-col items-center">
-        <Skeleton className="h-4 w-40" />
-        <Skeleton className="h-4 w-36" />
-        <Skeleton className="h-4 w-44" />
-      </div>
-    </div>
-    <div className="flex flex-col gap-2 mt-auto text-center">
-      <Skeleton className="h-4 w-20 mx-auto mb-2" />
-      <Skeleton className="h-10 w-32 mx-auto mb-4" />
-      <Skeleton className="h-12 w-full" />
-    </div>
-  </div>
-);
-
-
 export function Plans({ city, plans }: PlansProps & { plans: Plan[] }) {
   const [planType, setPlanType] = useState<"residencial" | "empresarial">("residencial");
-  // const [allPlans, setAllPlans] = useState<Plan[]>([]); // Removed state
-  // const [loading, setLoading] = useState(true); // Removed loading state
   const [api, setApi] = useState<CarouselApi>()
 
-  // useEffect(() => { ... }, []); // Removed useEffect
-
-  const currentPlans = plans.filter(p => p.type === planType);
+  // Use DB plans for residencial, Hardcoded for empresarial
+  const currentPlans = planType === 'empresarial' ? ENTERPRISE_PLANS : plans.filter(p => p.type === planType);
 
   const PlanCard = ({ plan, index }: { plan: Plan, index: number }) => {
     const slug = generatePlanSlug(plan);
@@ -220,11 +423,11 @@ export function Plans({ city, plans }: PlansProps & { plans: Plan[] }) {
         </div>
 
         <div className="flex flex-col gap-2 mt-auto text-center">
-          {plan.conditions && (
-            <PlanDetailsModal plan={plan}>
-              <Button variant="link" className="text-sm text-[#03bf03] h-auto py-1 mb-2 flex items-center gap-1">Mais detalhes <PlusCircle size={14} /></Button>
-            </PlanDetailsModal>
-          )}
+          {/* Replace Modal with Sheet for both Residential and Enterprise for consistency, or just Enterprise? User said "when clicque em saber mais apareça igual lá o canva". This implies for all plans or strictly enterprise? 
+               Usually consistency is better. I will use Sheet for ALL plans details. */}
+          <PlanDetailsSheet plan={plan}>
+            <Button variant="link" className="text-sm text-[#03bf03] h-auto py-1 mb-2 flex items-center gap-1">Mais detalhes <PlusCircle size={14} /></Button>
+          </PlanDetailsSheet>
 
           <div className="text-neutral-900 mb-4">
             {firstMonthPriceBRL ? (
@@ -259,60 +462,18 @@ export function Plans({ city, plans }: PlansProps & { plans: Plan[] }) {
             )}
           </div>
 
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button id={`plan-cta-saiba-mais-${slug}`}
-                size="lg"
-                data-track-event="cta_click"
-                data-track-prop-button-id={`cta-saiba-mais-${slug}`}
-                data-track-prop-plan-name={planName}
-                data-track-prop-plan-price={plan.price}
-                className="w-full font-bold bg-[#03bf03] hover:bg-[#03bf03]/90 text-white"
-              >
-                Saiba mais
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-md bg-white text-gray-800">
-              <DialogHeader>
-                <DialogTitle>Como você prefere continuar?</DialogTitle>
-                <DialogDescription>
-                  Escolha a melhor forma de contratar o plano de {planName}.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="flex flex-col gap-3 pt-4">
-                <Button
-                  id={`continue-site-plano-${slug}`}
-                  asChild
-                  variant="default"
-                  size="lg"
-                  className="bg-[#03bf03] hover:bg-[#03bf03]/90 text-white font-bold"
-                  data-track-event="cta_click"
-                  data-track-prop-button-id={`cta-site-${slug}`}
-                  data-track-prop-plan-name={planName}
-                >
-                  <Link href="/assinar">
-                    Continuar pelo site
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
-                <Button
-                  id={`whatsapp-plano-${slug}`}
-                  asChild
-                  variant="outline"
-                  size="lg"
-                  className="border-green-600 text-green-600 hover:bg-green-50 hover:text-green-700"
-                  data-track-event="cta_click"
-                  data-track-prop-button-id={`cta-whatsapp-${slug}`}
-                  data-track-prop-plan-name={planName}
-                >
-                  <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
-                    Falar no WhatsApp
-                    <Smartphone className="ml-2 h-4 w-4" />
-                  </a>
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+          <PlanDetailsSheet plan={plan}>
+            <Button id={`plan-cta-saiba-mais-${slug}`}
+              size="lg"
+              data-track-event="cta_click"
+              data-track-prop-button-id={`cta-saiba-mais-${slug}`}
+              data-track-prop-plan-name={planName}
+              data-track-prop-plan-price={plan.price}
+              className="w-full font-bold bg-[#03bf03] hover:bg-[#03bf03]/90 text-white"
+            >
+              Saiba mais
+            </Button>
+          </PlanDetailsSheet>
         </div>
       </motion.div>
     )
@@ -326,7 +487,7 @@ export function Plans({ city, plans }: PlansProps & { plans: Plan[] }) {
             <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">Escolha seu plano{city ? ` em ${city}` : ''}</h2>
             <p className="mt-2 text-muted-foreground">Sem fidelidade, sem pegadinha. Instalação rápida e suporte que resolve.</p>
           </div>
-          <div className="flex shrink-0 rounded-xl bg-card border p-1 text-sm">
+          <div className="flex shrink-0 rounded-xl bg-card border p-1 text-sm bg-muted/50">
             {(
               [
                 { k: "residencial", label: "Residencial" },
@@ -336,7 +497,7 @@ export function Plans({ city, plans }: PlansProps & { plans: Plan[] }) {
               <button
                 key={opt.k}
                 onClick={() => setPlanType(opt.k)}
-                className={`rounded-lg px-3 py-2 transition-colors ${planType === opt.k ? "bg-[#03bf03] text-white" : "text-card-foreground hover:bg-black/5"
+                className={`rounded-lg px-6 py-2.5 transition-all font-medium ${planType === opt.k ? "bg-[#03bf03] text-white shadow-sm" : "text-muted-foreground hover:bg-background/80 hover:text-foreground"
                   }`}
               >
                 {opt.label}
@@ -345,13 +506,12 @@ export function Plans({ city, plans }: PlansProps & { plans: Plan[] }) {
           </div>
         </div>
 
-        {/* Removed loading check */}
         <Carousel
-          opts={{ align: "start", loop: currentPlans.length > 2 }}
+          opts={{ align: "start", loop: false }} // Disabled loop as requested
           className="relative w-full"
           setApi={setApi}
         >
-          <CarouselContent className="-ml-4">
+          <CarouselContent className="-ml-4 pb-4">
             {currentPlans.map((p, i) => (
               <CarouselItem key={`${planType}-carousel-${i}`} className="basis-4/5 md:basis-1/3 lg:basis-1/4 pl-4 pt-6">
                 <div className="p-1 h-full">
