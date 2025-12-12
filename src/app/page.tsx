@@ -18,6 +18,7 @@ const BlogSection = dynamic(() => import('@/components/landing/BlogSection'));
 const Faq = dynamic(() => import('@/components/landing/Faq').then(mod => mod.Faq));
 const Contact = dynamic(() => import('@/components/landing/Contact').then(mod => mod.Contact));
 const Footer = dynamic(() => import('@/components/landing/Footer').then(mod => mod.Footer));
+const DedicatedLinkCta = dynamic(() => import('@/components/landing/DedicatedLinkCta').then(mod => mod.DedicatedLinkCta));
 
 
 export default async function Home() {
@@ -42,6 +43,7 @@ export default async function Home() {
       <main>
         <Hero slides={slides || []} />
         <Plans plans={plans || []} />
+        <DedicatedLinkCta />
         <CdnHighlight />
         <Coverage cities={cities || []} />
         <Advantages />

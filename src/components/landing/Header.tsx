@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Wifi, ChevronRight, Menu, User, X, FileText, ArrowRight, Smartphone, Download, Gauge, MonitorSmartphone, CircleDollarSign, MessageCircle, Phone, ChevronDown, Tv, Package, Shield, Building, Info, LifeBuoy, GanttChartSquare, Sparkle, MapPin, Newspaper, HelpCircle, BookHeart } from "lucide-react";
+import { Wifi, ChevronRight, Menu, User, X, FileText, ArrowRight, Smartphone, Download, Gauge, MonitorSmartphone, CircleDollarSign, MessageCircle, Phone, ChevronDown, Tv, Package, Shield, Building, Info, LifeBuoy, GanttChartSquare, Sparkle, MapPin, Newspaper, HelpCircle, BookHeart, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -196,6 +196,7 @@ export function Header() {
 
   const mobileNavLinks = [
     { href: "#planos", icon: Package, text: "Planos e Serviços" },
+    { href: "/empresa", icon: TrendingUp, text: "Link Dedicado" },
     { href: "#vantagens", icon: Sparkle, text: "Vantagens" },
     { href: "/tv", icon: Tv, text: "Pacotes de TV" },
     { href: "/blog", icon: Newspaper, text: "Blog" },
@@ -205,14 +206,14 @@ export function Header() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 flex flex-col border-b border-border/40 bg-background/60 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <header className="sticky top-0 z-40 flex flex-col border-b border-border/40 bg-white">
         <TopBar />
         <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
           <a id="nav-logo" href="/" className="group flex items-center gap-3">
             <DynamicLogo />
             <div>
-              <p className="text-lg font-semibold leading-none text-foreground">Velpro Telecom</p>
-              <p className="text-xs text-muted-foreground transition-colors group-hover:text-foreground/80">
+              <p className="text-lg font-semibold leading-none text-neutral-900">Velpro Telecom</p>
+              <p className="text-xs text-muted-foreground transition-colors group-hover:text-neutral-900/80">
                 Fibra 100% + Wi‑Fi 6
               </p>
             </div>
@@ -226,6 +227,7 @@ export function Header() {
               <NavMenuItem href="#cobertura" icon={MapPin}>Consultar Cobertura</NavMenuItem>
             </NavMenu>
             <NavMenu title="Empresa" icon={Building}>
+              <NavMenuItem href="/empresa" icon={TrendingUp}>Link Dedicado</NavMenuItem>
               <NavMenuItem href="/historia" icon={BookHeart}>Nossa História</NavMenuItem>
               <NavMenuItem href="/politica-de-privacidade" icon={Shield}>Política de Privacidade</NavMenuItem>
               <NavMenuItem href="/termos-de-uso" icon={FileText}>Termos de Uso</NavMenuItem>
@@ -254,7 +256,7 @@ export function Header() {
             <MobileMainCtaButton />
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="outline" size="icon" id="mobile-menu-toggle" aria-label="Abrir menu">
+                <Button variant="outline" size="icon" id="mobile-menu-toggle" aria-label="Abrir menu" className="text-neutral-900 border-neutral-200">
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>

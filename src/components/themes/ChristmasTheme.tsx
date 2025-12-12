@@ -32,7 +32,7 @@ export function ChristmasTheme() {
         };
 
         const createParticles = () => {
-            const particleCount = Math.min(Math.floor(window.innerWidth / 8), 100);
+            const particleCount = Math.min(Math.floor(window.innerWidth / 15), 50);
             particles = [];
             for (let i = 0; i < particleCount; i++) {
                 particles.push({

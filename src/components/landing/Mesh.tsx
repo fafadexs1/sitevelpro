@@ -1,142 +1,125 @@
-
 "use client";
 
 import { motion } from "framer-motion";
-import { Wifi, Router, Smartphone, Laptop, Tablet, Home, ChevronRight } from "lucide-react";
-import React, { useEffect, useState } from 'react';
-
-const devices = [
-    { icon: Smartphone },
-    { icon: Laptop },
-    { icon: Tablet },
-    { icon: Home },
-    { icon: Wifi },
-];
-
-function DesktopView() {
-    const [isMounted, setIsMounted] = useState(false);
-
-    useEffect(() => {
-        setIsMounted(true);
-    }, []);
-
-    if (!isMounted) {
-        return <div className="relative w-full aspect-square max-w-xl mx-auto" />;
-    }
-
-    const radius = 150;
-    const deviceIconSize = 56;
-    const deviceIconOffset = deviceIconSize / 2;
-
-    const renderLines = (isAnimated = false) => {
-        const lineProps = isAnimated
-            ? {
-                stroke: "hsl(var(--primary))",
-                strokeWidth: 1.5,
-                initial: { pathLength: 0 },
-                animate: { pathLength: [0, 1, 0] },
-                transition: {
-                    duration: 2,
-                    ease: "easeInOut",
-                    repeat: Infinity,
-                    repeatDelay: 1,
-                }
-            }
-            : {
-                stroke: "hsl(var(--foreground))",
-                strokeWidth: 0.5,
-                initial: { pathLength: 0 },
-                animate: { pathLength: 1 },
-                transition: { duration: 1, delay: 0.2, ease: "easeInOut" }
-            };
-
-        return (
-            <>
-                {/* Inner lines */}
-                {devices.map((_, i) => (
-                    <motion.line
-                        key={`inner-line-${i}-${isAnimated}`}
-                        x1="200" y1="200"
-                        x2={200 + radius * Math.cos(i * 2 * Math.PI / devices.length)}
-                        y2={200 + radius * Math.sin(i * 2 * Math.PI / devices.length)}
-                        {...lineProps}
-                        transition={isAnimated ? { ...lineProps.transition, delay: i * 0.3 } : { ...lineProps.transition, delay: i * 0.1 }}
-                    />
-                ))}
-                {/* Outer lines */}
-                {devices.map((_, i) => (
-                    <motion.line
-                        key={`outer-line-${i}-${isAnimated}`}
-                        x1={200 + radius * Math.cos(i * 2 * Math.PI / devices.length)}
-                        y1={200 + radius * Math.sin(i * 2 * Math.PI / devices.length)}
-                        x2={200 + radius * Math.cos((i + 1) * 2 * Math.PI / devices.length)}
-                        y2={200 + radius * Math.sin((i + 1) * 2 * Math.PI / devices.length)}
-                        {...lineProps}
-                        transition={isAnimated ? { ...lineProps.transition, delay: 0.5 + i * 0.3 } : { ...lineProps.transition, delay: 0.5 + i * 0.1 }}
-                    />
-                ))}
-            </>
-        );
-    }
-
-    return (
-        <div className="relative w-full aspect-square max-w-xl mx-auto">
-            <div className="absolute inset-0 grid place-items-center">
-                <div className="w-32 h-32 rounded-full bg-primary/20 flex flex-col items-center justify-center text-center p-2 border border-primary/30">
-                    <Router className="w-10 h-10 text-primary" />
-                    <p className="text-sm mt-1 text-primary">Seu Wi-Fi</p>
-                </div>
-            </div>
-
-            <svg className="absolute w-full h-full opacity-30" viewBox="0 0 400 400" style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)', maxWidth: '400px' }}>
-                {renderLines(false)}
-            </svg>
-            <svg className="absolute w-full h-full" viewBox="0 0 400 400" style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)', maxWidth: '400px' }}>
-                {renderLines(true)}
-            </svg>
-
-            <div className="absolute w-full h-full top-0 left-0">
-                {devices.map(({ icon: Icon }, i) => (
-                    <motion.div
-                        key={i}
-                        className="absolute w-14 h-14 bg-card/60 backdrop-blur-sm border border-border/50 rounded-full grid place-items-center shadow-lg"
-                        style={{
-                            top: `calc(50% - ${deviceIconOffset}px + ${radius * Math.sin(i * 2 * Math.PI / devices.length)}px)`,
-                            left: `calc(50% - ${deviceIconOffset}px + ${radius * Math.cos(i * 2 * Math.PI / devices.length)}px)`,
-                        }}
-                        initial={{ opacity: 0, scale: 0.5 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.5 + i * 0.1, type: "spring" }}
-                    >
-                        <Icon className="w-6 h-6 text-muted-foreground" />
-                    </motion.div>
-                ))}
-            </div>
-        </div>
-    );
-}
+import { Laptop, Smartphone, Tablet, Tv, Wifi } from "lucide-react";
 
 export function Mesh() {
     return (
-        <section id="mesh" className="border-t border-border bg-background py-16 sm:py-24">
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                <div className="grid lg:grid-cols-2 gap-12 items-center">
-                    <div>
-                        <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-                            Sinal forte e estável em todos os cantos da casa
-                        </h2>
-                        <p className="mt-4 text-muted-foreground">
-                            Com a tecnologia Mesh, criamos uma rede unificada e inteligente que cobre todos os ambientes, eliminando pontos cegos e garantindo a melhor conexão para todos os seus dispositivos, não importa onde você esteja.
+        <section className="py-24 bg-gradient-to-b from-neutral-900 via-neutral-950 to-neutral-900 border-t border-white/5 relative overflow-hidden">
+            {/* Background Mesh Gradients */}
+            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-green-500/5 rounded-full blur-[128px] pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-[128px] pointer-events-none" />
+
+            <div className="container px-4 mx-auto relative z-10">
+                <div className="flex flex-col lg:flex-row items-center gap-16">
+
+                    {/* Content */}
+                    <div className="flex-1 space-y-8">
+                        <div className="inline-block">
+                            <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-green-950/30 border border-green-500/20 mb-6 w-fit">
+                                <Wifi className="w-4 h-4 text-green-400" />
+                                <span className="text-xs font-bold text-green-400 uppercase tracking-wider">Wi-Fi Mesh Inteligente</span>
+                            </div>
+                            <h2 className="text-4xl md:text-5xl font-black text-white tracking-tight leading-tight">
+                                Sinal forte em<br />
+                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-600">
+                                    todos os cômodos
+                                </span>
+                            </h2>
+                        </div>
+
+                        <p className="text-lg text-neutral-400 leading-relaxed max-w-xl">
+                            Esqueça as zonas mortas. Nossa tecnologia Mesh cria uma malha única de conexão que cobre sua casa inteira,
+                            garantindo que seus dispositivos estejam sempre conectados ao ponto mais forte, sem interrupções.
                         </p>
-                        <a
-                            id="mesh-cta-planos"
-                            href="#planos"
-                            className="mt-8 inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-                        >
-                            Ver planos com Mesh <ChevronRight className="h-4 w-4" />
-                        </a>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4">
+                            {[
+                                { title: "Roaming Automático", desc: "Mova-se pela casa sem queda de sinal", icon: Smartphone },
+                                { title: "Cobertura Total", desc: "Do quarto ao quintal, conexão máxima", icon: Wifi },
+                                { title: "Conexão Estável", desc: "Ideal para reuniões e aulas online", icon: Laptop },
+                                { title: "Smart Home", desc: "Conecte dezenas de dispositivos", icon: Tv },
+                            ].map((feature, idx) => (
+                                <motion.div
+                                    key={idx}
+                                    initial={{ opacity: 0, y: 30, scale: 0.95 }}
+                                    whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                                    viewport={{ margin: "-10% 0px -10% 0px", amount: 0.2 }}
+                                    transition={{ delay: idx * 0.15, type: "spring", stiffness: 100 }}
+                                    className="flex items-start gap-4 p-4 rounded-xl bg-white/5 border border-white/5 hover:border-green-500/30 transition-colors group"
+                                >
+                                    <div className="p-2.5 rounded-lg bg-green-500/10 group-hover:bg-green-500/20 transition-colors">
+                                        <feature.icon className="w-5 h-5 text-green-400" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold text-white text-sm mb-1">{feature.title}</h3>
+                                        <p className="text-xs text-neutral-400 leading-snug">{feature.desc}</p>
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
                     </div>
-                    <DesktopView />
+
+                    {/* Visual Representation */}
+                    <div className="flex-1 w-full flex justify-center lg:justify-end relative">
+                        <div className="relative w-full max-w-[500px] aspect-square flex items-center justify-center">
+
+                            {/* Central Node */}
+                            <motion.div
+                                initial={{ scale: 0.8, opacity: 0 }}
+                                whileInView={{ scale: 1, opacity: 1 }}
+                                className="z-20 w-32 h-32 bg-neutral-900 rounded-full border-4 border-green-500 shadow-[0_0_60px_rgba(34,197,94,0.3)] flex items-center justify-center relative"
+                            >
+                                <div className="absolute inset-0 rounded-full border border-white/20 animate-ping opacity-20" />
+                                <Wifi className="w-12 h-12 text-green-500" />
+                            </motion.div>
+
+                            {/* Orbit Container */}
+                            <motion.div
+                                className="absolute inset-0"
+                                animate={{ rotate: 360 }}
+                                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                            >
+                                {/* Orbiting Devices */}
+                                {[
+                                    { Icon: Laptop, angle: 0 },
+                                    { Icon: Smartphone, angle: 90 },
+                                    { Icon: Tablet, angle: 180 },
+                                    { Icon: Tv, angle: 270 },
+                                ].map((item, i) => (
+                                    <div
+                                        key={i}
+                                        className="absolute top-1/2 left-1/2 w-16 h-16 -ml-8 -mt-8"
+                                        style={{
+                                            transform: `rotate(${item.angle}deg) translate(200px) rotate(-${item.angle}deg)`
+                                        }}
+                                    >
+                                        <motion.div
+                                            className="w-full h-full bg-neutral-800 rounded-2xl border border-white/10 flex items-center justify-center shadow-lg relative"
+                                            animate={{ rotate: -360 }}
+                                            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                                        >
+                                            <item.Icon className="w-6 h-6 text-neutral-400" />
+                                            {/* Signal Line (Dashed) */}
+                                            <div className="absolute top-1/2 right-full w-[168px] h-[2px] bg-gradient-to-r from-transparent to-green-500/20 origin-right"
+                                                style={{ transform: `rotate(0deg)` }} // Lines point to center
+                                            />
+                                        </motion.div>
+                                    </div>
+                                ))}
+                            </motion.div>
+
+                            {/* Pulse Rings */}
+                            {[1, 2, 3].map((ring) => (
+                                <div
+                                    key={ring}
+                                    className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border border-green-500/10 rounded-full pointer-events-none`}
+                                    style={{ width: `${ring * 200 + 100}px`, height: `${ring * 200 + 100}px` }}
+                                />
+                            ))}
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </section>
