@@ -1,7 +1,9 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+// "use client"; // Already at top
+
+import { useState } from "react";
 import { Wifi, ChevronRight, Menu, User, X, FileText, ArrowRight, Smartphone, Download, Gauge, MonitorSmartphone, CircleDollarSign, MessageCircle, Phone, ChevronDown, Tv, Package, Shield, Building, Info, LifeBuoy, GanttChartSquare, Sparkle, MapPin, Newspaper, HelpCircle, BookHeart, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { Button } from "../ui/button";
@@ -18,13 +20,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { cn } from "@/lib/utils";
-import { createClient } from "@/utils/supabase/client";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
 import { TopBar } from "./TopBar";
+import { DomainType } from "@/lib/data/get-layout-data";
 
-type DomainType = 'main_site' | 'sales_page';
 
 const NavMenu = ({ title, icon: Icon, children }: { title: string, icon: React.ElementType, children: React.ReactNode }) => (
   <DropdownMenu>
@@ -50,31 +49,7 @@ const NavMenuItem = ({ href, children, icon: Icon }: { href: string, children: R
   </DropdownMenuItem>
 );
 
-function DynamicLogo() {
-  const [logoUrl, setLogoUrl] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchLogo = async () => {
-      const supabase = createClient();
-      const { data } = await supabase
-        .from('system_settings')
-        .select('value')
-        .eq('key', 'company_logo_url')
-        .single();
-
-      if (data?.value) {
-        setLogoUrl(data.value);
-      }
-      setLoading(false);
-    };
-    fetchLogo();
-  }, []);
-
-  if (loading) {
-    return <div className="grid h-9 w-9 place-items-center rounded-xl bg-secondary" />;
-  }
-
+function DynamicLogo({ logoUrl }: { logoUrl: string | null }) {
   return (
     <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-primary to-green-400 text-white shadow-lg shadow-primary/20 overflow-hidden">
       {logoUrl ? (
@@ -87,26 +62,8 @@ function DynamicLogo() {
 }
 
 
-export function Header() {
+export function Header({ domainType, companyLogoUrl }: { domainType: DomainType, companyLogoUrl: string | null }) {
   const [showAfterHoursDialog, setShowAfterHoursDialog] = useState(false);
-  const [domainType, setDomainType] = useState<DomainType>('sales_page');
-
-  useEffect(() => {
-    const getDomainType = async () => {
-      const hostname = window.location.hostname;
-      const supabase = createClient();
-      const { data } = await supabase
-        .from('domains')
-        .select('type')
-        .eq('hostname', hostname)
-        .single();
-
-      if (data) {
-        setDomainType(data.type as DomainType);
-      }
-    };
-    getDomainType();
-  }, []);
 
   const handleCallClick = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
     const now = new Date();
@@ -123,10 +80,11 @@ export function Header() {
     // Se estiver no horário, o comportamento padrão do link (href="tel:...") prosseguirá.
   };
 
+
   const MainCtaButton = () => {
     const isMainSite = domainType === 'main_site';
     const href = isMainSite ? 'https://velpro.net.br/app/app.html' : 'tel:08003810404';
-    const label = isMainSite ? 'Área do Cliente' : 'Ligue Agora';
+    const label = isMainSite ? 'Area do Cliente' : 'Ligue Agora';
     const Icon = isMainSite ? User : Phone;
 
     return (
@@ -143,21 +101,15 @@ export function Header() {
     );
   };
 
+
+
+
+
   const MobileMainCtaButton = () => {
     const isMainSite = domainType === 'main_site';
     const href = isMainSite ? 'https://velpro.net.br/app/app.html' : 'tel:08003810404';
-    const label = isMainSite ? 'Área do Cliente' : 'Ligar agora';
+    const label = isMainSite ? 'Area do Cliente' : 'Ligar agora';
     const Icon = isMainSite ? User : Phone;
-    const [showText, setShowText] = useState(true);
-
-    useEffect(() => {
-      if (isMainSite) {
-        const timer = setTimeout(() => {
-          setShowText(false);
-        }, 2500); // Mostra o texto por 2.5 segundos
-        return () => clearTimeout(timer);
-      }
-    }, [isMainSite]);
 
     return (
       <a
@@ -165,31 +117,12 @@ export function Header() {
         href={href}
         data-track-event="cta_click"
         data-track-prop-button-id="main-cta-header-mobile"
-        className={cn(
-          "relative inline-flex items-center justify-center rounded-xl border border-input bg-background text-sm font-medium text-foreground transition-all duration-300 hover:bg-accent overflow-hidden",
-          isMainSite ? (showText ? "w-36 h-10 px-3" : "w-10 h-10") : "w-10 h-10"
-        )}
+        className="relative inline-flex items-center justify-center rounded-xl border border-input bg-background text-sm font-medium text-foreground transition-colors hover:bg-accent px-3 h-10 gap-2"
         aria-label={label}
+        onClick={!isMainSite ? handleCallClick : undefined}
       >
-        <AnimatePresence>
-          <motion.div
-            className="flex items-center gap-2"
-            initial={{ opacity: 1 }}
-            animate={{ opacity: 1 }}
-          >
-            <Icon className="h-5 w-5 flex-shrink-0" />
-            {isMainSite && (
-              <motion.span
-                initial={{ opacity: 1, width: 'auto' }}
-                animate={{ opacity: showText ? 1 : 0, width: showText ? 'auto' : 0 }}
-                transition={{ duration: 0.3 }}
-                className="whitespace-nowrap"
-              >
-                Área do Cliente
-              </motion.span>
-            )}
-          </motion.div>
-        </AnimatePresence>
+        <Icon className="h-5 w-5 flex-shrink-0" />
+        <span className="whitespace-nowrap">{label}</span>
       </a>
     )
   }
@@ -210,7 +143,7 @@ export function Header() {
         <TopBar />
         <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
           <a id="nav-logo" href="/" className="group flex items-center gap-3">
-            <DynamicLogo />
+            <DynamicLogo logoUrl={companyLogoUrl} />
             <div>
               <p className="text-lg font-semibold leading-none text-neutral-900">Velpro Telecom</p>
               <p className="text-xs text-muted-foreground transition-colors group-hover:text-neutral-900/80">

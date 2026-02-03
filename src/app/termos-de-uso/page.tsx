@@ -12,7 +12,10 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-export default function TermsOfServicePage() {
+import { getLayoutData } from "@/lib/data/get-layout-data";
+
+export default async function TermsOfServicePage() {
+  const { domainType, companyLogoUrl } = await getLayoutData();
   const termsSections = [
     {
       icon: <FileText className="h-6 w-6 text-primary" />,
@@ -60,40 +63,40 @@ export default function TermsOfServicePage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
-      <Header />
+      <Header domainType={domainType} companyLogoUrl={companyLogoUrl} />
       <main className="flex-grow">
         <div className="bg-secondary border-b border-border py-16 sm:py-24">
-            <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
-                 <FileText className="h-12 w-12 text-primary mx-auto mb-4" />
-                <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Termos de Uso</h1>
-                <p className="mt-4 text-lg text-muted-foreground">
-                    Última atualização: 08 de Setembro de 2025.
-                </p>
-                 <p className="mt-2 text-sm text-muted-foreground/80">Entenda as regras e condições para usar nossos serviços.</p>
-            </div>
+          <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
+            <FileText className="h-12 w-12 text-primary mx-auto mb-4" />
+            <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Termos de Uso</h1>
+            <p className="mt-4 text-lg text-muted-foreground">
+              Última atualização: 08 de Setembro de 2025.
+            </p>
+            <p className="mt-2 text-sm text-muted-foreground/80">Entenda as regras e condições para usar nossos serviços.</p>
+          </div>
         </div>
 
         <div className="py-16 sm:py-24 bg-background">
-            <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 space-y-12">
-                {termsSections.map((section) => (
-                    <div key={section.title} className="flex flex-col sm:flex-row items-start gap-6">
-                        <div className="p-3 rounded-lg bg-primary/10 border border-primary/20 shrink-0">
-                            {section.icon}
-                        </div>
-                        <div>
-                            <h2 className="text-2xl font-semibold mb-2">{section.title}</h2>
-                            <p className="text-muted-foreground leading-relaxed">{section.content}</p>
-                        </div>
-                    </div>
-                ))}
-
-                 <div className="text-center pt-8 border-t border-border">
-                    <p className="text-muted-foreground">Para voltar à página inicial, clique abaixo.</p>
-                    <Link href="/" className="mt-4 inline-block text-primary hover:text-primary/80 transition-colors">
-                        Voltar ao Início
-                    </Link>
+          <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 space-y-12">
+            {termsSections.map((section) => (
+              <div key={section.title} className="flex flex-col sm:flex-row items-start gap-6">
+                <div className="p-3 rounded-lg bg-primary/10 border border-primary/20 shrink-0">
+                  {section.icon}
                 </div>
+                <div>
+                  <h2 className="text-2xl font-semibold mb-2">{section.title}</h2>
+                  <p className="text-muted-foreground leading-relaxed">{section.content}</p>
+                </div>
+              </div>
+            ))}
+
+            <div className="text-center pt-8 border-t border-border">
+              <p className="text-muted-foreground">Para voltar à página inicial, clique abaixo.</p>
+              <Link href="/" className="mt-4 inline-block text-primary hover:text-primary/80 transition-colors">
+                Voltar ao Início
+              </Link>
             </div>
+          </div>
         </div>
       </main>
       <Footer />

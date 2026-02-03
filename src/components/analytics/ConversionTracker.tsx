@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from 'react';
-import { createClient } from '@/utils/supabase/client';
+import { getConversionEvents } from "@/actions/get-conversion-events";
 import { ConversionEvent } from '@/types/admin';
 
 declare global {
@@ -16,15 +16,7 @@ export function ConversionTracker() {
 
     useEffect(() => {
         const fetchEvents = async () => {
-            const supabase = createClient();
-            const { data, error } = await supabase
-                .from('conversion_events')
-                .select('*')
-                .eq('is_active', true);
-            if (error) {
-                console.error("Error fetching conversion events:", error);
-                return;
-            }
+            const data = await getConversionEvents();
             setEvents(data);
         };
         fetchEvents();

@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { Server, Globe, Zap, Shield, Activity } from "lucide-react";
 
 export function CdnHighlight() {
@@ -37,51 +36,42 @@ export function CdnHighlight() {
           {/* Map Grid Background */}
           <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px]" />
 
-          {/* Connecting Lines (SVG Overlay) */}
+          {/* Connecting Lines (static) */}
           <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
             <defs>
               <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
                 <stop offset="0%" stopColor="#22c55e" stopOpacity="0" />
-                <stop offset="50%" stopColor="#22c55e" stopOpacity="0.5" />
+                <stop offset="50%" stopColor="#22c55e" stopOpacity="0.4" />
                 <stop offset="100%" stopColor="#22c55e" stopOpacity="0" />
               </linearGradient>
             </defs>
-            <motion.line x1="50%" y1="50%" x2="20%" y2="20%" stroke="url(#lineGradient)" strokeWidth="2" strokeDasharray="5 5" initial={{ pathLength: 0, opacity: 0 }} whileInView={{ pathLength: 1, opacity: 0.3 }} transition={{ duration: 1.5 }} />
-            <motion.line x1="50%" y1="50%" x2="80%" y2="20%" stroke="url(#lineGradient)" strokeWidth="2" strokeDasharray="5 5" initial={{ pathLength: 0, opacity: 0 }} whileInView={{ pathLength: 1, opacity: 0.3 }} transition={{ duration: 1.5, delay: 0.2 }} />
-            <motion.line x1="50%" y1="50%" x2="20%" y2="80%" stroke="url(#lineGradient)" strokeWidth="2" strokeDasharray="5 5" initial={{ pathLength: 0, opacity: 0 }} whileInView={{ pathLength: 1, opacity: 0.3 }} transition={{ duration: 1.5, delay: 0.4 }} />
-            <motion.line x1="50%" y1="50%" x2="80%" y2="80%" stroke="url(#lineGradient)" strokeWidth="2" strokeDasharray="5 5" initial={{ pathLength: 0, opacity: 0 }} whileInView={{ pathLength: 1, opacity: 0.3 }} transition={{ duration: 1.5, delay: 0.6 }} />
+            <line x1="50%" y1="50%" x2="20%" y2="20%" stroke="url(#lineGradient)" strokeWidth="2" strokeDasharray="5 5" strokeOpacity="0.35" />
+            <line x1="50%" y1="50%" x2="80%" y2="20%" stroke="url(#lineGradient)" strokeWidth="2" strokeDasharray="5 5" strokeOpacity="0.35" />
+            <line x1="50%" y1="50%" x2="20%" y2="80%" stroke="url(#lineGradient)" strokeWidth="2" strokeDasharray="5 5" strokeOpacity="0.35" />
+            <line x1="50%" y1="50%" x2="80%" y2="80%" stroke="url(#lineGradient)" strokeWidth="2" strokeDasharray="5 5" strokeOpacity="0.35" />
           </svg>
 
           {/* Central Hub (User) */}
-          <motion.div
-            initial={{ scale: 0 }}
-            whileInView={{ scale: 1 }}
-            viewport={{ once: true }}
-            className="relative z-20 flex flex-col items-center"
-          >
-            <div className="w-24 h-24 rounded-full bg-neutral-900 border-4 border-green-500 shadow-[0_0_60px_rgba(34,197,94,0.4)] flex items-center justify-center relative group cursor-pointer">
-              <div className="absolute inset-0 rounded-full border border-white/20 animate-[ping_2s_ease-out_infinite]" />
-              <Zap className="w-10 h-10 text-green-500 fill-current group-hover:scale-110 transition-transform" />
+          <div className="relative z-20 flex flex-col items-center">
+            <div className="w-24 h-24 rounded-full bg-neutral-900 border-4 border-green-500 shadow-[0_0_60px_rgba(34,197,94,0.2)] flex items-center justify-center relative group cursor-pointer">
+              <div className="absolute inset-0 rounded-full border border-white/15" />
+              <Zap className="w-10 h-10 text-green-500 fill-current" />
             </div>
-          </motion.div>
+          </div>
 
           {/* Nodes */}
           {nodes.map((node, i) => (
-            <motion.div
+            <div
               key={i}
-              initial={{ opacity: 0, scale: 0, y: 20 }}
-              whileInView={{ opacity: 1, scale: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ delay: i * 0.15, type: "spring", bounce: 0.4 }}
               className={`absolute ${node.position} z-10 flex flex-col items-center gap-3`}
             >
-              <div className="w-16 h-16 rounded-2xl bg-neutral-800/80 backdrop-blur border border-white/10 flex items-center justify-center shadow-lg hover:border-green-500/50 hover:shadow-green-500/10 transition-all cursor-pointer group">
+              <div className="w-16 h-16 rounded-2xl bg-neutral-800/80 backdrop-blur border border-white/10 flex items-center justify-center shadow-lg hover:border-green-500/40 hover:shadow-green-500/10 transition-all cursor-pointer group">
                 <node.icon className={`w-8 h-8 ${node.color} opacity-80 group-hover:opacity-100 transition-opacity`} />
               </div>
               <div className="px-3 py-1 rounded-full bg-black/50 border border-white/5 text-[10px] font-bold text-neutral-400 uppercase tracking-widest backdrop-blur-md">
                 {node.name}
               </div>
-            </motion.div>
+            </div>
           ))}
 
         </div>

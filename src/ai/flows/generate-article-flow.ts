@@ -2,7 +2,6 @@
 'use server';
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { createClient } from '@/utils/supabase/server';
 import { z } from 'zod';
 
 // Input Schema: Just a topic for the article
@@ -22,17 +21,14 @@ const GeneratedArticleSchema = z.object({
 export type GeneratedArticle = z.infer<typeof GeneratedArticleSchema>;
 
 
-async function getAiSettings() {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from('system_settings')
-    .select('key, value')
-    .in('key', ['GEMINI_API_KEY', 'GEMINI_MODEL']);
+import { db } from "@/db";
+import { system_settings } from "@/db/schema";
+import { inArray } from "drizzle-orm";
 
-  if (error) {
-    console.error('Error fetching AI settings:', error);
-    throw new Error("Could not retrieve AI settings from the database.");
-  }
+async function getAiSettings() {
+  const data = await db.select({ key: system_settings.key, value: system_settings.value })
+    .from(system_settings)
+    .where(inArray(system_settings.key, ['GEMINI_API_KEY', 'GEMINI_MODEL']));
 
   const settingsMap = new Map(data.map(item => [item.key, item.value]));
   const apiKey = settingsMap.get('GEMINI_API_KEY');

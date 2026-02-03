@@ -1,0 +1,884 @@
+{
+  "cities": [
+    {
+      "column_name": "id",
+      "data_type": "uuid"
+    },
+    {
+      "column_name": "name",
+      "data_type": "text"
+    },
+    {
+      "column_name": "slug",
+      "data_type": "text"
+    },
+    {
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone"
+    }
+  ],
+  "clientes": [
+    {
+      "column_name": "id",
+      "data_type": "uuid"
+    },
+    {
+      "column_name": "user_id",
+      "data_type": "uuid"
+    },
+    {
+      "column_name": "cpf_cnpj",
+      "data_type": "text"
+    },
+    {
+      "column_name": "contratos",
+      "data_type": "jsonb"
+    },
+    {
+      "column_name": "selected_contract_id",
+      "data_type": "text"
+    },
+    {
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone"
+    }
+  ],
+  "conversion_events": [
+    {
+      "column_name": "id",
+      "data_type": "uuid"
+    },
+    {
+      "column_name": "name",
+      "data_type": "text"
+    },
+    {
+      "column_name": "type",
+      "data_type": "text"
+    },
+    {
+      "column_name": "selector",
+      "data_type": "text"
+    },
+    {
+      "column_name": "event_snippet",
+      "data_type": "text"
+    },
+    {
+      "column_name": "is_active",
+      "data_type": "boolean"
+    },
+    {
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone"
+    }
+  ],
+  "domains": [
+    {
+      "column_name": "id",
+      "data_type": "uuid"
+    },
+    {
+      "column_name": "domain_catalog",
+      "data_type": "name"
+    },
+    {
+      "column_name": "hostname",
+      "data_type": "text"
+    },
+    {
+      "column_name": "domain_schema",
+      "data_type": "name"
+    },
+    {
+      "column_name": "domain_name",
+      "data_type": "name"
+    },
+    {
+      "column_name": "type",
+      "data_type": "text"
+    },
+    {
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone"
+    },
+    {
+      "column_name": "data_type",
+      "data_type": "character varying"
+    },
+    {
+      "column_name": "character_maximum_length",
+      "data_type": "integer"
+    },
+    {
+      "column_name": "character_octet_length",
+      "data_type": "integer"
+    },
+    {
+      "column_name": "character_set_catalog",
+      "data_type": "name"
+    },
+    {
+      "column_name": "character_set_schema",
+      "data_type": "name"
+    },
+    {
+      "column_name": "character_set_name",
+      "data_type": "name"
+    },
+    {
+      "column_name": "collation_catalog",
+      "data_type": "name"
+    },
+    {
+      "column_name": "collation_schema",
+      "data_type": "name"
+    },
+    {
+      "column_name": "collation_name",
+      "data_type": "name"
+    },
+    {
+      "column_name": "numeric_precision",
+      "data_type": "integer"
+    },
+    {
+      "column_name": "numeric_precision_radix",
+      "data_type": "integer"
+    },
+    {
+      "column_name": "numeric_scale",
+      "data_type": "integer"
+    },
+    {
+      "column_name": "datetime_precision",
+      "data_type": "integer"
+    },
+    {
+      "column_name": "interval_type",
+      "data_type": "character varying"
+    },
+    {
+      "column_name": "interval_precision",
+      "data_type": "integer"
+    },
+    {
+      "column_name": "domain_default",
+      "data_type": "character varying"
+    },
+    {
+      "column_name": "udt_catalog",
+      "data_type": "name"
+    },
+    {
+      "column_name": "udt_schema",
+      "data_type": "name"
+    },
+    {
+      "column_name": "udt_name",
+      "data_type": "name"
+    },
+    {
+      "column_name": "scope_catalog",
+      "data_type": "name"
+    },
+    {
+      "column_name": "scope_schema",
+      "data_type": "name"
+    },
+    {
+      "column_name": "scope_name",
+      "data_type": "name"
+    },
+    {
+      "column_name": "maximum_cardinality",
+      "data_type": "integer"
+    },
+    {
+      "column_name": "dtd_identifier",
+      "data_type": "name"
+    }
+  ],
+  "dynamic_seo_rules": [
+    {
+      "column_name": "id",
+      "data_type": "uuid"
+    },
+    {
+      "column_name": "name",
+      "data_type": "text"
+    },
+    {
+      "column_name": "slug_pattern",
+      "data_type": "text"
+    },
+    {
+      "column_name": "meta_title",
+      "data_type": "text"
+    },
+    {
+      "column_name": "meta_description",
+      "data_type": "text"
+    },
+    {
+      "column_name": "canonical_url",
+      "data_type": "text"
+    },
+    {
+      "column_name": "allow_indexing",
+      "data_type": "boolean"
+    },
+    {
+      "column_name": "schema_type",
+      "data_type": "text"
+    },
+    {
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone"
+    }
+  ],
+  "events": [
+    {
+      "column_name": "id",
+      "data_type": "uuid"
+    },
+    {
+      "column_name": "visitor_id",
+      "data_type": "text"
+    },
+    {
+      "column_name": "pathname",
+      "data_type": "text"
+    },
+    {
+      "column_name": "name",
+      "data_type": "text"
+    },
+    {
+      "column_name": "properties",
+      "data_type": "jsonb"
+    },
+    {
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone"
+    },
+    {
+      "column_name": "hostname",
+      "data_type": "text"
+    }
+  ],
+  "hero_slides": [
+    {
+      "column_name": "id",
+      "data_type": "uuid"
+    },
+    {
+      "column_name": "pre_title",
+      "data_type": "text"
+    },
+    {
+      "column_name": "title_regular",
+      "data_type": "text"
+    },
+    {
+      "column_name": "title_highlighted",
+      "data_type": "text"
+    },
+    {
+      "column_name": "subtitle",
+      "data_type": "text"
+    },
+    {
+      "column_name": "image_url",
+      "data_type": "text"
+    },
+    {
+      "column_name": "button_primary_text",
+      "data_type": "text"
+    },
+    {
+      "column_name": "button_primary_link",
+      "data_type": "text"
+    },
+    {
+      "column_name": "button_secondary_text",
+      "data_type": "text"
+    },
+    {
+      "column_name": "button_secondary_link",
+      "data_type": "text"
+    },
+    {
+      "column_name": "feature_1_text",
+      "data_type": "text"
+    },
+    {
+      "column_name": "feature_2_text",
+      "data_type": "text"
+    },
+    {
+      "column_name": "is_active",
+      "data_type": "boolean"
+    },
+    {
+      "column_name": "sort_order",
+      "data_type": "integer"
+    },
+    {
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone"
+    },
+    {
+      "column_name": "image_opacity",
+      "data_type": "integer"
+    },
+    {
+      "column_name": "image_url_mobile",
+      "data_type": "text"
+    },
+    {
+      "column_name": "slide_type",
+      "data_type": "text"
+    }
+  ],
+  "invoices": [
+    {
+      "column_name": "id",
+      "data_type": "uuid"
+    },
+    {
+      "column_name": "contract_id",
+      "data_type": "text"
+    },
+    {
+      "column_name": "invoices_data",
+      "data_type": "jsonb"
+    },
+    {
+      "column_name": "fetched_at",
+      "data_type": "timestamp with time zone"
+    },
+    {
+      "column_name": "user_id",
+      "data_type": "uuid"
+    }
+  ],
+  "leads": [
+    {
+      "column_name": "id",
+      "data_type": "uuid"
+    },
+    {
+      "column_name": "full_name",
+      "data_type": "text"
+    },
+    {
+      "column_name": "email",
+      "data_type": "text"
+    },
+    {
+      "column_name": "phone",
+      "data_type": "text"
+    },
+    {
+      "column_name": "cep",
+      "data_type": "text"
+    },
+    {
+      "column_name": "street",
+      "data_type": "text"
+    },
+    {
+      "column_name": "number",
+      "data_type": "text"
+    },
+    {
+      "column_name": "complement",
+      "data_type": "text"
+    },
+    {
+      "column_name": "neighborhood",
+      "data_type": "text"
+    },
+    {
+      "column_name": "city",
+      "data_type": "text"
+    },
+    {
+      "column_name": "state",
+      "data_type": "text"
+    },
+    {
+      "column_name": "latitude",
+      "data_type": "double precision"
+    },
+    {
+      "column_name": "longitude",
+      "data_type": "double precision"
+    },
+    {
+      "column_name": "status",
+      "data_type": "text"
+    },
+    {
+      "column_name": "source",
+      "data_type": "text"
+    },
+    {
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone"
+    }
+  ],
+  "plans": [
+    {
+      "column_name": "id",
+      "data_type": "uuid"
+    },
+    {
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone"
+    },
+    {
+      "column_name": "type",
+      "data_type": "text"
+    },
+    {
+      "column_name": "speed",
+      "data_type": "text"
+    },
+    {
+      "column_name": "price",
+      "data_type": "numeric"
+    },
+    {
+      "column_name": "highlight",
+      "data_type": "boolean"
+    },
+    {
+      "column_name": "has_tv",
+      "data_type": "boolean"
+    },
+    {
+      "column_name": "features",
+      "data_type": "ARRAY"
+    },
+    {
+      "column_name": "original_price",
+      "data_type": "numeric"
+    },
+    {
+      "column_name": "featured_channel_ids",
+      "data_type": "ARRAY"
+    },
+    {
+      "column_name": "whatsapp_number",
+      "data_type": "text"
+    },
+    {
+      "column_name": "whatsapp_message",
+      "data_type": "text"
+    },
+    {
+      "column_name": "conditions",
+      "data_type": "text"
+    },
+    {
+      "column_name": "upload_speed",
+      "data_type": "text"
+    },
+    {
+      "column_name": "download_speed",
+      "data_type": "text"
+    },
+    {
+      "column_name": "first_month_price",
+      "data_type": "numeric"
+    },
+    {
+      "column_name": "sort_order",
+      "data_type": "integer"
+    },
+    {
+      "column_name": "button_action_type",
+      "data_type": "text"
+    },
+    {
+      "column_name": "button_whatsapp_message",
+      "data_type": "text"
+    },
+    {
+      "column_name": "display_on",
+      "data_type": "text"
+    },
+    {
+      "column_name": "trigger_type",
+      "data_type": "text"
+    },
+    {
+      "column_name": "trigger_value",
+      "data_type": "integer"
+    },
+    {
+      "column_name": "frequency",
+      "data_type": "text"
+    }
+  ],
+  "popups": [
+    {
+      "column_name": "id",
+      "data_type": "uuid"
+    },
+    {
+      "column_name": "name",
+      "data_type": "text"
+    },
+    {
+      "column_name": "title",
+      "data_type": "text"
+    },
+    {
+      "column_name": "content",
+      "data_type": "text"
+    },
+    {
+      "column_name": "image_url",
+      "data_type": "text"
+    },
+    {
+      "column_name": "button_text",
+      "data_type": "text"
+    },
+    {
+      "column_name": "button_link",
+      "data_type": "text"
+    },
+    {
+      "column_name": "display_on",
+      "data_type": "text"
+    },
+    {
+      "column_name": "trigger_type",
+      "data_type": "text"
+    },
+    {
+      "column_name": "trigger_value",
+      "data_type": "integer"
+    },
+    {
+      "column_name": "frequency",
+      "data_type": "text"
+    },
+    {
+      "column_name": "is_active",
+      "data_type": "boolean"
+    },
+    {
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone"
+    },
+    {
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone"
+    },
+    {
+      "column_name": "plan_id",
+      "data_type": "uuid"
+    }
+  ],
+  "posts": [
+    {
+      "column_name": "id",
+      "data_type": "uuid"
+    },
+    {
+      "column_name": "title",
+      "data_type": "text"
+    },
+    {
+      "column_name": "slug",
+      "data_type": "text"
+    },
+    {
+      "column_name": "content",
+      "data_type": "text"
+    },
+    {
+      "column_name": "excerpt",
+      "data_type": "text"
+    },
+    {
+      "column_name": "cover_image_url",
+      "data_type": "text"
+    },
+    {
+      "column_name": "meta_title",
+      "data_type": "text"
+    },
+    {
+      "column_name": "meta_description",
+      "data_type": "text"
+    },
+    {
+      "column_name": "is_published",
+      "data_type": "boolean"
+    },
+    {
+      "column_name": "published_at",
+      "data_type": "timestamp with time zone"
+    },
+    {
+      "column_name": "author_name",
+      "data_type": "text"
+    },
+    {
+      "column_name": "author_avatar_url",
+      "data_type": "text"
+    },
+    {
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone"
+    },
+    {
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone"
+    }
+  ],
+  "redirects": [
+    {
+      "column_name": "id",
+      "data_type": "uuid"
+    },
+    {
+      "column_name": "source_path",
+      "data_type": "text"
+    },
+    {
+      "column_name": "destination_path",
+      "data_type": "text"
+    },
+    {
+      "column_name": "type",
+      "data_type": "text"
+    },
+    {
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone"
+    }
+  ],
+  "referral_settings": [
+    {
+      "column_name": "id",
+      "data_type": "integer"
+    },
+    {
+      "column_name": "reward_value",
+      "data_type": "numeric"
+    },
+    {
+      "column_name": "reward_type",
+      "data_type": "text"
+    },
+    {
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone"
+    }
+  ],
+  "referrals": [
+    {
+      "column_name": "id",
+      "data_type": "uuid"
+    },
+    {
+      "column_name": "referrer_customer_id",
+      "data_type": "text"
+    },
+    {
+      "column_name": "referred_name",
+      "data_type": "text"
+    },
+    {
+      "column_name": "referred_email",
+      "data_type": "text"
+    },
+    {
+      "column_name": "referred_phone",
+      "data_type": "text"
+    },
+    {
+      "column_name": "status",
+      "data_type": "text"
+    },
+    {
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone"
+    }
+  ],
+  "seo_settings": [
+    {
+      "column_name": "id",
+      "data_type": "integer"
+    },
+    {
+      "column_name": "site_title",
+      "data_type": "text"
+    },
+    {
+      "column_name": "site_description",
+      "data_type": "text"
+    },
+    {
+      "column_name": "og_image_url",
+      "data_type": "text"
+    },
+    {
+      "column_name": "favicon_url",
+      "data_type": "text"
+    },
+    {
+      "column_name": "allow_indexing",
+      "data_type": "boolean"
+    },
+    {
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone"
+    }
+  ],
+  "system_settings": [
+    {
+      "column_name": "key",
+      "data_type": "text"
+    },
+    {
+      "column_name": "value",
+      "data_type": "text"
+    },
+    {
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone"
+    },
+    {
+      "column_name": "description",
+      "data_type": "text"
+    }
+  ],
+  "tracking_tags": [
+    {
+      "column_name": "id",
+      "data_type": "uuid"
+    },
+    {
+      "column_name": "name",
+      "data_type": "text"
+    },
+    {
+      "column_name": "script_content",
+      "data_type": "text"
+    },
+    {
+      "column_name": "placement",
+      "data_type": "text"
+    },
+    {
+      "column_name": "is_active",
+      "data_type": "boolean"
+    },
+    {
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone"
+    }
+  ],
+  "tv_channels": [
+    {
+      "column_name": "id",
+      "data_type": "uuid"
+    },
+    {
+      "column_name": "name",
+      "data_type": "text"
+    },
+    {
+      "column_name": "logo_url",
+      "data_type": "text"
+    },
+    {
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone"
+    },
+    {
+      "column_name": "description",
+      "data_type": "text"
+    },
+    {
+      "column_name": "is_featured",
+      "data_type": "boolean"
+    }
+  ],
+  "tv_package_channels": [
+    {
+      "column_name": "package_id",
+      "data_type": "uuid"
+    },
+    {
+      "column_name": "channel_id",
+      "data_type": "uuid"
+    }
+  ],
+  "tv_packages": [
+    {
+      "column_name": "id",
+      "data_type": "uuid"
+    },
+    {
+      "column_name": "name",
+      "data_type": "text"
+    },
+    {
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone"
+    }
+  ],
+  "visits": [
+    {
+      "column_name": "id",
+      "data_type": "uuid"
+    },
+    {
+      "column_name": "visitor_id",
+      "data_type": "text"
+    },
+    {
+      "column_name": "pathname",
+      "data_type": "text"
+    },
+    {
+      "column_name": "is_new_visitor",
+      "data_type": "boolean"
+    },
+    {
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone"
+    },
+    {
+      "column_name": "hostname",
+      "data_type": "text"
+    }
+  ],
+  "work_orders": [
+    {
+      "column_name": "id",
+      "data_type": "uuid"
+    },
+    {
+      "column_name": "contract_id",
+      "data_type": "text"
+    },
+    {
+      "column_name": "orders",
+      "data_type": "jsonb"
+    },
+    {
+      "column_name": "fetched_at",
+      "data_type": "timestamp with time zone"
+    }
+  ]
+}

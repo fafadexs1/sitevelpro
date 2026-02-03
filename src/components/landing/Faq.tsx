@@ -1,25 +1,12 @@
 
 import { ChevronRight } from "lucide-react";
 
-export function Faq() {
-  const faqs = [
-    {
-      q: "Tem fidelidade?",
-      a: "Todos os planos tem fidelidade, verificar o tempo de fidelidade na contratação ou contrato.",
-    },
-    {
-      q: "Qual roteador vem incluso?",
-      a: "O modelo do roteador pode variar. Planos de alta performance geralmente incluem equipamentos com tecnologia Wi-Fi 6, mas o modelo exato dependerá do plano contratado e da viabilidade técnica.",
-    },
-    {
-      q: "Em quanto tempo é a instalação?",
-      a: "Na maioria das regiões, em até 48h após a confirmação de cobertura.",
-    },
-    {
-      q: "Oferecem IP fixo?",
-      a: "Sim, como adicional para planos empresariais e sob solicitação em residenciais.",
-    },
-  ];
+import { type InferSelectModel } from 'drizzle-orm';
+import { faqs as faqsSchema } from '@/db/schema';
+
+type FaqItem = InferSelectModel<typeof faqsSchema>;
+
+export function Faq({ faqs }: { faqs: FaqItem[] }) {
 
   return (
     <section id="faq" className="border-t border-border bg-secondary py-16 sm:py-24">
@@ -30,12 +17,12 @@ export function Faq() {
         </div>
         <div className="grid max-w-4xl gap-4 md:grid-cols-2">
           {faqs.map((item) => (
-            <details key={item.q} className="group rounded-2xl border border-border bg-card p-5 transition-colors open:bg-background">
+            <details key={item.id} className="group rounded-2xl border border-border bg-card p-5 transition-colors open:bg-background">
               <summary className="flex cursor-pointer list-none items-center justify-between text-lg font-medium text-card-foreground">
-                {item.q}
+                {item.question}
                 <ChevronRight className="h-5 w-5 transition-transform group-open:rotate-90" />
               </summary>
-              <p className="mt-3 text-muted-foreground">{item.a}</p>
+              <p className="mt-3 text-muted-foreground">{item.answer}</p>
             </details>
           ))}
         </div>

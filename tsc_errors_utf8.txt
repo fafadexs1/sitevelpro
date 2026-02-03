@@ -1,0 +1,60 @@
+﻿drizzle/relations.ts(2,10): error TS2305: Module '"./schema"' has no exported member 'usersInAuth'.
+drizzle/schema.ts(16,21): error TS2304: Cannot find name 'users'.
+scripts/seed-data.ts(4,17): error TS2305: Module '"../src/db/schema"' has no exported member 'testimonials'.
+scripts/seed-data.ts(4,31): error TS2305: Module '"../src/db/schema"' has no exported member 'faqs'.
+scripts/seed-data.ts(4,37): error TS2305: Module '"../src/db/schema"' has no exported member 'games'.
+scripts/seed-data.ts(12,35): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(value: { id?: string | SQL<unknown> | Placeholder<string, any> | undefined; created_at?: SQL<unknown> | Date | Placeholder<string, any> | undefined; ... 20 more ...; frequency?: string | ... 2 more ... | undefined; }): PgInsertBase<...>', gave the following error.
+    Type '{ type: string; speed: string; price: number; original_price: number; features: string[]; highlight: boolean; whatsapp_number: string; whatsapp_message: string; sort_order: number; }[]' has no properties in common with type '{ id?: string | SQL<unknown> | Placeholder<string, any> | undefined; created_at?: SQL<unknown> | Date | Placeholder<string, any> | undefined; type?: string | ... 3 more ... | undefined; ... 19 more ...; frequency?: string | ... 2 more ... | undefined; }'.
+src/app/[slug]/page.tsx(3,57): error TS2305: Module '"@/db/schema"' has no exported member 'testimonials'.
+src/app/[slug]/page.tsx(3,71): error TS2305: Module '"@/db/schema"' has no exported member 'faqs'.
+src/app/[slug]/page.tsx(3,77): error TS2305: Module '"@/db/schema"' has no exported member 'games'.
+src/app/[slug]/page.tsx(198,109): error TS2339: Property 'active' does not exist on type 'PgTableWithColumns<{ name: "cities"; schema: undefined; columns: { id: PgColumn<{ name: "id"; tableName: "cities"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; ... 6 more ...; generated: undefined; }, {}, {}>; name: PgColumn<...>; slug: PgColumn<...>; ...'.
+src/app/[slug]/page.tsx(231,34): error TS2322: Type '{ type: "empresarial" | "residencial"; id: string; speed: string | null; price: string | null; original_price: string | null; first_month_price: string | null; upload_speed: string | null; ... 15 more ...; created_at: Date; }[]' is not assignable to type 'Plan[]'.
+  Type '{ type: "residencial" | "empresarial"; id: string; speed: string | null; price: string | null; original_price: string | null; first_month_price: string | null; upload_speed: string | null; ... 15 more ...; created_at: Date; }' is not assignable to type 'Plan'.
+    Types of property 'speed' are incompatible.
+      Type 'string | null' is not assignable to type 'string'.
+        Type 'null' is not assignable to type 'string'.
+src/app/[slug]/page.tsx(238,19): error TS2322: Type '{ id: string; name: string; description: string | null; logo_url: string | null; is_featured: boolean; created_at: Date | null; }[]' is not assignable to type 'Channel[]'.
+  Type '{ id: string; name: string; description: string | null; logo_url: string | null; is_featured: boolean; created_at: Date | null; }' is not assignable to type 'Channel'.
+    Types of property 'logo_url' are incompatible.
+      Type 'string | null' is not assignable to type 'string'.
+        Type 'null' is not assignable to type 'string'.
+src/app/empresa/page.tsx(135,36): error TS2322: Type '{ type: "empresarial" | "residencial"; id: string; speed: string | null; price: string | null; original_price: string | null; first_month_price: string | null; upload_speed: string | null; ... 15 more ...; created_at: Date; }[]' is not assignable to type 'Plan[]'.
+  Type '{ type: "residencial" | "empresarial"; id: string; speed: string | null; price: string | null; original_price: string | null; first_month_price: string | null; upload_speed: string | null; ... 15 more ...; created_at: Date; }' is not assignable to type 'Plan'.
+    Types of property 'speed' are incompatible.
+      Type 'string | null' is not assignable to type 'string'.
+        Type 'null' is not assignable to type 'string'.
+src/app/page.tsx(22,38): error TS2305: Module '"@/db/schema"' has no exported member 'testimonials'.
+src/app/page.tsx(22,52): error TS2305: Module '"@/db/schema"' has no exported member 'faqs'.
+src/app/page.tsx(22,58): error TS2305: Module '"@/db/schema"' has no exported member 'games'.
+src/app/page.tsx(36,109): error TS2339: Property 'active' does not exist on type 'PgTableWithColumns<{ name: "cities"; schema: undefined; columns: { id: PgColumn<{ name: "id"; tableName: "cities"; dataType: "string"; columnType: "PgUUID"; data: string; driverParam: string; notNull: true; hasDefault: true; ... 6 more ...; generated: undefined; }, {}, {}>; name: PgColumn<...>; slug: PgColumn<...>; ...'.
+src/app/page.tsx(65,38): error TS2322: Type '{ type: "empresarial" | "residencial"; id: string; speed: string | null; price: string | null; original_price: string | null; first_month_price: string | null; upload_speed: string | null; ... 15 more ...; created_at: Date; }[]' is not assignable to type 'Plan[]'.
+  Type '{ type: "residencial" | "empresarial"; id: string; speed: string | null; price: string | null; original_price: string | null; first_month_price: string | null; upload_speed: string | null; ... 15 more ...; created_at: Date; }' is not assignable to type 'Plan'.
+    Types of property 'speed' are incompatible.
+      Type 'string | null' is not assignable to type 'string'.
+        Type 'null' is not assignable to type 'string'.
+src/app/page.tsx(73,17): error TS2322: Type '{ id: string; name: string; description: string | null; logo_url: string | null; is_featured: boolean; created_at: Date | null; }[]' is not assignable to type 'Channel[]'.
+  Type '{ id: string; name: string; description: string | null; logo_url: string | null; is_featured: boolean; created_at: Date | null; }' is not assignable to type 'Channel'.
+    Types of property 'logo_url' are incompatible.
+      Type 'string | null' is not assignable to type 'string'.
+        Type 'null' is not assignable to type 'string'.
+src/app/tv/page.tsx(26,11): error TS2322: Type '{ id: string; name: string; description: string | null; logo_url: string | null; is_featured: boolean; created_at: Date | null; }[]' is not assignable to type 'Channel[]'.
+  Type '{ id: string; name: string; description: string | null; logo_url: string | null; is_featured: boolean; created_at: Date | null; }' is not assignable to type 'Channel'.
+    Types of property 'logo_url' are incompatible.
+      Type 'string | null' is not assignable to type 'string'.
+        Type 'null' is not assignable to type 'string'.
+src/components/landing/Faq.tsx(5,10): error TS2305: Module '"@/db/schema"' has no exported member 'faqs'.
+src/components/landing/Games.tsx(3,10): error TS2305: Module '"@/db/schema"' has no exported member 'games'.
+src/components/landing/Testimonials.tsx(16,10): error TS2305: Module '"@/db/schema"' has no exported member 'testimonials'.
+src/db/seed.ts(5,34): error TS2305: Module '"./schema"' has no exported member 'games'.
+src/db/seed.ts(5,41): error TS2305: Module '"./schema"' has no exported member 'faqs'.
+src/db/seed.ts(5,47): error TS2305: Module '"./schema"' has no exported member 'testimonials'.
+src/db/seed.ts(39,35): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(value: { id?: string | SQL<unknown> | Placeholder<string, any> | undefined; created_at?: SQL<unknown> | Date | Placeholder<string, any> | undefined; ... 20 more ...; frequency?: string | ... 2 more ... | undefined; }): PgInsertBase<...>', gave the following error.
+    Type '{ type: string; speed: string; price: number; features: string[]; highlight: boolean; has_tv: boolean; sort_order: number; }[]' has no properties in common with type '{ id?: string | SQL<unknown> | Placeholder<string, any> | undefined; created_at?: SQL<unknown> | Date | Placeholder<string, any> | undefined; type?: string | ... 3 more ... | undefined; ... 19 more ...; frequency?: string | ... 2 more ... | undefined; }'.
+src/db/seed.ts(72,34): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(value: { id?: string | SQL<unknown> | Placeholder<string, any> | undefined; created_at?: SQL<unknown> | Date | Placeholder<string, any> | undefined; ... 15 more ...; slide_type?: string | ... 2 more ... | undefined; }): PgInsertBase<...>', gave the following error.
+    Type '{ title: string; subtitle: string; is_active: boolean; sort_order: number; image_url: string; slide_type: string; button_primary_text: string; button_primary_link: string; }[]' has no properties in common with type '{ id?: string | SQL<unknown> | Placeholder<string, any> | undefined; created_at?: SQL<unknown> | Date | Placeholder<string, any> | undefined; is_active?: boolean | ... 2 more ... | undefined; ... 14 more ...; slide_type?: string | ... 2 more ... | undefined; }'.
+  Overload 2 of 2, '(values: { id?: string | SQL<unknown> | Placeholder<string, any> | undefined; created_at?: SQL<unknown> | Date | Placeholder<string, any> | undefined; ... 15 more ...; slide_type?: string | ... 2 more ... | undefined; }[]): PgInsertBase<...>', gave the following error.
+    Object literal may only specify known properties, and 'title' does not exist in type '{ id?: string | SQL<unknown> | Placeholder<string, any> | undefined; created_at?: SQL<unknown> | Date | Placeholder<string, any> | undefined; is_active?: boolean | ... 2 more ... | undefined; ... 14 more ...; slide_type?: string | ... 2 more ... | undefined; }'.

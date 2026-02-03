@@ -2,7 +2,6 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { createClient } from "@/utils/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Wifi, Upload, Download, Check, Star, ArrowRight, Smartphone } from "lucide-react";
 import { Button } from "../ui/button";
@@ -26,7 +25,7 @@ type Plan = {
     whatsapp_message: string | null;
 };
 
-type Popup = {
+export type Popup = {
     id: string;
     name: string;
     plan_id: string | null;
@@ -45,7 +44,7 @@ type Popup = {
     plans: Plan | null;
 };
 
-interface PopupManagerProps {
+export interface PopupManagerProps {
     domainType: 'sales_page' | 'main_site' | null;
 }
 
@@ -206,12 +205,13 @@ declare global {
     }
 }
 
-export function PopupManager({ domainType }: PopupManagerProps) {
+
+export function PopupManager({ domainType, popups, conversionEvents }: PopupManagerProps & { popups: Popup[], conversionEvents: ConversionEvent[] }) {
     const [popup, setPopup] = useState<Popup | null>(null);
     const [isOpen, setIsOpen] = useState(false);
     const pathname = usePathname();
-    const [conversionEvents, setConversionEvents] = useState<ConversionEvent[]>([]);
 
+    // Track conversions using passed events
     const trackGtagConversion = useCallback((event: ConversionEvent) => {
         if (typeof window.gtag === 'function') {
             try {
@@ -243,45 +243,20 @@ export function PopupManager({ domainType }: PopupManagerProps) {
         return () => document.removeEventListener('click', handler, { capture: true } as any);
     }, [conversionEvents, trackGtagConversion]);
 
-    useEffect(() => {
-        const fetchEvents = async () => {
-            const supabase = createClient();
-            const { data, error } = await supabase
-                .from('conversion_events')
-                .select('*')
-                .eq('is_active', true);
-            if (!error) {
-                setConversionEvents(data);
-            }
-        };
-        fetchEvents();
-    }, []);
-
-
-    const checkAndSetPopup = useCallback(async () => {
+    // Set popup based on domain and props
+    const checkAndSetPopup = useCallback(() => {
         if (!domainType || pathname !== '/') {
             setPopup(null);
             return;
         }
 
-        const supabase = createClient();
-        const { data: popupData, error } = await supabase
-            .from("popups")
-            .select("*, plans!inner(*)")
-            .eq("is_active", true)
-            .eq("display_on", domainType)
-            .order("created_at", { ascending: false })
-            .limit(1)
-            .single();
+        // Filter valid popups for this domain
+        const validPopup = popups.find(p => p.display_on === domainType && p.is_active);
 
-        if (error && error.code !== 'PGRST116') {
-            console.error("Popup fetch error:", error);
+        if (validPopup) {
+            setPopup(validPopup);
         }
-
-        if (popupData) {
-            setPopup(popupData as Popup);
-        }
-    }, [domainType, pathname]);
+    }, [domainType, pathname, popups]);
 
     useEffect(() => {
         checkAndSetPopup();

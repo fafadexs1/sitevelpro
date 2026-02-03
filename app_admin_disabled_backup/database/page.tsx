@@ -1,0 +1,538 @@
+
+
+"use client";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from "next/link";
+import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
+
+export default function DatabasePage() {
+    const { toast } = useToast();
+    const [copied, setCopied] = useState(false);
+
+    const setupSqlContent = `
+-- Habilita a extensão pgsodium
+create extension if not exists pgsodium with schema pgsodium;
+
+-- Habilita a extensão http
+create extension if not exists http with schema extensions;
+
+-- Cria a função para buscar metadados de uma URL
+create or replace function get_url_metadata(p_url text)
+returns table (
+  title text,
+  description text,
+  image_url text
+) as $$
+  select
+    net.http_get(
+      url := p_url,
+      params := null,
+      headers := '{"Content-Type": "application/json"}',
+      timeout_milliseconds := 2000
+    ) as request;
+$$ language sql;
+
+-- Cria a tabela de clientes para a área do cliente
+create table if not exists clientes (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references auth.users(id) on delete cascade not null,
+  cpf_cnpj text not null unique,
+  contratos jsonb,
+  selected_contract_id text,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+-- Define políticas de acesso para a tabela de clientes
+-- Garante que o usuário só possa ver e alterar seus próprios dados.
+drop policy if exists "Enable read access for authenticated users" on public.clientes;
+create policy "Enable read access for authenticated users" on public.clientes
+  for select using (auth.uid() = user_id);
+
+drop policy if exists "Enable update for users based on user_id" on public.clientes;
+create policy "Enable update for users based on user_id" on public.clientes
+  for update using (auth.uid() = user_id);
+
+
+-- Cria a tabela de Ordens de Serviço (Chamados)
+create table if not exists work_orders (
+  id uuid default gen_random_uuid() primary key,
+  contract_id text not null unique,
+  orders jsonb,
+  fetched_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Define políticas de acesso para a tabela de Ordens de Serviço
+-- Usuários podem ler apenas as O.S. associadas aos seus contratos.
+drop policy if exists "Enable read access for own work orders" on public.work_orders;
+create policy "Enable read access for own work orders" on public.work_orders
+  for select using (
+    exists (
+      select 1 from clientes
+      where clientes.user_id = auth.uid() and clientes.selected_contract_id = work_orders.contract_id
+    )
+  );
+
+-- Cria a tabela de Faturas (Títulos)
+create table if not exists invoices (
+  id uuid default gen_random_uuid() primary key,
+  contract_id text not null unique,
+  invoices_data jsonb,
+  fetched_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Define políticas de acesso para a tabela de Faturas
+-- Usuários podem ler apenas as faturas associadas aos seus contratos.
+drop policy if exists "Enable read access for own invoices" on public.invoices;
+create policy "Enable read access for own invoices" on public.invoices
+  for select using (
+    exists (
+      select 1 from clientes
+      where clientes.user_id = auth.uid() and clientes.selected_contract_id = invoices.contract_id
+    )
+  );
+
+
+-- Cria a tabela de slides do herói
+create table if not exists hero_slides (
+  id uuid default gen_random_uuid() primary key,
+  slide_type text default 'content'::text not null,
+  pre_title text,
+  title_regular text,
+  title_highlighted text,
+  subtitle text,
+  image_url text,
+  image_url_mobile text,
+  image_opacity integer default 30,
+  button_primary_text text,
+  button_primary_link text,
+  button_secondary_text text,
+  button_secondary_link text,
+  feature_1_text text,
+  feature_2_text text,
+  is_active boolean default true not null,
+  sort_order integer default 0,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+
+-- Cria a tabela de planos
+create table if not exists plans (
+  id uuid default gen_random_uuid() primary key,
+  type text not null, -- 'residencial' ou 'empresarial'
+  speed text not null,
+  price numeric(10, 2) not null,
+  original_price numeric(10, 2),
+  first_month_price numeric(10, 2),
+  features text[],
+  highlight boolean default false,
+  has_tv boolean default false,
+  featured_channel_ids uuid[],
+  whatsapp_number text,
+  whatsapp_message text,
+  conditions text,
+  upload_speed text,
+  download_speed text,
+  sort_order integer default 0,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Cria a tabela de canais de TV
+create table if not exists tv_channels (
+    id uuid default gen_random_uuid() primary key,
+    name text not null,
+    description text,
+    logo_url text,
+    is_featured boolean default false not null,
+    created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Cria a tabela de pacotes de TV
+create table if not exists tv_packages (
+    id uuid default gen_random_uuid() primary key,
+    name text not null,
+    created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Cria a tabela de junção para pacotes e canais
+create table if not exists tv_package_channels (
+    id uuid default gen_random_uuid() primary key,
+    package_id uuid references tv_packages(id) not null,
+    channel_id uuid references tv_channels(id) not null,
+    constraint unique_package_channel unique (package_id, channel_id)
+);
+
+-- Cria a tabela de cidades para rotas dinâmicas
+create table if not exists cities (
+    id uuid default gen_random_uuid() primary key,
+    name text not null,
+    slug text not null unique,
+    created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Cria a tabela de posts para o blog
+create table if not exists posts (
+    id uuid default gen_random_uuid() primary key,
+    title text not null,
+    slug text not null unique,
+    content text,
+    excerpt text,
+    cover_image_url text,
+    meta_title text,
+    meta_description text,
+    is_published boolean default false not null,
+    published_at timestamp with time zone,
+    author_name text,
+    author_avatar_url text,
+    created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+    updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Cria a tabela de configurações de SEO
+create table if not exists seo_settings (
+  id int primary key default 1,
+  site_title text not null,
+  site_description text not null,
+  og_image_url text,
+  favicon_url text,
+  allow_indexing boolean default true not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  constraint single_row_check check (id = 1)
+);
+
+-- Cria a tabela de domínios
+create table if not exists domains (
+  id uuid default gen_random_uuid() primary key,
+  hostname text not null unique,
+  type text not null default 'sales_page', -- 'main_site' or 'sales_page'
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Cria a tabela de configurações do Sistema
+create table if not exists system_settings (
+    key text primary key,
+    value text,
+    description text,
+    updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Insere as configurações iniciais da API se não existirem
+INSERT INTO system_settings (key, value, description)
+VALUES 
+    ('external_api_url', '', 'URL base da API externa (ex: https://api.seuprovedor.com.br)'),
+    ('external_api_app', '', 'Nome do App para autenticação na API de O.S.'),
+    ('external_api_token', '', 'Token para autenticação na API de O.S.'),
+    ('GEMINI_API_KEY', '', 'Chave de API do Google Gemini para funcionalidades de IA.'),
+    ('GEMINI_MODEL', 'gemini-1.5-flash-latest', 'Modelo de linguagem a ser usado (ex: gemini-1.5-flash-latest).'),
+    ('commemorative_theme_enabled', 'false', 'Ativa ou desativa o tema comemorativo no site.')
+ON CONFLICT (key) DO NOTHING;
+
+
+-- Cria a tabela de regras dinâmicas de SEO
+create table if not exists dynamic_seo_rules (
+    id uuid default gen_random_uuid() primary key,
+    name text not null,
+    slug_pattern text not null,
+    meta_title text not null,
+    meta_description text,
+    canonical_url text,
+    allow_indexing boolean default true not null,
+    schema_type text default 'None',
+    created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Cria a tabela de redirecionamentos
+create table if not exists redirects (
+    id uuid default gen_random_uuid() primary key,
+    source_path text not null unique,
+    destination_path text not null,
+    type text not null default 'permanent', -- 'permanent' (301) ou 'temporary' (302)
+    created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Cria a tabela de tags de rastreamento
+create table if not exists tracking_tags (
+    id uuid default gen_random_uuid() primary key,
+    name text not null,
+    script_content text not null,
+    placement text not null default 'head_start', -- 'head_start', 'body_start', 'body_end'
+    is_active boolean default true not null,
+    created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Cria a tabela de eventos de conversão
+create table if not exists conversion_events (
+    id uuid default gen_random_uuid() primary key,
+    name text not null,
+    type text not null, -- 'standard' or 'custom'
+    selector text, -- a CSS selector for custom events
+    event_snippet text not null,
+    is_active boolean default true not null,
+    created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Cria a tabela de visitas para estatísticas
+create table if not exists visits (
+  id uuid default gen_random_uuid() primary key,
+  visitor_id text not null,
+  hostname text,
+  pathname text not null,
+  is_new_visitor boolean default false,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Cria a tabela de eventos para estatísticas
+create table if not exists events (
+    id uuid default gen_random_uuid() primary key,
+    visitor_id text not null,
+    hostname text,
+    pathname text not null,
+    name text not null, -- ex: 'cta_click'
+    properties jsonb,
+    created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Cria a tabela de leads (CRM)
+create table if not exists leads (
+    id uuid default gen_random_uuid() primary key,
+    full_name text not null,
+    email text not null,
+    phone text not null,
+    cep text,
+    street text,
+    "number" text,
+    complement text,
+    neighborhood text,
+    city text,
+    state text,
+    latitude double precision,
+    longitude double precision,
+    status text default 'new' not null, -- new, contacted, qualified, disqualified
+    source text default 'signup_form',
+    created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Cria a tabela de indicações
+create table if not exists referrals (
+    id uuid default gen_random_uuid() primary key,
+    referrer_customer_id text, -- ID ou nome/email do cliente que indicou
+    referred_name text not null,
+    referred_email text,
+    referred_phone text not null,
+    status text default 'pendente' not null, -- pendente, verificando, aprovado, rejeitado
+    created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Cria a tabela de configurações de indicações
+create table if not exists referral_settings (
+    id int primary key default 1,
+    reward_value numeric(10, 2) default 50.00,
+    reward_type text default 'discount', -- 'discount' or 'cash'
+    updated_at timestamp with time zone default timezone('utc'::text, now()) not null,
+    constraint single_row_check check (id = 1)
+);
+
+-- Cria a tabela de Popups
+create table if not exists popups (
+    id uuid default gen_random_uuid() primary key,
+    name text not null,
+    plan_id uuid references plans(id) on delete set null,
+    title text,
+    content text,
+    image_url text,
+    button_text text,
+    button_link text,
+    button_action_type text default 'link'::text not null,
+    button_whatsapp_message text,
+    display_on text default 'sales_page' not null,
+    trigger_type text default 'delay' not null,
+    trigger_value integer default 5,
+    frequency text default 'once_per_session' not null,
+    is_active boolean default false not null,
+    created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+    updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Políticas para Popups
+create policy "Allow full access to authenticated users on popups"
+on public.popups for all
+to authenticated
+using (true)
+with check (true);
+
+create policy "Allow public read access on popups"
+on public.popups for select
+to anon, authenticated
+using (true);
+
+-- Cria o bucket 'canais' se ele não existir
+-- As políticas RLS garantem que ele seja público
+insert into storage.buckets (id, name, public)
+values ('canais', 'canais', true)
+on conflict (id) do nothing;
+
+-- Cria o bucket 'site-assets' se ele não existir
+insert into storage.buckets (id, name, public)
+values ('site-assets', 'site-assets', true)
+on conflict (id) do nothing;
+
+-- Cria o bucket 'hero-slides' se ele não existir
+insert into storage.buckets (id, name, public)
+values ('hero-slides', 'hero-slides', true)
+on conflict (id) do nothing;
+
+-- Cria o bucket 'post-images' se ele não existir
+insert into storage.buckets (id, name, public)
+values ('post-images', 'post-images', true)
+on conflict (id) do nothing;
+
+-- Cria o bucket 'popup-images' se ele não existir
+insert into storage.buckets (id, name, public)
+values ('popup-images', 'popup-images', true)
+on conflict (id) do nothing;
+
+
+-- Políticas de acesso para o bucket 'canais'
+-- Permite leitura anônima de arquivos
+create policy "Public read access for logos"
+on storage.objects for select
+using ( bucket_id = 'canais' );
+
+-- Permite que usuários autenticados façam upload
+create policy "Allow authenticated uploads"
+on storage.objects for insert
+to authenticated
+with check ( bucket_id = 'canais' );
+
+-- Permite que usuários autenticados atualizem seus próprios arquivos
+create policy "Allow authenticated updates"
+on storage.objects for update
+to authenticated
+using ( auth.uid() = owner_id );
+
+-- Permite que usuários autenticados deletem seus próprios arquivos
+create policy "Allow authenticated deletes"
+on storage.objects for delete
+to authenticated
+using ( auth.uid() = owner_id );
+
+
+-- Políticas de acesso para o bucket 'site-assets'
+-- Remove as políticas antigas se existirem para evitar conflitos
+DROP POLICY IF EXISTS "Authenticated access for site assets" ON storage.objects;
+DROP POLICY IF EXISTS "Public read access for site assets" ON storage.objects;
+DROP POLICY IF EXISTS "Allow authenticated uploads for site assets" ON storage.objects;
+DROP POLICY IF EXISTS "Allow authenticated updates for site assets" ON storage.objects;
+DROP POLICY IF EXISTS "Allow authenticated deletes for site assets" ON storage.objects;
+
+-- Permite acesso total (leitura, escrita, etc.) para usuários autenticados ao bucket 'site-assets'
+CREATE POLICY "Authenticated access for site assets"
+ON storage.objects
+FOR ALL
+TO authenticated
+USING (bucket_id = 'site-assets')
+WITH CHECK (bucket_id = 'site-assets');
+
+-- Permite que qualquer pessoa (público) leia os arquivos do bucket 'site-assets'
+CREATE POLICY "Public read access for site assets"
+ON storage.objects
+FOR SELECT
+USING (bucket_id = 'site-assets');
+
+-- Políticas de acesso para o bucket 'hero-slides'
+CREATE POLICY "Public read access for hero slides"
+ON storage.objects
+FOR SELECT
+USING (bucket_id = 'hero-slides');
+
+CREATE POLICY "Allow authenticated access for hero slides"
+ON storage.objects
+FOR ALL
+TO authenticated
+USING (bucket_id = 'hero-slides')
+WITH CHECK (bucket_id = 'hero-slides');
+
+-- Políticas de acesso para o bucket 'post-images'
+CREATE POLICY "Public read access for post images"
+ON storage.objects
+FOR SELECT
+USING (bucket_id = 'post-images');
+
+CREATE POLICY "Allow authenticated access for post images"
+ON storage.objects
+FOR ALL
+TO authenticated
+USING (bucket_id = 'post-images')
+WITH CHECK (bucket_id = 'post-images');
+
+-- Políticas de acesso para o bucket 'popup-images'
+CREATE POLICY "Public read access for popup images"
+ON storage.objects
+FOR SELECT
+USING (bucket_id = 'popup-images');
+
+CREATE POLICY "Allow authenticated access for popup images"
+ON storage.objects
+FOR ALL
+TO authenticated
+USING (bucket_id = 'popup-images')
+WITH CHECK (bucket_id = 'popup-images');
+
+    `.trim();
+
+    const handleCopy = () => {
+        navigator.clipboard.writeText(setupSqlContent).then(() => {
+            setCopied(true);
+            toast({ title: "Copiado!", description: "O script SQL foi copiado para a área de transferência." });
+            setTimeout(() => setCopied(false), 2000);
+        }, () => {
+            toast({ variant: "destructive", title: "Erro", description: "Não foi possível copiar o script." });
+        });
+    };
+
+    return (
+        <>
+            <header className="mb-8 flex items-center justify-between">
+                <div>
+                    <h1 className="text-3xl font-bold text-foreground">Banco de Dados</h1>
+                    <p className="text-muted-foreground">Gerencie a estrutura do seu banco de dados.</p>
+                </div>
+            </header>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>Script de Configuração (setup.sql)</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <p className="text-sm text-muted-foreground">
+                        O script abaixo contém todos os comandos SQL necessários para configurar ou atualizar as tabelas do seu banco de dados Supabase.
+                    </p>
+                    <div className="relative">
+                        <pre className="bg-secondary border border-border rounded-lg p-4 text-xs overflow-x-auto max-h-96 text-foreground">
+                            <code>{setupSqlContent}</code>
+                        </pre>
+                        <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={handleCopy}
+                            className="absolute top-2 right-2"
+                        >
+                            {copied ? "Copiado!" : "Copiar"}
+                        </Button>
+                    </div>
+                    <div className="flex flex-col sm:flex-row gap-4">
+                         <Button asChild variant="default">
+                            <Link href="https://supabase.com/dashboard" target="_blank" rel="noopener noreferrer">
+                                Abrir Editor SQL do Supabase
+                            </Link>
+                        </Button>
+                        <p className="text-sm text-muted-foreground self-center">
+                            Copie o script e cole no editor de SQL para executar.
+                        </p>
+                    </div>
+                </CardContent>
+            </Card>
+        </>
+    );
+};

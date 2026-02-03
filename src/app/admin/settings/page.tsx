@@ -62,7 +62,8 @@ export default function SettingsPage() {
       if (error) {
         toast({ variant: 'destructive', title: 'Erro ao buscar configurações', description: error.message });
       } else {
-        const settingsMap = new Map(data.map(item => [item.key, item.value]));
+        const settingsRows = (data as { key: string; value: string | null }[] | null) ?? [];
+        const settingsMap = new Map(settingsRows.map((item) => [item.key, item.value ?? ""]));
         form.reset({
           external_api_url: settingsMap.get('external_api_url') || '',
           external_api_app: settingsMap.get('external_api_app') || '',

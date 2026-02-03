@@ -6,9 +6,8 @@ import { Loader2, LogIn, User, Lock, Eye, EyeOff, ArrowRight, Wifi } from "lucid
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
-import { createClient } from "@/utils/supabase/client";
+import { createClient, type AuthUser } from "@/utils/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -29,7 +28,7 @@ type AuthFormData = z.infer<typeof authSchema>;
 // ==================================
 // Componente de Login
 // ==================================
-function AdminLogin({ onLogin }: { onLogin: (user: SupabaseUser) => void }) {
+function AdminLogin({ onLogin }: { onLogin: (user: AuthUser) => void }) {
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
@@ -159,7 +158,7 @@ function AdminLogin({ onLogin }: { onLogin: (user: SupabaseUser) => void }) {
 // Componente principal do layout
 // ==================================
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
   const supabase = createClient();
   const pathname = usePathname();

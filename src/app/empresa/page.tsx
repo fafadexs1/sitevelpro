@@ -1,10 +1,14 @@
 
 import { Header } from "@/components/landing/Header";
 import dynamic from 'next/dynamic';
-import { createClient } from "@/utils/supabase/server";
 import { ArrowRight, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import * as motion from "framer-motion/client";
+
+import { getLayoutData } from "@/lib/data/get-layout-data";
+import { db } from "@/db";
+import { plans } from "@/db/schema";
+import { asc, eq } from "drizzle-orm";
 
 const Footer = dynamic(() => import('@/components/landing/Footer').then(mod => mod.Footer));
 const Contact = dynamic(() => import('@/components/landing/Contact').then(mod => mod.Contact));
@@ -19,11 +23,30 @@ export const metadata = {
 };
 
 export default async function EmpresaPage() {
-    const supabase = await createClient();
+    const { domainType, companyLogoUrl } = await getLayoutData();
+
+    // Fetch Enterprise Plans
+    const enterprisePlansData = await db.select().from(plans)
+        .where(eq(plans.type, 'empresarial'))
+        .orderBy(asc(plans.sort_order), asc(plans.price));
+
+    const formattedEnterprisePlans = enterprisePlansData
+        .filter((plan): plan is typeof enterprisePlansData[number] & { speed: string; price: string | number; type: string } =>
+            Boolean(plan.speed) && Boolean(plan.type) && plan.price !== null
+        )
+        .map(p => ({
+            ...p,
+            type: p.type as "residencial" | "empresarial",
+            price: Number(p.price),
+            original_price: p.original_price !== null ? Number(p.original_price) : null,
+            first_month_price: p.first_month_price !== null ? Number(p.first_month_price) : null,
+            highlight: p.highlight ?? false,
+            has_tv: p.has_tv ?? false,
+        }));
 
     return (
         <div className="min-h-screen bg-[#050a05] text-white selection:bg-green-500/30">
-            <Header />
+            <Header domainType={domainType} companyLogoUrl={companyLogoUrl} />
             <main>
                 <section className="relative w-full min-h-[85vh] flex items-center justify-center overflow-hidden pt-20">
 
@@ -118,7 +141,7 @@ export default async function EmpresaPage() {
                 </section>
 
                 <section id="planos">
-                    <BusinessPlans />
+                    <BusinessPlans plans={formattedEnterprisePlans} />
                 </section>
 
                 <DedicatedLink />

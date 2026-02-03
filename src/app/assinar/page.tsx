@@ -16,7 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import Link from "next/link";
 import { Wifi } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { createClient } from "@/utils/supabase/client";
+import { submitLead } from "@/actions/submit-lead";
 
 
 // =====================================================
@@ -488,19 +488,20 @@ export default function SignupPage() {
       methods.reset(newFormData);
     } else {
       setIsSubmitting(true);
-      const supabase = createClient();
       const { fullName, dontKnowCep, ...rest } = newFormData;
 
-      const { error } = await supabase.from("leads").insert({
-        ...rest,
-        full_name: fullName,
+      const { success, error } = await submitLead({
+        fullName: fullName!,
+        email: rest.email!,
+        phone: rest.phone!,
+        ...rest
       });
 
-      if (error) {
+      if (!success) {
         toast({
           variant: "destructive",
           title: "Erro ao Enviar",
-          description: `Não foi possível enviar sua solicitação: ${error.message}`,
+          description: `Não foi possível enviar sua solicitação: ${error}`,
         });
       } else {
         setIsSuccess(true);

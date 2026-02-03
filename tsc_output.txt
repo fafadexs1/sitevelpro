@@ -1,0 +1,8 @@
+﻿drizzle.config.ts(2,30): error TS2307: Cannot find module 'drizzle-kit' or its corresponding type declarations.
+src/app/assinar/page.tsx(19,30): error TS2307: Cannot find module '@/utils/supabase/client' or its corresponding type declarations.
+src/app/colaboracao/layout.tsx(26,30): error TS2307: Cannot find module '@/utils/supabase/client' or its corresponding type declarations.
+src/app/colaboracao/layout.tsx(28,43): error TS2307: Cannot find module '@supabase/supabase-js' or its corresponding type declarations.
+src/app/colaboracao/layout.tsx(324,65): error TS7006: Parameter '_event' implicitly has an 'any' type.
+src/app/colaboracao/layout.tsx(324,73): error TS7006: Parameter 'session' implicitly has an 'any' type.
+src/app/indicacao/[id]/page.tsx(19,30): error TS2307: Cannot find module '@/utils/supabase/client' or its corresponding type declarations.
+src/components/analytics/ConversionTracker.tsx(5,30): error TS2307: Cannot find module '@/utils/supabase/client' or its corresponding type declarations.

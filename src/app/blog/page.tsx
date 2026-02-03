@@ -1,5 +1,4 @@
 
-import { createClient } from "@/utils/supabase/server";
 import { Header } from "@/components/landing/Header";
 import { Footer } from "@/components/landing/Footer";
 import Image from "next/image";
@@ -22,22 +21,31 @@ export const metadata: Metadata = {
   description: 'Artigos, dicas e novidades sobre o mundo da conectividade e tecnologia da Velpro.',
 };
 
-export default async function BlogListPage() {
-  const supabase = await createClient();
-  const { data: posts, error } = await supabase
-    .from('posts')
-    .select('id, title, slug, excerpt, cover_image_url, published_at, author_name')
-    .eq('is_published', true)
-    .order('published_at', { ascending: false });
+import { getLayoutData } from "@/lib/data/get-layout-data";
 
-  if (error) {
-    console.error("Error fetching posts:", error);
-    // Handle error state appropriately
-  }
+import { db } from "@/db";
+import { posts as postsTable } from "@/db/schema";
+import { desc, eq } from "drizzle-orm";
+
+export default async function BlogListPage() {
+  const { domainType, companyLogoUrl } = await getLayoutData();
+
+  const posts = await db.select({
+    id: postsTable.id,
+    title: postsTable.title,
+    slug: postsTable.slug,
+    excerpt: postsTable.excerpt,
+    cover_image_url: postsTable.cover_image_url,
+    published_at: postsTable.published_at,
+    author_name: postsTable.author_name,
+  })
+    .from(postsTable)
+    .where(eq(postsTable.is_published, true))
+    .orderBy(desc(postsTable.published_at));
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
-      <Header />
+      <Header domainType={domainType} companyLogoUrl={companyLogoUrl} />
       <main className="flex-grow">
         <div className="bg-secondary border-b border-border py-16 sm:py-24">
           <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">

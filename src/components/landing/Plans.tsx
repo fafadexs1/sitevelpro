@@ -2,8 +2,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { useState } from "react";
 import { Wifi, Upload, Download, Tv, Smartphone, Check, Loader2, PlusCircle, Gauge, X, Star, ArrowRight, Server, Globe, Shield, Phone } from "lucide-react";
 import Link from 'next/link';
 import {
@@ -21,7 +20,7 @@ import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { ChannelLogos } from "./ChannelLogos";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plan, ENTERPRISE_PLANS, PlanDetailsSheet } from "@/components/shared/PlanDetailsSheet";
+import { Plan, PlanDetailsSheet } from "@/components/shared/PlanDetailsSheet";
 
 
 interface PlansProps {
@@ -57,12 +56,12 @@ const getFeatureIcon = (feature: string) => {
   };
 };
 
-export function Plans({ city, plans }: PlansProps & { plans: Plan[] }) {
+export function Plans({ city, plans, allChannels }: PlansProps & { plans: Plan[], allChannels: any[] }) {
   const [planType, setPlanType] = useState<"residencial" | "empresarial">("residencial");
   const [api, setApi] = useState<CarouselApi>()
 
-  // Use DB plans for residencial, Hardcoded for empresarial
-  const currentPlans = planType === 'empresarial' ? ENTERPRISE_PLANS : plans.filter(p => p.type === planType);
+  // Filter plans based on selected type
+  const currentPlans = plans.filter(p => p.type === planType);
 
   const PlanCard = ({ plan, index }: { plan: Plan, index: number }) => {
     const slug = generatePlanSlug(plan);
@@ -98,7 +97,7 @@ export function Plans({ city, plans }: PlansProps & { plans: Plan[] }) {
           </div>
 
           {plan.has_tv && plan.featured_channel_ids && (
-            <ChannelLogos channelIds={plan.featured_channel_ids} />
+            <ChannelLogos channelIds={plan.featured_channel_ids} allChannels={allChannels} />
           )}
 
           <ul className="my-6 space-y-3 flex flex-col items-center">
@@ -222,5 +221,3 @@ export function Plans({ city, plans }: PlansProps & { plans: Plan[] }) {
     </section>
   );
 }
-
-

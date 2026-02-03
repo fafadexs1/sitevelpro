@@ -15,6 +15,22 @@ create table if not exists
     constraint plans_pkey primary key (id)
   );
 
+-- Tabela de UsuÃ¡rios do Sistema
+create table if not exists
+  public.users (
+    id uuid not null default gen_random_uuid (),
+    full_name text not null,
+    email text not null,
+    password_hash text not null,
+    role text not null default 'user',
+    is_active boolean not null default true,
+    created_at timestamp with time zone not null default now(),
+    updated_at timestamp with time zone not null default now(),
+    last_login_at timestamp with time zone null,
+    constraint users_pkey primary key (id),
+    constraint users_email_key unique (email)
+  );
+
 -- Tabela de Canais de TV
 create table if not exists
   public.tv_channels (

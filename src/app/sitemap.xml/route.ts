@@ -1,5 +1,7 @@
 
-import { createClient } from '@/utils/supabase/server';
+import { db } from "@/db";
+import { cities, dynamic_seo_rules, posts } from "@/db/schema";
+import { eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from 'next/server';
 
 // Helper para escapar caracteres XML
@@ -21,7 +23,7 @@ export async function GET(request: NextRequest) {
   const host = request.headers.get('host');
   const siteUrl = `${protocol}://${host}`;
 
-  const supabase = await createClient();
+  // const supabase = await createClient(); // Removed
 
   const routes: { url: string; lastModified: Date; priority: number }[] = [];
 
@@ -44,24 +46,18 @@ export async function GET(request: NextRequest) {
 
   // 2. Rotas Dinâmicas de SEO
   try {
-    const { data: allRules, error: rulesError } = await supabase
-      .from('dynamic_seo_rules')
-      .select('slug_pattern, allow_indexing')
-      .eq('allow_indexing', true);
+    const allRules = await db.select().from(dynamic_seo_rules).where(eq(dynamic_seo_rules.allow_indexing, true));
 
-    if (rulesError) throw rulesError;
-
-    if (allRules) {
-      const rulesWithVariable = allRules.filter(rule => rule.slug_pattern.includes('{cidade}'));
-      const rulesWithoutVariable = allRules.filter(rule => !rule.slug_pattern.includes('{'));
+    if (allRules && allRules.length > 0) {
+      const rulesWithVariable = allRules.filter(rule => rule.slug_pattern && rule.slug_pattern.includes('{cidade}'));
+      const rulesWithoutVariable = allRules.filter(rule => rule.slug_pattern && !rule.slug_pattern.includes('{'));
 
       if (rulesWithVariable.length > 0) {
-        const { data: cities, error: citiesError } = await supabase.from('cities').select('slug');
-        if (citiesError) throw citiesError;
+        const citiesList = await db.select({ slug: cities.slug }).from(cities);
 
-        if (cities) {
+        if (citiesList) {
           for (const rule of rulesWithVariable) {
-            for (const city of cities) {
+            for (const city of citiesList) {
               routes.push({
                 url: `${siteUrl}${rule.slug_pattern.replace('{cidade}', city.slug)}`,
                 lastModified: new Date(),
@@ -86,17 +82,14 @@ export async function GET(request: NextRequest) {
 
   // 3. Rotas de Blog
   try {
-    const { data: posts, error: postsError } = await supabase
-      .from('posts')
-      .select('slug, updated_at')
-      .eq('is_published', true);
+    const blogPosts = await db.select({ slug: posts.slug, published_at: posts.published_at })
+      .from(posts)
+      .where(eq(posts.is_published, true));
 
-    if (postsError) throw postsError;
-
-    posts?.forEach(post => {
+    blogPosts.forEach(post => {
       routes.push({
         url: `${siteUrl}/blog/${post.slug}`,
-        lastModified: new Date(post.updated_at),
+        lastModified: post.published_at ? new Date(post.published_at) : new Date(),
         priority: 0.7,
       });
     });

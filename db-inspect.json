@@ -1,0 +1,242 @@
+{
+  "plans": [
+    {
+      "column_name": "id",
+      "data_type": "uuid"
+    },
+    {
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone"
+    },
+    {
+      "column_name": "type",
+      "data_type": "text"
+    },
+    {
+      "column_name": "speed",
+      "data_type": "text"
+    },
+    {
+      "column_name": "price",
+      "data_type": "numeric"
+    },
+    {
+      "column_name": "highlight",
+      "data_type": "boolean"
+    },
+    {
+      "column_name": "has_tv",
+      "data_type": "boolean"
+    },
+    {
+      "column_name": "features",
+      "data_type": "ARRAY"
+    },
+    {
+      "column_name": "original_price",
+      "data_type": "numeric"
+    },
+    {
+      "column_name": "featured_channel_ids",
+      "data_type": "ARRAY"
+    },
+    {
+      "column_name": "whatsapp_number",
+      "data_type": "text"
+    },
+    {
+      "column_name": "whatsapp_message",
+      "data_type": "text"
+    },
+    {
+      "column_name": "conditions",
+      "data_type": "text"
+    },
+    {
+      "column_name": "upload_speed",
+      "data_type": "text"
+    },
+    {
+      "column_name": "download_speed",
+      "data_type": "text"
+    },
+    {
+      "column_name": "first_month_price",
+      "data_type": "numeric"
+    },
+    {
+      "column_name": "sort_order",
+      "data_type": "integer"
+    },
+    {
+      "column_name": "button_action_type",
+      "data_type": "text"
+    },
+    {
+      "column_name": "button_whatsapp_message",
+      "data_type": "text"
+    },
+    {
+      "column_name": "display_on",
+      "data_type": "text"
+    },
+    {
+      "column_name": "trigger_type",
+      "data_type": "text"
+    },
+    {
+      "column_name": "trigger_value",
+      "data_type": "integer"
+    },
+    {
+      "column_name": "frequency",
+      "data_type": "text"
+    }
+  ],
+  "popups": [
+    {
+      "column_name": "id",
+      "data_type": "uuid"
+    },
+    {
+      "column_name": "name",
+      "data_type": "text"
+    },
+    {
+      "column_name": "title",
+      "data_type": "text"
+    },
+    {
+      "column_name": "content",
+      "data_type": "text"
+    },
+    {
+      "column_name": "image_url",
+      "data_type": "text"
+    },
+    {
+      "column_name": "button_text",
+      "data_type": "text"
+    },
+    {
+      "column_name": "button_link",
+      "data_type": "text"
+    },
+    {
+      "column_name": "display_on",
+      "data_type": "text"
+    },
+    {
+      "column_name": "trigger_type",
+      "data_type": "text"
+    },
+    {
+      "column_name": "trigger_value",
+      "data_type": "integer"
+    },
+    {
+      "column_name": "frequency",
+      "data_type": "text"
+    },
+    {
+      "column_name": "is_active",
+      "data_type": "boolean"
+    },
+    {
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone"
+    },
+    {
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone"
+    },
+    {
+      "column_name": "plan_id",
+      "data_type": "uuid"
+    }
+  ],
+  "system_settings": [
+    {
+      "column_name": "key",
+      "data_type": "text"
+    },
+    {
+      "column_name": "value",
+      "data_type": "text"
+    },
+    {
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone"
+    },
+    {
+      "column_name": "description",
+      "data_type": "text"
+    }
+  ],
+  "leads": [
+    {
+      "column_name": "id",
+      "data_type": "uuid"
+    },
+    {
+      "column_name": "full_name",
+      "data_type": "text"
+    },
+    {
+      "column_name": "email",
+      "data_type": "text"
+    },
+    {
+      "column_name": "phone",
+      "data_type": "text"
+    },
+    {
+      "column_name": "cep",
+      "data_type": "text"
+    },
+    {
+      "column_name": "street",
+      "data_type": "text"
+    },
+    {
+      "column_name": "number",
+      "data_type": "text"
+    },
+    {
+      "column_name": "complement",
+      "data_type": "text"
+    },
+    {
+      "column_name": "neighborhood",
+      "data_type": "text"
+    },
+    {
+      "column_name": "city",
+      "data_type": "text"
+    },
+    {
+      "column_name": "state",
+      "data_type": "text"
+    },
+    {
+      "column_name": "latitude",
+      "data_type": "double precision"
+    },
+    {
+      "column_name": "longitude",
+      "data_type": "double precision"
+    },
+    {
+      "column_name": "status",
+      "data_type": "text"
+    },
+    {
+      "column_name": "source",
+      "data_type": "text"
+    },
+    {
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone"
+    }
+  ]
+}

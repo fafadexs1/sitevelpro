@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Check, Wifi } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { PlanDetailsSheet, ENTERPRISE_PLANS } from "@/components/shared/PlanDetailsSheet";
+import { PlanDetailsSheet, type Plan } from "@/components/shared/PlanDetailsSheet";
 import { motion } from "framer-motion";
 import {
     Carousel,
@@ -14,7 +14,7 @@ import {
     type CarouselApi,
 } from "@/components/ui/carousel";
 
-export function BusinessPlans() {
+export function BusinessPlans({ plans }: { plans: Plan[] }) {
     const [api, setApi] = useState<CarouselApi>();
     const [current, setCurrent] = useState(0);
     const [count, setCount] = useState(0);
@@ -70,7 +70,7 @@ export function BusinessPlans() {
                         setApi={setApi}
                     >
                         <CarouselContent className="-ml-4 md:-ml-8 items-stretch pt-24 pb-20">
-                            {ENTERPRISE_PLANS.map((plan, index) => (
+                            {plans.map((plan, index) => (
                                 <CarouselItem key={index} className="pl-4 md:pl-8 basis-[85%] md:basis-1/2 lg:basis-1/3">
                                     <div className={`h-full relative group transition-all duration-500 hover:-translate-y-4
                                         ${plan.highlight

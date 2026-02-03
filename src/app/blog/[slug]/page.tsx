@@ -1,5 +1,5 @@
 
-import { createClient as createServerClientUtil } from "@/utils/supabase/server";
+
 import { Header } from "@/components/landing/Header";
 import { Footer } from "@/components/landing/Footer";
 import Image from "next/image";
@@ -7,37 +7,22 @@ import { notFound } from "next/navigation";
 import { Calendar, User } from "lucide-react";
 import type { Metadata } from 'next';
 import React from 'react';
-import { createServerClient, type CookieOptions } from '@supabase/ssr';
 
 type PageProps = {
   params: Promise<{ slug: string }>;
 };
 
-// Helper para criar um cliente Supabase seguro para build
-function createBuildTimeClient() {
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) { return undefined; },
-        set(name: string, value: string, options: CookieOptions) { },
-        remove(name: string, options: CookieOptions) { },
-      },
-    }
-  );
-}
-
 // --- Metadata Generation ---
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const supabase = createBuildTimeClient();
-  const { data: post } = await supabase
-    .from('posts')
-    .select('title, meta_title, meta_description, cover_image_url')
-    .eq('slug', slug)
-    .eq('is_published', true)
-    .single();
+  const result = await db.select({
+    title: postsTable.title,
+    meta_title: postsTable.meta_title,
+    meta_description: postsTable.meta_description,
+    cover_image_url: postsTable.cover_image_url
+  }).from(postsTable).where(eq(postsTable.slug, slug)).limit(1);
+
+  const post = result[0];
 
   if (!post) {
     return {
@@ -64,15 +49,17 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 
+import { db } from "@/db";
+import { posts as postsTable } from "@/db/schema";
+import { eq } from "drizzle-orm";
+import { getLayoutData } from "@/lib/data/get-layout-data";
+
 export default async function BlogPostPage({ params }: PageProps) {
+  const { domainType, companyLogoUrl } = await getLayoutData();
   const { slug } = await params;
-  const supabase = await createServerClientUtil(); // Usa o cliente padrão para runtime
-  const { data: post } = await supabase
-    .from('posts')
-    .select('*')
-    .eq('slug', slug)
-    .eq('is_published', true)
-    .single();
+
+  const result = await db.select().from(postsTable).where(eq(postsTable.slug, slug)).limit(1);
+  const post = result[0];
 
   if (!post) {
     notFound();
@@ -80,7 +67,7 @@ export default async function BlogPostPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
-      <Header />
+      <Header domainType={domainType} companyLogoUrl={companyLogoUrl} />
       <main className="flex-grow">
         <article>
           <header className="relative bg-secondary py-24 sm:py-32">
@@ -108,13 +95,18 @@ export default async function BlogPostPage({ params }: PageProps) {
                 {post.published_at && (
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4" />
-                    <time dateTime={post.published_at}>
-                      {new Date(post.published_at).toLocaleDateString("pt-BR", {
-                        day: "2-digit",
-                        month: "long",
-                        year: "numeric",
-                      })}
-                    </time>
+                    {(() => {
+                      const publishedAt = new Date(post.published_at);
+                      return (
+                        <time dateTime={publishedAt.toISOString()}>
+                          {publishedAt.toLocaleDateString("pt-BR", {
+                            day: "2-digit",
+                            month: "long",
+                            year: "numeric",
+                          })}
+                        </time>
+                      );
+                    })()}
                   </div>
                 )}
               </div>
@@ -139,11 +131,7 @@ export default async function BlogPostPage({ params }: PageProps) {
 // --- Static Path Generation ---
 export async function generateStaticParams() {
   try {
-    const supabase = createBuildTimeClient();
-    const { data: posts } = await supabase
-      .from('posts')
-      .select('slug')
-      .eq('is_published', true);
+    const posts = await db.select({ slug: postsTable.slug }).from(postsTable).where(eq(postsTable.is_published, true));
 
     return posts?.map(post => ({
       slug: post.slug,

@@ -1,36 +1,15 @@
 
-"use client";
-
-import { motion } from "framer-motion";
+import { type InferSelectModel } from 'drizzle-orm';
+import { games } from '@/db/schema';
 import Image from "next/image";
-import imageData from "@/lib/placeholder-images.json";
 import { Zap, Cable, Trophy, Crosshair, ChevronsUp } from "lucide-react";
+import { motion } from "framer-motion";
 
-const games = [
-    {
-        name: "Valorant",
-        description: "Zero packet loss para seus headshots contarem sempre.",
-        image: imageData.valorant,
-        stats: { ping: "Ping Baixo", stability: "100% Fibra" },
-        color: "from-rose-500 to-red-600"
-    },
-    {
-        name: "PUBG",
-        description: "Renderização rápida e resposta imediata em mundo aberto.",
-        image: imageData.pubg,
-        stats: { ping: "Sem Lag", stability: "Cabo" },
-        color: "from-amber-400 to-orange-500"
-    },
-    {
-        name: "Call of Duty",
-        description: "Domine o lobby com a vantagem da conexão fibra óptica.",
-        image: imageData.cod,
-        stats: { ping: "Otimizado", stability: "Estável" },
-        color: "from-emerald-400 to-green-600"
-    }
-];
+type Game = InferSelectModel<typeof games>;
 
-export function Games() {
+export function Games({ games }: { games: Game[] }) {
+    if (!games || games.length === 0) return null;
+
     return (
         <section className="relative py-24 bg-[#050a05] overflow-hidden border-t border-white/5">
             {/* Ambient Gamer Glow */}
@@ -62,7 +41,7 @@ export function Games() {
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     {games.map((game, i) => (
-                        <GameCard key={game.name} game={game} index={i} />
+                        <GameCard key={game.id} game={game} index={i} />
                     ))}
                 </div>
             </div>
@@ -70,7 +49,7 @@ export function Games() {
     );
 }
 
-function GameCard({ game, index }: { game: typeof games[0], index: number }) {
+function GameCard({ game, index }: { game: Game, index: number }) {
     // Scroll-linked animation logic
     // We want the card to fade in and scale up as it scrolls into view
     // Since we are inside a map, we can't easily use a ref for the whole section to control individual items linearly without complex logic.
@@ -97,7 +76,7 @@ function GameCard({ game, index }: { game: typeof games[0], index: number }) {
             {/* Background Image with Zoom Effect */}
             <div className="absolute inset-0 z-0">
                 <Image
-                    src={game.image.src}
+                    src={game.image_url}
                     alt={game.name}
                     fill
                     className="object-cover transition-transform duration-700 group-hover:scale-110 opacity-60 group-hover:opacity-40"
@@ -111,11 +90,11 @@ function GameCard({ game, index }: { game: typeof games[0], index: number }) {
                 <div className="absolute top-6 right-6 flex flex-col items-end gap-2 translate-y-[-10px] opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
                     <div className="flex items-center gap-2 px-3 py-1 bg-black/60 backdrop-blur-md rounded-lg border border-green-500/30">
                         <Zap className="w-3 h-3 text-green-400" />
-                        <span className="text-xs font-mono font-bold text-green-400">{game.stats.ping}</span>
+                        <span className="text-xs font-mono font-bold text-green-400">{game.ping_label}</span>
                     </div>
                     <div className="flex items-center gap-2 px-3 py-1 bg-black/60 backdrop-blur-md rounded-lg border border-green-500/30">
                         <Cable className="w-3 h-3 text-green-400" />
-                        <span className="text-xs font-mono font-bold text-green-400">{game.stats.stability}</span>
+                        <span className="text-xs font-mono font-bold text-green-400">{game.stability_label}</span>
                     </div>
                 </div>
 
@@ -129,7 +108,7 @@ function GameCard({ game, index }: { game: typeof games[0], index: number }) {
 
                 {/* Progress Bar Aesthetic */}
                 <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden">
-                    <div className={`h-full w-full origin-left bg-gradient-to-r ${game.color} opacity-50 group-hover:opacity-100 transition-all duration-500 transform scale-x-0 group-hover:scale-x-100`} />
+                    <div className={`h-full w-full origin-left bg-gradient-to-r ${game.color_gradient} opacity-50 group-hover:opacity-100 transition-all duration-500 transform scale-x-0 group-hover:scale-x-100`} />
                 </div>
             </div>
 

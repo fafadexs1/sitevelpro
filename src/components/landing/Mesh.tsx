@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { Laptop, Smartphone, Tablet, Tv, Wifi } from "lucide-react";
 
 export function Mesh() {
@@ -40,12 +39,8 @@ export function Mesh() {
                                 { title: "Conexão Estável", desc: "Ideal para reuniões e aulas online", icon: Laptop },
                                 { title: "Smart Home", desc: "Conecte dezenas de dispositivos", icon: Tv },
                             ].map((feature, idx) => (
-                                <motion.div
+                                <div
                                     key={idx}
-                                    initial={{ opacity: 0, y: 30, scale: 0.95 }}
-                                    whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                                    viewport={{ margin: "-10% 0px -10% 0px", amount: 0.2 }}
-                                    transition={{ delay: idx * 0.15, type: "spring", stiffness: 100 }}
                                     className="flex items-start gap-4 p-4 rounded-xl bg-white/5 border border-white/5 hover:border-green-500/30 transition-colors group"
                                 >
                                     <div className="p-2.5 rounded-lg bg-green-500/10 group-hover:bg-green-500/20 transition-colors">
@@ -55,7 +50,7 @@ export function Mesh() {
                                         <h3 className="font-bold text-white text-sm mb-1">{feature.title}</h3>
                                         <p className="text-xs text-neutral-400 leading-snug">{feature.desc}</p>
                                     </div>
-                                </motion.div>
+                                </div>
                             ))}
                         </div>
                     </div>
@@ -65,21 +60,13 @@ export function Mesh() {
                         <div className="relative w-full max-w-[500px] aspect-square flex items-center justify-center">
 
                             {/* Central Node */}
-                            <motion.div
-                                initial={{ scale: 0.8, opacity: 0 }}
-                                whileInView={{ scale: 1, opacity: 1 }}
-                                className="z-20 w-32 h-32 bg-neutral-900 rounded-full border-4 border-green-500 shadow-[0_0_60px_rgba(34,197,94,0.3)] flex items-center justify-center relative"
-                            >
-                                <div className="absolute inset-0 rounded-full border border-white/20 animate-ping opacity-20" />
+                            <div className="z-20 w-32 h-32 bg-neutral-900 rounded-full border-4 border-green-500 shadow-[0_0_60px_rgba(34,197,94,0.2)] flex items-center justify-center relative">
+                                <div className="absolute inset-0 rounded-full border border-white/15" />
                                 <Wifi className="w-12 h-12 text-green-500" />
-                            </motion.div>
+                            </div>
 
                             {/* Orbit Container */}
-                            <motion.div
-                                className="absolute inset-0"
-                                animate={{ rotate: 360 }}
-                                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                            >
+                            <div className="absolute inset-0">
                                 {/* Orbiting Devices */}
                                 {[
                                     { Icon: Laptop, angle: 0 },
@@ -94,20 +81,14 @@ export function Mesh() {
                                             transform: `rotate(${item.angle}deg) translate(200px) rotate(-${item.angle}deg)`
                                         }}
                                     >
-                                        <motion.div
-                                            className="w-full h-full bg-neutral-800 rounded-2xl border border-white/10 flex items-center justify-center shadow-lg relative"
-                                            animate={{ rotate: -360 }}
-                                            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                                        >
+                                        <div className="w-full h-full bg-neutral-800 rounded-2xl border border-white/10 flex items-center justify-center shadow-lg relative">
                                             <item.Icon className="w-6 h-6 text-neutral-400" />
                                             {/* Signal Line (Dashed) */}
-                                            <div className="absolute top-1/2 right-full w-[168px] h-[2px] bg-gradient-to-r from-transparent to-green-500/20 origin-right"
-                                                style={{ transform: `rotate(0deg)` }} // Lines point to center
-                                            />
-                                        </motion.div>
+                                            <div className="absolute top-1/2 right-full w-[168px] h-[2px] bg-gradient-to-r from-transparent to-green-500/20 origin-right" />
+                                        </div>
                                     </div>
                                 ))}
-                            </motion.div>
+                            </div>
 
                             {/* Pulse Rings */}
                             {[1, 2, 3].map((ring) => (

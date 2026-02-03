@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { createClient } from "@/utils/supabase/client";
 
 type Channel = {
   id: string;
@@ -10,43 +9,27 @@ type Channel = {
   logo_url: string;
 };
 
-export function ChannelLogos({ channelIds }: { channelIds: string[] }) {
+export function ChannelLogos({ channelIds, allChannels }: { channelIds?: string[], allChannels: Channel[] }) {
   const [channels, setChannels] = useState<Channel[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchChannels() {
-      if (!channelIds || channelIds.length === 0) {
-        setChannels([]);
-        setLoading(false);
-        return;
-      }
-
-      setLoading(true);
-      const supabase = createClient();
-      const { data, error } = await supabase
-        .from("tv_channels")
-        .select("id, name, logo_url")
-        .in("id", channelIds);
-
-      if (error) {
-        console.error("Error fetching featured channels:", error);
-        setChannels([]);
-      } else {
-        // Ordenar os canais na mesma ordem de channelIds
-        const orderedChannels = channelIds.map(id => data.find(c => c.id === id)).filter(Boolean) as Channel[];
-        setChannels(orderedChannels);
-      }
+    if (!channelIds || channelIds.length === 0) {
+      setChannels([]);
       setLoading(false);
+      return;
     }
 
-    fetchChannels();
-  }, [channelIds]);
+    const orderedChannels = channelIds.map(id => allChannels.find(c => c.id === id)).filter(Boolean) as Channel[];
+    setChannels(orderedChannels);
+    setLoading(false);
+
+  }, [channelIds, allChannels]);
 
   if (loading) {
     return <div className="h-10 my-4" />;
   }
-  
+
   if (!channels.length) {
     return null;
   }

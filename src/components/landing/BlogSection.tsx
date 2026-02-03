@@ -1,5 +1,7 @@
 
-import { createClient } from "@/utils/supabase/server";
+import { db } from "@/db";
+import { posts as postsTable } from "@/db/schema";
+import { desc, eq } from "drizzle-orm";
 import { ArrowRight, Calendar } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -43,15 +45,20 @@ async function PostCard({ post, index }: { post: Post, index: number }) {
 }
 
 export default async function BlogSection() {
-    const supabase = await createClient();
-    const { data: posts, error } = await supabase
-        .from('posts')
-        .select('id, title, slug, excerpt, cover_image_url, published_at')
-        .eq('is_published', true)
-        .order('published_at', { ascending: false })
+    const posts = await db.select({
+        id: postsTable.id,
+        title: postsTable.title,
+        slug: postsTable.slug,
+        excerpt: postsTable.excerpt,
+        cover_image_url: postsTable.cover_image_url,
+        published_at: postsTable.published_at,
+    })
+        .from(postsTable)
+        .where(eq(postsTable.is_published, true))
+        .orderBy(desc(postsTable.published_at))
         .limit(3);
 
-    if (error || !posts || posts.length === 0) {
+    if (!posts || posts.length === 0) {
         return null; // Don't render the section if there are no posts or an error occurs
     }
 

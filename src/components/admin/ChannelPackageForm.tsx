@@ -91,7 +91,8 @@ export function ChannelPackageForm({
             if (relationsError) {
                 toast({ variant: 'destructive', title: 'Erro', description: 'Não foi possível carregar os canais do pacote.' });
             } else {
-                form.setValue('channel_ids', relations.map(r => r.channel_id));
+                const relationRows = (relations as { channel_id: string }[] | null) ?? [];
+                form.setValue('channel_ids', relationRows.map((rel) => rel.channel_id));
             }
         }
         setLoading(false);

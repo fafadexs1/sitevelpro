@@ -1,8 +1,7 @@
 
 "use client";
 
-import { motion } from "framer-motion";
-import { Zap, ShieldCheck, Gauge, ChevronRight, Loader2 } from "lucide-react";
+import { Zap, ShieldCheck, Gauge, ChevronRight } from "lucide-react";
 import {
   Carousel,
   CarouselContent,
@@ -11,7 +10,6 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { useEffect, useState } from "react";
-import { createClient } from "@/utils/supabase/client";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "../ui/button";
@@ -79,13 +77,7 @@ export function Hero({ city, slides }: HeroProps & { slides: HeroSlide[] }) {
       <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
 
       <div className="w-full max-w-7xl mx-auto grid items-center gap-6 py-10 md:gap-10 md:py-16 z-10">
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="space-y-6 md:space-y-8 px-4 sm:px-6 lg:px-8 max-w-3xl"
-        >
+        <div className="space-y-6 md:space-y-8 px-4 sm:px-6 lg:px-8 max-w-3xl">
           {slide.pre_title && (
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 md:px-4 md:py-1.5 text-xs md:text-sm font-medium text-primary backdrop-blur-sm">
               <Zap className="h-3 w-3 md:h-4 md:w-4" /> {slide.pre_title}
@@ -122,7 +114,7 @@ export function Hero({ city, slides }: HeroProps & { slides: HeroSlide[] }) {
               <div className="flex items-center gap-2 bg-black/30 px-3 py-1 rounded-lg backdrop-blur-sm border border-white/5"><Gauge className="h-4 w-4 md:h-5 md:w-5 text-primary" />{slide.feature_2_text}</div>
             )}
           </div>
-        </motion.div>
+        </div>
       </div>
     </div>
   );

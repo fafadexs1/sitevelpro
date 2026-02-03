@@ -1,0 +1,2 @@
+﻿src/actions/get-conversion-events.ts(12,16): error TS2352: Conversion of type '{ id: string; name: string; event_snippet: string; selector: string | null; is_active: boolean | null; created_at: Date; }[]' to type 'ConversionEvent[]' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Property 'type' is missing in type '{ id: string; name: string; event_snippet: string; selector: string | null; is_active: boolean | null; created_at: Date; }' but required in type 'ConversionEvent'.

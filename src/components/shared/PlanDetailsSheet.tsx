@@ -35,60 +35,7 @@ export type Plan = {
     conditions: string | null;
 };
 
-// Hardcoded Enterprise Plans
-export const ENTERPRISE_PLANS: Plan[] = [
-    {
-        id: 'ent-500',
-        type: 'empresarial',
-        speed: '500 MEGA',
-        upload_speed: null,
-        download_speed: null,
-        price: 299.90,
-        original_price: 349.90,
-        first_month_price: null,
-        features: ["Wifi 6 Up", "Instalação grátis", "Suporte Prioritário"],
-        highlight: false,
-        has_tv: false,
-        featured_channel_ids: [],
-        whatsapp_number: '5508003810404',
-        whatsapp_message: 'Olá! Tenho interesse no plano Empresarial de 500 MEGA.',
-        conditions: null
-    },
-    {
-        id: 'ent-700',
-        type: 'empresarial',
-        speed: '700 MEGA',
-        upload_speed: null,
-        download_speed: null,
-        price: 399.90,
-        original_price: 449.90,
-        first_month_price: null,
-        features: ["Wifi 6 Up", "Instalação grátis", "Suporte Premium", "IP Dinâmico"],
-        highlight: true,
-        has_tv: false,
-        featured_channel_ids: [],
-        whatsapp_number: '5508003810404',
-        whatsapp_message: 'Olá! Tenho interesse no plano Empresarial de 700 MEGA.',
-        conditions: null
-    },
-    {
-        id: 'ent-900',
-        type: 'empresarial',
-        speed: '900 MEGA',
-        upload_speed: null,
-        download_speed: null,
-        price: 599.90,
-        original_price: 649.90,
-        first_month_price: null,
-        features: ["Wifi 6 Up", "Instalação grátis", "SLA Garantido", "Gestor de Conta"],
-        highlight: false,
-        has_tv: false,
-        featured_channel_ids: [],
-        whatsapp_number: '5508003810404',
-        whatsapp_message: 'Olá! Tenho interesse no plano Empresarial de 900 MEGA.',
-        conditions: null
-    }
-];
+// Hardcoded Enterprise Plans removed - data is now in DB
 
 const ICONS: { [key: string]: React.ElementType } = {
     check: Check,

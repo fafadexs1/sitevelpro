@@ -105,7 +105,10 @@ export default function StatisticsPage() {
             const supabase = createClient();
             const { data, error } = await supabase.from('domains').select('hostname');
             if (error) console.error("Error fetching domains:", error);
-            else setDomains(data.map(d => d.hostname));
+            else {
+                const domainsData = (data as { hostname: string }[] | null) ?? [];
+                setDomains(domainsData.map((domain) => domain.hostname));
+            }
         };
         fetchDomains();
     }, []);
@@ -135,16 +138,19 @@ export default function StatisticsPage() {
             eventsQuery = eventsQuery.eq('hostname', domain);
         }
 
-        const [{ data: visitsData, error: visitsError }, { data: eventsData, error: eventsError }] = await Promise.all([
+        const [visitsResult, eventsResult] = await Promise.all([
             visitsQuery,
             eventsQuery
         ]);
 
-        if (visitsError || eventsError) {
-            console.error("Error fetching data:", visitsError || eventsError);
+        if (visitsResult.error || eventsResult.error) {
+            console.error("Error fetching data:", visitsResult.error || eventsResult.error);
             setLoading(false);
             return;
         }
+
+        const visitsData = (visitsResult.data as Visit[] | null) ?? [];
+        const eventsData = (eventsResult.data as Event[] | null) ?? [];
 
         setAllVisits(visitsData);
         setAllEvents(eventsData);
@@ -166,7 +172,9 @@ export default function StatisticsPage() {
             acc[visit.pathname].visitors.add(visit.visitor_id);
             return acc;
         }, {} as Record<string, { visit_count: number; visitors: Set<string> }>);
-        const sortedPages = Object.entries(pageCounts).map(([pathname, data]) => ({ pathname, visit_count: data.visit_count, unique_visitors: data.visitors.size })).sort((a, b) => b.visit_count - a.visit_count).slice(0, 5);
+        const sortedPages = (Object.entries(pageCounts) as [string, { visit_count: number; visitors: Set<string> }][]).map(
+            ([pathname, data]) => ({ pathname, visit_count: data.visit_count, unique_visitors: data.visitors.size })
+        ).sort((a, b) => b.visit_count - a.visit_count).slice(0, 5);
         setTopPages(sortedPages);
 
         if (activeFilter === 'today') {
@@ -212,7 +220,11 @@ export default function StatisticsPage() {
                 return acc;
             }, {} as Record<string, Event[]>);
 
-        setTopPlans(Object.entries(planClickGroups).map(([name, clicks]) => ({ name, clicks })).sort((a, b) => b.clicks.length - a.clicks.length));
+        setTopPlans(
+            (Object.entries(planClickGroups) as [string, Event[]][])
+                .map(([name, clicks]) => ({ name, clicks }))
+                .sort((a, b) => b.clicks.length - a.clicks.length)
+        );
 
         const combinedFeed: Activity[] = [
             ...(visitsData.map(v => ({ ...v, type: 'visit' as const }))),

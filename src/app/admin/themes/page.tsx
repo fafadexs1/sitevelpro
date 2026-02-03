@@ -31,7 +31,8 @@ export default function ThemesPage() {
         if (error) {
             toast({ variant: 'destructive', title: 'Erro', description: 'Não foi possível carregar as configurações de tema.' });
         } else {
-            const settingsMap = new Map(data.map(item => [item.key, item.value]));
+            const settingsRows = (data as { key: string; value: string | null }[] | null) ?? [];
+            const settingsMap = new Map(settingsRows.map((item) => [item.key, item.value ?? ""]));
             setSettings({
                 commemorative_theme_enabled: settingsMap.get('commemorative_theme_enabled') === 'true',
             });

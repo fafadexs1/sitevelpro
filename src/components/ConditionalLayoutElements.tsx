@@ -3,25 +3,23 @@
 
 import { usePathname } from 'next/navigation';
 import { ConsentBanner } from '@/components/analytics/ConsentBanner';
-import { createClient } from '@/utils/supabase/client';
-import { useEffect, useState } from 'react';
 import { VisitTracker } from './analytics/VisitTracker';
 import { EventTracker } from './analytics/EventTracker';
 import { ConversionTracker } from './analytics/ConversionTracker';
 import Script from 'next/script';
 import { ScrollDepthTracker } from './analytics/ScrollDepthTracker';
 import { FloatingWhatsApp } from '@/components/landing/FloatingWhatsApp';
-import { PopupManager } from './landing/PopupManager';
+import { PopupManager, Popup } from './landing/PopupManager';
+import { ConversionEvent } from '@/types/admin';
 
-
+// Re-defining or importing types. schema tracking_tags
 type TrackingTag = {
-  id: string | number;
-  script_content: string;
-  placement: 'head_start' | 'body_start' | 'body_end';
+    id: string;
+    script_content: string;
+    placement: string | null;
 };
 
 type DomainType = 'main_site' | 'sales_page';
-
 
 // Helper para sanitizar o conteúdo de scripts para o next/script
 const sanitizeScriptContent = (content: string): string => {
@@ -38,84 +36,54 @@ const TrackingNoScript = ({ tags }: { tags: TrackingTag[] }) => {
                 const noScriptMatch = tag.script_content.match(/<noscript>([\s\S]*?)<\/noscript>/);
                 if (!noScriptMatch) return null;
                 return (
-                 <noscript
-                    key={`noscript-${tag.id}-${index}`}
-                    dangerouslySetInnerHTML={{ __html: noScriptMatch[1] }}
-                 />
+                    <noscript
+                        key={`noscript-${tag.id}-${index}`}
+                        dangerouslySetInnerHTML={{ __html: noScriptMatch[1] }}
+                    />
                 )
             })}
         </>
     );
 };
 
-
 // Helper para renderizar scripts com next/script
 function TrackingScripts({
-  tags,
-  position,
+    tags,
+    position,
 }: {
-  tags: TrackingTag[];
-  position: 'head_start' | 'body_end';
+    tags: TrackingTag[];
+    position: 'head_start' | 'body_end';
 }) {
-  const strategy = position === 'head_start' ? 'afterInteractive' : 'afterInteractive';
-  
-  return (
-    <>
-      {tags
-        .filter(t => t.placement === position)
-        .map((tag, index) => (
-            <Script
-              id={`tracking-tag-${position}-${tag.id}-${index}`}
-              key={`script-${position}-${tag.id}-${index}`}
-              strategy={strategy}
-              dangerouslySetInnerHTML={{ __html: sanitizeScriptContent(tag.script_content) }}
-            />
-        ))}
-    </>
-  );
+    const strategy = position === 'head_start' ? 'afterInteractive' : 'afterInteractive';
+
+    return (
+        <>
+            {tags
+                .filter(t => t.placement === position)
+                .map((tag, index) => (
+                    <Script
+                        id={`tracking-tag-${position}-${tag.id}-${index}`}
+                        key={`script-${position}-${tag.id}-${index}`}
+                        strategy={strategy}
+                        dangerouslySetInnerHTML={{ __html: sanitizeScriptContent(tag.script_content) }}
+                    />
+                ))}
+        </>
+    );
 }
 
+interface ConditionalLayoutElementsProps {
+    domainType: DomainType;
+    tags?: TrackingTag[];
+    popups?: Popup[];
+    conversionEvents?: ConversionEvent[];
+}
 
-export function ConditionalLayoutElements() {
+export function ConditionalLayoutElements({ domainType, tags = [], popups = [], conversionEvents = [] }: ConditionalLayoutElementsProps) {
     const pathname = usePathname();
-    const [tags, setTags] = useState<TrackingTag[]>([]);
-    const [domainType, setDomainType] = useState<DomainType | null>(null);
-    const [loading, setLoading] = useState(true);
+    const isAdminPage = pathname.startsWith('/admin') || pathname.startsWith('/colaborador') || pathname.startsWith('/colaboracao');
 
-    useEffect(() => {
-        const isAdminPage = pathname.startsWith('/admin') || pathname.startsWith('/colaborador') || pathname.startsWith('/colaboracao');
-        if (typeof window === 'undefined' || isAdminPage) {
-            setLoading(false);
-            return;
-        }
-
-        const getDomainInfo = async () => {
-            const hostname = window.location.hostname;
-            const supabase = createClient();
-            
-            const { data: domainData } = await supabase
-                .from('domains')
-                .select('type')
-                .eq('hostname', hostname)
-                .single();
-            
-            const currentDomainType = (domainData?.type as DomainType) || 'sales_page'; // Default para sales_page se não encontrado
-            setDomainType(currentDomainType);
-
-            if (currentDomainType === 'sales_page') {
-                const { data: tagsData } = await supabase
-                    .from('tracking_tags')
-                    .select('id, script_content, placement')
-                    .eq('is_active', true);
-                setTags((tagsData as TrackingTag[]) ?? []);
-            }
-            setLoading(false);
-        };
-        
-        getDomainInfo();
-    }, [pathname]);
-    
-    if (loading) {
+    if (isAdminPage) {
         return null;
     }
 
@@ -131,7 +99,7 @@ export function ConditionalLayoutElements() {
             <ScrollDepthTracker />
 
             {/* Gerenciador de Pop-ups */}
-            <PopupManager domainType={domainType} />
+            <PopupManager domainType={domainType} popups={popups} conversionEvents={conversionEvents} />
 
             {/* Componentes e tags de marketing para páginas de vendas */}
             {domainType === 'sales_page' && (

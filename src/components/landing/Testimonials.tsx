@@ -12,13 +12,13 @@ import {
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Card, CardContent } from "@/components/ui/card";
 
-export function Testimonials() {
+import { type InferSelectModel } from 'drizzle-orm';
+import { testimonials as testimonialsSchema } from '@/db/schema';
+
+type Testimonial = InferSelectModel<typeof testimonialsSchema>;
+
+export function Testimonials({ testimonials }: { testimonials: Testimonial[] }) {
   const isMobile = useIsMobile();
-  const testimonials = [
-    { name: "Ana • Criadora", text: "Upload rápido e live sem travar. Suporte me atendeu em minutos!", stars: 5 },
-    { name: "Marcos • Gamer", text: "Ping baixíssimo nos servers. Mudou meu competitivo.", stars: 5 },
-    { name: "Luciana • Home Office", text: "Chamadas perfeitas e redundância bem configurada.", stars: 5 },
-  ];
 
   if (isMobile === undefined) {
     return <div className="h-[200px]" />; // Placeholder or loader
@@ -32,10 +32,10 @@ export function Testimonials() {
           <p className="mt-2 text-muted-foreground">Histórias reais de quem depende da internet todos os dias.</p>
         </div>
         {isMobile ? (
-           <Carousel opts={{ loop: true }} className="w-full">
+          <Carousel opts={{ loop: true }} className="w-full">
             <CarouselContent>
               {testimonials.map((t) => (
-                <CarouselItem key={t.name}>
+                <CarouselItem key={t.id}>
                   <div className="p-1">
                     <Card className="rounded-2xl bg-card p-6 h-full">
                       <CardContent className="flex flex-col items-start p-0 gap-3 justify-center">
@@ -45,7 +45,7 @@ export function Testimonials() {
                           ))}
                         </div>
                         <p className="text-card-foreground/80">{t.text}</p>
-                        <p className="mt-4 text-sm text-muted-foreground">{t.name}</p>
+                        <p className="mt-4 text-sm text-muted-foreground">{t.name} • {t.role}</p>
                       </CardContent>
                     </Card>
                   </div>
@@ -58,14 +58,14 @@ export function Testimonials() {
         ) : (
           <div className="grid gap-6 md:grid-cols-3">
             {testimonials.map((t) => (
-              <div key={t.name} className="rounded-2xl border border-border bg-card p-6">
+              <div key={t.id} className="rounded-2xl border border-border bg-card p-6">
                 <div className="mb-3 flex items-center gap-1">
                   {Array.from({ length: t.stars }).map((_, i) => (
                     <Star key={i} className="h-4 w-4 fill-primary text-primary" />
                   ))}
                 </div>
                 <p className="text-card-foreground/80">{t.text}</p>
-                <p className="mt-4 text-sm text-muted-foreground">{t.name}</p>
+                <p className="mt-4 text-sm text-muted-foreground">{t.name} • {t.role}</p>
               </div>
             ))}
           </div>

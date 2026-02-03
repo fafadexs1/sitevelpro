@@ -30,9 +30,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
-import { createClient } from "@/utils/supabase/client";
+import { createClient, type AuthUser } from "@/utils/supabase/client";
 import Image from "next/image";
-import { User as SupabaseUser } from "@supabase/supabase-js";
 
 function DynamicLogo() {
     const [logoUrl, setLogoUrl] = useState<string | null>(null);
@@ -108,7 +107,7 @@ const NavGroup = ({ title, icon: Icon, children, startOpen = false }: { title: s
     )
 }
 
-export function AdminSidebar({ user, onLogout }: { user: SupabaseUser; onLogout: () => void }) {
+export function AdminSidebar({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
     const pathname = usePathname();
     const supabase = createClient();
 
