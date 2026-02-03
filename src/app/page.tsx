@@ -95,7 +95,7 @@ export default async function Home() {
       <Header domainType={domainType} companyLogoUrl={companyLogoUrl} />
       <main className="flex-grow">
         <Hero slides={formattedSlides} />
-        <Plans city="Belo Horizonte" plans={formattedPlans} allChannels={allChannels} />
+        <Plans city="Sua Cidade" plans={formattedPlans} allChannels={allChannels} />
         <DedicatedLinkCta />
         <CdnHighlight />
         <Coverage cities={citiesData} />
