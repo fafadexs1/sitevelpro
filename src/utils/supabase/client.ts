@@ -196,8 +196,11 @@ class StorageBucket {
   }
 
   getPublicUrl(path: string) {
-    const origin = typeof window !== "undefined" ? window.location.origin : "";
-    return { data: { publicUrl: `${origin}/uploads/${this.bucket}/${path}` } };
+    const configuredBase = process.env.NEXT_PUBLIC_SITE_URL?.trim() || "";
+    const fallbackOrigin = typeof window !== "undefined" ? window.location.origin : "";
+    const base = (configuredBase || fallbackOrigin).replace(/\/$/, "");
+    const publicUrl = base ? `${base}/uploads/${this.bucket}/${path}` : `/uploads/${this.bucket}/${path}`;
+    return { data: { publicUrl } };
   }
 
   async remove(paths: string[]) {
