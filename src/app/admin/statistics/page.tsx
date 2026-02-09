@@ -113,177 +113,184 @@ export default function StatisticsPage() {
         fetchDomains();
     }, []);
 
-    const fetchData = useCallback(async (startDate: Date, endDate: Date, domain: string) => {
-        setLoading(true);
-        const supabase = createClient();
 
-        const queryEndDate = startOfDay(addDays(endDate, 1));
+    // Use a ref to track the latest request and ignore stale responses
+    const requestIdRef = React.useRef(0);
 
-        let visitsQuery = supabase
-            .from('visits')
-            .select('id, visitor_id, hostname, pathname, is_new_visitor, created_at')
-            .gte('created_at', startDate.toISOString())
-            .lt('created_at', queryEndDate.toISOString())
-            .limit(100000);
-
-        let eventsQuery = supabase
-            .from('events')
-            .select('id, visitor_id, hostname, name, properties, created_at')
-            .gte('created_at', startDate.toISOString())
-            .lt('created_at', queryEndDate.toISOString())
-            .limit(100000);
-
-        if (domain !== 'all') {
-            visitsQuery = visitsQuery.eq('hostname', domain);
-            eventsQuery = eventsQuery.eq('hostname', domain);
-        }
-
-        const [visitsResult, eventsResult] = await Promise.all([
-            visitsQuery,
-            eventsQuery
-        ]);
-
-        if (visitsResult.error || eventsResult.error) {
-            console.error("Error fetching data:", visitsResult.error || eventsResult.error);
-            setLoading(false);
-            return;
-        }
-
-        const visitsData = (visitsResult.data as Visit[] | null) ?? [];
-        const eventsData = (eventsResult.data as Event[] | null) ?? [];
-
-        setAllVisits(visitsData);
-        setAllEvents(eventsData);
-
-        // --- Process Data ---
-        setTotalVisits(visitsData.length);
-        const uniqueVisitorIds = new Set(visitsData.map(v => v.visitor_id));
-        setUniqueVisitors(uniqueVisitorIds.size);
-
-        const submissions = eventsData.filter(e => e.name === 'signup_form_submit');
-        setSignupSubmissions(submissions.length);
-        setConversionRate(uniqueVisitorIds.size > 0 ? (submissions.length / uniqueVisitorIds.size) * 100 : 0);
-
-        const pageCounts = visitsData.reduce((acc, visit) => {
-            if (!acc[visit.pathname]) {
-                acc[visit.pathname] = { visit_count: 0, visitors: new Set() };
-            }
-            acc[visit.pathname].visit_count++;
-            acc[visit.pathname].visitors.add(visit.visitor_id);
-            return acc;
-        }, {} as Record<string, { visit_count: number; visitors: Set<string> }>);
-        const sortedPages = (Object.entries(pageCounts) as [string, { visit_count: number; visitors: Set<string> }][]).map(
-            ([pathname, data]) => ({ pathname, visit_count: data.visit_count, unique_visitors: data.visitors.size })
-        ).sort((a, b) => b.visit_count - a.visit_count).slice(0, 5);
-        setTopPages(sortedPages);
-
-        if (activeFilter === 'today') {
-            const hourlyCounts: Record<string, number> = {};
-            const intervalHours = eachHourOfInterval({ start: startOfDay(startDate), end: endOfDay(endDate) });
-            intervalHours.forEach(hour => hourlyCounts[format(hour, 'yyyy-MM-dd HH:00')] = 0);
-            visitsData.forEach(visit => {
-                const hourStr = format(new Date(visit.created_at), 'yyyy-MM-dd HH:00');
-                if (hourlyCounts[hourStr] !== undefined) hourlyCounts[hourStr]++;
-            });
-            setDailyVisits(Object.entries(hourlyCounts).map(([date, visits]) => ({ date, visits })));
-        } else {
-            const dailyCounts: Record<string, number> = {};
-            // Ensure we cover the entire range, inclusive
-            const intervalDays = eachDayOfInterval({ start: startDate, end: endDate });
-            intervalDays.forEach(day => dailyCounts[format(day, 'yyyy-MM-dd')] = 0);
-
-            visitsData.forEach(visit => {
-                const date = format(new Date(visit.created_at), 'yyyy-MM-dd');
-                if (dailyCounts[date] !== undefined) dailyCounts[date]++;
-            });
-            setDailyVisits(Object.entries(dailyCounts).map(([date, visits]) => ({ date, visits })).sort((a, b) => a.date.localeCompare(b.date)));
-        }
-
-        const planClickGroups = eventsData
-            .filter(e => e.name === 'cta_click' && e.properties.plan_name)
-            .reduce((acc, e) => {
-                const planName = e.properties.plan_name;
-                if (!acc[planName]) {
-                    acc[planName] = [];
-                }
-
-                // Deduplication logic: Check if this visitor clicked this plan recently (within 2s)
-                const lastClick = acc[planName].find(existing =>
-                    existing.visitor_id === e.visitor_id &&
-                    Math.abs(new Date(existing.created_at).getTime() - new Date(e.created_at).getTime()) < 2000
-                );
-
-                if (!lastClick) {
-                    acc[planName].push(e);
-                }
-
-                return acc;
-            }, {} as Record<string, Event[]>);
-
-        setTopPlans(
-            (Object.entries(planClickGroups) as [string, Event[]][])
-                .map(([name, clicks]) => ({ name, clicks }))
-                .sort((a, b) => b.clicks.length - a.clicks.length)
-        );
-
-        const combinedFeed: Activity[] = [
-            ...(visitsData.map(v => ({ ...v, type: 'visit' as const }))),
-            ...(eventsData.map(e => ({ ...e, type: 'event' as const })))
-        ];
-        combinedFeed.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-        setActivityFeed(combinedFeed.slice(0, 15));
-
-
-        setLoading(false);
-    }, [activeFilter]);
-
+    // Single consolidated effect for all date filtering
     useEffect(() => {
-        if (activeFilter === 'custom') return;
+        const currentRequestId = ++requestIdRef.current;
+
+        let fromDate: Date;
+        let toDate: Date;
         const now = new Date();
-        let fromDate;
-        switch (activeFilter) {
-            case 'today': fromDate = startOfDay(now); break;
-            case '7d': fromDate = startOfDay(subDays(now, 6)); break;
-            case 'month': fromDate = startOfMonth(now); break;
-            case '30d': default: fromDate = startOfDay(subDays(now, 29)); break;
-        }
-        // Ensure we set a new object to trigger the effect
-        setDateRange({ from: fromDate, to: endOfDay(now) });
-    }, [activeFilter]);
 
-    useEffect(() => {
-        if (dateRange?.from && dateRange?.to) {
-            fetchData(dateRange.from, dateRange.to, selectedDomain);
-        }
-    }, [dateRange, selectedDomain, fetchData]);
-
-    // Supabase Realtime Subscription
-    useEffect(() => {
-        const supabase = createClient();
-        const handleRealtimeUpdate = (payload: any) => {
-            if (dateRange?.from && dateRange?.to) {
-                // Simple re-fetch on any relevant insert
-                fetchData(dateRange.from, dateRange.to, selectedDomain);
+        if (activeFilter === 'custom') {
+            // For custom filter, use the calendar's dateRange
+            if (!dateRange?.from || !dateRange?.to) return;
+            fromDate = dateRange.from;
+            toDate = dateRange.to;
+        } else {
+            // For preset filters, calculate the dates
+            switch (activeFilter) {
+                case 'today':
+                    fromDate = startOfDay(now);
+                    break;
+                case '7d':
+                    fromDate = startOfDay(subDays(now, 6));
+                    break;
+                case 'month':
+                    fromDate = startOfMonth(now);
+                    break;
+                case '30d':
+                default:
+                    fromDate = startOfDay(subDays(now, 29));
+                    break;
             }
+            toDate = endOfDay(now);
+        }
+
+        // Update dateRange for display (only for presets, custom already has it set)
+        if (activeFilter !== 'custom') {
+            setDateRange({ from: fromDate, to: toDate });
+        }
+
+        // Fetch data
+        const doFetch = async () => {
+            setLoading(true);
+            const supabase = createClient();
+
+            const normalizedStart = startOfDay(fromDate);
+            const queryEndDate = startOfDay(addDays(toDate, 1));
+
+            let visitsQuery = supabase
+                .from('visits')
+                .select('id, visitor_id, hostname, pathname, is_new_visitor, created_at')
+                .gte('created_at', normalizedStart.toISOString())
+                .lt('created_at', queryEndDate.toISOString())
+                .limit(100000);
+
+            let eventsQuery = supabase
+                .from('events')
+                .select('id, visitor_id, hostname, name, properties, created_at')
+                .gte('created_at', normalizedStart.toISOString())
+                .lt('created_at', queryEndDate.toISOString())
+                .limit(100000);
+
+            if (selectedDomain !== 'all') {
+                visitsQuery = visitsQuery.eq('hostname', selectedDomain);
+                eventsQuery = eventsQuery.eq('hostname', selectedDomain);
+            }
+
+            const [visitsResult, eventsResult] = await Promise.all([
+                visitsQuery,
+                eventsQuery
+            ]);
+
+            // Check if this request is still the latest one
+            if (currentRequestId !== requestIdRef.current) {
+                return;
+            }
+
+            if (visitsResult.error || eventsResult.error) {
+                console.error("Error fetching data:", visitsResult.error || eventsResult.error);
+                setLoading(false);
+                return;
+            }
+
+            const visitsData = (visitsResult.data as Visit[] | null) ?? [];
+            const eventsData = (eventsResult.data as Event[] | null) ?? [];
+
+            setAllVisits(visitsData);
+            setAllEvents(eventsData);
+
+            // Process data
+            setTotalVisits(visitsData.length);
+            const uniqueVisitorIds = new Set(visitsData.map(v => v.visitor_id));
+            setUniqueVisitors(uniqueVisitorIds.size);
+
+            const submissions = eventsData.filter(e => e.name === 'signup_form_submit');
+            setSignupSubmissions(submissions.length);
+            setConversionRate(uniqueVisitorIds.size > 0 ? (submissions.length / uniqueVisitorIds.size) * 100 : 0);
+
+            const pageCounts = visitsData.reduce((acc, visit) => {
+                if (!acc[visit.pathname]) {
+                    acc[visit.pathname] = { visit_count: 0, visitors: new Set() };
+                }
+                acc[visit.pathname].visit_count++;
+                acc[visit.pathname].visitors.add(visit.visitor_id);
+                return acc;
+            }, {} as Record<string, { visit_count: number; visitors: Set<string> }>);
+            const sortedPages = (Object.entries(pageCounts) as [string, { visit_count: number; visitors: Set<string> }][]).map(
+                ([pathname, data]) => ({ pathname, visit_count: data.visit_count, unique_visitors: data.visitors.size })
+            ).sort((a, b) => b.visit_count - a.visit_count).slice(0, 5);
+            setTopPages(sortedPages);
+
+            if (activeFilter === 'today') {
+                const hourlyCounts: Record<string, number> = {};
+                const intervalHours = eachHourOfInterval({ start: startOfDay(fromDate), end: endOfDay(toDate) });
+                intervalHours.forEach(hour => hourlyCounts[format(hour, 'yyyy-MM-dd HH:00')] = 0);
+                visitsData.forEach(visit => {
+                    const hourStr = format(new Date(visit.created_at), 'yyyy-MM-dd HH:00');
+                    if (hourlyCounts[hourStr] !== undefined) hourlyCounts[hourStr]++;
+                });
+                setDailyVisits(Object.entries(hourlyCounts).map(([date, visits]) => ({ date, visits })));
+            } else {
+                const dailyCounts: Record<string, number> = {};
+                const intervalDays = eachDayOfInterval({ start: fromDate, end: toDate });
+                intervalDays.forEach(day => dailyCounts[format(day, 'yyyy-MM-dd')] = 0);
+                visitsData.forEach(visit => {
+                    const date = format(new Date(visit.created_at), 'yyyy-MM-dd');
+                    if (dailyCounts[date] !== undefined) dailyCounts[date]++;
+                });
+                setDailyVisits(Object.entries(dailyCounts).map(([date, visits]) => ({ date, visits })).sort((a, b) => a.date.localeCompare(b.date)));
+            }
+
+            const planClickGroups = eventsData
+                .filter(e => e.name === 'cta_click' && e.properties.plan_name)
+                .reduce((acc, e) => {
+                    const planName = e.properties.plan_name;
+                    if (!acc[planName]) {
+                        acc[planName] = [];
+                    }
+                    const lastClick = acc[planName].find(existing =>
+                        existing.visitor_id === e.visitor_id &&
+                        Math.abs(new Date(existing.created_at).getTime() - new Date(e.created_at).getTime()) < 2000
+                    );
+                    if (!lastClick) {
+                        acc[planName].push(e);
+                    }
+                    return acc;
+                }, {} as Record<string, Event[]>);
+
+            setTopPlans(
+                (Object.entries(planClickGroups) as [string, Event[]][])
+                    .map(([name, clicks]) => ({ name, clicks }))
+                    .sort((a, b) => b.clicks.length - a.clicks.length)
+            );
+
+            const combinedFeed: Activity[] = [
+                ...(visitsData.map(v => ({ ...v, type: 'visit' as const }))),
+                ...(eventsData.map(e => ({ ...e, type: 'event' as const })))
+            ];
+            combinedFeed.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+            setActivityFeed(combinedFeed.slice(0, 15));
+
+            setLoading(false);
         };
 
-        const visitsChannel = supabase.channel('visits-realtime')
-            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'visits' }, handleRealtimeUpdate)
-            .subscribe();
+        doFetch();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [activeFilter, dateRange?.from?.getTime(), dateRange?.to?.getTime(), selectedDomain]);
 
-        const eventsChannel = supabase.channel('events-realtime')
-            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'events' }, handleRealtimeUpdate)
-            .subscribe();
-
-        return () => {
-            supabase.removeChannel(visitsChannel);
-            supabase.removeChannel(eventsChannel);
-        };
-    }, [fetchData, dateRange, selectedDomain]);
+    // Note: Realtime subscription removed - the mock client doesn't support actual realtime.
+    // Re-fetch will be triggered by the consolidated effect when dateRange/activeFilter changes.
 
     const handleDateRangeSelect = (range: DateRange | undefined) => {
         if (range?.from) {
-            setDateRange({ from: range.from, to: range.to || range.from });
+            const from = startOfDay(range.from);
+            const to = endOfDay(range.to || range.from);
+            setDateRange({ from, to });
             setActiveFilter('custom');
         }
     }

@@ -170,8 +170,25 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       const {
         data: { session },
       } = await supabase.auth.getSession();
+
       if (!isMounted) return;
-      setUser(session?.user ?? null);
+
+      if (session?.user) {
+        // Validate session against database
+        const validation = await supabase.auth.validateSession();
+        if (!isMounted) return;
+
+        if (!validation.valid) {
+          setUser(null);
+          setLoading(false);
+          return;
+        }
+
+        setUser(validation.user ?? session.user);
+      } else {
+        setUser(null);
+      }
+
       setLoading(false);
     };
 
@@ -179,7 +196,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!isMounted) return;
-      setUser(session?.user ?? null);
+      if (session?.user) {
+        // Re-validate on auth state change
+        supabase.auth.validateSession().then((validation) => {
+          if (!isMounted) return;
+          if (validation.valid) {
+            setUser(validation.user ?? session.user);
+          } else {
+            setUser(null);
+          }
+        });
+      } else {
+        setUser(null);
+      }
     });
 
     return () => {

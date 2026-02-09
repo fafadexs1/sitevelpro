@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import * as schema from "@/db/schema";
-import { asc, desc, eq, gte, inArray, lt, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, inArray, lt, sql, SQL } from "drizzle-orm";
+import { requireAuth } from "@/lib/auth/middleware";
 
 const tableMap: Record<string, any> = {
   cities: schema.cities,
@@ -25,6 +26,9 @@ const tableMap: Record<string, any> = {
   referral_settings: schema.referral_settings,
   referrals: schema.referrals,
   visits: schema.visits,
+  faqs: schema.faqs,
+  games: schema.games,
+  testimonials: schema.testimonials,
 };
 
 type Filter = {
@@ -53,6 +57,12 @@ type Payload = {
 };
 
 export async function POST(request: Request) {
+  // Require authentication for all database operations
+  const auth = await requireAuth(request);
+  if ('error' in auth) {
+    return auth.error;
+  }
+
   const payload = (await request.json()) as Payload;
   const table = tableMap[payload.table];
 
@@ -156,21 +166,29 @@ function buildReturning(table: any, columns?: string[] | null) {
 
 function applyFilters(query: any, table: any, filters?: Filter[]) {
   if (!filters || filters.length === 0) return query;
-  let filtered = query;
+
+  // Collect all conditions first
+  const conditions: SQL[] = [];
+
   for (const filter of filters) {
     const column = table[filter.column];
     if (!column) continue;
+
     if (filter.op === "eq") {
-      filtered = filtered.where(eq(column, filter.value));
+      conditions.push(eq(column, filter.value));
     } else if (filter.op === "in") {
-      filtered = filtered.where(inArray(column, filter.value));
+      conditions.push(inArray(column, filter.value));
     } else if (filter.op === "gte") {
-      filtered = filtered.where(gte(column, filter.value));
+      conditions.push(gte(column, filter.value));
     } else if (filter.op === "lt") {
-      filtered = filtered.where(lt(column, filter.value));
+      conditions.push(lt(column, filter.value));
     }
   }
-  return filtered;
+
+  // Apply all conditions with AND
+  if (conditions.length === 0) return query;
+  if (conditions.length === 1) return query.where(conditions[0]);
+  return query.where(and(...conditions));
 }
 
 function applyOrder(query: any, table: any, order?: Order[]) {

@@ -2,8 +2,18 @@ import { NextResponse } from "next/server";
 import { mkdir, writeFile, access } from "node:fs/promises";
 import { constants as fsConstants } from "node:fs";
 import path from "node:path";
+import { requireAuth } from "@/lib/auth/middleware";
+
+// Allowed file extensions
+const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.pdf', '.mp4', '.webm'];
 
 export async function POST(request: Request) {
+  // Require authentication
+  const auth = await requireAuth(request);
+  if ('error' in auth) {
+    return auth.error;
+  }
+
   try {
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
@@ -18,8 +28,30 @@ export async function POST(request: Request) {
       );
     }
 
-    const uploadsRoot = path.join(process.cwd(), "public", "uploads", bucket);
-    const fullPath = path.join(uploadsRoot, filePath);
+    // Validate file extension
+    const ext = path.extname(filePath).toLowerCase();
+    if (!ALLOWED_EXTENSIONS.includes(ext)) {
+      return NextResponse.json(
+        { data: null, error: { message: `File type ${ext} not allowed` } },
+        { status: 400 },
+      );
+    }
+
+    // Sanitize path to prevent directory traversal
+    const sanitizedPath = filePath.replace(/\.\./g, '').replace(/^\/+/, '');
+    const sanitizedBucket = bucket.replace(/\.\./g, '').replace(/[^a-zA-Z0-9_-]/g, '');
+
+    const uploadsRoot = path.join(process.cwd(), "public", "uploads", sanitizedBucket);
+    const fullPath = path.join(uploadsRoot, sanitizedPath);
+
+    // Ensure the path is still within uploads directory
+    if (!fullPath.startsWith(path.join(process.cwd(), "public", "uploads"))) {
+      return NextResponse.json(
+        { data: null, error: { message: "Invalid path" } },
+        { status: 400 },
+      );
+    }
+
     await mkdir(path.dirname(fullPath), { recursive: true });
 
     if (!upsert) {
@@ -37,7 +69,7 @@ export async function POST(request: Request) {
     const arrayBuffer = await file.arrayBuffer();
     await writeFile(fullPath, Buffer.from(arrayBuffer));
 
-    return NextResponse.json({ data: { path: filePath }, error: null });
+    return NextResponse.json({ data: { path: sanitizedPath }, error: null });
   } catch (error: any) {
     return NextResponse.json(
       { data: null, error: { message: error?.message || "Upload failed" } },

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { unlink } from "node:fs/promises";
 import path from "node:path";
+import { requireAuth } from "@/lib/auth/middleware";
 
 type Payload = {
   bucket: string;
@@ -8,6 +9,12 @@ type Payload = {
 };
 
 export async function POST(request: Request) {
+  // Require authentication
+  const auth = await requireAuth(request);
+  if ('error' in auth) {
+    return auth.error;
+  }
+
   try {
     const payload = (await request.json()) as Payload;
     const bucket = payload.bucket;
@@ -20,11 +27,23 @@ export async function POST(request: Request) {
       );
     }
 
-    const uploadsRoot = path.join(process.cwd(), "public", "uploads", bucket);
+    // Sanitize bucket name
+    const sanitizedBucket = bucket.replace(/\.\./g, '').replace(/[^a-zA-Z0-9_-]/g, '');
+    const uploadsRoot = path.join(process.cwd(), "public", "uploads", sanitizedBucket);
+
     await Promise.all(
       paths.map(async (filePath) => {
         try {
-          await unlink(path.join(uploadsRoot, filePath));
+          // Sanitize each path
+          const sanitizedPath = filePath.replace(/\.\./g, '').replace(/^\/+/, '');
+          const fullPath = path.join(uploadsRoot, sanitizedPath);
+
+          // Ensure path is within uploads directory
+          if (!fullPath.startsWith(path.join(process.cwd(), "public", "uploads"))) {
+            return; // Skip invalid paths
+          }
+
+          await unlink(fullPath);
         } catch {
           // Ignore missing files
         }

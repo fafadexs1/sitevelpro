@@ -228,6 +228,7 @@ class AuthClient {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
+        credentials: "include", // Include cookies
       });
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
@@ -236,8 +237,9 @@ class AuthClient {
 
       const data = await res.json();
       const user: AuthUser = data?.user ?? { id: email, email };
+      // Store user info locally for UI (not for auth - that's in the cookie)
       if (typeof window !== "undefined") {
-        localStorage.setItem("admin_session", JSON.stringify({ user }));
+        localStorage.setItem("admin_user", JSON.stringify(user));
       }
       notifyAuth("SIGNED_IN", { user });
       return { data: { user }, error: null };
@@ -247,23 +249,57 @@ class AuthClient {
   }
 
   async signOut() {
+    try {
+      // Call logout endpoint to clear HTTP-only cookie
+      await fetch("/api/admin/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch {
+      // Ignore errors
+    }
     if (typeof window !== "undefined") {
-      localStorage.removeItem("admin_session");
+      localStorage.removeItem("admin_user");
     }
     notifyAuth("SIGNED_OUT", null);
     return { error: null };
   }
 
   async getSession() {
-    if (typeof window === "undefined") {
-      return { data: { session: null } };
+    // Validate session via API - the cookie is automatically included
+    const validation = await this.validateSession();
+    if (validation.valid && validation.user) {
+      return { data: { session: { user: validation.user } } };
     }
-    const stored = localStorage.getItem("admin_session");
-    if (!stored) {
-      return { data: { session: null } };
+    return { data: { session: null } };
+  }
+
+  async validateSession(): Promise<{ valid: boolean; user?: AuthUser }> {
+    try {
+      const res = await fetch("/api/admin/auth/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include", // Include cookies for auth
+      });
+
+      const data = await res.json();
+
+      if (!data.valid) {
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("admin_user");
+        }
+        return { valid: false };
+      }
+
+      // Update local user info
+      if (typeof window !== "undefined" && data.user) {
+        localStorage.setItem("admin_user", JSON.stringify(data.user));
+      }
+
+      return { valid: true, user: data.user };
+    } catch (error) {
+      return { valid: false };
     }
-    const session = JSON.parse(stored);
-    return { data: { session } };
   }
 
   onAuthStateChange(callback: (event: string, session: AuthSession | null) => void) {

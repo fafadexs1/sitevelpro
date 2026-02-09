@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 
 export const Droppable = ({ children, ...props }: DroppableProps) => {
     const [enabled, setEnabled] = useState(false);
-    
+
     useEffect(() => {
         const animation = requestAnimationFrame(() => setEnabled(true));
         return () => {
@@ -19,5 +19,5 @@ export const Droppable = ({ children, ...props }: DroppableProps) => {
         return null;
     }
 
-    return <OriginalDroppable isDropDisabled={false} {...props}>{children}</OriginalDroppable>;
+    return <OriginalDroppable isDropDisabled={false} isCombineEnabled={false} {...props}>{children}</OriginalDroppable>;
 };
