@@ -11,6 +11,8 @@ import { Plans } from "@/components/landing/Plans";
 import { type Plan } from "@/components/shared/PlanDetailsSheet";
 import { getLayoutData } from "@/lib/data/get-layout-data";
 import { tableExists } from "@/lib/db/table-exists";
+import { getLocalSeoContent } from "@/lib/local-seo";
+import { LocalSeoSection } from "@/components/landing/LocalSeoSection";
 
 const CdnHighlight = dynamic(() => import('@/components/landing/CdnHighlight').then(mod => mod.CdnHighlight));
 const Coverage = dynamic(() => import('@/components/landing/Coverage').then(mod => mod.Coverage));
@@ -34,6 +36,7 @@ type PageProps = {
 
 type PageData = {
   cityName: string | null;
+  citySlug: string | null;
   meta: {
     title: string;
     description?: string;
@@ -46,12 +49,13 @@ type PageData = {
 async function getPageData(slug: string): Promise<PageData> {
   const path = `/${slug}`;
   let cityName: string | null = null;
+  let citySlug: string | null = null;
   let meta = null;
   let schemaType: PageData['schemaType'] = 'None';
 
   const rules = await db.select().from(dynamic_seo_rules).where(eq(dynamic_seo_rules.allow_indexing, true));
 
-  if (!rules || rules.length === 0) return { cityName, meta: null, schemaType: 'None' };
+  if (!rules || rules.length === 0) return { cityName, citySlug, meta: null, schemaType: 'None' };
 
   // Tenta encontrar uma correspondência exata primeiro
   const staticMatch = rules.find(rule => rule.slug_pattern?.replace('/', '') === slug);
@@ -59,6 +63,7 @@ async function getPageData(slug: string): Promise<PageData> {
   if (staticMatch) {
     // Usa o nome da própria regra como o nome da cidade para exibição
     cityName = staticMatch.name;
+    citySlug = slug;
     meta = {
       title: staticMatch.meta_title.replace('{cidade}', cityName),
       description: staticMatch.meta_description?.replace('{cidade}', cityName),
@@ -72,15 +77,16 @@ async function getPageData(slug: string): Promise<PageData> {
         const regex = new RegExp('^' + rule.slug_pattern.replace('{cidade}', '([a-z0-9-]+)') + '$');
         const match = path.match(regex);
         if (match) {
-          const citySlug = match[1];
-          const [city] = await db.select({ name: cities.name }).from(cities).where(eq(cities.slug, citySlug)).limit(1);
+          const matchedCitySlug = match[1];
+          const [city] = await db.select({ name: cities.name }).from(cities).where(eq(cities.slug, matchedCitySlug)).limit(1);
 
           if (city) {
             cityName = city.name;
+            citySlug = matchedCitySlug;
             meta = {
               title: rule.meta_title.replace('{cidade}', cityName),
               description: rule.meta_description?.replace('{cidade}', cityName),
-              canonical: rule.canonical_url?.replace('{cidade}', citySlug),
+              canonical: rule.canonical_url?.replace('{cidade}', matchedCitySlug),
             };
             schemaType = rule.schema_type as PageData['schemaType'];
           }
@@ -99,24 +105,25 @@ async function getPageData(slug: string): Promise<PageData> {
         description: staticPage.meta_description ?? undefined,
         canonical: staticPage.canonical_url ?? undefined,
       };
+      citySlug = slug;
       schemaType = staticPage.schema_type as PageData['schemaType'];
     }
   }
 
   // Se nenhuma regra correspondeu, a página não deve ser encontrada.
   if (!meta) {
-    // notFound();
+    notFound();
   }
 
-  return { cityName, meta, schemaType };
+  return { cityName, citySlug, meta, schemaType };
 }
 
 function getLocalBusinessJsonLd(cityName: string, slug: string) {
-  const jsonLd = {
+  return {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
     "name": "Velpro Telecom",
-    "telephone": "0800 381 0404",
+    "telephone": "+55 0800 381 0404",
     "address": {
       "@type": "PostalAddress",
       "streetAddress": "SQ 13 QUADRA 01 LOTE 11 SALA 101 CENTRO",
@@ -134,14 +141,55 @@ function getLocalBusinessJsonLd(cityName: string, slug: string) {
     "priceRange": "$$",
     "image": "https://velpro.net.br/logo.png"
   };
-  return JSON.stringify(jsonLd);
+}
+
+function getBreadcrumbJsonLd(cityName: string, slug: string) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Início",
+        "item": "https://velpro.net.br/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": `Internet em ${cityName}`,
+        "item": `https://velpro.net.br/internet-em-${slug}`
+      }
+    ]
+  };
+}
+
+function getFaqJsonLd(slug: string | null, cityName: string | null) {
+  const content = getLocalSeoContent(slug, cityName);
+
+  if (!content) {
+    return null;
+  }
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": content.faqs.map((faq) => ({
+      "@type": "Question",
+      "name": faq.question,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": faq.answer
+      }
+    }))
+  };
 }
 
 
 // --- Metadata Generation ---
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const resolvedParams = await params;
-  const { cityName, meta, schemaType } = await getPageData(resolvedParams.slug);
+  const { meta } = await getPageData(resolvedParams.slug);
 
   const metadata: Metadata = {
     title: meta?.title,
@@ -150,12 +198,6 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     openGraph: { title: meta?.title, description: meta?.description },
     twitter: { title: meta?.title, description: meta?.description },
   };
-
-  if (schemaType === 'LocalBusiness' && cityName) {
-    metadata.other = {
-      'application/ld+json': getLocalBusinessJsonLd(cityName, resolvedParams.slug)
-    }
-  }
 
   return metadata;
 }
@@ -193,8 +235,9 @@ export async function generateStaticParams() {
 // --- Page Component ---
 export default async function DynamicPage({ params }: PageProps) {
   const resolvedParams = await params;
-  const { cityName } = await getPageData(resolvedParams.slug);
+  const { cityName, citySlug, schemaType } = await getPageData(resolvedParams.slug);
   const { domainType, companyLogoUrl } = await getLayoutData();
+  const localSeoContent = getLocalSeoContent(citySlug, cityName);
 
   const citiesData = await db.select({ name: cities.name, slug: cities.slug }).from(cities).orderBy(asc(cities.name));
   const slidesData = await db.select().from(hero_slides).where(eq(hero_slides.is_active, true)).orderBy(asc(hero_slides.sort_order));
@@ -255,13 +298,27 @@ export default async function DynamicPage({ params }: PageProps) {
     slide_type: (s.slide_type as 'content' | 'image_only') || 'content'
   }));
 
+  const jsonLd = [
+    schemaType === 'LocalBusiness' && cityName && citySlug ? getLocalBusinessJsonLd(cityName, citySlug) : null,
+    cityName && citySlug ? getBreadcrumbJsonLd(cityName, citySlug) : null,
+    getFaqJsonLd(citySlug, cityName),
+  ].filter(Boolean);
+
   return (
     <>
+      {jsonLd.map((schema, index) => (
+        <script
+          key={index}
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema).replace(/</g, "\\u003c") }}
+        />
+      ))}
       <div className="min-h-screen bg-background text-foreground">
         <Header domainType={domainType} companyLogoUrl={companyLogoUrl} />
         <main>
           <Hero city={cityName} slides={formattedSlides} />
           <Plans city={cityName} plans={formattedPlans} allChannels={allChannels} />
+          {localSeoContent && <LocalSeoSection content={localSeoContent} />}
           <CdnHighlight />
           <Coverage city={cityName} cities={citiesData} />
           <Advantages />

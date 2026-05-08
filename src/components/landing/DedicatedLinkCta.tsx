@@ -17,7 +17,7 @@ export function DedicatedLinkCta() {
                 >
                     <Button
                         asChild
-                        className="relative w-full max-w-sm md:max-w-2xl overflow-hidden bg-[#03bf03] hover:bg-[#029e02] text-white p-0 h-auto rounded-3xl shadow-[0_15px_40px_-10px_rgba(3,191,3,0.4)] hover:shadow-[0_20px_60px_-10px_rgba(3,191,3,0.6)] transition-all duration-300 group"
+                        className="relative w-full max-w-sm md:max-w-2xl overflow-hidden bg-[#03BF03] hover:bg-[#029E02] text-white p-0 h-auto rounded-3xl shadow-[0_15px_40px_-10px_rgba(3,191,3,0.4)] hover:shadow-[0_20px_60px_-10px_rgba(3,191,3,0.6)] transition-all duration-300 group"
                     >
                         <a href="/empresa" className="flex flex-col md:flex-row items-center gap-4 md:gap-8 px-6 py-6 md:px-12 md:py-8">
 
@@ -28,7 +28,7 @@ export function DedicatedLinkCta() {
 
                             {/* Text Content */}
                             <div className="flex flex-col text-center md:text-left">
-                                <span className="text-xs md:text-sm font-bold text-green-100 uppercase tracking-wider mb-1">
+                                <span className="text-xs md:text-sm font-bold text-white/90 uppercase tracking-wider mb-1">
                                     Solução Empresarial
                                 </span>
                                 <span className="text-xl md:text-3xl font-black leading-tight">
@@ -37,7 +37,7 @@ export function DedicatedLinkCta() {
                             </div>
 
                             {/* Arrow Action */}
-                            <div className="hidden md:flex shrink-0 w-12 h-12 rounded-full border-2 border-white/30 items-center justify-center group-hover:bg-white group-hover:text-[#03bf03] transition-colors ml-auto">
+                            <div className="hidden md:flex shrink-0 w-12 h-12 rounded-full border-2 border-white/30 items-center justify-center group-hover:bg-white group-hover:text-[#03BF03] transition-colors ml-auto">
                                 <ArrowRight className="w-6 h-6 -rotate-45 group-hover:rotate-0 transition-transform duration-300" />
                             </div>
 

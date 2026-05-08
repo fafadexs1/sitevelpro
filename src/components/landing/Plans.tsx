@@ -77,12 +77,12 @@ export function Plans({ city, plans, allChannels }: PlansProps & { plans: Plan[]
         className={cn(
           "relative flex h-full flex-col rounded-2xl p-6 transition-colors duration-300",
           plan.highlight
-            ? "bg-gradient-to-b from-card to-card/95 border-2 border-[#03bf03] shadow-[0_10px_40px_-10px_rgba(3,191,3,0.3)]"
+            ? "bg-gradient-to-b from-card to-card/95 border-2 border-[#03BF03] shadow-[0_10px_40px_-10px_rgba(3,191,3,0.3)]"
             : "bg-card/80 backdrop-blur-sm border border-border/50 shadow-lg"
         )}
       >
         {plan.highlight && (
-          <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10 w-fit whitespace-nowrap rounded-full bg-gradient-to-r from-[#03bf03] to-green-500 px-6 py-1.5 text-xs font-bold text-white shadow-[0_0_20px_rgba(3,191,3,0.5)] tracking-wide uppercase">
+          <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10 w-fit whitespace-nowrap rounded-full bg-gradient-to-r from-[#03BF03] to-[#03BF03] px-6 py-1.5 text-xs font-bold text-white shadow-[0_0_20px_rgba(3,191,3,0.5)] tracking-wide uppercase">
             Melhor Oferta
           </div>
         )}
@@ -93,7 +93,7 @@ export function Plans({ city, plans, allChannels }: PlansProps & { plans: Plan[]
               <span className="text-4xl md:text-5xl font-extrabold tracking-tight text-neutral-900">{plan.speed.replace(/\D/g, '')}</span>
               <span className="text-2xl md:text-3xl font-bold text-neutral-900">MEGA</span>
             </div>
-            <div className="inline-block h-1 w-12 bg-[#03bf03] rounded-full mt-2" />
+            <div className="inline-block h-1 w-12 bg-[#03BF03] rounded-full mt-2" />
           </div>
 
           {plan.has_tv && plan.featured_channel_ids && (
@@ -119,7 +119,7 @@ export function Plans({ city, plans, allChannels }: PlansProps & { plans: Plan[]
           {/* Replace Modal with Sheet for both Residential and Enterprise for consistency, or just Enterprise? User said "when clicque em saber mais apareça igual lá o canva". This implies for all plans or strictly enterprise? 
                Usually consistency is better. I will use Sheet for ALL plans details. */}
           <PlanDetailsSheet plan={plan}>
-            <Button variant="link" className="text-sm text-[#03bf03] h-auto py-1 mb-2 flex items-center gap-1">Mais detalhes <PlusCircle size={14} /></Button>
+            <Button variant="link" className="text-sm text-[#03BF03] h-auto py-1 mb-2 flex items-center gap-1">Mais detalhes <PlusCircle size={14} /></Button>
           </PlanDetailsSheet>
 
           <div className="text-neutral-900 mb-4">
@@ -162,7 +162,7 @@ export function Plans({ city, plans, allChannels }: PlansProps & { plans: Plan[]
               data-track-prop-button-id={`cta-saiba-mais-${slug}`}
               data-track-prop-plan-name={planName}
               data-track-prop-plan-price={plan.price}
-              className="w-full font-bold bg-[#03bf03] hover:bg-[#03bf03]/90 text-white"
+              className="w-full font-bold bg-[#03BF03] hover:bg-[#03BF03]/90 text-white"
             >
               Saiba mais
             </Button>
@@ -190,7 +190,7 @@ export function Plans({ city, plans, allChannels }: PlansProps & { plans: Plan[]
               <button
                 key={opt.k}
                 onClick={() => setPlanType(opt.k)}
-                className={`rounded-lg px-6 py-2.5 transition-all font-medium ${planType === opt.k ? "bg-[#03bf03] text-white shadow-sm" : "text-muted-foreground hover:bg-background/80 hover:text-foreground"
+                className={`rounded-lg px-6 py-2.5 transition-all font-medium ${planType === opt.k ? "bg-[#03BF03] text-white shadow-sm" : "text-muted-foreground hover:bg-background/80 hover:text-foreground"
                   }`}
               >
                 {opt.label}

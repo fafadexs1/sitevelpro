@@ -13,7 +13,7 @@ export function Games({ games }: { games: Game[] }) {
     return (
         <section className="relative py-24 bg-[#050a05] overflow-hidden border-t border-white/5">
             {/* Ambient Gamer Glow */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 bg-green-500/10 blur-[120px] pointer-events-none" />
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 bg-[#03BF03]/10 blur-[120px] pointer-events-none" />
 
             <div className="container mx-auto px-4 relative z-10">
                 <div className="text-center mb-20">
@@ -32,7 +32,7 @@ export function Games({ games }: { games: Game[] }) {
                         whileInView={{ opacity: 1, y: 0 }}
                         className="text-5xl md:text-7xl font-black text-white tracking-tighter mb-4 italic"
                     >
-                        GAMER <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-600">ELITE</span>
+                        GAMER <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#03BF03] to-[#03BF03]">ELITE</span>
                     </motion.h2>
                     <p className="text-neutral-400 text-lg max-w-2xl mx-auto">
                         Chega de lag. Nossa rota otimizada é a vantagem injusta que você precisa para subir de rank.
@@ -88,19 +88,19 @@ function GameCard({ game, index }: { game: Game, index: number }) {
             <div className="absolute inset-0 z-10 p-8 flex flex-col justify-end">
                 {/* Stats Badge */}
                 <div className="absolute top-6 right-6 flex flex-col items-end gap-2 translate-y-[-10px] opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
-                    <div className="flex items-center gap-2 px-3 py-1 bg-black/60 backdrop-blur-md rounded-lg border border-green-500/30">
-                        <Zap className="w-3 h-3 text-green-400" />
-                        <span className="text-xs font-mono font-bold text-green-400">{game.ping_label}</span>
+                    <div className="flex items-center gap-2 px-3 py-1 bg-black/60 backdrop-blur-md rounded-lg border border-[#03BF03]/30">
+                        <Zap className="w-3 h-3 text-[#03BF03]" />
+                        <span className="text-xs font-mono font-bold text-[#03BF03]">{game.ping_label}</span>
                     </div>
-                    <div className="flex items-center gap-2 px-3 py-1 bg-black/60 backdrop-blur-md rounded-lg border border-green-500/30">
-                        <Cable className="w-3 h-3 text-green-400" />
-                        <span className="text-xs font-mono font-bold text-green-400">{game.stability_label}</span>
+                    <div className="flex items-center gap-2 px-3 py-1 bg-black/60 backdrop-blur-md rounded-lg border border-[#03BF03]/30">
+                        <Cable className="w-3 h-3 text-[#03BF03]" />
+                        <span className="text-xs font-mono font-bold text-[#03BF03]">{game.stability_label}</span>
                     </div>
                 </div>
 
                 <h3 className="text-3xl font-black text-white mb-2 tracking-tight flex items-center gap-3">
                     {game.name}
-                    <ChevronsUp className="w-6 h-6 text-green-500 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+                    <ChevronsUp className="w-6 h-6 text-[#03BF03] opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
                 </h3>
                 <p className="text-neutral-400 text-sm mb-6 line-clamp-2">
                     {game.description}
@@ -113,7 +113,7 @@ function GameCard({ game, index }: { game: Game, index: number }) {
             </div>
 
             {/* Hover Border Glow */}
-            <div className="absolute inset-0 border-2 border-transparent group-hover:border-green-500/30 rounded-3xl transition-colors duration-300 pointer-events-none" />
+            <div className="absolute inset-0 border-2 border-transparent group-hover:border-[#03BF03]/30 rounded-3xl transition-colors duration-300 pointer-events-none" />
         </motion.div>
     );
 }

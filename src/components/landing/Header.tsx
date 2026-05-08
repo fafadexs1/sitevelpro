@@ -51,7 +51,7 @@ const NavMenuItem = ({ href, children, icon: Icon }: { href: string, children: R
 
 function DynamicLogo({ logoUrl }: { logoUrl: string | null }) {
   return (
-    <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-primary to-green-400 text-white shadow-lg shadow-primary/20 overflow-hidden">
+    <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-primary to-[#03BF03] text-white shadow-lg shadow-primary/20 overflow-hidden">
       {logoUrl ? (
         <Image src={logoUrl} alt="Logo da Empresa" width={36} height={36} className="object-contain" />
       ) : (
@@ -179,7 +179,7 @@ export function Header({ domainType, companyLogoUrl }: { domainType: DomainType,
               href="/assinar"
               data-track-event="cta_click"
               data-track-prop-button-id="assine-ja-header"
-              className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-[0_0_15px_rgba(34,197,94,0.4)] transition-all hover:bg-primary/90 hover:shadow-[0_0_25px_rgba(34,197,94,0.6)] hover:-translate-y-0.5"
+              className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-[0_0_15px_rgba(3,191,3,0.4)] transition-all hover:bg-primary/90 hover:shadow-[0_0_25px_rgba(3,191,3,0.6)] hover:-translate-y-0.5"
             >
               Assinar Agora <ChevronRight className="h-4 w-4" />
             </a>

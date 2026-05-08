@@ -17,7 +17,7 @@ export function Streaming() {
             name: "Premiere",
             description: "Acompanhe seu time do coração em todos os jogos.",
             bgImage: "https://www.claro.com.br/files/104379/1920x600/6eeab4eba7/img-banner-custom-brasileirao-2025-premiere-desk.jpg?sq=75",
-            colorConfig: "bg-gradient-to-t from-green-900 via-transparent to-transparent",
+            colorConfig: "bg-gradient-to-t from-[#03BF03]/35 via-transparent to-transparent",
             logo: "https://bqxdyinyzfxqghyuzsbs.supabase.co/storage/v1/object/public/site-assets/Streamings/Premiere.webp"
         },
         {
@@ -44,7 +44,7 @@ export function Streaming() {
             <div className="container px-4 mx-auto relative z-10">
                 <div className="text-center mb-16">
                     <h2 className="text-3xl md:text-5xl font-black text-white tracking-tight mb-4">
-                        Entretenimento <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-600">Premium</span>
+                        Entretenimento <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#03BF03] to-[#03BF03]">Premium</span>
                     </h2>
                     <p className="text-neutral-400 text-lg">
                         Turbine seu plano com os melhores apps de filmes, séries e esportes.

@@ -6,7 +6,7 @@ export function Mesh() {
     return (
         <section className="py-24 bg-gradient-to-b from-neutral-900 via-neutral-950 to-neutral-900 border-t border-white/5 relative overflow-hidden">
             {/* Background Mesh Gradients */}
-            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-green-500/5 rounded-full blur-[128px] pointer-events-none" />
+            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#03BF03]/5 rounded-full blur-[128px] pointer-events-none" />
             <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-[128px] pointer-events-none" />
 
             <div className="container px-4 mx-auto relative z-10">
@@ -15,13 +15,13 @@ export function Mesh() {
                     {/* Content */}
                     <div className="flex-1 space-y-8">
                         <div className="inline-block">
-                            <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-green-950/30 border border-green-500/20 mb-6 w-fit">
-                                <Wifi className="w-4 h-4 text-green-400" />
-                                <span className="text-xs font-bold text-green-400 uppercase tracking-wider">Wi-Fi Mesh Inteligente</span>
+                            <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#03BF03]/10 border border-[#03BF03]/20 mb-6 w-fit">
+                                <Wifi className="w-4 h-4 text-[#03BF03]" />
+                                <span className="text-xs font-bold text-[#03BF03] uppercase tracking-wider">Wi-Fi Mesh Inteligente</span>
                             </div>
                             <h2 className="text-4xl md:text-5xl font-black text-white tracking-tight leading-tight">
                                 Sinal forte em<br />
-                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-600">
+                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#03BF03] to-[#03BF03]">
                                     todos os cômodos
                                 </span>
                             </h2>
@@ -41,10 +41,10 @@ export function Mesh() {
                             ].map((feature, idx) => (
                                 <div
                                     key={idx}
-                                    className="flex items-start gap-4 p-4 rounded-xl bg-white/5 border border-white/5 hover:border-green-500/30 transition-colors group"
+                                    className="flex items-start gap-4 p-4 rounded-xl bg-white/5 border border-white/5 hover:border-[#03BF03]/30 transition-colors group"
                                 >
-                                    <div className="p-2.5 rounded-lg bg-green-500/10 group-hover:bg-green-500/20 transition-colors">
-                                        <feature.icon className="w-5 h-5 text-green-400" />
+                                    <div className="p-2.5 rounded-lg bg-[#03BF03]/10 group-hover:bg-[#03BF03]/20 transition-colors">
+                                        <feature.icon className="w-5 h-5 text-[#03BF03]" />
                                     </div>
                                     <div>
                                         <h3 className="font-bold text-white text-sm mb-1">{feature.title}</h3>
@@ -60,9 +60,9 @@ export function Mesh() {
                         <div className="relative w-full max-w-[500px] aspect-square flex items-center justify-center">
 
                             {/* Central Node */}
-                            <div className="z-20 w-32 h-32 bg-neutral-900 rounded-full border-4 border-green-500 shadow-[0_0_60px_rgba(34,197,94,0.2)] flex items-center justify-center relative">
+                            <div className="z-20 w-32 h-32 bg-neutral-900 rounded-full border-4 border-[#03BF03] shadow-[0_0_60px_rgba(3,191,3,0.2)] flex items-center justify-center relative">
                                 <div className="absolute inset-0 rounded-full border border-white/15" />
-                                <Wifi className="w-12 h-12 text-green-500" />
+                                <Wifi className="w-12 h-12 text-[#03BF03]" />
                             </div>
 
                             {/* Orbit Container */}
@@ -84,7 +84,7 @@ export function Mesh() {
                                         <div className="w-full h-full bg-neutral-800 rounded-2xl border border-white/10 flex items-center justify-center shadow-lg relative">
                                             <item.Icon className="w-6 h-6 text-neutral-400" />
                                             {/* Signal Line (Dashed) */}
-                                            <div className="absolute top-1/2 right-full w-[168px] h-[2px] bg-gradient-to-r from-transparent to-green-500/20 origin-right" />
+                                            <div className="absolute top-1/2 right-full w-[168px] h-[2px] bg-gradient-to-r from-transparent to-[#03BF03]/20 origin-right" />
                                         </div>
                                     </div>
                                 ))}
@@ -94,7 +94,7 @@ export function Mesh() {
                             {[1, 2, 3].map((ring) => (
                                 <div
                                     key={ring}
-                                    className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border border-green-500/10 rounded-full pointer-events-none`}
+                                    className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border border-[#03BF03]/10 rounded-full pointer-events-none`}
                                     style={{ width: `${ring * 200 + 100}px`, height: `${ring * 200 + 100}px` }}
                                 />
                             ))}
