@@ -99,7 +99,7 @@ export function ConditionalLayoutElements({ domainType, tags = [], popups = [], 
             <ScrollDepthTracker />
 
             {/* Gerenciador de Pop-ups */}
-            <PopupManager domainType={domainType} popups={popups} conversionEvents={conversionEvents} />
+            <PopupManager domainType={domainType} popups={popups} />
 
             {/* Componentes e tags de marketing para páginas de vendas */}
             {domainType === 'sales_page' && (
@@ -110,7 +110,7 @@ export function ConditionalLayoutElements({ domainType, tags = [], popups = [], 
 
                     <FloatingWhatsApp />
                     <ConsentBanner />
-                    <ConversionTracker />
+                    <ConversionTracker initialEvents={conversionEvents} />
                 </>
             )}
         </>

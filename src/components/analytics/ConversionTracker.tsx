@@ -11,16 +11,21 @@ declare global {
     }
 }
 
-export function ConversionTracker() {
-    const [events, setEvents] = useState<ConversionEvent[]>([]);
+export function ConversionTracker({ initialEvents = [] }: { initialEvents?: ConversionEvent[] }) {
+    const [events, setEvents] = useState<ConversionEvent[]>(initialEvents);
 
     useEffect(() => {
+        if (initialEvents.length > 0) {
+            setEvents(initialEvents);
+            return;
+        }
+
         const fetchEvents = async () => {
             const data = await getConversionEvents();
             setEvents(data);
         };
         fetchEvents();
-    }, []);
+    }, [initialEvents]);
 
     const trackEvent = useCallback((event: ConversionEvent) => {
         if (typeof window.gtag === 'function') {

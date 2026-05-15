@@ -18,7 +18,6 @@ import {
   X,
 } from "lucide-react";
 
-import { ConversionEvent } from "@/types/admin";
 import { Button } from "../ui/button";
 import {
   Dialog,
@@ -309,40 +308,11 @@ function CustomPopupContent({ popup, getButtonLink }: { popup: Popup; getButtonL
 export function PopupManager({
   domainType,
   popups,
-  conversionEvents,
-}: PopupManagerProps & { popups: Popup[]; conversionEvents: ConversionEvent[] }) {
+}: PopupManagerProps & { popups: Popup[] }) {
   const [popup, setPopup] = useState<Popup | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [dismissedPopupId, setDismissedPopupId] = useState<string | null>(null);
   const pathname = usePathname();
-
-  const trackGtagConversion = useCallback((event: ConversionEvent) => {
-    if (typeof window.gtag === "function") {
-      try {
-        const snippetFunc = new Function("gtag", event.event_snippet);
-        snippetFunc(window.gtag);
-      } catch (e) {
-        console.error(`[Popup] Error executing event snippet for "${event.name}":`, e);
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (conversionEvents.length === 0) return;
-      const target = e.target as Element | null;
-      if (!target) return;
-
-      conversionEvents.forEach((event) => {
-        if (event.selector && target.closest(event.selector)) {
-          trackGtagConversion(event);
-        }
-      });
-    };
-
-    document.addEventListener("click", handler, { capture: true });
-    return () => document.removeEventListener("click", handler, { capture: true } as any);
-  }, [conversionEvents, trackGtagConversion]);
 
   const checkAndSetPopup = useCallback(() => {
     if (!domainType || pathname !== "/") {
