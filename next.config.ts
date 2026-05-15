@@ -25,7 +25,7 @@ const nextConfig: NextConfig = {
               "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.google.com https://*.googleapis.com https://*.googletagmanager.com https://*.google-analytics.com https://*.googleadservices.com https://*.doubleclick.net https://*.facebook.net https://*.facebook.com https://*.twitter.com https://*.ads-twitter.com;",
               "style-src 'self' 'unsafe-inline' https://*.googleapis.com;",
               "img-src 'self' data: blob: https: http:;",
-              "connect-src 'self' https://*.google.com https://*.googleapis.com https://*.googletagmanager.com https://*.google-analytics.com https://*.googleadservices.com https://*.doubleclick.net https://*.facebook.com https://*.facebook.net https://*.twitter.com https://*.ads-twitter.com https://bqxdyinyzfxqghyuzsbs.supabase.co wss://bqxdyinyzfxqghyuzsbs.supabase.co;",
+                "connect-src 'self' https://*.google.com https://*.googleapis.com https://*.googletagmanager.com https://*.google-analytics.com https://*.googleadservices.com https://*.doubleclick.net https://*.googlesyndication.com https://*.facebook.com https://*.facebook.net https://*.conversionsapigateway.com https://*.a.run.app https://*.twitter.com https://*.ads-twitter.com https://bqxdyinyzfxqghyuzsbs.supabase.co wss://bqxdyinyzfxqghyuzsbs.supabase.co;",
               "frame-src 'self' https://*.google.com https://*.googletagmanager.com https://*.facebook.com https://*.facebook.net https://*.twitter.com mobile.twitter.com;",
               "font-src 'self' data: https://*.gstatic.com;"
             ].join(' ').replace(/\s{2,}/g, ' ').trim()
