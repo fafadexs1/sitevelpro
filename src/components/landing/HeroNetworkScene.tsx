@@ -126,10 +126,12 @@ export function HeroNetworkScene() {
     window.addEventListener("pointermove", onPointerMove);
 
     let frameId = 0;
-    const clock = new THREE.Clock();
+    const timer = new THREE.Timer();
+    timer.connect(document);
 
-    const animate = () => {
-      const elapsed = clock.getElapsedTime();
+    const animate = (timestamp?: number) => {
+      timer.update(timestamp);
+      const elapsed = timer.getElapsed();
       const pointAttribute = pointsGeometry.getAttribute("position") as THREE.BufferAttribute;
       const lineAttribute = lineGeometry.getAttribute("position") as THREE.BufferAttribute;
 
@@ -190,6 +192,7 @@ export function HeroNetworkScene() {
       window.removeEventListener("resize", resize);
       window.removeEventListener("pointermove", onPointerMove);
       mount.removeChild(renderer.domElement);
+      timer.dispose();
       pointsGeometry.dispose();
       pointsMaterial.dispose();
       lineGeometry.dispose();

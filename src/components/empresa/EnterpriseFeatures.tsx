@@ -38,7 +38,7 @@ export function EnterpriseFeatures() {
     return (
         <section className="py-24 bg-neutral-950 relative overflow-hidden">
             {/* Background noise */}
-            <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none mix-blend-overlay"></div>
+            <div className="absolute inset-0 bg-[url('/noise.svg')] opacity-20 pointer-events-none mix-blend-overlay"></div>
 
             <div className="container mx-auto px-4 relative z-10">
                 <div className="text-center mb-20 max-w-3xl mx-auto">
