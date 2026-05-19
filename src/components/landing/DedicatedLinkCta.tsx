@@ -2,48 +2,43 @@
 
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Zap, ArrowRight } from "lucide-react";
+import { ArrowRight, Zap } from "lucide-react";
 
 export function DedicatedLinkCta() {
     return (
-        <section className="py-16 bg-[#F4F4F5] border-t border-neutral-200">
+        <section className="border-t border-neutral-200 bg-[#F4F4F5] py-16">
             <div className="container mx-auto px-4 text-center">
                 <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
+                    initial={{ opacity: 0, scale: 0.98 }}
                     whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true }}
-                    transition={{ duration: 0.5 }}
+                    transition={{ duration: 0.45 }}
                     className="flex justify-center"
                 >
                     <Button
                         asChild
-                        className="relative w-full max-w-sm md:max-w-2xl overflow-hidden bg-[#03BF03] hover:bg-[#029E02] text-white p-0 h-auto rounded-3xl shadow-[0_15px_40px_-10px_rgba(3,191,3,0.4)] hover:shadow-[0_20px_60px_-10px_rgba(3,191,3,0.6)] transition-all duration-300 group"
+                        className="group relative h-auto w-full max-w-sm overflow-hidden rounded-2xl border border-[#03BF03]/25 bg-white p-0 text-neutral-950 shadow-[0_16px_42px_-28px_rgba(3,191,3,0.75)] transition-all duration-300 hover:border-[#03BF03]/45 hover:bg-white hover:shadow-[0_22px_54px_-30px_rgba(3,191,3,0.85)] md:max-w-2xl"
                     >
-                        <a href="/empresa" className="flex flex-col md:flex-row items-center gap-4 md:gap-8 px-6 py-6 md:px-12 md:py-8">
-
-                            {/* Icon Box */}
-                            <div className="shrink-0 flex items-center justify-center w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-white/20 backdrop-blur-sm border border-white/30 text-white shadow-inner">
-                                <Zap className="w-7 h-7 md:w-8 md:h-8 fill-current" />
+                        <a href="/empresa" className="flex items-center gap-4 px-5 py-5 md:gap-6 md:px-8 md:py-6">
+                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#03BF03]/20 bg-[#03BF03]/10 text-[#03BF03] md:h-12 md:w-12">
+                                <Zap className="h-5 w-5 fill-current md:h-6 md:w-6" />
                             </div>
 
-                            {/* Text Content */}
-                            <div className="flex flex-col text-center md:text-left">
-                                <span className="text-xs md:text-sm font-bold text-white/90 uppercase tracking-wider mb-1">
-                                    Solução Empresarial
+                            <div className="flex min-w-0 flex-1 flex-col text-left">
+                                <span className="mb-1 text-[11px] font-bold uppercase tracking-[0.16em] text-[#03BF03] md:text-xs">
+                                    Solução empresarial
                                 </span>
-                                <span className="text-xl md:text-3xl font-black leading-tight">
-                                    CONTRATAR LINK DEDICADO
+                                <span className="text-base font-black leading-tight text-neutral-950 md:text-2xl">
+                                    Contratar link dedicado
                                 </span>
                             </div>
 
-                            {/* Arrow Action */}
-                            <div className="hidden md:flex shrink-0 w-12 h-12 rounded-full border-2 border-white/30 items-center justify-center group-hover:bg-white group-hover:text-[#03BF03] transition-colors ml-auto">
-                                <ArrowRight className="w-6 h-6 -rotate-45 group-hover:rotate-0 transition-transform duration-300" />
+                            <div className="ml-auto flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#03BF03]/20 text-[#03BF03] transition-colors group-hover:bg-[#03BF03] group-hover:text-white md:h-10 md:w-10">
+                                <ArrowRight className="h-4 w-4 -rotate-45 transition-transform duration-300 group-hover:rotate-0 md:h-5 md:w-5" />
                             </div>
 
-                            {/* Shine Effect */}
-                            <div className="absolute inset-0 flex h-full w-full justify-center [transform:skew(-12deg)_translateX(-100%)] group-hover:duration-1000 group-hover:[transform:skew(-12deg)_translateX(100%)]">
-                                <div className="relative h-full w-24 bg-white/20"></div>
+                            <div className="absolute inset-0 flex h-full w-full justify-center opacity-0 [transform:skew(-12deg)_translateX(-100%)] group-hover:opacity-100 group-hover:duration-1000 group-hover:[transform:skew(-12deg)_translateX(100%)]">
+                                <div className="relative h-full w-20 bg-[#03BF03]/10" />
                             </div>
                         </a>
                     </Button>

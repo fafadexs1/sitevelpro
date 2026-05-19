@@ -1,5 +1,3 @@
-
-
 "use client";
 
 import { useState } from "react";
@@ -180,7 +178,11 @@ export function Plans({ city, plans, allChannels }: PlansProps & { plans: Plan[]
             <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">Escolha seu plano{city ? ` em ${city}` : ''}</h2>
             <p className="mt-2 text-muted-foreground">Sem fidelidade, sem pegadinha. Instalação rápida e suporte que resolve.</p>
           </div>
-          <div className="flex shrink-0 rounded-xl bg-card border p-1 text-sm bg-muted/50">
+          <div
+            className="grid w-full shrink-0 grid-cols-2 rounded-2xl border border-emerald-950/10 bg-white/75 p-1.5 text-sm shadow-[0_10px_30px_rgba(15,23,42,0.06)] backdrop-blur sm:w-auto sm:min-w-[360px]"
+            role="tablist"
+            aria-label="Tipo de plano"
+          >
             {(
               [
                 { k: "residencial", label: "Residencial" },
@@ -190,8 +192,14 @@ export function Plans({ city, plans, allChannels }: PlansProps & { plans: Plan[]
               <button
                 key={opt.k}
                 onClick={() => setPlanType(opt.k)}
-                className={`rounded-lg px-6 py-2.5 transition-all font-medium ${planType === opt.k ? "bg-[#03BF03] text-white shadow-sm" : "text-muted-foreground hover:bg-background/80 hover:text-foreground"
-                  }`}
+                role="tab"
+                aria-selected={planType === opt.k}
+                className={cn(
+                  "relative rounded-xl px-5 py-3 font-bold transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#03BF03] focus-visible:ring-offset-2",
+                  planType === opt.k
+                    ? "bg-[#03BF03] text-white shadow-[0_12px_24px_rgba(3,191,3,0.22)]"
+                    : "text-muted-foreground hover:bg-white hover:text-foreground"
+                )}
               >
                 {opt.label}
               </button>

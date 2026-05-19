@@ -115,22 +115,22 @@ export const PlanDetailsSheet = ({ plan, children }: { plan: Plan, children: Rea
     return (
         <Sheet>
             <SheetTrigger asChild>{children}</SheetTrigger>
-            <SheetContent className={`w-[400px] sm:w-[540px] border-l ${borderColor} ${bgColor} ${textColor} overflow-y-auto z-[9999] p-0 flex flex-col h-full`}>
-                <SheetHeader className="p-6 pb-2 text-left shrink-0">
+            <SheetContent className={`w-full max-w-[420px] sm:max-w-[540px] border-l ${borderColor} ${bgColor} ${textColor} overflow-hidden z-[9999] p-0 flex flex-col h-dvh`}>
+                <SheetHeader className="shrink-0 p-5 pb-2 text-left sm:p-6 sm:pb-2">
                     <SheetTitle className={`text-xl font-bold flex items-center gap-2 ${textColor}`}>
                         Detalhes do Plano
                     </SheetTitle>
                 </SheetHeader>
 
-                <div className="flex-1 overflow-y-auto p-6 pt-0 space-y-4">
+                <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-5 pt-2 sm:px-6">
                     {/* Main Card - Compact */}
-                    <div className={`p-5 rounded-2xl border ${cardBg} relative overflow-hidden shrink-0`}>
+                    <div className={`rounded-2xl border ${cardBg} relative overflow-hidden shrink-0 p-4 sm:p-5`}>
                         <div className="absolute top-0 right-0 p-4 opacity-[0.03]">
                             <Wifi className={`w-24 h-24 ${isEmpresarial ? 'text-white' : 'text-neutral-900'}`} />
                         </div>
                         <div className="flex flex-col gap-0.5 mb-4 relative z-10">
                             <span className="text-xs text-green-500 font-bold tracking-wider uppercase">Plano Selecionado</span>
-                            <h3 className={`text-4xl font-black ${textColor}`}>{plan.speed.replace(/\D/g, '')} MEGA</h3>
+                            <h3 className={`text-3xl font-black sm:text-4xl ${textColor}`}>{plan.speed.replace(/\D/g, '')} MEGA</h3>
                         </div>
 
                         <Separator className={`${isEmpresarial ? 'bg-white/5' : 'bg-neutral-200'} my-4`} />
@@ -186,7 +186,7 @@ export const PlanDetailsSheet = ({ plan, children }: { plan: Plan, children: Rea
                                                 De R$ {formatBRL(plan.original_price)}
                                             </span>
                                         )}
-                                        <div className={`text-3xl font-black ${textColor} leading-none`}>
+                                        <div className={`text-2xl font-black sm:text-3xl ${textColor} leading-none`}>
                                             R$ {formatBRL(plan.price)}
                                         </div>
                                     </div>
@@ -196,7 +196,7 @@ export const PlanDetailsSheet = ({ plan, children }: { plan: Plan, children: Rea
                     </div>
 
                     {isEmpresarial && (
-                        <div className="shrink-0">
+                        <div className="mt-4 shrink-0">
                             <h4 className={`text-sm font-bold mb-3 flex items-center gap-2 ${textColor}`}>
                                 Adicionais (Selecione)
                             </h4>
@@ -237,7 +237,7 @@ export const PlanDetailsSheet = ({ plan, children }: { plan: Plan, children: Rea
 
                     {/* Conditions Section - Scrollable if needed */}
                     {plan.conditions && (
-                        <div className={`p-3 rounded-xl border ${isEmpresarial ? 'border-white/5 bg-white/[0.02]' : 'border-neutral-100 bg-neutral-50'}`}>
+                        <div className={`mt-4 p-3 rounded-xl border ${isEmpresarial ? 'border-white/5 bg-white/[0.02]' : 'border-neutral-100 bg-neutral-50'}`}>
                             <h4 className={`font-semibold text-xs mb-2 ${textColor} flex items-center gap-2 uppercase tracking-wider opacity-80`}>
                                 <div className="w-1 h-3 bg-green-500 rounded-full" />
                                 Condições da Oferta
@@ -250,7 +250,7 @@ export const PlanDetailsSheet = ({ plan, children }: { plan: Plan, children: Rea
                 </div>
 
                 {/* Footer Actions - Fixed at bottom */}
-                <div className={`p-6 pt-2 mt-auto border-t ${isEmpresarial ? 'border-white/5' : 'border-neutral-100'} bg-transparent sm:bg-transparent`}>
+                <div className={`shrink-0 border-t ${isEmpresarial ? 'border-white/5 bg-neutral-950' : 'border-neutral-100 bg-white'} p-4 shadow-[0_-12px_30px_rgba(15,23,42,0.08)] sm:p-6 sm:pt-4`}>
                     <div className="space-y-2">
                         {!isEmpresarial ? (
                             <Button

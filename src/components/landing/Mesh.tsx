@@ -6,8 +6,8 @@ export function Mesh() {
     return (
         <section className="py-24 bg-gradient-to-b from-neutral-900 via-neutral-950 to-neutral-900 border-t border-white/5 relative overflow-hidden">
             {/* Background Mesh Gradients */}
-            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#03BF03]/5 rounded-full blur-[128px] pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-[128px] pointer-events-none" />
+            <div className="absolute top-0 right-0 hidden h-[500px] w-[500px] rounded-full bg-[#03BF03]/5 blur-[128px] pointer-events-none sm:block" />
+            <div className="absolute bottom-0 left-0 hidden h-[500px] w-[500px] rounded-full bg-blue-500/5 blur-[128px] pointer-events-none sm:block" />
 
             <div className="container px-4 mx-auto relative z-10">
                 <div className="flex flex-col lg:flex-row items-center gap-16">
@@ -57,16 +57,26 @@ export function Mesh() {
 
                     {/* Visual Representation */}
                     <div className="flex-1 w-full flex justify-center lg:justify-end relative">
-                        <div className="relative w-full max-w-[500px] aspect-square flex items-center justify-center">
+                        <div className="mesh-scene relative w-full max-w-[500px] aspect-square flex items-center justify-center overflow-hidden rounded-[2rem] sm:overflow-visible sm:rounded-none">
+                            <div className="absolute inset-8 rounded-full bg-[radial-gradient(circle,rgba(3,191,3,0.13)_0%,rgba(3,191,3,0.04)_34%,transparent_66%)]" />
+                            <div className="mesh-sweep absolute inset-0 rounded-full" />
 
                             {/* Central Node */}
-                            <div className="z-20 w-32 h-32 bg-neutral-900 rounded-full border-4 border-[#03BF03] shadow-[0_0_60px_rgba(3,191,3,0.2)] flex items-center justify-center relative">
+                            <div className="mesh-router z-20 w-32 h-32 bg-neutral-900 rounded-full border-4 border-[#03BF03] shadow-[0_0_44px_rgba(3,191,3,0.18)] flex items-center justify-center relative">
                                 <div className="absolute inset-0 rounded-full border border-white/15" />
+                                <div className="absolute inset-[-14px] rounded-full border border-[#03BF03]/20" />
                                 <Wifi className="w-12 h-12 text-[#03BF03]" />
+                                {[0, 1, 2].map((dot) => (
+                                    <span
+                                        key={dot}
+                                        className="mesh-data-dot"
+                                        style={{ "--mesh-dot-delay": `${dot * 0.9}s` } as React.CSSProperties}
+                                    />
+                                ))}
                             </div>
 
                             {/* Orbit Container */}
-                            <div className="absolute inset-0">
+                            <div className="mesh-orbit absolute inset-0">
                                 {/* Orbiting Devices */}
                                 {[
                                     { Icon: Laptop, angle: 0 },
@@ -76,15 +86,13 @@ export function Mesh() {
                                 ].map((item, i) => (
                                     <div
                                         key={i}
-                                        className="absolute top-1/2 left-1/2 w-16 h-16 -ml-8 -mt-8"
-                                        style={{
-                                            transform: `rotate(${item.angle}deg) translate(200px) rotate(-${item.angle}deg)`
-                                        }}
+                                        className="mesh-device absolute top-1/2 left-1/2 w-16 h-16 -ml-8 -mt-8"
+                                        style={{ "--mesh-angle": `${item.angle}deg` } as React.CSSProperties}
                                     >
-                                        <div className="w-full h-full bg-neutral-800 rounded-2xl border border-white/10 flex items-center justify-center shadow-lg relative">
+                                        <div className="mesh-device-card w-full h-full bg-neutral-800 rounded-2xl border border-white/10 flex items-center justify-center shadow-lg relative">
                                             <item.Icon className="w-6 h-6 text-neutral-400" />
                                             {/* Signal Line (Dashed) */}
-                                            <div className="absolute top-1/2 right-full w-[168px] h-[2px] bg-gradient-to-r from-transparent to-[#03BF03]/20 origin-right" />
+                                            <div className="mesh-link absolute top-1/2 right-full h-px origin-right" />
                                         </div>
                                     </div>
                                 ))}
@@ -94,8 +102,12 @@ export function Mesh() {
                             {[1, 2, 3].map((ring) => (
                                 <div
                                     key={ring}
-                                    className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border border-[#03BF03]/10 rounded-full pointer-events-none`}
-                                    style={{ width: `${ring * 200 + 100}px`, height: `${ring * 200 + 100}px` }}
+                                    className="mesh-ring absolute top-1/2 left-1/2 border border-[#03BF03]/10 rounded-full pointer-events-none"
+                                    style={{
+                                        width: `${ring * 200 + 100}px`,
+                                        height: `${ring * 200 + 100}px`,
+                                        animationDelay: `${(ring - 1) * -1.2}s`,
+                                    }}
                                 />
                             ))}
                         </div>

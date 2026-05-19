@@ -11,6 +11,27 @@ declare global {
     }
 }
 
+const getDeduplicationKey = (event: ConversionEvent) => {
+    const eventKey = event.id || `${event.name}-${event.selector || "no-selector"}`;
+    return `gads_conversion_${eventKey}`;
+};
+
+const hasTrackedInSession = (event: ConversionEvent) => {
+    try {
+        return window.sessionStorage.getItem(getDeduplicationKey(event)) === "true";
+    } catch {
+        return false;
+    }
+};
+
+const markTrackedInSession = (event: ConversionEvent) => {
+    try {
+        window.sessionStorage.setItem(getDeduplicationKey(event), "true");
+    } catch {
+        // Ignore storage errors. Tracking should not break user interactions.
+    }
+};
+
 export function ConversionTracker({ initialEvents = [] }: { initialEvents?: ConversionEvent[] }) {
     const [events, setEvents] = useState<ConversionEvent[]>(initialEvents);
 
@@ -28,6 +49,11 @@ export function ConversionTracker({ initialEvents = [] }: { initialEvents?: Conv
     }, [initialEvents]);
 
     const trackEvent = useCallback((event: ConversionEvent) => {
+        if (hasTrackedInSession(event)) {
+            console.debug(`Conversion event skipped due to session dedupe: ${event.name}`);
+            return;
+        }
+
         if (typeof window.gtag === 'function') {
             try {
                 // This is a simplified way to execute the snippet.
@@ -35,6 +61,7 @@ export function ConversionTracker({ initialEvents = [] }: { initialEvents?: Conv
                 // A more robust solution might parse the snippet, but this covers many cases.
                 const snippetFunc = new Function('gtag', event.event_snippet);
                 snippetFunc(window.gtag);
+                markTrackedInSession(event);
                 console.log(`Conversion event tracked: ${event.name}`);
             } catch (e) {
                 console.error(`Error executing event snippet for "${event.name}":`, e);

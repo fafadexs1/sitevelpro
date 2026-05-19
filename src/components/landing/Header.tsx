@@ -51,7 +51,7 @@ const NavMenuItem = ({ href, children, icon: Icon }: { href: string, children: R
 
 function DynamicLogo({ logoUrl }: { logoUrl: string | null }) {
   return (
-    <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-primary to-[#03BF03] text-white shadow-lg shadow-primary/20 overflow-hidden">
+    <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-primary to-[#03BF03] text-white overflow-hidden">
       {logoUrl ? (
         <Image src={logoUrl} alt="Logo da Empresa" width={36} height={36} className="object-contain" />
       ) : (
@@ -84,7 +84,7 @@ export function Header({ domainType, companyLogoUrl }: { domainType: DomainType,
   const MainCtaButton = () => {
     const isMainSite = domainType === 'main_site';
     const href = isMainSite ? 'https://velpro.net.br/app/app.html' : 'tel:08003810404';
-    const label = isMainSite ? 'Area do Cliente' : 'Ligue Agora';
+    const label = isMainSite ? 'Área do Cliente' : 'Ligue Agora';
     const Icon = isMainSite ? User : Phone;
 
     return (
@@ -108,7 +108,7 @@ export function Header({ domainType, companyLogoUrl }: { domainType: DomainType,
   const MobileMainCtaButton = () => {
     const isMainSite = domainType === 'main_site';
     const href = isMainSite ? 'https://velpro.net.br/app/app.html' : 'tel:08003810404';
-    const label = isMainSite ? 'Area do Cliente' : 'Ligar agora';
+    const label = isMainSite ? 'Área do Cliente' : 'Ligar agora';
     const Icon = isMainSite ? User : Phone;
 
     return (
@@ -117,12 +117,12 @@ export function Header({ domainType, companyLogoUrl }: { domainType: DomainType,
         href={href}
         data-track-event="cta_click"
         data-track-prop-button-id="main-cta-header-mobile"
-        className="relative inline-flex items-center justify-center rounded-xl border border-input bg-background text-sm font-medium text-foreground transition-colors hover:bg-accent px-3 h-10 gap-2"
+        className="group relative inline-flex h-10 w-40 items-center justify-center gap-2 overflow-hidden rounded-xl border border-input bg-background px-3 text-sm font-medium text-foreground transition-[width,background-color,border-color] duration-300 ease-out hover:bg-accent max-[390px]:w-10"
         aria-label={label}
         onClick={!isMainSite ? handleCallClick : undefined}
       >
         <Icon className="h-5 w-5 flex-shrink-0" />
-        <span className="whitespace-nowrap">{label}</span>
+        <span className="max-w-28 whitespace-nowrap opacity-100 transition-[max-width,opacity] duration-300 ease-out max-[390px]:max-w-0 max-[390px]:opacity-0">{label}</span>
       </a>
     )
   }
